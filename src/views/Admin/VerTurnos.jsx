@@ -79,7 +79,7 @@ function VerTurnos({ selectedDate, onDateChange }){
                         </div>
                     )}
                 </div>
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ">
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center items-center">
           {bookings.map((booking) => (
             <div
               key={booking.id}
@@ -88,8 +88,8 @@ function VerTurnos({ selectedDate, onDateChange }){
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-medium">{booking.name}</h3>
-                  <p className="text-sm text-gray-500">{booking.time}</p>
+                  <h3 className="font-semibold">{booking.name}</h3>
+                  <p className="text-sm font-medium text-gray-500">{booking.time}</p>
                 </div>
               </div>
               
@@ -98,19 +98,19 @@ function VerTurnos({ selectedDate, onDateChange }){
                   booking.courts.map((court, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1 bg-gray-100 rounded-full text-sm"
+                      className="text-center px-3 py-1 bg-gray-300 rounded-full text-xs w-3/4"
                     >
                       {court}
                     </span>
                   ))
                 ) : (
-                  <span className="px-3 py-1 bg-gray-100 rounded-full text-sm">
+                  <span className="text-center px-3 py-1 bg-gray-300 rounded-full text-xs  w-3/4">
                     {booking.court}
                   </span>
                 )}
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 justify-center">
                 <Button
                   variant="outline"
                   size="icon"

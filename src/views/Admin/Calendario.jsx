@@ -91,6 +91,11 @@ export default function Calendar() {
   const handleTurnosClick = () => {
     navigate('/ver-turnos')
   }
+  
+  const handleDayClick = (date) => {
+    const formattedDate = formatDate(date);  // Convertir la fecha al formato 'YYYY-MM-DD'
+    navigate(`/horariosReserva/${formattedDate}`);  // Redirigir a la ruta dinámica con la fecha
+  }
 
   return (
     <>
@@ -138,6 +143,7 @@ export default function Calendar() {
                 className={`bg-white min-h-[100px] p-2 ${
                   day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
                 }`}
+                onClick={() => handleDayClick(day.date)}
               >
                 <span className="block text-sm mb-1">{day.day}</span>
                 {reservations.map((reservation, idx) => (

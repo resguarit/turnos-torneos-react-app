@@ -6,7 +6,8 @@ import ZonasA from "../views/Admin/ZonasA";
 import AltaZona from "@/views/Admin/AltaZona";
 import Calendario from "@/views/Admin/Calendario";
 import VerTurnos from "@/views/Admin/VerTurnos";
-
+import HorariosReserva from "@/views/Admin/HorariosReserva";
+import CanchasReserva from "@/views/Admin/CanchasReserva";
 const AppRoutes = () => {
   return (
     <Router>
@@ -17,6 +18,8 @@ const AppRoutes = () => {
         <Route path="/alta-zona" element={<AltaZona />} />
         <Route path="/calendario-admi" element={<Calendario />} />
         <Route path="/ver-turnos" element={<VerTurnos />} />
+        <Route path="/horariosReserva/:date" element={<HorariosReserva />} />
+        <Route path="/canchas-reserva" element={<CanchasReserva />} />
       </Routes>
     </Router>
   );

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
@@ -6,17 +6,18 @@ import { useNavigate } from 'react-router-dom'
 
 const DAYS_OF_WEEK = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
-const MOCK_RESERVATIONS = {
-  '2024-08-01': ['18:00-19:00', '20:00-21:00'],
-  '2024-08-05': ['18:00-19:00'],
-  '2024-08-06': ['18:00-19:00'],
-  '2024-08-12': ['20:00-21:00']
-}
-
 export default function Calendar() {
-    const navigate = useNavigate()
-  const [currentMonth, setCurrentMonth] = useState(7) // 0-based, 7 = August
+  const navigate = useNavigate()
+  const [currentMonth, setCurrentMonth] = useState(11) // 0-based, 7 = August
   const [currentYear, setCurrentYear] = useState(2024)
+  const [reservations, setReservations] = useState({})
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/api/disponibilidad')
+      .then(response => response.json())
+      .then(data => setReservations(data))
+      .catch(error => console.error('Error fetching reservations:', error))
+  }, [])
 
   const getDaysInMonth = (year, month) => {
     return new Date(year, month + 1, 0).getDate()
@@ -70,7 +71,7 @@ export default function Calendar() {
 
   const getReservationsForDate = (date) => {
     const formattedDate = formatDate(date)
-    return MOCK_RESERVATIONS[formattedDate] || []
+    return reservations[formattedDate] || []
   }
 
   const navigateMonth = (direction) => {

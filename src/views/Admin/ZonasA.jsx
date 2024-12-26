@@ -26,22 +26,22 @@ export default function ZonasA() {
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Zonas</h1>
-            <Button onClick={handleNuevaZonaClick} variant="default" className="bg-black hover:bg-black/90 text-white" style={{borderRadius: '8px'}}>
+            <button onClick={handleNuevaZonaClick} className="bg-black hover:bg-black/90 px-2 py-1 text-sm text-white" style={{borderRadius: '8px'}}>
               + Nueva Zona
-            </Button>
+            </button>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {zonas.map((zona) => (
               <Card className="bg-white" key={zona.id} style={{borderRadius: '8px'}}>
                 <CardContent className="p-6">
                   <div className="flex flex-col justify-between items-start mb-4">
-                    <h2 className="text-xl font-semibold">{zona.name}</h2>
-                    <span className="text-gray-500">{zona.format} - {zona.count} equipos</span>
-                    <span className="text-black font-medium">Próximo Partido: {zona.diaProximo}  ({zona.horarioProximo})</span>
+                    <h2 className="text-xl font-bold">{zona.name}</h2>
+                    <span className="text-gray-500 ">{zona.format} - {zona.count} equipos</span>
+                    <span className="text-black font-semibold">Próximo Partido: {zona.diaProximo}  ({zona.horarioProximo})</span>
                   </div>
-                  <div className="flex gap-3">
-                    <Button variant="outline" className="flex-1 border-naranja" style={{borderRadius: '8px'}}>Ver Detalles</Button>
-                    <Button variant="outline" className="flex-1 border-naranja" style={{borderRadius: '8px'}}>Editar</Button>
+                  <div className="flex gap-3 text-sm">
+                    <button variant="outline" className="flex-1 border border-naranja p-1" style={{borderRadius: '8px'}}>Ver Detalles</button>
+                    <button variant="outline" className="flex-1 border border-naranja p-1" style={{borderRadius: '8px'}}>Editar</button>
                   </div>
                 </CardContent>
               </Card>

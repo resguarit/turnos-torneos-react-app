@@ -9,7 +9,8 @@ export function Header() {
           <img src={Logo} alt="Logo" className="h-7" />
         </a>
         <div className="hidden md:block">
-        <div className="flex gap-8 font-inter text-lg tracking-wide">
+        <div className="flex gap-8 font-inter text-lg">
+        <a href="/" className="hover:opacity-80">Inicio</a>
           <a href="/torneos-admi" className="hover:opacity-80">Torneos</a>
           <a href="/calendario-admi" className="hover:opacity-80">Reservas</a>
           <a href="/partidos" className="hover:opacity-80">Partidos</a>

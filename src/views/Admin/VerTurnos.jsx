@@ -111,28 +111,28 @@ function VerTurnos({ selectedDate, onDateChange }){
               </div>
 
               <div className="flex gap-2 justify-center">
-                <Button
-                  variant="outline"
+                <button
+                  style={{ borderRadius: '4px' }}
                   size="icon"
-                  className="bg-[#FF5533] hover:bg-[#FF5533]/90 text-white"
+                  className="bg-naranja hover:bg-[#FF5533]/90 text-white p-2"
                 >
                   <Trash2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
+                </button>
+                <button
+                  style={{ borderRadius: '4px' }}
                   size="icon"
-                  className="bg-[#FF5533] hover:bg-[#FF5533]/90 text-white"
+                  className="bg-naranja hover:bg-[#FF5533]/90 text-white p-2"
                 >
                   <PenSquare className="h-4 w-4" />
-                </Button>
+                </button>
                 {booking.type === "regular" && (
-                  <Button
-                    variant="outline"
+                  <button
+                  style={{ borderRadius: '4px' }}
                     size="icon"
-                    className="bg-green-500 hover:bg-green-600 text-white"
+                    className="bg-green-500 hover:bg-green-600 text-white p-2"
                   >
                     <Phone className="h-4 w-4" />
-                  </Button>
+                  </button>
                 )}
               </div>
             </div>

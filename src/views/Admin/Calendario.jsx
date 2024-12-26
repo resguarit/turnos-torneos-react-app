@@ -7,8 +7,8 @@ import { useNavigate } from 'react-router-dom'
 const DAYS_OF_WEEK = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
 const MOCK_RESERVATIONS = {
-  '2024-08-01': ['09:00-10:00', '10:00-11:00'],
-  '2024-08-05': ['15:00-16:00'],
+  '2024-08-01': ['18:00-19:00', '20:00-21:00'],
+  '2024-08-05': ['18:00-19:00'],
   '2024-08-06': ['18:00-19:00'],
   '2024-08-12': ['20:00-21:00']
 }
@@ -101,11 +101,11 @@ export default function Calendar() {
     <>
     <Header />
     
-    <div className="w-full  bg-gray-100">
+    <div className="w-full  bg-gray-100 font-inter">
       <div className="bg-white rounded-lg shadow ">
         <div className="flex mx-5 mt-4 justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Reservas</h2>
-          <button onClick={handleTurnosClick} className="h-8 px-2 items-center bg-black text-white hover:bg-black/90" style={{borderRadius: '6px'}}>
+          <button onClick={handleTurnosClick} className=" text-sm tracking-wide h-8 px-2 items-center bg-black text-white hover:bg-black/90" style={{borderRadius: '6px'}}>
             Ver Turnos
           </button>
         </div>

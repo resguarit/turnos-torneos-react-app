@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/header";
+import { Footer } from '@/components/Footer';
+import { X } from 'lucide-react';
 
 const courtsData = [
   { id: 1, name: "Cancha 1", schedules: ["17:00 - 18:00", "19:00 - 20:00"] },
@@ -12,16 +14,15 @@ const courtsData = [
 ];
 
 export default function CanchasReserva() {
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedCourt, setSelectedCourt] = useState(null);
   const [courts, setCourts] = useState([]);
 
   const queryParams = new URLSearchParams(location.search);
-  console.log("Query string recibido:", location.search);
   const selectedTime = queryParams.get("time");
-  console.log("Horario seleccionado (decoded):", selectedTime);
-
+  const selectedDate = queryParams.get("date");
 
   useEffect(() => {
     // Determinar disponibilidad de canchas según el horario
@@ -32,18 +33,43 @@ export default function CanchasReserva() {
     setCourts(updatedCourts);
   }, [selectedTime]);
 
-  const handleConfirm = () => {
-    if (selectedCourt) {
-      console.log('Confirmed reservation for court:', selectedCourt);
-      navigate('/reservas/confirmation');
-    }
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      setShowModal(true); // Mostrar modal de confirmación
   };
+
+  const confirmSubmit = async () => {
+      setShowModal(false); // Cierra el modal
+      // Lógica para reservar la cancha
+  };
+
+  const Modal = ({ onConfirm, onCancel }) => (
+      <div className="z-50 fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white text-black z-20 p-4 rounded-xl  shadow-lg w-11/12 md:w-1/3">
+          <div className="flex justify-between">
+              <h2 className="text-xl font-bold mb-4">Confirmar Reserva  </h2>
+              <X onClick={onCancel}/>
+              </div>
+              <p className="mb-6">Desea confirmar?</p>
+              <div className="flex justify-center">
+                  <button
+                      onClick={onConfirm}
+                      className="px-4 py-2 bg-naranja text-white"
+                  style={{ borderRadius: '6px' }}
+                  >
+                      Reservar
+                  </button>
+              </div>
+          </div>
+      </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
       <main className="max-w-2xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-2">Reservas</h1>
+        <h2 className="text-xl font-semibold mb-2">{selectedDate}</h2>
         <h2 className="text-md text-gray-600 font-semibold mb-6">{selectedTime}</h2>
 
         <div className="mb-8">
@@ -53,19 +79,13 @@ export default function CanchasReserva() {
               <h5 className="text-sm font-medium mb-3">Canchas Disponibles</h5>
               <div className="space-y-2">
                 {courts.filter(court => court.available).map(court => (
-                  <Button
+                  <button
                     key={court.id}
                     onClick={() => setSelectedCourt(court.id)}
-                    variant="outline"
                     style={{ borderRadius: '6px' }}
-                    className={`w-full justify-start ${
-                      selectedCourt === court.id
-                        ? 'bg-verde hover:bg-green-50 text-white'
-                        : 'bg-verde hover:bg-green-50 text-white'
-                    }`}
-                  >
+                    className='bg-verde hover:bg-naranja text-white w-full font-medium p-1 justify-start'>
                     {court.name}
-                  </Button>
+                  </button>
                 ))}
               </div>
             </div>
@@ -74,15 +94,14 @@ export default function CanchasReserva() {
               <h5 className="text-sm font-medium mb-3">Canchas Ocupadas</h5>
               <div className="space-y-2">
                 {courts.filter(court => !court.available).map(court => (
-                  <Button
-                  style={{ borderRadius: '6px' }}
+                  <button
+                    style={{ borderRadius: '6px' }}
                     key={court.id}
                     disabled
-                    variant="outline"
-                    className="w-full justify-start bg-slate-400 text-black"
+                    className="p-1 font-medium w-full justify-start bg-slate-300 text-neutral-900"
                   >
                     {court.name}
-                  </Button>
+                  </button>
                 ))}
               </div>
             </div>
@@ -90,22 +109,25 @@ export default function CanchasReserva() {
         </div>
 
         <div className="flex gap-4">
-          <Button 
-            variant="outline"
+          <button
+            style={{ borderRadius: '6px' }}
             onClick={() => navigate(-1)}
-            className="bg-black text-white hover:bg-black/90"
+            className="bg-black p-2 w-1/2 text-white hover:bg-black/90"
           >
             Atrás
-          </Button>
-          <Button
-            onClick={handleConfirm}
+          </button>
+          <button
+            style={{ borderRadius: '6px' }}
+            onClick={handleSubmit}
             disabled={!selectedCourt}
-            className="bg-black text-white hover:bg-black/90"
+            className="bg-black p-2 w-1/2 text-white hover:bg-black/90"
           >
             Confirmar
-          </Button>
+          </button>
         </div>
+        {showModal && <Modal onConfirm={confirmSubmit} onCancel={() => setShowModal(false)} />}
       </main>
+      <Footer></Footer>
     </div>
   );
 }

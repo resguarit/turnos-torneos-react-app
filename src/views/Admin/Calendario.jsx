@@ -141,7 +141,7 @@ export default function Calendar() {
             return (
               <div 
                 key={index}
-                className={`bg-white min-h-[100px] p-2 ${
+                className={`bg-white min-h-[100px] hover:cursor-pointer p-2 ${
                   day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
                 }`}
                 onClick={() => handleDayClick(day.date)}

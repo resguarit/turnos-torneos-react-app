@@ -8,29 +8,34 @@ import { PenSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'; 
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css'; 
+import { format, parseISO } from 'date-fns'
+import { es } from 'date-fns/locale'  
 
-function VerTurnos({ selectedDate, onDateChange }) {
+function VerTurnos() {
   const [isOpen, setIsOpen] = useState(false);
   const [bookings, setBookings] = useState([]);
   const [groupedBookings, setGroupedBookings] = useState({});
+  const [selectedDate, setSelectedDate] = useState(null);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [viewOption, setViewOption] = useState('day'); // 'day' or 'range'
 
   useEffect(() => {
+    // Aca vamos a construir la URL para la consulta a la api en la que depende de si se quiere ver por dia o por rango de fechas o ver todas las reservas
     let url = 'http://127.0.0.1:8000/api/reservas';
     if (viewOption === 'day' && selectedDate) {
-      const formattedDate = selectedDate.toISOString().split('T')[0];
+      const formattedDate = selectedDate.toISOString().split('T')[0]; // aca se formatea la fecha para que pase de Fri Dec 31 2021 00:00:00 GMT-0300 (hora de verano de Argentina) a 2021-12-31
       url += `?fecha=${formattedDate}`;
     } else if (viewOption === 'range' && startDate && endDate) {
-      const formattedStartDate = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-      const formattedEndDate = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+      const formattedStartDate = startDate.toISOString().split('T')[0];
+      const formattedEndDate = endDate.toISOString().split('T')[0];
       url += `?fecha_inicio=${formattedStartDate}&fecha_fin=${formattedEndDate}`;
     }
 
     fetch(url)
       .then(response => response.json())
       .then(data => {
+        // Aca se agrupan todas las reservas por fecha
         const grouped = data.reservas.reduce((acc, booking) => {
           const date = booking.fecha_turno.split('T')[0];
           if (!acc[date]) {
@@ -49,13 +54,23 @@ function VerTurnos({ selectedDate, onDateChange }) {
   };
 
   const handleDateChange = (date) => {
-    onDateChange(date);
-    setIsOpen(false); // Cerrar el calendario después de seleccionar una fecha
+    setSelectedDate(date);
+    // Cerrar el calendario después de seleccionar una fecha con 200ms de delay
+    setTimeout(() => {
+      setIsOpen(false);
+    }, 100); 
   };
 
   const handleRangeChange = (range) => {
     setStartDate(range?.from || null);
     setEndDate(range?.to || null);
+
+    // si se eligio un rango de fechas entonces se cierra el calendario con 200ms de delay
+    if (range?.from && range?.to) {
+      setTimeout(() => {
+        setIsOpen(false);
+      }, 100);
+    }
   };
 
   return (
@@ -79,7 +94,7 @@ function VerTurnos({ selectedDate, onDateChange }) {
                         onClick={toggleCalendar}
                         className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black" style={{ borderRadius: '8px' }}
                       >
-                        {selectedDate ? selectedDate.toLocaleDateString() : <CalendarDays className='w-48' />}
+                        {selectedDate ? format(selectedDate, 'PPP', { locale: es }) : <CalendarDays className='w-48' />}
                       </button>
 
                       {isOpen && (
@@ -94,7 +109,7 @@ function VerTurnos({ selectedDate, onDateChange }) {
                         onClick={toggleCalendar}
                         className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black" style={{ borderRadius: '8px' }}
                       >
-                        {startDate && endDate ? `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}` : 'Seleccionar Intervalo'}
+                        {startDate && endDate ? `${format(startDate, 'PPP', { locale: es })} - ${format(endDate, 'PPP', { locale: es })}` : 'Seleccionar Intervalo'}
                       </button>
 
                       {isOpen && (
@@ -114,8 +129,8 @@ function VerTurnos({ selectedDate, onDateChange }) {
                   .sort((a, b) => new Date(a) - new Date(b)) // Ordenar las fechas de menor a mayor
                   .map(date => (
                     <div key={date} className='pt-6'>
-                      <h1 className='text-lg font-bold pb-3'>{new Date(date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h1>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center items-center">
+                      <h1 className='text-lg font-bold pb-3'>{format(parseISO(date), 'EEEE, d MMMM yyyy', { locale: es })}</h1>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-center items-center">
                         {groupedBookings[date].map((booking) => (
                           <div
                             key={booking.id}
@@ -137,6 +152,9 @@ function VerTurnos({ selectedDate, onDateChange }) {
                               </span>
                               <span className="text-center px-3 py-1 bg-gray-300 rounded-full text-xs w-3/4">
                                 {`Cancha ${booking.cancha.nro} - ${booking.cancha.tipoCancha}`}
+                              </span>
+                              <span className="text-center px-3 py-1 bg-gray-300 rounded-full text-xs w-3/4">
+                                {`Id ${booking.id}`}
                               </span>
                             </div>
 

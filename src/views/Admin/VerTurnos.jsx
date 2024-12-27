@@ -1,48 +1,48 @@
+import { useState, useEffect } from 'react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { CalendarDays } from 'lucide-react'
 import { Trash2 } from 'lucide-react'
 import { Phone } from 'lucide-react'
 import { PenSquare } from 'lucide-react'
-import { Button } from '@/components/ui/button'; // Usando el componente Button de ShadCN
+import { Button } from '@/components/ui/button'; 
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css'; 
-import { useState } from 'react';  // Asegúrate de agregar esto
 
+function VerTurnos({ selectedDate, onDateChange }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [bookings, setBookings] = useState([]);
+  const [groupedBookings, setGroupedBookings] = useState({});
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [viewOption, setViewOption] = useState('day'); // 'day' or 'range'
 
-const bookings = [
-    {
-      id: 1,
-      name: "Matias Rodriguez",
-      time: "18:00 - 19:00",
-      court: "Cancha 1",
-      type: "regular"
-    },
-    {
-      id: 2,
-      name: "Juan Perez",
-      time: "18:00 - 19:00",
-      court: "Cancha 2",
-      type: "regular"
-    },
-    {
-      id: 3,
-      name: "Torneo MARTES",
-      time: "18:00 - 20:00",
-      courts: ["Cancha 3", "Cancha 4"],
-      type: "tournament"
-    },
-    {
-      id: 4,
-      name: "Martin Gonzalez",
-      time: "20:00 - 21:00",
-      court: "Cancha 5",
-      type: "regular"
+  useEffect(() => {
+    let url = 'http://127.0.0.1:8000/api/reservas';
+    if (viewOption === 'day' && selectedDate) {
+      const formattedDate = selectedDate.toISOString().split('T')[0];
+      url += `?fecha=${formattedDate}`;
+    } else if (viewOption === 'range' && startDate && endDate) {
+      const formattedStartDate = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+      const formattedEndDate = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+      url += `?fecha_inicio=${formattedStartDate}&fecha_fin=${formattedEndDate}`;
     }
-  ]
 
-function VerTurnos({ selectedDate, onDateChange }){
-    const [isOpen, setIsOpen] = useState(false);
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        const grouped = data.reservas.reduce((acc, booking) => {
+          const date = booking.fecha_turno.split('T')[0];
+          if (!acc[date]) {
+            acc[date] = [];
+          }
+          acc[date].push(booking);
+          return acc;
+        }, {});
+        setGroupedBookings(grouped);
+      })
+      .catch(error => console.error('Error fetching reservations:', error));
+  }, [selectedDate, startDate, endDate, viewOption]);
 
   const toggleCalendar = () => {
     setIsOpen((prev) => !prev);
@@ -52,101 +52,129 @@ function VerTurnos({ selectedDate, onDateChange }){
     onDateChange(date);
     setIsOpen(false); // Cerrar el calendario después de seleccionar una fecha
   };
-    
-    return(
-        <>
-        <div className="min-h-screen flex flex-col font-inter">
-            <Header />
-                <main className="flex-1 p-6 bg-[#dddcdc]">
-                <div className="flex justify-between mb-8">
-                <div className="space-y-4">
-                <h1 className="text-2xl font-bold">Turnos</h1>
-                <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium">Selecciona el Día:</span>
-                </div>
-                <div className='w-full items-center justify-center'>
+
+  const handleRangeChange = (range) => {
+    setStartDate(range?.from || null);
+    setEndDate(range?.to || null);
+  };
+
+  return (
+    <>
+      <div className="min-h-screen flex flex-col font-inter">
+        <Header />
+        <main className="flex-1 p-6 bg-[#dddcdc]">
+          <div className="flex justify-between mb-8">
+            <div className="space-y-4">
+              <h1 className="text-2xl font-bold">Turnos</h1>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium">Selecciona el Día o Intervalo:</span>
+                <Button onClick={() => setViewOption('day')} variant={viewOption === 'day' ? 'default' : 'outline'} className={`px-4 py-2 ${viewOption === 'day' ? 'bg-naranja text-white' : 'bg-white text-black'}`} style={{ borderRadius: '8px' }}>Día</Button>
+                <Button onClick={() => setViewOption('range')} variant={viewOption === 'range' ? 'default' : 'outline'} className={`px-4 py-2 ${viewOption === 'range' ? 'bg-naranja text-white' : 'bg-white text-black'}`} style={{ borderRadius: '8px' }}>Intervalo</Button>
+              </div>
+              <div className='w-full items-center justify-center'>
                 <div className='relative'>
-                    <button
+                  {viewOption === 'day' ? (
+                    <>
+                      <button
                         onClick={toggleCalendar}
-                        className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black" style={{borderRadius: '8px'}}
-                    >
-                        {selectedDate ? selectedDate.toLocaleDateString() : <CalendarDays className='w-48'/>}
-                    </button>
+                        className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black" style={{ borderRadius: '8px' }}
+                      >
+                        {selectedDate ? selectedDate.toLocaleDateString() : <CalendarDays className='w-48' />}
+                      </button>
 
-                    {isOpen && (
+                      {isOpen && (
                         <div className="absolute mt-2 z-10 bg-white shadow-lg rounded-lg">
-                        <DayPicker selected={selectedDate} onDayClick={handleDateChange} />
+                          <DayPicker selected={selectedDate} onDayClick={handleDateChange} />
                         </div>
-                    )}
-                </div>
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center items-center">
-          {bookings.map((booking) => (
-            <div
-              key={booking.id}
-              className="bg-white rounded-lg shadow-sm p-4 space-y-3 "
-                style={{borderRadius: '8px'}}
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-semibold">{booking.name}</h3>
-                  <p className="text-sm font-medium text-gray-500">{booking.time}</p>
-                </div>
-              </div>
-              
-              <div className="flex flex-wrap gap-2">
-                {booking.courts ? (
-                  booking.courts.map((court, index) => (
-                    <span
-                      key={index}
-                      className="text-center px-3 py-1 bg-gray-300 rounded-full text-xs w-3/4"
-                    >
-                      {court}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-center px-3 py-1 bg-gray-300 rounded-full text-xs  w-3/4">
-                    {booking.court}
-                  </span>
-                )}
-              </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={toggleCalendar}
+                        className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black" style={{ borderRadius: '8px' }}
+                      >
+                        {startDate && endDate ? `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}` : 'Seleccionar Intervalo'}
+                      </button>
 
-              <div className="flex gap-2 justify-center">
-                <button
-                  style={{ borderRadius: '4px' }}
-                  size="icon"
-                  className="bg-naranja hover:bg-[#FF5533]/90 text-white p-2"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-                <button
-                  style={{ borderRadius: '4px' }}
-                  size="icon"
-                  className="bg-naranja hover:bg-[#FF5533]/90 text-white p-2"
-                >
-                  <PenSquare className="h-4 w-4" />
-                </button>
-                {booking.type === "regular" && (
-                  <button
-                  style={{ borderRadius: '4px' }}
-                    size="icon"
-                    className="bg-green-500 hover:bg-green-600 text-white p-2"
-                  >
-                    <Phone className="h-4 w-4" />
-                  </button>
-                )}
+                      {isOpen && (
+                        <div className="absolute mt-2 z-10 bg-white shadow-lg rounded-lg">
+                          <DayPicker
+                            mode="range"
+                            selected={{ from: startDate, to: endDate }}
+                            onSelect={handleRangeChange}
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                {Object.keys(groupedBookings)
+                  .sort((a, b) => new Date(a) - new Date(b)) // Ordenar las fechas de menor a mayor
+                  .map(date => (
+                    <div key={date} className='pt-6'>
+                      <h1 className='text-lg font-bold pb-3'>{new Date(date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h1>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center items-center">
+                        {groupedBookings[date].map((booking) => (
+                          <div
+                            key={booking.id}
+                            className="bg-white rounded-lg shadow-sm p-4 space-y-3 "
+                            style={{ borderRadius: '8px' }}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h3 className="font-semibold">{booking.usuario.nombre}</h3>
+                                <p className="text-sm font-medium text-gray-500">{`${booking.horario.horaInicio} - ${booking.horario.horaFin}`}</p>
+                                <p className='text-sm font-medium text-gray-800'>{`Monto total: $${booking.monto_total}`}</p>
+                                <p className='text-sm font-medium text-gray-800'>{`Monto seña: $${booking.monto_seña}`}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
+                              <span className="text-center px-3 py-1 bg-gray-300 rounded-full text-xs w-3/4">
+                                {`Estado: ${booking.estado}`}
+                              </span>
+                              <span className="text-center px-3 py-1 bg-gray-300 rounded-full text-xs w-3/4">
+                                {`Cancha ${booking.cancha.nro} - ${booking.cancha.tipoCancha}`}
+                              </span>
+                            </div>
+
+                            <div className="flex gap-2 justify-center">
+                              <button
+                                style={{ borderRadius: '4px' }}
+                                size="icon"
+                                className="bg-naranja hover:bg-[#FF5533]/90 text-white p-2"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                              <button
+                                style={{ borderRadius: '4px' }}
+                                size="icon"
+                                className="bg-naranja hover:bg-[#FF5533]/90 text-white p-2"
+                              >
+                                <PenSquare className="h-4 w-4" />
+                              </button>
+                              <button
+                                style={{ borderRadius: '4px' }}
+                                size="icon"
+                                className="bg-green-500 hover:bg-green-600 text-white p-2"
+                              >
+                                <Phone className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
               </div>
             </div>
-          ))}
-        </div>
-        </div>
-                
-                </div>
-                </div>
-                
-                </main>
-            <Footer />
-        </div>
-        </>
-    )
+          </div>
+        </main>
+        <Footer />
+      </div>
+    </>
+  )
 }
 export default VerTurnos;

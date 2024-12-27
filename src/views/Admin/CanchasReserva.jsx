@@ -24,6 +24,12 @@ export default function CanchasReserva() {
   const selectedTime = queryParams.get("time");
   const selectedDate = queryParams.get("date");
 
+  const fecha = new Date(`${selectedDate}T00:00:00`);
+  const dia = fecha.getDay();
+  const diaSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+  const diaNombre = diaSemana[dia];
+  const fechaFormateada = `${diaNombre} - ${selectedDate}`;
+
   useEffect(() => {
     // Determinar disponibilidad de canchas según el horario
     const updatedCourts = courtsData.map(court => ({
@@ -69,7 +75,7 @@ export default function CanchasReserva() {
       <Header />
       <main className="max-w-2xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-2">Reservas</h1>
-        <h2 className="text-xl font-semibold mb-2">{selectedDate}</h2>
+        <h2 className="text-xl font-semibold mb-2">{fechaFormateada}</h2>
         <h2 className="text-md text-gray-600 font-semibold mb-6">{selectedTime}</h2>
 
         <div className="mb-8">

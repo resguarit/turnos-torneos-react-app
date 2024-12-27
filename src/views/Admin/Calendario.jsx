@@ -104,14 +104,14 @@ export default function Calendar() {
     
     <div className="w-full  bg-gray-100 font-inter">
       <div className="bg-white rounded-lg shadow ">
-        <div className="flex mx-5 mt-4 justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Reservas</h2>
+        <div className="flex mx-5 lg:p-6 mt-4 justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold lg:text-4xl">Reservas</h2>
           <button onClick={handleTurnosClick} className=" text-sm tracking-wide h-8 px-2 items-center bg-black text-white hover:bg-black/90" style={{borderRadius: '6px'}}>
             Ver Turnos
           </button>
         </div>
 
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-4 lg:px-6">
           <button 
             onClick={() => navigateMonth(-1)}
             className="p-2 hover:bg-gray-100 rounded-full"
@@ -128,7 +128,7 @@ export default function Calendar() {
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto lg:px-6">
         <div className="grid grid-cols-7 gap-px bg-gray-200">
           {DAYS_OF_WEEK.map(day => (
             <div key={day} className="bg-white p-2 text-sm font-medium text-center">

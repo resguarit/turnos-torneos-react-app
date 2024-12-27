@@ -15,7 +15,7 @@ export function Eliminacion({ teams }) {
                 className="w-6 h-6 rounded-full"
                 style={{ backgroundColor: team.color }}
               />
-              <span className="text-sm">{team.name}</span>
+              <span className="text-sm lg:text-lg">{team.name}</span>
             </div>
           ))}
         </div>
@@ -34,17 +34,17 @@ export function Eliminacion({ teams }) {
                 className="w-6 h-6 rounded-full"
                 style={{ backgroundColor: team.color }}
               />
-              <span className="text-sm">{team.name}</span>
+              <span className="text-sm lg:text-lg">{team.name}</span>
             </div>
           ))}
         </div>
       </div>
 
       <div className="flex justify-center mt-4">
-        <Button variant="outline" size="sm" className="text-[#FF5533]">
-          <PenSquare className="w-4 h-4 mr-2" />
+        <button style={{ borderRadius: '8px' }} size="sm" className=" text-white bg-naranja p-2 gap-2 w-fit flex items-center justify-between lg:text-lg">
           Editar
-        </Button>
+          <PenSquare className="w-4 h-4" />
+        </button>
       </div>
     </div>
   )

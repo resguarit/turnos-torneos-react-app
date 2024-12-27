@@ -8,13 +8,13 @@ export function Liga({ matches, date }) {
         <button className="p-2">
           <ChevronLeft className="w-5 h-5" />
         </button>
-        <h3 className="font-medium">Fecha 1 - {date}</h3>
+        <h3 className="font-medium lg:text-2xl">Fecha 1 - {date}</h3>
         <button className="p-2">
           <ChevronRight className="w-5 h-5" />
         </button>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 justify-center">
         {matches.map((match, index) => (
           <div
             key={index}
@@ -26,15 +26,15 @@ export function Liga({ matches, date }) {
                 className="w-6 h-6 rounded-full"
                 style={{ backgroundColor: match.team1.color }}
               />
-              <span className="text-sm">{match.team1.name}</span>
+              <span className="text-sm lg:text-lg">{match.team1.name}</span>
             </div>
             
             {/* Separador */}
-            <span className="text-sm font-medium">vs</span>
+            <span className="text-sm font-medium lg:text-lg">vs</span>
 
             {/* Segundo equipo */}
             <div className="flex items-center gap-2 justify-center md:justify-end w-full">
-              <span className="text-sm">{match.team2.name}</span>
+              <span className="text-sm lg:text-lg">{match.team2.name}</span>
               <div
                 className="w-6 h-6 rounded-full"
                 style={{ backgroundColor: match.team2.color }}
@@ -42,13 +42,15 @@ export function Liga({ matches, date }) {
             </div>
 
             {/* Hora del partido */}
-            <span className="text-sm text-gray-500">{match.time}</span>
+            <div>
+            <span className="text-sm text-gray-500 lg:ml-60 ">{match.time}</span>
+            </div>
           </div>
         ))}
       </div>
 
       <div className="flex justify-center mt-4">
-        <button style={{ borderRadius: '8px' }} size="sm" className=" text-white bg-naranja p-2 w-[40%] flex items-center justify-between">
+        <button style={{ borderRadius: '8px' }} size="sm" className=" text-white bg-naranja p-2 gap-2 w-fit flex items-center justify-between lg:text-lg">
           Editar
           <PenSquare className="w-4 h-4" />
         </button>

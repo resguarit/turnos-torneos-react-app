@@ -16,18 +16,18 @@ export function Grupos({ teams }) {
       <div className="grid grid-cols-4 gap-4">
         {Object.entries(groups).map(([groupName, groupTeams]) => (
           <div key={groupName} className="bg-white rounded-lg p-4">
-            <h3 className="font-medium mb-3">Grupo {groupName}</h3>
+            <h3 className="font-semibold mb-3 lg:text-xl">Grupo {groupName}</h3>
             <div className="space-y-2">
               {groupTeams.map((team) => (
                 <div
                   key={team.id}
-                  className="flex items-center gap-2 p-2 bg-gray-50 rounded"
+                  className="flex items-center gap-2 p-2 bg-gray-200 rounded"
                 >
                   <div
                     className="w-4 h-4 rounded-full"
                     style={{ backgroundColor: team.color }}
                   />
-                  <span className="text-sm">{team.name}</span>
+                  <span className="text-sm lg:text-lg">{team.name}</span>
                 </div>
               ))}
             </div>
@@ -35,11 +35,11 @@ export function Grupos({ teams }) {
         ))}
       </div>
 
-      <div className="flex justify-end">
-        <Button variant="outline" size="sm" className="text-[#FF5533]">
-          <PenSquare className="w-4 h-4 mr-2" />
+      <div className="flex justify-center mt-4">
+        <button style={{ borderRadius: '8px' }} size="sm" className=" text-white bg-naranja p-2 gap-2 w-fit flex items-center justify-between lg:text-lg">
           Editar
-        </Button>
+          <PenSquare className="w-4 h-4" />
+        </button>
       </div>
     </div>
   )

@@ -44,21 +44,21 @@ export default function AltaZona() {
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
-      <main className="flex-1 p-6 bg-[#dddcdc]">
-        <div className="max-w-7xl mx-auto">
+      <main className="flex-1 p-6 lg:p-10 bg-[#dddcdc]">
+        <div className="max-w-7xl lg:max-w-full mx-auto">
           <div className="flex flex-col justify-between items-start mb-6">
-            <h1 className="text-2xl font-bold">{zona[0].name}</h1>
-            <h2 className="text-xl font-bold mt-2">Crear Nueva Zona</h2>
-            <p className="text-gray-500 text-xs">Complete los datos para crear una nueva zona</p>
-            <label className="font-bold mt-4">Nombre de la Zona:</label>
+            <h1 className="text-2xl lg:text-4xl font-bold">{zona[0].name}</h1>
+            <h2 className="text-xl lg:text-3xl font-bold mt-2">Crear Nueva Zona</h2>
+            <p className="text-gray-500 text-xs lg:text-lg">Complete los datos para crear una nueva zona</p>
+            <label className="font-bold mt-4 lg:text-xl">Nombre de la Zona:</label>
             <input 
-            className="bg-white w-full" style={{ borderRadius: '6px' }}
+            className="bg-white w-full lg:w-1/2 lg:h-8" style={{ borderRadius: '6px' }}
             value={zoneName}
             onChange={(e) => setZoneName(e.target.value)}
             ></input>
-            <label className="font-bold mt-4">Seleccionar Formato:</label>
+            <label className="font-bold mt-4 lg:text-xl">Seleccionar Formato:</label>
             <select
-              className="bg-white w-full h-6 text-sm"
+              className="bg-white w-full lg:w-1/2 lg:h-8 h-6 text-sm lg:text-lg"
               value={selectedFormat}
               style={{ borderRadius: '6px' }}
               onChange={(e) => setSelectedFormat(e.target.value)}
@@ -71,17 +71,16 @@ export default function AltaZona() {
             
             <Button
               variant="default"
-              className="bg-black hover:bg-black/90 text-white py-0 h-8 mt-4 text-sm"
+              className="bg-black hover:bg-black/90 text-white py-0 lg:p-4 lg:h-10 h-8 mt-4 text-sm lg:text-lg"
               style={{ borderRadius: '8px' }}
             >
               Cargar Equipo +
             </Button>
-
-            <div className="mt-4 w-full mx-auto bg-white rounded-lg shadow" style={{ borderRadius: '8px' }}>
+            <div className='justify-start w-full'>
+            <div className="mt-4 mx-0 w-full bg-white rounded-lg shadow " style={{ borderRadius: '8px' }}>
               <ul className="divide-y divide-gray-200">
                 {teams.map((team, index) => (
                   <li
-                    style={{ borderRadius: '8px' }}
                     key={team.id}
                     className={`flex items-center justify-between p-4 ${
                       index % 2 === 0 ? 'bg-white' : 'bg-gray-200'
@@ -96,11 +95,11 @@ export default function AltaZona() {
                           }}
                         />
                       </div>
-                      <span className="font-medium text-sm">{team.name}</span>
+                      <span className="font-medium text-sm lg:text-lg">{team.name}</span>
                     </div>
                     <button
                       onClick={() => handleDelete(team.id)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      className="text-naranja hover:text-gray-600 transition-colors "
                       aria-label={`Delete ${team.name}`}
                     >
                       <Trash2 className="w-5 h-5" />
@@ -109,13 +108,14 @@ export default function AltaZona() {
                 ))}
               </ul>
             </div>
+            </div>
             <button
-              className="mt-4 text-sm bg-naranja text-white p-2 flex items-center"
+              className="mt-4 text-sm bg-naranja text-white p-2 flex items-center lg:text-lg "
               style={{ borderRadius: '8px' }}
               onClick={handleSortearFechas}
               disabled={!selectedFormat}
             >
-              Sortear fechas <Shuffle className="h-4" />
+              Sortear fechas <Shuffle className="h-4 lg:h-5" />
             </button>
             {tournamentData && (
               <div className="w-full mt-4">
@@ -136,7 +136,7 @@ export default function AltaZona() {
             <div className='w-full flex justify-end'>
             <Button
               variant="default"
-              className="bg-black hover:bg-black/90 text-white py-0 h-8 mt-4 text-sm"
+              className="bg-black hover:bg-black/90 text-white py-0 h-8 mt-4 text-sm lg:text-xl lg:p-6"
               style={{ borderRadius: '8px' }}
             >
               Guardar

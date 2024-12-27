@@ -53,14 +53,14 @@ export default function CanchasReserva() {
       <div className="z-50 fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white text-black z-20 p-4 rounded-xl  shadow-lg w-11/12 md:w-1/3">
           <div className="flex justify-between">
-              <h2 className="text-xl font-bold mb-4">Confirmar Reserva  </h2>
+              <h2 className="text-xl font-bold mb-4 lg:text-2xl">Confirmar Reserva  </h2>
               <X onClick={onCancel}/>
               </div>
-              <p className="mb-6">Desea confirmar?</p>
+              <p className="mb-6 lg:text-xl">¿Desea confirmar?</p>
               <div className="flex justify-center">
                   <button
                       onClick={onConfirm}
-                      className="px-4 py-2 bg-naranja text-white"
+                      className="px-4 py-2 bg-naranja text-white lg:text-xl"
                   style={{ borderRadius: '6px' }}
                   >
                       Reservar
@@ -71,25 +71,25 @@ export default function CanchasReserva() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="flex flex-col min-h-screen bg-gray-100">
       <Header />
-      <main className="max-w-2xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-2">Reservas</h1>
-        <h2 className="text-xl font-semibold mb-2">{fechaFormateada}</h2>
-        <h2 className="text-md text-gray-600 font-semibold mb-6">{selectedTime}</h2>
+      <main className="grow max-w-2xl lg:max-w-full mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-2 lg:text-4xl">Reservas</h1>
+        <h2 className="text-xl font-semibold mb-2 lg:text-2xl">{fechaFormateada}</h2>
+        <h2 className="text-md text-gray-600 font-semibold mb-6 lg:text-xl">{selectedTime}</h2>
 
         <div className="mb-8">
-          <h4 className="text-lg font-medium mb-4">Selecciona la Cancha:</h4>
-          <div className="grid grid-cols-2 p-2 text-center gap-6 bg-white" style={{borderRadius: '8px'}}>  
+          <h4 className="text-lg font-medium mb-4 lg:text-2xl">Selecciona la Cancha:</h4>
+          <div className="grid grid-cols-2 p-2 text-center gap-6 bg-white lg:mx-96" style={{borderRadius: '8px'}}>  
             <div className=''>
-              <h5 className="text-sm font-medium mb-3">Canchas Disponibles</h5>
+              <h5 className="text-sm font-medium mb-3 lg:text-xl">Canchas Disponibles</h5>
               <div className="space-y-2">
                 {courts.filter(court => court.available).map(court => (
                   <button
                     key={court.id}
                     onClick={() => setSelectedCourt(court.id)}
                     style={{ borderRadius: '6px' }}
-                    className='bg-verde hover:bg-naranja text-white w-full font-medium p-1 justify-start'>
+                    className='bg-verde hover:bg-naranja text-white w-full font-medium p-1 justify-start lg:text-xl'>
                     {court.name}
                   </button>
                 ))}
@@ -97,14 +97,14 @@ export default function CanchasReserva() {
             </div>
 
             <div>
-              <h5 className="text-sm font-medium mb-3">Canchas Ocupadas</h5>
+              <h5 className="text-sm font-medium mb-3 lg:text-xl">Canchas Ocupadas</h5>
               <div className="space-y-2">
                 {courts.filter(court => !court.available).map(court => (
                   <button
                     style={{ borderRadius: '6px' }}
                     key={court.id}
                     disabled
-                    className="p-1 font-medium w-full justify-start bg-slate-300 text-neutral-900"
+                    className="p-1 font-medium lg:text-xl w-full justify-start bg-slate-300 text-neutral-900"
                   >
                     {court.name}
                   </button>
@@ -114,11 +114,11 @@ export default function CanchasReserva() {
           </div>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex gap-4 lg:text-xl justify-between  mx-96">
           <button
             style={{ borderRadius: '6px' }}
             onClick={() => navigate(-1)}
-            className="bg-black p-2 w-1/2 text-white hover:bg-black/90"
+            className="bg-black p-2 w-1/2 lg:w-fit lg:p-3 text-white hover:bg-black/90"
           >
             Atrás
           </button>
@@ -126,7 +126,7 @@ export default function CanchasReserva() {
             style={{ borderRadius: '6px' }}
             onClick={handleSubmit}
             disabled={!selectedCourt}
-            className="bg-black p-2 w-1/2 text-white hover:bg-black/90"
+            className="bg-black p-2 w-1/2 lg:w-fit text-white hover:bg-black/90"
           >
             Confirmar
           </button>

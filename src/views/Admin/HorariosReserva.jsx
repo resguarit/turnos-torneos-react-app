@@ -48,9 +48,9 @@ export default function HorariosReserva() {
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
-      <main className="max-w-2xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-2">Reservas</h1>
-        <p className="text-lg font-medium mb-4">{date}</p>
+      <main className="max-w-2xl lg:max-w-full mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-2 lg:text-4xl">Reservas</h1>
+        <p className="text-lg font-medium mb-4 lg:text-2xl">{date}</p>
         <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
           {availability.map((slot, index) => (
             <div key={index} className="flex items-center justify-between p-4">

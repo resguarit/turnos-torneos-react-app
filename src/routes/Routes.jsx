@@ -11,6 +11,8 @@ import CanchasReserva from "@/views/Admin/CanchasReserva";
 import Partidos from "@/views/Admin/Partidos";
 import VerPartidos from "@/views/Admin/VerPartidos";
 import CargaPartido from "@/views/Admin/CargaPartido";
+import Reglamento from "@/views/Admin/Reglamento";
+import Premios from "@/views/Admin/Premios";
 
 const AppRoutes = () => {
   return (
@@ -27,6 +29,8 @@ const AppRoutes = () => {
         <Route path="/partidos" element={<Partidos />} />
         <Route path="/ver-partidos" element={<VerPartidos />} />
         <Route path="/cargar-partido" element={<CargaPartido />} />
+        <Route path="/reglamento" element={<Reglamento />} />
+        <Route path="/premios" element={<Premios />} />
       </Routes>
     </Router>
   );

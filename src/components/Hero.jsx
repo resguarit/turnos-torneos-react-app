@@ -14,7 +14,7 @@ function Hero(){
         <div className='w-full flex justify-center'>
         <button className="bg-naranja rounded-xl text-white p-2 font-inter font-medium text-xs md:text-sm lg:text-lg tracking-wide w-full md:w-1/2">QUIERO RESERVAR UN TURNO</button>
         </div>
-        <Carrusel></Carrusel>
+        {/* <Carrusel></Carrusel> */}
         </div>
         </>
     )

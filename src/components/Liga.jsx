@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight, PenSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-export function Liga({ matches, date }) {
+export function Liga({ matches, date, onEditMatch }) {
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 font-inter">
       <div className="flex items-center justify-between mb-4">
@@ -18,9 +18,9 @@ export function Liga({ matches, date }) {
         {matches.map((match, index) => (
           <div
             key={index}
-            className="flex flex-col md:flex-row md:justify-between text-xs items-center p-3 bg-gray-50 rounded-lg"
+            className="flex flex-col md:flex-row md:justify-between text-xs items-center p-3 bg-gray-100 rounded-lg"
           >
-            {/* Primer equipo */}
+            {/* Equipo 1 */}
             <div className="flex items-center gap-2 justify-center md:justify-start w-full">
               <div
                 className="w-6 h-6 rounded-full"
@@ -28,11 +28,8 @@ export function Liga({ matches, date }) {
               />
               <span className="text-sm lg:text-lg">{match.team1.name}</span>
             </div>
-            
-            {/* Separador */}
             <span className="text-sm font-medium lg:text-lg">vs</span>
-
-            {/* Segundo equipo */}
+            {/* Equipo 2 */}
             <div className="flex items-center gap-2 justify-center md:justify-end w-full">
               <span className="text-sm lg:text-lg">{match.team2.name}</span>
               <div
@@ -40,21 +37,18 @@ export function Liga({ matches, date }) {
                 style={{ backgroundColor: match.team2.color }}
               />
             </div>
-
-            {/* Hora del partido */}
-            <div>
-            <span className="text-sm text-gray-500 lg:ml-60 ">{match.time}</span>
-            </div>
+            {/* Hora */}
+            <span className="text-sm text-gray-500 lg:ml-60">{match.time}</span>
+            {/* Botón de edición */}
+            <button
+              className="ml-4 bg-naranja text-white px-2 py-1 rounded-md text-sm lg:text-lg"
+              onClick={() => onEditMatch(match)}
+            >
+              Editar
+            </button>
           </div>
         ))}
       </div>
-
-      <div className="flex justify-center mt-4">
-        <button style={{ borderRadius: '8px' }} size="sm" className=" text-white bg-naranja p-2 gap-2 w-fit flex items-center justify-between lg:text-lg">
-          Editar
-          <PenSquare className="w-4 h-4" />
-        </button>
-      </div>
     </div>
-  )
+  );
 }

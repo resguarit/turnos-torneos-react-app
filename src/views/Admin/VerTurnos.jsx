@@ -8,14 +8,21 @@ import { PenSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'; 
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css'; 
+import { format, parseISO } from 'date-fns';
+import { es } from 'date-fns/locale';
 
-function VerTurnos({ selectedDate, onDateChange }) {
+function VerTurnos() {
   const [isOpen, setIsOpen] = useState(false);
   const [bookings, setBookings] = useState([]);
   const [groupedBookings, setGroupedBookings] = useState({});
+  const [selectedDate, setSelectedDate] = useState(null);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [viewOption, setViewOption] = useState('day'); // 'day' or 'range'
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCourt, setSelectedCourt] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('');
+  const [courts, setCourts] = useState([]);
 
   useEffect(() => {
     let url = 'http://127.0.0.1:8000/api/reservas';
@@ -44,19 +51,45 @@ function VerTurnos({ selectedDate, onDateChange }) {
       .catch(error => console.error('Error fetching reservations:', error));
   }, [selectedDate, startDate, endDate, viewOption]);
 
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/api/canchas')
+      .then(response => response.json())
+      .then(data => setCourts(data.canchas))
+      .catch(error => console.error('Error fetching courts:', error));
+  }, []);
+
   const toggleCalendar = () => {
     setIsOpen((prev) => !prev);
   };
 
   const handleDateChange = (date) => {
-    onDateChange(date);
+    setSelectedDate(date);
     setIsOpen(false); // Cerrar el calendario después de seleccionar una fecha
   };
 
   const handleRangeChange = (range) => {
     setStartDate(range?.from || null);
     setEndDate(range?.to || null);
+
+    if (range?.from && range?.to) {
+      setTimeout(() => {
+        setIsOpen(false);
+      }, 150);
+    }
   };
+
+  const filteredBookings = Object.keys(groupedBookings).reduce((acc, date) => {
+    const filtered = groupedBookings[date].filter(booking => {
+      const matchesSearch = booking.usuario.nombre.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCourt = selectedCourt ? booking.cancha.nro === selectedCourt : true;
+      const matchesStatus = selectedStatus ? booking.estado === selectedStatus : true;
+      return matchesSearch && matchesCourt && matchesStatus;
+    });
+    if (filtered.length > 0) {
+      acc[date] = filtered;
+    }
+    return acc;
+  }, {});
 
   return (
     <>
@@ -66,10 +99,41 @@ function VerTurnos({ selectedDate, onDateChange }) {
           <div className="flex justify-between mb-8">
             <div className="space-y-4">
               <h1 className="text-2xl font-bold lg:text-4xl">Turnos</h1>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-semibold lg:text-xl">Selecciona el Día o Intervalo:</span>
-                <Button onClick={() => setViewOption('day')} variant={viewOption === 'day' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-lg hover:bg-naranja hover:opacity-70  hover:text-white ${viewOption === 'day' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Día</Button>
-                <Button onClick={() => setViewOption('range')} variant={viewOption === 'range' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-lg hover:bg-naranja hover:opacity-70 hover:text-white ${viewOption === 'range' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Intervalo</Button>
+              <div className="flex flex-col gap-4 items-start lg:flex-row lg:items-center lg:gap-2">
+                <span className="text-sm font-semibold lg:text-sm">Selecciona el Día o Intervalo:</span>
+                <Button onClick={() => setViewOption('day')} variant={viewOption === 'day' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-sm hover:bg-naranja hover:opacity-70  hover:text-white ${viewOption === 'day' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Día</Button>
+                <Button onClick={() => setViewOption('range')} variant={viewOption === 'range' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-sm hover:bg-naranja hover:opacity-70 hover:text-white ${viewOption === 'range' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Intervalo</Button>
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black"
+                  style={{ borderRadius: '8px' }}
+                />
+                <select
+                  value={selectedCourt}
+                  onChange={(e) => setSelectedCourt(e.target.value)}
+                  className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black"
+                  style={{ borderRadius: '8px' }}
+                >
+                  <option value="">Todas las canchas</option>
+                  {courts.map(court => (
+                    <option key={court.id} value={court.nro}>Cancha {court.nro}</option>
+                  ))}
+                </select>
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black"
+                  style={{ borderRadius: '8px' }}
+                >
+                  <option value="">Todos los estados</option>
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="Señada">Señada</option>
+                  <option value="Pagada">Pagada</option>
+                  <option value="Cancelada">Cancelada</option>
+                </select>
               </div>
               <div className='w-full items-center justify-center'>
                 <div className='relative'>
@@ -79,7 +143,7 @@ function VerTurnos({ selectedDate, onDateChange }) {
                         onClick={toggleCalendar}
                         className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black" style={{ borderRadius: '8px' }}
                       >
-                        {selectedDate ? selectedDate.toLocaleDateString() : <CalendarDays className='w-48' />}
+                        {selectedDate ? format(selectedDate, 'PPP', { locale: es }) : <CalendarDays className='w-48' />}
                       </button>
 
                       {isOpen && (
@@ -94,7 +158,7 @@ function VerTurnos({ selectedDate, onDateChange }) {
                         onClick={toggleCalendar}
                         className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black" style={{ borderRadius: '8px' }}
                       >
-                        {startDate && endDate ? `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}` : 'Seleccionar Intervalo'}
+                        {startDate && endDate ? `${format(startDate, 'PPP', { locale: es })} - ${format(endDate, 'PPP', { locale: es })}` : 'Seleccionar Intervalo'}
                       </button>
 
                       {isOpen && (
@@ -110,13 +174,13 @@ function VerTurnos({ selectedDate, onDateChange }) {
                   )}
                 </div>
 
-                {Object.keys(groupedBookings)
+                {Object.keys(filteredBookings)
                   .sort((a, b) => new Date(a) - new Date(b)) // Ordenar las fechas de menor a mayor
                   .map(date => (
                     <div key={date} className='pt-6'>
-                      <h1 className='text-lg font-bold pb-3 lg:text-xl'>{new Date(date).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h1>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center items-center">
-                        {groupedBookings[date].map((booking) => (
+                      <h1 className='text-lg font-bold pb-3'>{format(parseISO(date), 'EEEE, d MMMM yyyy', { locale: es })}</h1>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-center items-center">
+                        {filteredBookings[date].map((booking) => (
                           <div
                             key={booking.id}
                             className="bg-white rounded-lg shadow-sm p-4 space-y-3 "

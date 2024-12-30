@@ -52,19 +52,20 @@ export default function HorariosReserva() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="flex flex-col min-h-screen bg-gray-100">
       <Header />
-      <main className="max-w-2xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-2">Reservas</h1>
-        <p className="text-lg font-medium mb-4">{fechaFormateada}</p>
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+      <main className="grow max-w-2xl lg:max-w-full lg:mx-0 mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-2 lg:text-4xl">Reservas</h1>
+        <p className="text-lg font-medium mb-4 lg:text-2xl">{fechaFormateada}</p>
+        <div className="flex justify-center"> 
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6 lg:w-1/2">
           {availability.map((slot, index) => (
             <div key={index} className="flex items-center justify-between p-4">
               <div className="flex items-center gap-4">
-                <span className="text-xs font-medium">{slot.time}</span>
+                <span className="text-xs font-medium lg:text-xl">{slot.time}</span>
                 <span
                   style={{ borderRadius: "6px" }}
-                  className={`items-center w-16 text-center text-xs ${
+                  className={`items-center w-16 text-center text-xs lg:text-xl ${
                     slot.status === "libre"
                       ? "bg-green-500 text-white"
                       : "bg-gray-400 text-white"
@@ -76,7 +77,7 @@ export default function HorariosReserva() {
               <button
                 onClick={() => handleReserve(slot.time)}
                 disabled={slot.status === "ocupado"}
-                className="text-sm w-16 p-1 bg-naranja items-center hover:bg-[#FF5533]/90 text-white"
+                className="text-sm lg:text-xl w-fit p-1 lg:p-2 bg-naranja items-center hover:bg-[#FF5533]/90 text-white"
                 style={{ borderRadius: "4px" }}
               >
                 Reservar
@@ -84,12 +85,12 @@ export default function HorariosReserva() {
             </div>
           ))}
         </div>
-
+        </div>
         <Button
           variant="outline"
           style={{ borderRadius: "6px" }}
           onClick={() => navigate(-1)}
-          className="bg-black text-white hover:bg-black/90"
+          className="bg-black text-white hover:bg-black/90 lg:mx-auto lg:text-xl font-normal"
         >
           Atrás
         </Button>

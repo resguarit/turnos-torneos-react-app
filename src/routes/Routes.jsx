@@ -8,6 +8,10 @@ import Calendario from "@/views/Admin/Calendario";
 import VerTurnos from "@/views/Admin/VerTurnos";
 import HorariosReserva from "@/views/Admin/HorariosReserva";
 import CanchasReserva from "@/views/Admin/CanchasReserva";
+import Partidos from "@/views/Admin/Partidos";
+import VerPartidos from "@/views/Admin/VerPartidos";
+import CargaPartido from "@/views/Admin/CargaPartido";
+
 const AppRoutes = () => {
   return (
     <Router>
@@ -20,6 +24,9 @@ const AppRoutes = () => {
         <Route path="/ver-turnos" element={<VerTurnos />} />
         <Route path="/horariosReserva/:date" element={<HorariosReserva />} />
         <Route path="/canchas-reserva" element={<CanchasReserva />} />
+        <Route path="/partidos" element={<Partidos />} />
+        <Route path="/ver-partidos" element={<VerPartidos />} />
+        <Route path="/cargar-partido" element={<CargaPartido />} />
       </Routes>
     </Router>
   );

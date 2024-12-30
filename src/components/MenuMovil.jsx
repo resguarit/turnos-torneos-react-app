@@ -68,6 +68,7 @@ const MenuMovil = ({ setMenuOpen }) => {
           {/* Enlaces de Navegación */}
           <div className="flex flex-col items-start px-8 py-8 space-y-6 text-green font-raleway">
             {[
+              { label: "Inicio", path: "/" },
               { label: "Torneos", path: "/torneos-admi" },
               { label: "Reservas", path: "/calendario-admi" },
               { label: "Partidos", path: "/partidos" },

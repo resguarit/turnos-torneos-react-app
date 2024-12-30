@@ -54,7 +54,7 @@ export default function CanchasReserva() {
           <div className="bg-white text-black z-20 p-4 rounded-xl  shadow-lg w-11/12 md:w-1/3">
           <div className="flex justify-between">
               <h2 className="text-xl font-bold mb-4 lg:text-2xl">Confirmar Reserva  </h2>
-              <X onClick={onCancel}/>
+              <X onClick={onCancel} className='cursor-pointer'/>
               </div>
               <p className="mb-6 lg:text-xl">¿Desea confirmar?</p>
               <div className="flex justify-center">
@@ -114,11 +114,12 @@ export default function CanchasReserva() {
           </div>
         </div>
 
-        <div className="flex gap-4 lg:text-xl justify-between  mx-96">
+        <div className="flex w-full lg:text-xl justify-between lg:mt-28">
           <button
-            style={{ borderRadius: '6px' }}
+            variant="outline"
+            style={{ borderRadius: "6px" }}
             onClick={() => navigate(-1)}
-            className="bg-black p-2 w-1/2 lg:w-fit lg:p-3 text-white hover:bg-black/90"
+            className="bg-black text-white hover:bg-black/90 lg:text-xl font-normal w-1/2 lg:w-fit lg:p-3"
           >
             Atrás
           </button>
@@ -126,7 +127,7 @@ export default function CanchasReserva() {
             style={{ borderRadius: '6px' }}
             onClick={handleSubmit}
             disabled={!selectedCourt}
-            className="bg-black p-2 w-1/2 lg:w-fit text-white hover:bg-black/90"
+            className="bg-black p-2 w-1/2 text-white hover:bg-black/90 lg:w-fit lg:p-3"
           >
             Confirmar
           </button>

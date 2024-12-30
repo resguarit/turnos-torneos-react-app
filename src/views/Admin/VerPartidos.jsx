@@ -51,15 +51,15 @@ export default function MatchesPage() {
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
-      <main className="max-w-7xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">Partidos</h1>
+      <main className="max-w-7xl lg:max-w-full grow mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6 lg:text-4xl">Partidos</h1>
         
         <div className="space-y-4 mb-6">
         <div>
-            <label className="block font-medium mb-1" >
+            <label className="block font-medium mb-1 lg:text-xl" >
                 Selecciona el Torneo:
             </label>
-            <select className="w-full border border-gray-300 p-1" style={{borderRadius: '6px'}}>
+            <select className="w-full border lg:w-1/2 border-gray-300 p-1 lg:text-xl" style={{borderRadius: '6px'}}>
                 <option value="" disabled selected>
                 Seleccionar torneo...
                 </option>
@@ -69,10 +69,10 @@ export default function MatchesPage() {
             </select>
         </div>
         <div>
-            <label className="block  font-medium mb-1">
+            <label className="block  font-medium mb-1 lg:text-xl">
                 Selecciona la Zona:
             </label>
-            <select className="w-full border border-gray-300  p-1" style={{borderRadius: '6px'}}>
+            <select className="w-full border border-gray-300 lg:text-xl lg:w-1/2 p-1" style={{borderRadius: '6px'}}>
                 <option value="" disabled selected>
                 Seleccionar zona...
                 </option>
@@ -88,7 +88,7 @@ export default function MatchesPage() {
             <button className="p-2 hover:bg-gray-100 rounded-full">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <h2 className="font-medium">Fecha 1 - 18/12/2024</h2>
+            <h2 className="font-medium lg:text-xl">Fecha 1 - 18/12/2024</h2>
             <button className="p-2 hover:bg-gray-100 rounded-full">
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -96,7 +96,7 @@ export default function MatchesPage() {
 
           <table className="w-full">
             <thead>
-              <tr className="border-b bg-naranja text-white"> 
+              <tr className="border-b bg-naranja text-white lg:text-xl"> 
                 <th className="px-4 py-2 text-center font-medium">Resultado</th>
                 <th className="px-4 py-2 text-center font-medium">Horario</th>
                 <th className="px-4 py-2 text-center font-medium">Cancha</th>
@@ -109,7 +109,7 @@ export default function MatchesPage() {
               {matches.map((match, index) => (
                 <tr key={index} className="border-b">
                   <td className="px-4 py-2 text-center">
-                    <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center lg:text-lg">
                         <span>{match.team1}</span>
                         <span>{match.score1} - {match.score2}</span>
                         <span>{match.team2}</span>

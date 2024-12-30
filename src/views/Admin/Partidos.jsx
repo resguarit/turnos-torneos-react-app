@@ -50,14 +50,14 @@ function Partidos() {
   return (
     <div className="min-h-screen flex flex-col font-inter">
     <Header></Header>
-    <div className="p-6">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">Partidos</h1>
-        <h2 className="font-semibold text-sm mb-4">Últimos Partidos:</h2>
+    <div className="p-6 grow">
+      <div className="max-w-7xl lg:max-w-full mx-auto">
+        <h1 className="text-2xl font-bold mb-4 lg:text-4xl">Partidos</h1>
+        <h2 className="font-semibold text-sm mb-4 lg:text-2xl">Últimos Partidos:</h2>
         
-        <div className="bg-white shadow overflow-x-auto mb-1" style={{ borderRadius: '8px' }}>
+        <div className="bg-white shadow overflow-x-auto mb-1 lg:text-xl" style={{ borderRadius: '8px' }}>
           <table className="w-full ">
-            <thead className="bg-naranja text-white ">
+            <thead className="bg-naranja text-white  ">
               <tr >
                 <th className="px-10 py-2 text-center font-medium" >Resultado</th>
                 <th className="px-4 py-2 text-center font-medium">Horario</th>
@@ -68,9 +68,9 @@ function Partidos() {
             </thead>
             <tbody>
               {recentMatches.map((match, index) => (
-                <tr key={index} className="border-b text-sm">
+                <tr key={index} className="border-b text-sm lg:text-lg">
                   <td className="px-4 py-2 text-center">
-                    <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center lg:flex-row lg:justify-around">
                         <span>{match.team1}</span>
                         <span>{match.score1} - {match.score2}</span>
                         <span>{match.team2}</span>
@@ -87,10 +87,10 @@ function Partidos() {
         </div>
 
         <div className="flex flex-col items-start space-y-5">
-          <Button onClick={handleVerMasClick} variant="link" className="text-gray-600">
+          <Button onClick={handleVerMasClick} variant="link" className="text-gray-600 lg:text-base">
             Ver más →
           </Button>
-          <button onClick={handleCargarClick} className="bg-black text-white hover:bg-black/90 text-sm p-2" style={{borderRadius: '8px'}}>
+          <button onClick={handleCargarClick} className="bg-black text-white hover:bg-black/90 text-sm p-2 lg:text-lg" style={{borderRadius: '8px'}}>
             Cargar Partido +
           </button>
         </div>

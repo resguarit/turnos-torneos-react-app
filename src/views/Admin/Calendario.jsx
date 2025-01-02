@@ -103,7 +103,7 @@ export default function Calendar() {
     <div className="min-h-screen bg-gray-100 flex flex-col font-inter">
     <Header />
     <div className="w-full p-6 grow font-inter">
-      <div className=" rounded-lg shadow ">
+      <div className=" rounded-lg  ">
         <div className="flex  justify-between items-center mb-6">
           <h2 className="text-2xl font-bold lg:text-4xl">Reservas</h2>
           <button onClick={handleTurnosClick} className=" text-sm lg:text-xl lg:items-center lg:py-2 lg:h-fit tracking-wide h-8 px-2 items-center bg-black text-white hover:bg-black/90" style={{borderRadius: '6px'}}>
@@ -111,14 +111,14 @@ export default function Calendar() {
           </button>
         </div>
 
-        <div className="flex justify-between items-center mb-4 lg:px-6">
+        <div className="flex justify-center gap-8 items-center mb-4 lg:px-6">
           <button 
             onClick={() => navigateMonth(-1)}
             className="p-2 hover:bg-gray-100 rounded-full"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <h3 className="text-xl font-medium">
+          <h3 className="text-xl lg:text-3xl font-medium">
             {new Date(currentYear, currentMonth).toLocaleString('es', { month: 'long', year: 'numeric' })}
           </h3>
           <button 

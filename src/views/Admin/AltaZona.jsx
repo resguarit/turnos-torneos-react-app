@@ -7,6 +7,7 @@ import { Liga } from '@/components/Liga'
 import { Eliminacion } from '@/components/Eliminacion'
 import { Grupos } from '../../components/Grupos';
 import { generarTorneo } from '@/functions/sortearFechas'
+import BackButton from '@/components/BackButton';
 
 
 const teams = [
@@ -45,6 +46,7 @@ export default function AltaZona() {
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
       <main className="flex-1 p-6  bg-gray-100">
+        <BackButton />
         <div className="max-w-7xl lg:max-w-full mx-auto">
           <div className="flex flex-col justify-between items-start mb-6">
             <h1 className="text-2xl lg:text-4xl font-bold">{zona[0].name}</h1>

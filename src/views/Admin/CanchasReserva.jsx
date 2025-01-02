@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Header } from "@/components/header";
 import { Footer } from '@/components/Footer';
 import { X } from 'lucide-react';
+import BackButton from '@/components/BackButton';
 
 const courtsData = [
   { id: 1, name: "Cancha 1", schedules: ["17:00 - 18:00", "19:00 - 20:00"] },
@@ -74,6 +75,7 @@ export default function CanchasReserva() {
     <div className="flex flex-col min-h-screen bg-gray-100">
       <Header />
       <main className="grow max-w-2xl lg:max-w-full mx-auto p-6">
+        <BackButton />
         <h1 className="text-2xl font-bold mb-2 lg:text-4xl">Reservas</h1>
         <h2 className="text-xl font-semibold mb-2 lg:text-2xl">{fechaFormateada}</h2>
         <h2 className="text-md text-gray-600 font-semibold mb-6 lg:text-xl">{selectedTime}</h2>
@@ -115,14 +117,7 @@ export default function CanchasReserva() {
         </div>
 
         <div className="flex w-full lg:text-xl justify-between lg:mt-28">
-          <button
-            variant="outline"
-            style={{ borderRadius: "6px" }}
-            onClick={() => navigate(-1)}
-            className="bg-black text-white hover:bg-black/90 lg:text-xl font-normal w-1/2 lg:w-fit lg:p-3"
-          >
-            Atrás
-          </button>
+          
           <button
             style={{ borderRadius: '6px' }}
             onClick={handleSubmit}

@@ -95,26 +95,26 @@ function VerTurnos() {
     <>
       <div className="min-h-screen flex flex-col font-inter">
         <Header />
-        <main className="flex-1 p-6 bg-[#dddcdc]">
+        <main className="flex-1 p-6 bg-gray-100">
           <div className="flex justify-between mb-8">
             <div className="space-y-4">
               <h1 className="text-2xl font-bold lg:text-4xl">Turnos</h1>
               <div className="flex flex-col gap-4 items-start lg:flex-row lg:items-center lg:gap-2">
-                <span className="text-sm font-semibold lg:text-sm">Selecciona el Día o Intervalo:</span>
-                <Button onClick={() => setViewOption('day')} variant={viewOption === 'day' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-sm hover:bg-naranja hover:opacity-70  hover:text-white ${viewOption === 'day' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Día</Button>
-                <Button onClick={() => setViewOption('range')} variant={viewOption === 'range' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-sm hover:bg-naranja hover:opacity-70 hover:text-white ${viewOption === 'range' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Intervalo</Button>
+                <span className="text-sm font-semibold lg:text-xl">Selecciona el Día o Intervalo:</span>
+                <Button onClick={() => setViewOption('day')} variant={viewOption === 'day' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-lg hover:bg-naranja hover:opacity-70  hover:text-white ${viewOption === 'day' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Día</Button>
+                <Button onClick={() => setViewOption('range')} variant={viewOption === 'range' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-lg hover:bg-naranja hover:opacity-70 hover:text-white ${viewOption === 'range' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Intervalo</Button>
                 <input
                   type="text"
                   placeholder="Buscar por nombre"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black"
+                  className="px-4 py-2 bg-white rounded-lg text-sm lg:text-lg font-medium text-black"
                   style={{ borderRadius: '8px' }}
                 />
                 <select
                   value={selectedCourt}
                   onChange={(e) => setSelectedCourt(e.target.value)}
-                  className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black"
+                  className="px-4 py-3 bg-white rounded-lg text-sm lg:text-lg font-medium text-black"
                   style={{ borderRadius: '8px' }}
                 >
                   <option value="">Todas las canchas</option>
@@ -125,7 +125,7 @@ function VerTurnos() {
                 <select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black"
+                  className="px-4 py-3 bg-white rounded-lg text-sm lg:text-lg font-medium text-black"
                   style={{ borderRadius: '8px' }}
                 >
                   <option value="">Todos los estados</option>
@@ -141,7 +141,7 @@ function VerTurnos() {
                     <>
                       <button
                         onClick={toggleCalendar}
-                        className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black" style={{ borderRadius: '8px' }}
+                        className="px-4 py-2 bg-white rounded-lg text-sm lg:text-lg font-medium text-black" style={{ borderRadius: '8px' }}
                       >
                         {selectedDate ? format(selectedDate, 'PPP', { locale: es }) : <CalendarDays className='w-48' />}
                       </button>
@@ -178,7 +178,7 @@ function VerTurnos() {
                   .sort((a, b) => new Date(a) - new Date(b)) // Ordenar las fechas de menor a mayor
                   .map(date => (
                     <div key={date} className='pt-6'>
-                      <h1 className='text-lg font-bold pb-3'>{format(parseISO(date), 'EEEE, d MMMM yyyy', { locale: es })}</h1>
+                      <h1 className='text-lg lg:text-xl font-bold pb-3'>{format(parseISO(date), 'EEEE, d MMMM yyyy', { locale: es })}</h1>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-center items-center">
                         {filteredBookings[date].map((booking) => (
                           <div

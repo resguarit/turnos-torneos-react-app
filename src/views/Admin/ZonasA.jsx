@@ -3,6 +3,7 @@ import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useNavigate } from 'react-router'
+import BackButton from '@/components/BackButton'
 
 const zonas = [
   { id: 1, name: 'LIGA A 2024', format: 'Liga', diaProximo: 'Domingo 21', horarioProximo: '21:00hs', count: 12 },
@@ -23,6 +24,7 @@ export default function ZonasA() {
     <div className="min-h-screen flex flex-col font-inter ">
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
+        <BackButton />
         <div className="max-w-7xl lg:max-w-full mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl lg:text-4xl font-bold">Zonas</h1>

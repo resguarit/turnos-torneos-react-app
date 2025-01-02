@@ -13,6 +13,8 @@ import VerPartidos from "@/views/Admin/VerPartidos";
 import CargaPartido from "@/views/Admin/CargaPartido";
 import Reglamento from "@/views/Admin/Reglamento";
 import Premios from "@/views/Admin/Premios";
+import PerfilUsuario from "@/views/General/PerfilUsuario";
+import Login from "@/views/General/Login";
 
 const AppRoutes = () => {
   return (
@@ -31,6 +33,8 @@ const AppRoutes = () => {
         <Route path="/cargar-partido" element={<CargaPartido />} />
         <Route path="/reglamento" element={<Reglamento />} />
         <Route path="/premios" element={<Premios />} />
+        <Route path="/perfil-usuario" element={<PerfilUsuario />} />
+        <Route path="/login" element={<Login />} />
       </Routes>
     </Router>
   );

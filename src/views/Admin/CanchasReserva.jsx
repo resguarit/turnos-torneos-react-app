@@ -20,10 +20,31 @@ export default function CanchasReserva() {
   const location = useLocation();
   const [selectedCourt, setSelectedCourt] = useState(null);
   const [courts, setCourts] = useState([]);
-
+  const [formattedTime, setFormattedTime] = useState(null);
+  
   const queryParams = new URLSearchParams(location.search);
   const selectedTime = queryParams.get("time");
   const selectedDate = queryParams.get("date");
+
+  useEffect(() => {
+    const fetchHorario = async () => {
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/api/horarios/${selectedTime}`);
+        const data = await response.json();
+        if (data.status === 200) {
+          const { horaInicio, horaFin } = data.horario;
+          const formattedTime = `${horaInicio.slice(0, 5)} - ${horaFin.slice(0, 5)}`;
+          setFormattedTime(formattedTime);
+        }
+      } catch (error) {
+        console.error("Error fetching horario:", error);
+      }
+    };
+
+    if (selectedTime) {
+      fetchHorario();
+    }
+  }, [selectedTime]);
 
   const fecha = new Date(`${selectedDate}T00:00:00`);
   const dia = fecha.getDay();
@@ -78,7 +99,7 @@ export default function CanchasReserva() {
         <BackButton />
         <h1 className="text-2xl font-bold mb-2 lg:text-4xl">Reservas</h1>
         <h2 className="text-xl font-semibold mb-2 lg:text-2xl">{fechaFormateada}</h2>
-        <h2 className="text-md text-gray-600 font-semibold mb-6 lg:text-xl">{selectedTime}</h2>
+        <h2 className="text-md text-gray-600 font-semibold mb-6 lg:text-xl">{formattedTime}</h2>
 
         <div className="mb-8">
           <h4 className="text-lg font-medium mb-4 lg:text-2xl">Selecciona la Cancha:</h4>

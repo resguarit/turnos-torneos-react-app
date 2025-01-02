@@ -50,7 +50,7 @@ function Partidos() {
   return (
     <div className="min-h-screen flex flex-col font-inter">
     <Header></Header>
-    <div className="p-6 grow">
+    <div className="p-6 grow bg-gray-100">
       <div className="max-w-7xl lg:max-w-full mx-auto">
         <h1 className="text-2xl font-bold mb-4 lg:text-4xl">Partidos</h1>
         <h2 className="font-semibold text-sm mb-4 lg:text-2xl">Últimos Partidos:</h2>

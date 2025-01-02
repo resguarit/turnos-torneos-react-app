@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 
 export default function HorariosReserva() {
   const { date } = useParams(); // Obtener la fecha de la URL
@@ -39,6 +40,7 @@ export default function HorariosReserva() {
     <div className="flex flex-col min-h-screen bg-gray-100">
       <Header />
       <main className="grow max-w-2xl lg:max-w-full lg:mx-0 mx-auto p-6">
+        <BackButton />
         <h1 className="text-2xl font-bold mb-2 lg:text-4xl">Reservas</h1>
         <p className="text-lg font-medium mb-4 lg:text-2xl">{fechaFormateada}</p>
         <div className="flex justify-center"> 
@@ -71,14 +73,6 @@ export default function HorariosReserva() {
             ))}
           </div>
         </div>
-        <Button
-          variant="outline"
-          style={{ borderRadius: "6px" }}
-          onClick={() => navigate(-1)}
-          className="bg-black text-white hover:bg-black/90 lg:mx-auto lg:text-xl font-normal"
-        >
-          Atrás
-        </Button>
       </main>
       <Footer />
     </div>

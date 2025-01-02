@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Users2, PenSquare } from 'lucide-react'
 import { JugadorModal } from '@/components/JugadorModal'
 import { Footer } from '@/components/Footer'
+import BackButton from '@/components/BackButton'
 
 const matches = [
   {
@@ -49,14 +50,15 @@ export default function MatchesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen flex flex-col bg-gray-100 font-inter">
       <Header />
-      <main className="max-w-7xl lg:max-w-full grow mx-auto p-6">
+      <main className="max-w-7xl lg:mx-0 lg:max-w-full grow mx-auto p-6">
+        <BackButton />
         <h1 className="text-2xl font-bold mb-6 lg:text-4xl">Partidos</h1>
         
         <div className="space-y-4 mb-6">
         <div>
-            <label className="block font-medium mb-1 lg:text-xl" >
+            <label className="block font-semibold mb-1 lg:text-xl" >
                 Selecciona el Torneo:
             </label>
             <select className="w-full border lg:w-1/2 border-gray-300 p-1 lg:text-xl" style={{borderRadius: '6px'}}>
@@ -69,7 +71,7 @@ export default function MatchesPage() {
             </select>
         </div>
         <div>
-            <label className="block  font-medium mb-1 lg:text-xl">
+            <label className="block  font-semibold mb-1 lg:text-xl">
                 Selecciona la Zona:
             </label>
             <select className="w-full border border-gray-300 lg:text-xl lg:w-1/2 p-1" style={{borderRadius: '6px'}}>

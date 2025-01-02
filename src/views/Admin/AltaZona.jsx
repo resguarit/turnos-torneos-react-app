@@ -44,7 +44,7 @@ export default function AltaZona() {
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
-      <main className="flex-1 p-6 lg:p-10 bg-[#dddcdc]">
+      <main className="flex-1 p-6  bg-gray-100">
         <div className="max-w-7xl lg:max-w-full mx-auto">
           <div className="flex flex-col justify-between items-start mb-6">
             <h1 className="text-2xl lg:text-4xl font-bold">{zona[0].name}</h1>

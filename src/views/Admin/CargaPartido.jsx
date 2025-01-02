@@ -86,18 +86,18 @@ export default function CargaPartido() {
 
 
   return (
-    <div className="min-h-screen flex flex-col justify-start bg-gray-100">
+    <div className="min-h-screen flex flex-col justify-start bg-gray-100 font-inter">
       <Header />
       <main className="max-w-7xl lg:max-w-full p-6 grow">
         <h1 className="text-2xl font-bold mb-6 lg:text-4xl">Partidos</h1>
 
         <div className="space-y-4 mb-6">
           <div>
-            <label className="block font-medium mb-1 lg:text-xl">
+            <label className="block font-semibold mb-1 lg:text-2xl">
               Selecciona el Torneo:
             </label>
             <select
-              className="w-full border border-gray-300 p-1 lg:text-xl"
+              className="w-full border border-gray-300 p-1 lg:text-2xl"
               style={{ borderRadius: '6px' }}
               value={selectedTournament}
               onChange={(e) => setSelectedTournament(e.target.value)}
@@ -111,11 +111,11 @@ export default function CargaPartido() {
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-1 lg:text-xl">
+            <label className="block font-semibold mb-1 lg:text-2xl">
               Selecciona la Zona:
             </label>
             <select
-              className="w-full border border-gray-300 p-1 lg:text-xl"
+              className="w-full border border-gray-300 p-1 lg:text-2xl"
               style={{ borderRadius: '6px' }}
               value={selectedZone}
               onChange={(e) => setSelectedZone(e.target.value)}

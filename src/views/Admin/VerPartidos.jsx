@@ -49,9 +49,9 @@ export default function MatchesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen flex flex-col bg-gray-100 font-inter">
       <Header />
-      <main className="max-w-7xl lg:max-w-full grow mx-auto p-6">
+      <main className="max-w-7xl lg:mx-0 lg:max-w-full grow mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6 lg:text-4xl">Partidos</h1>
         
         <div className="space-y-4 mb-6">

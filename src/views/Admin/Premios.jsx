@@ -34,11 +34,11 @@ export default function Premios() {
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
-      <main className="flex-1 bg-gray-100 py-12">
-        <div className="max-w-6xl mx-auto px-4">
-          <h1 className="text-3xl font-bold text-center mb-12">Premios</h1>
+      <main className="flex-1 bg-gray-100 p-6">
+        <div className="max-w-6xl lg:max-w-full mx-auto">
+          <h1 className="text-3xl font-bold  mb-12 lg:text-4xl">Premios</h1>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="lg:mx-60 grid grid-cols-1 md:grid-cols-2 gap-6">
             {prizes.map((prize, index) => (
               <div
                 key={index}

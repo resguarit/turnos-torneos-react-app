@@ -86,7 +86,7 @@ export default function CanchasReserva() {
         </div>
         <p className="mb-6 lg:text-xl">Fecha: {fechaFormateada}</p>
         <p className="mb-6 lg:text-xl">Horario: {formattedTime}</p>
-        <p className="mb-6 lg:text-xl">Cancha: {selectedCourt ? selectedCourt.nombre : "No seleccionada"}</p>
+        <p className="mb-6 lg:text-xl">Cancha: {selectedCourt ? selectedCourt.nro : "No seleccionada"}</p>
         <div className="flex justify-center">
           <button
             onClick={onConfirm}

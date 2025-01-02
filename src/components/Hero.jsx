@@ -37,7 +37,7 @@ function Hero(){
                     </h2>
                     <button
                         onClick={handleReservarClick}
-                        className="bg-naranja rounded-xl text-white p-2 font-inter font-medium text-xs md:text-sm lg:text-lg tracking-wide w-full md:w-1/2"
+                        className="bg-naranja rounded-xl text-white p-2 font-inter font-medium text-xs md:text-sm lg:text-lg tracking-wide w-full md:w-1/3"
                     >
                         QUIERO RESERVAR UN TURNO
                     </button>

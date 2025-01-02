@@ -10,6 +10,7 @@ import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css'; 
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import BackButton from '@/components/BackButton'
 
 function VerTurnos() {
   const [isOpen, setIsOpen] = useState(false);
@@ -96,6 +97,7 @@ function VerTurnos() {
       <div className="min-h-screen flex flex-col font-inter">
         <Header />
         <main className="flex-1 p-6 bg-gray-100">
+          <BackButton />
           <div className="flex justify-between mb-8">
             <div className="space-y-4">
               <h1 className="text-2xl font-bold lg:text-4xl">Turnos</h1>

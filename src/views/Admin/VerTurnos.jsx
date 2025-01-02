@@ -3,6 +3,7 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { CalendarDays } from 'lucide-react'
 import { Trash2 } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import { Phone } from 'lucide-react'
 import { PenSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'; 
@@ -10,8 +11,10 @@ import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css'; 
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useNavigate } from 'react-router-dom';
 
 function VerTurnos() {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [bookings, setBookings] = useState([]);
   const [groupedBookings, setGroupedBookings] = useState({});
@@ -23,6 +26,8 @@ function VerTurnos() {
   const [selectedCourt, setSelectedCourt] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [courts, setCourts] = useState([]);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     let url = 'http://127.0.0.1:8000/api/reservas';
@@ -78,6 +83,24 @@ function VerTurnos() {
     }
   };
 
+  const handleNavigationListado = () => {
+    navigate('/ver-turnos/listado');
+  };
+    
+  const handleVerTurno = (booking) => {
+    setSelectedBooking(booking);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedBooking(null);
+  };
+
+  const handleStatusChange = (e) => {
+    setSelectedBooking({ ...selectedBooking, estado: e.target.value });
+  };
+
   const filteredBookings = Object.keys(groupedBookings).reduce((acc, date) => {
     const filtered = groupedBookings[date].filter(booking => {
       const matchesSearch = booking.usuario.nombre.toLowerCase().includes(searchTerm.toLowerCase());
@@ -96,9 +119,10 @@ function VerTurnos() {
       <div className="min-h-screen flex flex-col font-inter">
         <Header />
         <main className="flex-1 p-6 bg-[#dddcdc]">
-          <div className="flex justify-between mb-8">
+          <div className="mb-8">
             <div className="space-y-4">
               <h1 className="text-2xl font-bold lg:text-4xl">Turnos</h1>
+              <div className='flex justify-between'>
               <div className="flex flex-col gap-4 items-start lg:flex-row lg:items-center lg:gap-2">
                 <span className="text-sm font-semibold lg:text-sm">Selecciona el Día o Intervalo:</span>
                 <Button onClick={() => setViewOption('day')} variant={viewOption === 'day' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-sm hover:bg-naranja hover:opacity-70  hover:text-white ${viewOption === 'day' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Día</Button>
@@ -135,6 +159,19 @@ function VerTurnos() {
                   <option value="Cancelada">Cancelada</option>
                 </select>
               </div>
+
+              <div className="flex gap-4 items-center">
+                <Button
+                  variant="default"
+                  onClick={handleNavigationListado}
+                  className="px-4 py-2 bg-black text-white lg:text-sm hover:bg-black"
+                  style={{ borderRadius: '8px' }}
+                >
+                  Ver Listado
+                </Button>
+              </div>
+            </div>
+
               <div className='w-full items-center justify-center'>
                 <div className='relative'>
                   {viewOption === 'day' ? (
@@ -177,7 +214,7 @@ function VerTurnos() {
                 {Object.keys(filteredBookings)
                   .sort((a, b) => new Date(a) - new Date(b)) // Ordenar las fechas de menor a mayor
                   .map(date => (
-                    <div key={date} className='pt-6'>
+                    <div key={date} className='pt-6 w-3/4'>
                       <h1 className='text-lg font-bold pb-3'>{format(parseISO(date), 'EEEE, d MMMM yyyy', { locale: es })}</h1>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-center items-center">
                         {filteredBookings[date].map((booking) => (
@@ -196,7 +233,17 @@ function VerTurnos() {
                             </div>
 
                             <div className="flex flex-wrap gap-2">
-                              <span className="text-center px-3 py-1 bg-gray-300 rounded-full text-xs lg:text-base w-3/4">
+                              <span
+                                className={`text-center px-3 py-1 rounded-full text-xs lg:text-base w-3/4 ${
+                                  booking.estado === 'Pendiente'
+                                    ? 'bg-yellow-300'
+                                    : booking.estado === 'Señada'
+                                    ? 'bg-blue-300'
+                                    : booking.estado === 'Pagada'
+                                    ? 'bg-green-300'
+                                    : 'bg-red-300'
+                                }`}
+                              >
                                 {`Estado: ${booking.estado}`}
                               </span>
                               <span className="text-center px-3 py-1 bg-gray-300 rounded-full lg:text-base text-xs w-3/4">
@@ -221,10 +268,19 @@ function VerTurnos() {
                               </button>
                               <button
                                 style={{ borderRadius: '4px' }}
+                                onClick={() => window.open(`https://api.whatsapp.com/send?phone=549${booking.usuario.telefono}`, '_blank')}
                                 size="icon"
                                 className="bg-green-500 hover:bg-green-600 text-white p-2"
                               >
                                 <Phone className="h-4 w-4 lg:h-6 lg:w-6" />
+                              </button>
+                              <button
+                                style={{ borderRadius: '4px' }}
+                                size="icon"
+                                className="bg-naranja hover:bg-[#FF5533]/90 text-white p-2"
+                                onClick={() => handleVerTurno(booking)}
+                              >
+                                <Eye className="h-4 w-4 lg:h-6 lg:w-6" />
                               </button>
                             </div>
                           </div>
@@ -238,6 +294,49 @@ function VerTurnos() {
         </main>
         <Footer />
       </div>
+
+      {isModalOpen && selectedBooking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Detalles del Turno</h2>
+              <button onClick={handleCloseModal} className="text-gray-500 hover:text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-6 w-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="space-y-4">
+              <p><strong>Nombre:</strong> {selectedBooking.usuario.nombre}</p>
+              <p><strong>Teléfono:</strong> {selectedBooking.usuario.telefono}</p>
+              <p><strong>Horario:</strong> {selectedBooking.horario.horaInicio} - {selectedBooking.horario.horaFin}</p>
+              <p><strong>Monto Total:</strong> ${selectedBooking.monto_total}</p>
+              <p><strong>Monto Seña:</strong> ${selectedBooking.monto_seña}</p>
+              <p><strong>Cancha:</strong> {selectedBooking.cancha.nro} - {selectedBooking.cancha.tipoCancha}</p>
+              <div>
+                <label htmlFor="estado" className="block font-medium">Estado:</label>
+                <select
+                  id="estado"
+                  value={selectedBooking.estado}
+                  onChange={handleStatusChange}
+                  className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black"
+                  style={{ borderRadius: '8px' }}
+                >
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="Señada">Señada</option>
+                  <option value="Pagada">Pagada</option>
+                  <option value="Cancelada">Cancelada</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end mt-4">
+              <Button onClick={handleCloseModal} className="bg-naranja text-white px-4 py-2 rounded-lg hover:bg-[#FF5533]/90">
+                Cerrar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

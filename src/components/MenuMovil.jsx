@@ -74,6 +74,7 @@ const MenuMovil = ({ setMenuOpen }) => {
               { label: "Partidos", path: "/partidos" },
               { label: "Reglamento", path: "/reglamento" },
               { label: "Premios", path: "/premios" },
+              { label: "Perfil", path: "/perfil-usuario" },
             ].map((item) => (
               <div 
                 key={item.path} 

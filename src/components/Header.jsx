@@ -1,5 +1,6 @@
 import Logo from '../assets/logo.png';
 import MenuMovil from './MenuMovil';
+import { CircleUserRound } from 'lucide-react';
 
 export function Header() {
   return (
@@ -16,6 +17,7 @@ export function Header() {
           <a href="/partidos" className="hover:opacity-80">Partidos</a>
           <a href="/reglamento" className="hover:opacity-80">Reglamento</a>
           <a href="/premios" className="hover:opacity-80">Premios</a>
+          <a href="/login" className="hover:opacity-80 flex flex-row items-center gap-2">Iniciar Sesion <CircleUserRound className='h-7 w-7' /></a>
         </div>
         </div>
         <MenuMovil />

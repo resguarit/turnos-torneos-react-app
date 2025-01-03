@@ -13,6 +13,7 @@ import VerPartidos from "@/views/Admin/VerPartidos";
 import CargaPartido from "@/views/Admin/CargaPartido";
 import Reglamento from "@/views/Admin/Reglamento";
 import Premios from "@/views/Admin/Premios";
+import VerGrilla from "@/views/Admin/VerGrilla";
 import PerfilUsuario from "@/views/General/PerfilUsuario";
 import Login from "@/views/General/Login";
 import SignUp from "@/views/General/SignUp";
@@ -27,6 +28,7 @@ const AppRoutes = () => {
         <Route path="/alta-zona" element={<AltaZona />} />
         <Route path="/calendario-admi" element={<Calendario />} />
         <Route path="/ver-turnos" element={<VerTurnos />} />
+        <Route path="/grilla-turnos" element={<VerGrilla />} />
         <Route path="/horariosReserva/:date" element={<HorariosReserva />} />
         <Route path="/canchas-reserva" element={<CanchasReserva />} />
         <Route path="/partidos" element={<Partidos />} />

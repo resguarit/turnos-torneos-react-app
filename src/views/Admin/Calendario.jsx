@@ -8,10 +8,11 @@ import api from '@/lib/axiosConfig';
 const DAYS_OF_WEEK = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 export default function Calendar() {
-  const navigate = useNavigate();
-  const [currentMonth, setCurrentMonth] = useState(11); // 0-based, 7 = August
-  const [currentYear, setCurrentYear] = useState(2024);
-  const [reservations, setReservations] = useState({});
+  const navigate = useNavigate()
+  const today = new Date()
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth())
+  const [currentYear, setCurrentYear] = useState(today.getFullYear())
+  const [reservations, setReservations] = useState({})
 
   useEffect(() => {
     api.get('/disponibilidad')

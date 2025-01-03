@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
+import api from '@/lib/axiosConfig';
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { CalendarDays } from 'lucide-react'
@@ -41,10 +42,9 @@ function VerTurnos() {
       url += `?fecha_inicio=${formattedStartDate}&fecha_fin=${formattedEndDate}`;
     }
 
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        const grouped = data.reservas.reduce((acc, booking) => {
+    api.get(url)
+      .then(response => {
+        const grouped = response.data.reservas.reduce((acc, booking) => {
           const date = booking.fecha_turno.split('T')[0];
           if (!acc[date]) {
             acc[date] = [];
@@ -58,9 +58,8 @@ function VerTurnos() {
   }, [selectedDate, startDate, endDate, viewOption]);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/canchas')
-      .then(response => response.json())
-      .then(data => setCourts(data.canchas))
+    api.get('/canchas')
+      .then(response => setCourts(response.data.canchas))
       .catch(error => console.error('Error fetching courts:', error));
   }, []);
 

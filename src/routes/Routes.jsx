@@ -16,6 +16,7 @@ import Premios from "@/views/Admin/Premios";
 import VerGrilla from "@/views/Admin/VerGrilla";
 import PerfilUsuario from "@/views/General/PerfilUsuario";
 import Login from "@/views/General/Login";
+import SignUp from "@/views/General/SignUp";
 
 const AppRoutes = () => {
   return (
@@ -37,6 +38,7 @@ const AppRoutes = () => {
         <Route path="/premios" element={<Premios />} />
         <Route path="/perfil-usuario" element={<PerfilUsuario />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
       </Routes>
     </Router>
   );

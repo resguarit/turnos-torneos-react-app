@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/Footer";
 import BackButton from "@/components/BackButton";
+import api from '@/lib/axiosConfig';
 
 export default function HorariosReserva() {
   const { date } = useParams(); // Obtener la fecha de la URL
@@ -15,10 +16,9 @@ export default function HorariosReserva() {
 
   useEffect(() => {
     // Obtener horarios y disponibilidad
-    fetch(`http://127.0.0.1:8000/api/disponibilidad/fecha?fecha=${date}`)
-      .then(response => response.json())
-      .then(data => {
-        const availabilityStatus = data.horarios.map((horario) => {
+    api.get(`/disponibilidad/fecha?fecha=${date}`)
+      .then(response => {
+        const availabilityStatus = response.data.horarios.map((horario) => {
           const timeSlot = `${horario.horaInicio.slice(0, 5)} - ${horario.horaFin.slice(0, 5)}`;
           const id = horario.id;
           return { id: id, time: timeSlot, status: horario.disponible ? "libre" : "ocupado" };

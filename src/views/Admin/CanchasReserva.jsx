@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/Footer";
 import BackButton from "@/components/BackButton";
+import api from '@/lib/axiosConfig';
 
 export default function CanchasReserva() {
   const [showModal, setShowModal] = useState(false);
@@ -29,8 +30,8 @@ export default function CanchasReserva() {
   useEffect(() => {
     const fetchHorario = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/horarios/${selectedTime}`);
-        const data = await response.json();
+        const response = await api.get(`/horarios/${selectedTime}`);
+        const data = response.data;
         if (data.status === 200) {
           const { horaInicio, horaFin } = data.horario;
           const formattedTime = `${horaInicio.slice(0, 5)} - ${horaFin.slice(0, 5)}`;
@@ -48,8 +49,8 @@ export default function CanchasReserva() {
   useEffect(() => {
     const fetchCanchas = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/disponibilidad/cancha?fecha=${selectedDate}&horario_id=${selectedTime}`);
-        const data = await response.json();
+        const response = await api.get(`/disponibilidad/cancha?fecha=${selectedDate}&horario_id=${selectedTime}`);
+        const data = response.data;
         if (data.status === 200) {
           setCourts(data.canchas);
           console.log("Las canchas son", data.canchas); 
@@ -65,12 +66,31 @@ export default function CanchasReserva() {
   const handleSubmit = e => {
     e.preventDefault();
     setShowModal(true);
+    const userId = localStorage.getItem('userId');
+    console.log("La respuesta es", selectedDate, selectedTime, selectedCourt.id, userId);
   };
 
   const confirmSubmit = async () => {
     setShowModal(false);
-    console.log("Reservando cancha:", selectedCourt);
-    // Agregar lógica para reservar la cancha
+    try {
+      const userId = localStorage.getItem('userId'); // Asume que el ID del usuario está almacenado en localStorage
+      const response = await api.post('/reservas', {
+        fecha_turno: selectedDate,
+        canchaID: selectedCourt.id,
+        horarioID: selectedTime,
+        usuarioID: userId,
+        monto_total: 100, // Reemplaza con el monto total real
+        monto_seña: 50, // Reemplaza con el monto de seña real
+        estado: 'pendiente' // Reemplaza con el estado real
+      });
+      
+      if (response.status === 201) {
+        console.log("Reserva creada correctamente:", response.data);
+        navigate('/calendario-admi'); // Redirige a una página de confirmación
+      }
+    } catch (error) {
+      console.error("Error creating reservation:", error);
+    }
   };
 
   const closeModal = () => {

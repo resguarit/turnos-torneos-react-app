@@ -15,6 +15,7 @@ import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton'
 import ModalConfirmation from '@/components/ModalConfirmation';
+import Loading from '@/components/Loading';
 
 function VerTurnos() {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ function VerTurnos() {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let url = 'http://127.0.0.1:8000/api/reservas';
@@ -54,8 +56,12 @@ function VerTurnos() {
           return acc;
         }, {});
         setGroupedBookings(grouped);
+        setLoading(false);
       })
-      .catch(error => console.error('Error fetching reservations:', error));
+      .catch(error => {
+        console.error('Error fetching reservations:', error);
+        setLoading(false); // En caso de error, establecer loading a false
+      });
   }, [selectedDate, startDate, endDate, viewOption]);
 
   useEffect(() => {
@@ -148,11 +154,16 @@ function VerTurnos() {
     }
   };
 
+  if (loading) {
+    return <Loading />;
+  }
+
   return (
     <>
       <div className="min-h-screen flex flex-col font-inter">
         <Header />
-        <main className="flex-1 p-6 bg-[#dddcdc]">
+        <main className="flex-1 p-6 bg-gray-100">
+          <BackButton />
           <div className=" mb-8">
             <div className="space-y-4">
               <h1 className="text-2xl font-bold lg:text-4xl">Turnos</h1>

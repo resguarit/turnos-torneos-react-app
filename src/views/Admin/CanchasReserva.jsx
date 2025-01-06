@@ -6,6 +6,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/Footer";
 import BackButton from "@/components/BackButton";
 import api from '@/lib/axiosConfig';
+import Loading from '@/components/Loading';
 
 export default function CanchasReserva() {
   const [showModal, setShowModal] = useState(false);
@@ -69,6 +70,10 @@ export default function CanchasReserva() {
     const userId = localStorage.getItem('userId');
     console.log("La respuesta es", selectedDate, selectedTime, selectedCourt.id, userId);
   };
+
+  if (!courts.length) {
+    return <div><Loading /></div>;
+  }
 
   const confirmSubmit = async () => {
     setShowModal(false);

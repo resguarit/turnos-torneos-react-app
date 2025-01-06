@@ -4,6 +4,7 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/Footer';
 import BackButton from '@/components/BackButton';
 import api from '@/lib/axiosConfig';
+import Loading from '@/components/Loading';
 
 function EditarTurno() {
   const { id } = useParams(); // Obtener el ID de la reserva desde la URL
@@ -85,7 +86,7 @@ function EditarTurno() {
   }
 
   if (!booking) {
-    return <div>Cargando...</div>;
+    return <div><Loading /></div>;
   }
 
   return (

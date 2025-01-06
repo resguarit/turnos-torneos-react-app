@@ -5,6 +5,22 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",],
   theme: {
   	extend: {
+		animation: {
+			wave: 'wave 1s ease-in-out infinite',
+		  },
+		  keyframes: {
+			wave: {
+			  '0%, 100%': { height: '10px' },
+			  '50%': { height: '50px' },
+			},
+		  },
+		  animationDelay: {
+			100: '0.1s',
+			200: '0.2s',
+			300: '0.3s',
+			400: '0.4s',
+			500: '0.5s',
+		  },
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px) !important',

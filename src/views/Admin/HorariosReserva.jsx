@@ -5,6 +5,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/Footer";
 import BackButton from "@/components/BackButton";
 import api from '@/lib/axiosConfig';
+import Loading from '@/components/Loading';
 
 export default function HorariosReserva() {
   const { date } = useParams(); // Obtener la fecha de la URL
@@ -35,6 +36,10 @@ export default function HorariosReserva() {
       )}`
     );
   };
+
+  if (!availability.length) {
+    return <div><Loading /></div>;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">

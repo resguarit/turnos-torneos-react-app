@@ -74,7 +74,7 @@ export default function CanchasReserva() {
     setShowModal(false);
     try {
       const userId = localStorage.getItem('userId'); // Asume que el ID del usuario está almacenado en localStorage
-      const response = await api.post('/reservas', {
+      const response = await api.post('/reservas/turnounico', {
         fecha_turno: selectedDate,
         canchaID: selectedCourt.id,
         horarioID: selectedTime,

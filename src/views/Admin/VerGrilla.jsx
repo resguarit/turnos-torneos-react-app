@@ -26,6 +26,59 @@ export default function VerGrilla() {
     "cancha 4-16": "turnos",
   };
 
+  // const reservations2 = {
+  //   "timeSlots": [
+  //     "14",
+  //     "15",
+  //     "16",
+  //   ],
+  //   "canchas": [
+  //     "cancha 1",
+  //     "cancha 2",
+  //     "cancha 3",
+  //     "cancha 4",
+  //   ],
+  //   "14": {
+  //     "cancha 1": {
+  //       "id": 1,
+  //       "usuario": {
+  //         "usuarioID": 1,
+  //         "nombre": "Mariano Salas",
+  //         "telefono": "2215607115"
+  //       },
+  //       "monto_total": "100.00",
+  //       "monto_seña": "50.00",
+  //       "estado": "pendiente",
+  //       "tipo": "turno"
+  //     }
+  //   },
+  //   "17": {
+  //     "cancha 1": {
+  //       "id": 1,
+  //     "usuario": {
+  //       "usuarioID": 1,
+  //       "nombre": "Mariano Salas",
+  //       "telefono": "2215607115"
+  //     },
+  //     "monto_total": "100.00",
+  //     "monto_seña": "50.00",
+  //     "estado": "pendiente"
+  //     }
+  //   },
+  //     "cancha 2": {
+  //       "id": 2,
+  //       "usuario": {
+  //         "usuarioID": 2,
+  //         "nombre": "Juan Perez",
+  //         "telefono": "2215607115"
+  //       },
+  //       "monto_total": "100.00",
+  //       "monto_seña": "50.00",
+  //       "estado": "pendiente"
+  //     }
+  //   },
+  // }
+
   const exportToPDF = () => {
     const input = document.getElementById('grilla-table');
     html2canvas(input, { scale: 2 }).then((canvas) => {

@@ -20,7 +20,7 @@ export default function HorariosReserva() {
     api.get(`/disponibilidad/fecha?fecha=${date}`)
       .then(response => {
         const availabilityStatus = response.data.horarios.map((horario) => {
-          const timeSlot = `${horario.horaInicio.slice(0, 5)} - ${horario.horaFin.slice(0, 5)}`;
+          const timeSlot = `${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`;
           const id = horario.id;
           return { id: id, time: timeSlot, status: horario.disponible ? "libre" : "ocupado" };
         });

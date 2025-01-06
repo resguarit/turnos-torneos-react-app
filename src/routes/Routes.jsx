@@ -17,6 +17,7 @@ import VerGrilla from "@/views/Admin/VerGrilla";
 import PerfilUsuario from "@/views/General/PerfilUsuario";
 import Login from "@/views/General/Login";
 import SignUp from "@/views/General/SignUp";
+import EditarTurno from "@/views/Admin/EditarTurno";
 
 const AppRoutes = () => {
   return (
@@ -39,6 +40,7 @@ const AppRoutes = () => {
         <Route path="/perfil-usuario" element={<PerfilUsuario />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/editar-turno/:id" element={<EditarTurno />} />
       </Routes>
     </Router>
   );

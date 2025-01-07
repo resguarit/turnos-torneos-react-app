@@ -10,11 +10,21 @@ function PerfilUsuario() {
   const [userData, setUserData] = useState({
     name: '',
     email: '',
-    telefono: '',
+    telefono: ''
+  });
+
+  const [originalUserData, setOriginalUserData] = useState({
+    name: '',
+    email: '',
+    telefono: ''
+  });
+
+  const [userPassword, setUserPassword] = useState({
     password: '',
     current_password: '',
     password_confirmation: ''
   });
+
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -24,10 +34,14 @@ function PerfilUsuario() {
         const response = await api.get(`/usuarios/${userId}`);
         const user = response.data.user;
         setUserData({
-          ...userData,
           name: user.name,
           email: user.email,
-          telefono: user.telefono
+          telefono: user.telefono,
+        });
+        setOriginalUserData({
+          name: user.name,
+          email: user.email,
+          telefono: user.telefono,
         });
       } catch (error) {
         setError(error.message);
@@ -44,14 +58,45 @@ function PerfilUsuario() {
     });
   };
 
+  const handlePasswordChange = (e) => {
+    setUserPassword({
+      ...userPassword,
+      [e.target.name]: e.target.value
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const userId = localStorage.getItem('user_id');
+    const updatedData = {};
+
+    // Comparar los valores actuales con los originales y agregar solo los campos modificados y no vacíos
+    for (const key in userData) {
+      if (userData[key] !== originalUserData[key] && userData[key].trim() !== '') {
+        updatedData[key] = userData[key];
+      }
+    }
+
+    // Validar contraseñas
+    if (userPassword.current_password) {
+      if (!userPassword.password || !userPassword.password_confirmation) {
+        setError('Debe ingresar la nueva contraseña y la confirmación de la contraseña.');
+        return;
+      }
+      if (userPassword.password !== userPassword.password_confirmation) {
+        setError('Las contraseñas no coinciden');
+        return;
+      }
+      updatedData.password = userPassword.password;
+      updatedData.current_password = userPassword.current_password;
+      updatedData.password_confirmation = userPassword.password_confirmation;
+    }
+
     try {
-      const userId = localStorage.getItem('user_id');
-      await api.patch(`/usuarios/${userId}`, userData);
+      await api.patch(`/usuarios/${userId}`, updatedData);
       alert('Usuario actualizado correctamente');
     } catch (error) {
-      setError(error.message);
+      setError(error.response.data.message || error.message);
     }
   };
 
@@ -105,8 +150,8 @@ function PerfilUsuario() {
               <input
                 type="password"
                 name="current_password"
-                value={userData.current_password}
-                onChange={handleChange}
+                value={userPassword.current_password}
+                onChange={handlePasswordChange}
                 className="mt-1 block w-1/3 lg:text-xl p-2 border border-gray-300 rounded-xl"
               />
             </div>
@@ -115,8 +160,8 @@ function PerfilUsuario() {
               <input
                 type="password"
                 name="password"
-                value={userData.password}
-                onChange={handleChange}
+                value={userPassword.password}
+                onChange={handlePasswordChange}
                 className="mt-1 block w-1/3 lg:text-xl p-2 border border-gray-300 rounded-xl"
               />
             </div>
@@ -125,18 +170,18 @@ function PerfilUsuario() {
               <input
                 type="password"
                 name="password_confirmation"
-                value={userData.password_confirmation}
-                onChange={handleChange}
+                value={userPassword.password_confirmation}
+                onChange={handlePasswordChange}
                 className="mt-1 block w-1/3 lg:text-xl p-2 border border-gray-300 rounded-xl"
               />
             </div>
             <div className="flex justify-end w-1/3">
-            <button
-              type="submit"
-              className="mt-4 p-2 lg:text-xl bg-naranja text-white rounded-xl hover:bg-naranja/80"
-            >
-              Guardar cambios
-            </button>
+              <button
+                type="submit"
+                className="mt-4 p-2 lg:text-xl bg-naranja text-white rounded-xl hover:bg-naranja/80"
+              >
+                Guardar cambios
+              </button>
             </div>
           </form>
           <button

@@ -4,6 +4,7 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/Footer';
 import BackButton from '@/components/BackButton';
 import api from '@/lib/axiosConfig';
+import Loading from '@/components/Loading';
 
 function EditarTurno() {
   const { id } = useParams(); // Obtener el ID de la reserva desde la URL
@@ -14,8 +15,8 @@ function EditarTurno() {
   const [horarioOptions, setHorarioOptions] = useState([]);
   const [formData, setFormData] = useState({
     fecha_turno: '',
-    canchaID: '',
-    horarioID: '',
+    cancha_id: '',
+    horario_id: '',
     monto_total: '',
     monto_seña: '',
     estado: ''
@@ -23,16 +24,16 @@ function EditarTurno() {
 
   useEffect(() => {
     // Obtener los detalles de la reserva
-    api.get(`/reservas/${id}`)
+    api.get(`/turnos/${id}`)
       .then((response) => {
-        setBooking(response.data.reserva);
+        setBooking(response.data.turno);
         setFormData({
-          fecha_turno: response.data.reserva.fecha_turno,
-          canchaID: response.data.reserva.canchaID,
-          horarioID: response.data.reserva.horarioID,
-          monto_total: response.data.reserva.monto_total,
-          monto_seña: response.data.reserva.monto_seña,
-          estado: response.data.reserva.estado
+          fecha_turno: response.data.turno.fecha_turno,
+          cancha_id: response.data.turno.cancha_id,
+          horario_id: response.data.turno.horario_id,
+          monto_total: response.data.turno.monto_total,
+          monto_seña: response.data.turno.monto_seña,
+          estado: response.data.turno.estado
         });
       })
       .catch((error) => {
@@ -64,12 +65,13 @@ function EditarTurno() {
       ...formData,
       [e.target.name]: e.target.value
     });
+    console.log("Form data:", formData);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await api.patch(`/reservas/${id}`, formData);
+      const response = await api.patch(`/turnos/${id}`, formData);
       if (response.status === 200) {
         console.log("Reserva actualizada correctamente:", response.data);
         navigate('/ver-turnos'); // Redirige a la página de turnos
@@ -85,7 +87,7 @@ function EditarTurno() {
   }
 
   if (!booking) {
-    return <div>Cargando...</div>;
+    return <div><Loading /></div>;
   }
 
   return (
@@ -112,14 +114,14 @@ function EditarTurno() {
               <label className="block text-sm font-medium text-gray-700">Cancha</label>
               <select
                 name="canchaID"
-                value={formData.canchaID}
+                value={formData.cancha_id}
                 onChange={handleChange}
                 className="mt-1 block w-1/2 p-2 border text-black border-gray-300 rounded-md"
               >
                 <option className="text-black" value="">Selecciona una cancha</option>
                 {canchaOptions.map((cancha) => (
                   <option  className="text-black" key={cancha.id} value={cancha.id}>
-                    {cancha.nro} - {cancha.tipoCancha}
+                    {cancha.nro} - {cancha.tipo_cancha}
                   </option>
                 ))}
               </select>
@@ -128,14 +130,14 @@ function EditarTurno() {
               <label className="block text-sm font-medium text-gray-700">Horario</label>
               <select
                 name="horarioID"
-                value={formData.horarioID}
+                value={formData.horario_id}
                 onChange={handleChange}
                 className="mt-1 block w-1/2 p-2 border border-gray-300 rounded-md overflow-y-auto"
               >
                 <option value="">Selecciona un horario</option>
                 {horarioOptions.map((horario) => (
                   <option key={horario.id} value={horario.id}>
-                    {horario.horaInicio} - {horario.horaFin}
+                    {horario.hora_inicio} - {horario.hora_fin}
                   </option>
                 ))}
               </select>
@@ -169,8 +171,8 @@ function EditarTurno() {
                 className="mt-1 block w-1/2 p-2 border border-gray-300 rounded-md"
               >
                 <option value="">Selecciona un estado</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="confirmado">Confirmado</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Confirmado">Confirmado</option>
                 <option value="cancelado">Cancelado</option>
               </select>
             </div>

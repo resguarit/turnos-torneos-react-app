@@ -4,6 +4,7 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
+import Loading from '@/components/Loading';
 
 const DAYS_OF_WEEK = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
@@ -12,7 +13,7 @@ export default function Calendar() {
   const today = new Date()
   const [currentMonth, setCurrentMonth] = useState(today.getMonth())
   const [currentYear, setCurrentYear] = useState(today.getFullYear())
-  const [reservations, setReservations] = useState({})
+  const [reservations, setReservations] = useState()
 
   useEffect(() => {
     api.get('/disponibilidad')
@@ -89,6 +90,10 @@ export default function Calendar() {
       return newMonth;
     });
   };
+
+  if (!reservations) {
+    return <div><Loading /></div>;
+  }
 
   const handleTurnosClick = () => {
     navigate('/ver-turnos');

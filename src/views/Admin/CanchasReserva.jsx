@@ -6,6 +6,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/Footer";
 import BackButton from "@/components/BackButton";
 import api from '@/lib/axiosConfig';
+import Loading from '@/components/Loading';
 
 export default function CanchasReserva() {
   const [showModal, setShowModal] = useState(false);
@@ -33,8 +34,8 @@ export default function CanchasReserva() {
         const response = await api.get(`/horarios/${selectedTime}`);
         const data = response.data;
         if (data.status === 200) {
-          const { horaInicio, horaFin } = data.horario;
-          const formattedTime = `${horaInicio.slice(0, 5)} - ${horaFin.slice(0, 5)}`;
+          const { hora_inicio, hora_fin } = data.horario;
+          const formattedTime = `${hora_inicio.slice(0, 5)} - ${hora_fin.slice(0, 5)}`;
           setFormattedTime(formattedTime);
         }
       } catch (error) {
@@ -66,22 +67,25 @@ export default function CanchasReserva() {
   const handleSubmit = e => {
     e.preventDefault();
     setShowModal(true);
-    const userId = localStorage.getItem('userId');
+    const userId = localStorage.getItem('user_id');
     console.log("La respuesta es", selectedDate, selectedTime, selectedCourt.id, userId);
   };
+
+  if (!courts.length) {
+    return <div><Loading /></div>;
+  }
 
   const confirmSubmit = async () => {
     setShowModal(false);
     try {
-      const userId = localStorage.getItem('userId'); // Asume que el ID del usuario está almacenado en localStorage
-      const response = await api.post('/reservas/turnounico', {
+      const userId = localStorage.getItem('user_id'); // Asume que el ID del usuario está almacenado en localStorage
+      const response = await api.post('/turnos/turnounico', {
         fecha_turno: selectedDate,
-        canchaID: selectedCourt.id,
-        horarioID: selectedTime,
-        usuarioID: userId,
+        cancha_id: selectedCourt.id,
+        horario_id: selectedTime,
         monto_total: 100, // Reemplaza con el monto total real
         monto_seña: 50, // Reemplaza con el monto de seña real
-        estado: 'pendiente' // Reemplaza con el estado real
+        estado: 'Pendiente' // Reemplaza con el estado real
       });
       
       if (response.status === 201) {
@@ -106,7 +110,7 @@ export default function CanchasReserva() {
         </div>
         <p className="mb-6 lg:text-xl">Fecha: {fechaFormateada}</p>
         <p className="mb-6 lg:text-xl">Horario: {formattedTime}</p>
-        <p className="mb-6 lg:text-xl">Cancha: {selectedCourt ? selectedCourt.nro : "No seleccionada"}</p>
+        <p className="mb-6 lg:text-xl">Cancha: {selectedCourt.nro} - {selectedCourt.tipo}</p>
         <div className="flex justify-center">
           <button
             onClick={onConfirm}

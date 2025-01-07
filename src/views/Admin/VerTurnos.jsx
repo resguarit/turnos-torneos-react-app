@@ -15,6 +15,7 @@ import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton'
 import ModalConfirmation from '@/components/ModalConfirmation';
+import Loading from '@/components/Loading';
 
 function VerTurnos() {
   const navigate = useNavigate();
@@ -31,9 +32,10 @@ function VerTurnos() {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let url = 'http://127.0.0.1:8000/api/reservas';
+    let url = 'http://127.0.0.1:8000/api/turnos';
     if (viewOption === 'day' && selectedDate) {
       const formattedDate = selectedDate.toISOString().split('T')[0];
       url += `?fecha=${formattedDate}`;
@@ -45,7 +47,7 @@ function VerTurnos() {
 
     api.get(url)
       .then(response => {
-        const grouped = response.data.reservas.reduce((acc, booking) => {
+        const grouped = response.data.turnos.reduce((acc, booking) => {
           const date = booking.fecha_turno.split('T')[0];
           if (!acc[date]) {
             acc[date] = [];
@@ -54,8 +56,12 @@ function VerTurnos() {
           return acc;
         }, {});
         setGroupedBookings(grouped);
+        setLoading(false);
       })
-      .catch(error => console.error('Error fetching reservations:', error));
+      .catch(error => {
+        console.error('Error fetching reservations:', error);
+        setLoading(false); // En caso de error, establecer loading a false
+      });
   }, [selectedDate, startDate, endDate, viewOption]);
 
   useEffect(() => {
@@ -129,7 +135,7 @@ function VerTurnos() {
   const confirmDeleteSubmit = async () => {
     setShowModal(false);
     try {
-      const response = await api.delete(`/reservas/${selectedBooking.id}`);
+      const response = await api.delete(`/turnos/${selectedBooking.id}`);
       if (response.status === 200) {
         console.log("Reserva eliminada correctamente:", response.data);
         // Actualiza el estado para reflejar la eliminación
@@ -148,11 +154,16 @@ function VerTurnos() {
     }
   };
 
+  if (loading) {
+    return <Loading />;
+  }
+
   return (
     <>
       <div className="min-h-screen flex flex-col font-inter">
         <Header />
-        <main className="flex-1 p-6 bg-[#dddcdc]">
+        <main className="flex-1 p-6 bg-gray-100">
+          <BackButton />
           <div className=" mb-8">
             <div className="space-y-4">
               <h1 className="text-2xl font-bold lg:text-4xl">Turnos</h1>
@@ -260,7 +271,7 @@ function VerTurnos() {
                             <div className="flex justify-between items-start">
                               <div>
                                 <h3 className="font-semibold lg:text-xl">{booking.usuario.nombre}</h3>
-                                <p className="text-sm font-medium text-gray-500 lg:text-lg">{`${booking.horario.horaInicio} - ${booking.horario.horaFin}`}</p>
+                                <p className="text-sm font-medium text-gray-500 lg:text-lg">{`${booking.horario.hora_inicio} - ${booking.horario.hora_fin}`}</p>
                                 <p className='text-sm font-medium text-gray-800 lg:text-lg'>{`Monto total: $${booking.monto_total}`}</p>
                                 <p className='text-sm font-medium text-gray-800 lg:text-lg'>{`Monto seña: $${booking.monto_seña}`}</p>
                               </div>
@@ -281,7 +292,7 @@ function VerTurnos() {
                                 {`Estado: ${booking.estado}`}
                               </span>
                               <span className="text-center px-3 py-1 bg-gray-300 rounded-full lg:text-base text-xs w-3/4">
-                                {`Cancha ${booking.cancha.nro} - ${booking.cancha.tipoCancha}`}
+                                {`Cancha ${booking.cancha.nro} - ${booking.cancha.tipo_cancha}`}
                               </span>
                             </div>
 
@@ -346,10 +357,10 @@ function VerTurnos() {
             <div className="space-y-4 lg:text-2xl">
               <p><strong>Nombre:</strong> {selectedBooking.usuario.nombre}</p>
               <p><strong>Teléfono:</strong> {selectedBooking.usuario.telefono}</p>
-              <p><strong>Horario:</strong> {selectedBooking.horario.horaInicio} - {selectedBooking.horario.horaFin}</p>
+              <p><strong>Horario:</strong> {selectedBooking.horario.hora_inicio} - {selectedBooking.horario.hora_fin}</p>
               <p><strong>Monto Total:</strong> ${selectedBooking.monto_total}</p>
               <p><strong>Monto Seña:</strong> ${selectedBooking.monto_seña}</p>
-              <p><strong>Cancha:</strong> {selectedBooking.cancha.nro} - {selectedBooking.cancha.tipoCancha}</p>
+              <p><strong>Cancha:</strong> {selectedBooking.cancha.nro} - {selectedBooking.cancha.tipo_cancha}</p>
               <div>
                 <strong><label htmlFor="estado" className=" lg:text-2xl">Estado:</label></strong>
                 <select
@@ -360,9 +371,9 @@ function VerTurnos() {
                   style={{ borderRadius: '8px' }}
                 >
                   <option value="Pendiente">Pendiente</option>
-                  <option value="Señada">Señada</option>
-                  <option value="Pagada">Pagada</option>
-                  <option value="Cancelada">Cancelada</option>
+                  <option value="Señado">Señado</option>
+                  <option value="Pagado">Pagado</option>
+                  <option value="Cancelado">Cancelado</option>
                 </select>
               </div>
             </div>

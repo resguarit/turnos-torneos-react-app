@@ -5,6 +5,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/Footer";
 import BackButton from "@/components/BackButton";
 import api from '@/lib/axiosConfig';
+import Loading from '@/components/Loading';
 
 export default function HorariosReserva() {
   const { date } = useParams(); // Obtener la fecha de la URL
@@ -19,7 +20,7 @@ export default function HorariosReserva() {
     api.get(`/disponibilidad/fecha?fecha=${date}`)
       .then(response => {
         const availabilityStatus = response.data.horarios.map((horario) => {
-          const timeSlot = `${horario.horaInicio.slice(0, 5)} - ${horario.horaFin.slice(0, 5)}`;
+          const timeSlot = `${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`;
           const id = horario.id;
           return { id: id, time: timeSlot, status: horario.disponible ? "libre" : "ocupado" };
         });
@@ -35,6 +36,10 @@ export default function HorariosReserva() {
       )}`
     );
   };
+
+  if (!availability.length) {
+    return <div><Loading /></div>;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">

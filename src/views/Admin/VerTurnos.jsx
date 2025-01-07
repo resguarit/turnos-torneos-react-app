@@ -199,9 +199,9 @@ function VerTurnos() {
                 >
                   <option value="">Todos los estados</option>
                   <option value="Pendiente">Pendiente</option>
-                  <option value="Señada">Señada</option>
-                  <option value="Pagada">Pagada</option>
-                  <option value="Cancelada">Cancelada</option>
+                  <option value="Señado">Señado</option>
+                  <option value="Pagado">Pagado</option>
+                  <option value="Cancelado">Cancelado</option>
                 </select>
               </div>
 
@@ -282,9 +282,9 @@ function VerTurnos() {
                                 className={`text-center px-3 py-1 rounded-full text-xs lg:text-base w-3/4 ${
                                   booking.estado === 'Pendiente'
                                     ? 'bg-yellow-300'
-                                    : booking.estado === 'Señada'
+                                    : booking.estado === 'Señado'
                                     ? 'bg-blue-300'
-                                    : booking.estado === 'Pagada'
+                                    : booking.estado === 'Pagado'
                                     ? 'bg-green-300'
                                     : 'bg-red-300'
                                 }`}

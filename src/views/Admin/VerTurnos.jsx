@@ -14,11 +14,11 @@ import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton'
+import ModalConfirmation from '@/components/ModalConfirmation';
 
 function VerTurnos() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const [bookings, setBookings] = useState([]);
   const [groupedBookings, setGroupedBookings] = useState({});
   const [selectedDate, setSelectedDate] = useState(null);
   const [startDate, setStartDate] = useState(null);
@@ -30,6 +30,7 @@ function VerTurnos() {
   const [courts, setCourts] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     let url = 'http://127.0.0.1:8000/api/reservas';
@@ -113,6 +114,39 @@ function VerTurnos() {
     }
     return acc;
   }, {});
+
+
+  const handleDeleteSubmit = (booking) => {
+    setSelectedBooking(booking);
+    setShowModal(true);
+    console.log("Turno seleccionado:", booking);
+  };
+
+  const closeDeleteModal = () => {
+    setShowModal(false);
+  };
+
+  const confirmDeleteSubmit = async () => {
+    setShowModal(false);
+    try {
+      const response = await api.delete(`/reservas/${selectedBooking.id}`);
+      if (response.status === 200) {
+        console.log("Reserva eliminada correctamente:", response.data);
+        // Actualiza el estado para reflejar la eliminación
+        setGroupedBookings(prev => {
+          const updated = { ...prev };
+          const date = selectedBooking.fecha_turno.split('T')[0];
+          updated[date] = updated[date].filter(booking => booking.id !== selectedBooking.id);
+          if (updated[date].length === 0) {
+            delete updated[date];
+          }
+          return updated;
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting reservation:", error);
+    }
+  };
 
   return (
     <>
@@ -254,6 +288,7 @@ function VerTurnos() {
                             <div className="flex gap-2 justify-center">
                               <button
                                 style={{ borderRadius: '4px' }}
+                                onClick={() => handleDeleteSubmit(booking)}
                                 size="icon"
                                 className="bg-naranja hover:bg-[#FF5533]/90 text-white p-2"
                               >
@@ -263,6 +298,7 @@ function VerTurnos() {
                                 style={{ borderRadius: '4px' }}
                                 size="icon"
                                 className="bg-naranja hover:bg-[#FF5533]/90 text-white p-2"
+                                onClick={() => navigate(`/editar-turno/${booking.id}`)}
                               >
                                 <PenSquare className="h-4 w-4 lg:h-6 lg:w-6" />
                               </button>
@@ -274,14 +310,14 @@ function VerTurnos() {
                               >
                                 <Phone className="h-4 w-4 lg:h-6 lg:w-6" />
                               </button>
-                              <button
+                              {/* <button
                                 style={{ borderRadius: '4px' }}
                                 size="icon"
                                 className="bg-naranja hover:bg-[#FF5533]/90 text-white p-2"
                                 onClick={() => handleVerTurno(booking)}
                               >
                                 <Eye className="h-4 w-4 lg:h-6 lg:w-6" />
-                              </button>
+                              </button> */}
                             </div>
                           </div>
                         ))}
@@ -291,22 +327,23 @@ function VerTurnos() {
               </div>
             </div>
           </div>
+          {showModal && <ModalConfirmation onConfirm={confirmDeleteSubmit} onCancel={closeDeleteModal} title="Eliminar Turno" subtitle={"Desea Eliminar el turno?"} botonText1={"Cancelar"} botonText2={"Eliminar"} />}
         </main>
         <Footer />
       </div>
 
       {isModalOpen && selectedBooking && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md lg:max-w-xl">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Detalles del Turno</h2>
+              <h2 className="text-xl font-bold lg:text-3xl">Detalles del Turno</h2>
               <button onClick={handleCloseModal} className="text-gray-500 hover:text-gray-700">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-6 w-6">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 lg:text-2xl">
               <p><strong>Nombre:</strong> {selectedBooking.usuario.nombre}</p>
               <p><strong>Teléfono:</strong> {selectedBooking.usuario.telefono}</p>
               <p><strong>Horario:</strong> {selectedBooking.horario.horaInicio} - {selectedBooking.horario.horaFin}</p>
@@ -314,12 +351,12 @@ function VerTurnos() {
               <p><strong>Monto Seña:</strong> ${selectedBooking.monto_seña}</p>
               <p><strong>Cancha:</strong> {selectedBooking.cancha.nro} - {selectedBooking.cancha.tipoCancha}</p>
               <div>
-                <label htmlFor="estado" className="block font-medium">Estado:</label>
+                <strong><label htmlFor="estado" className=" lg:text-2xl">Estado:</label></strong>
                 <select
                   id="estado"
                   value={selectedBooking.estado}
                   onChange={handleStatusChange}
-                  className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black"
+                  className="px-3 items-center bg-white rounded-lg text-sm lg:text-2xl  text-black"
                   style={{ borderRadius: '8px' }}
                 >
                   <option value="Pendiente">Pendiente</option>
@@ -330,9 +367,9 @@ function VerTurnos() {
               </div>
             </div>
             <div className="flex justify-end mt-4">
-              <Button onClick={handleCloseModal} className="bg-naranja text-white px-4 py-2 rounded-lg hover:bg-[#FF5533]/90">
+              <button style={{ borderRadius: '8px' }} onClick={handleCloseModal} className="bg-naranja text-white lg:text-2xl font-semibold px-4 py-2 hover:bg-[#FF5533]/90">
                 Cerrar
-              </Button>
+              </button>
             </div>
           </div>
         </div>

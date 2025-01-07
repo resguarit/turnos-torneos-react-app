@@ -1,83 +1,83 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import api from '@/lib/axiosConfig';
+import { DayPicker } from 'react-day-picker';
+import 'react-day-picker/dist/style.css';
+import { format, parseISO } from 'date-fns';
+import { es } from 'date-fns/locale';
+import Loading from '@/components/loading';
+import { useNavigate } from 'react-router-dom';
 
 export default function VerGrilla() {
-  const [currentDate, setCurrentDate] = useState("2025/01/03");
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [grid, setGrid] = useState({});
+  const [timeSlots, setTimeSlots] = useState([]);
+  const [courts, setCourts] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  const timeSlots = Array.from({ length: 10 }, (_, i) => i + 14);
-  const courts = Array.from({ length: 7 }, (_, i) => `cancha ${i + 1}`);
+  useEffect(() => {
+    const fetchGrid = async () => {
+      try {
+        const formattedDate = currentDate.toISOString().split('T')[0];
+        const response = await api.get(`/grilla?fecha=${formattedDate}`);
+        setGrid(response.data.grid);
 
-  const reservations = {
-    "cancha 1-14": "turnos",
-    "cancha 1-15": "turnos",
-    "cancha 1-16": "turnos-fijos",
-    "cancha 1-20": "turnos",
-    "cancha 1-21": "turnos",
-    "cancha 1-22": "turnos",
-    "cancha 2-16": "torneo",
-    "cancha 2-17": "torneo",
-    "cancha 2-18": "torneo",
-    "cancha 4-14": "turnos",
-    "cancha 4-15": "turnos",
-    "cancha 4-16": "turnos",
+        const times = Object.keys(response.data.grid);
+        const courts = Object.keys(response.data.grid[times[0]]).map(court => ({
+          nro: court,
+          tipo: response.data.grid[times[0]][court].tipo
+        }));
+        
+        setTimeSlots(times);
+        setCourts(courts);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching grid:', error);
+      }
+    };
+
+    fetchGrid();
+  }, [currentDate]);
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  const handlePrevDay = () => {
+    setCurrentDate(prevDate => {
+      const newDate = new Date(prevDate);
+      newDate.setDate(newDate.getDate() - 1);
+      return newDate;
+    });
   };
 
-  // const reservations2 = {
-  //   "timeSlots": [
-  //     "14",
-  //     "15",
-  //     "16",
-  //   ],
-  //   "canchas": [
-  //     "cancha 1",
-  //     "cancha 2",
-  //     "cancha 3",
-  //     "cancha 4",
-  //   ],
-  //   "14": {
-  //     "cancha 1": {
-  //       "id": 1,
-  //       "usuario": {
-  //         "usuarioID": 1,
-  //         "nombre": "Mariano Salas",
-  //         "telefono": "2215607115"
-  //       },
-  //       "monto_total": "100.00",
-  //       "monto_seña": "50.00",
-  //       "estado": "pendiente",
-  //       "tipo": "turno"
-  //     }
-  //   },
-  //   "17": {
-  //     "cancha 1": {
-  //       "id": 1,
-  //     "usuario": {
-  //       "usuarioID": 1,
-  //       "nombre": "Mariano Salas",
-  //       "telefono": "2215607115"
-  //     },
-  //     "monto_total": "100.00",
-  //     "monto_seña": "50.00",
-  //     "estado": "pendiente"
-  //     }
-  //   },
-  //     "cancha 2": {
-  //       "id": 2,
-  //       "usuario": {
-  //         "usuarioID": 2,
-  //         "nombre": "Juan Perez",
-  //         "telefono": "2215607115"
-  //       },
-  //       "monto_total": "100.00",
-  //       "monto_seña": "50.00",
-  //       "estado": "pendiente"
-  //     }
-  //   },
-  // }
+  const handleNextDay = () => {
+    setCurrentDate(prevDate => {
+      const newDate = new Date(prevDate);
+      newDate.setDate(newDate.getDate() + 1);
+      return newDate;
+    });
+  };
+
+  const handleDateChange = (date) => {
+    setCurrentDate(date);
+    setIsOpen(false); // Cerrar el calendario después de seleccionar una fecha
+  };
+
+  const toggleCalendar = () => {
+    setIsOpen((prev) => !prev);
+  };
+
+  const handleNavigationTurno = (id) => () => {
+    navigate(`/editar-turno/${id}`);
+  };
+
 
   const exportToPDF = () => {
     const input = document.getElementById('grilla-table');
@@ -99,8 +99,8 @@ export default function VerGrilla() {
         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
-
-      pdf.save('grilla.pdf');
+      const dateStr = new Date().toLocaleString().replace(/[/,: ]/g, '-');
+      pdf.save(`grilla-${dateStr}.pdf`);
     });
   };
 
@@ -111,15 +111,35 @@ export default function VerGrilla() {
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4">Grilla de Turnos</h2>
 
-          <div className="flex items-center gap-4 mb-4">
-            <button className="p-2 hover:bg-gray-100 rounded">
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex gap-2 items-center">
+            <button onClick={handlePrevDay} className="p-2 hover:bg-gray-100 rounded">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <span className="text-lg">{currentDate}</span>
-            <button className="p-2 hover:bg-gray-100 rounded">
+            <button
+              onClick={toggleCalendar}
+              className="px-4 py-2 bg-white rounded-lg text-sm lg:text-lg font-medium text-black"
+              style={{ borderRadius: '8px' }}
+            >
+              {currentDate ? format(currentDate, 'PPP', { locale: es }) : <CalendarDays className='w-48' />}
+            </button>
+            <button onClick={handleNextDay} className="p-2 hover:bg-gray-100 rounded">
               <ChevronRight className="w-5 h-5" />
             </button>
+            </div>
+            <button
+            onClick={exportToPDF}
+            className=" px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Exportar a PDF
+          </button>
           </div>
+
+          {isOpen && (
+            <div className="absolute z-10 bg-white shadow-lg rounded-lg">
+              <DayPicker selected={currentDate} onDayClick={handleDateChange} />
+            </div>
+          )}
 
           <div className="flex gap-6 mb-4">
             <div className="flex items-center gap-2">
@@ -128,20 +148,13 @@ export default function VerGrilla() {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-6 h-3 bg-green-500 rounded"></div>
-              <span>Turnos</span>
+              <span>Turnos únicos</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-6 h-3 bg-orange-500 rounded"></div>
               <span>Torneos</span>
             </div>
           </div>
-
-          <button
-            onClick={exportToPDF}
-            className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Exportar a PDF
-          </button>
 
           <div className="overflow-x-auto bg-white" id="grilla-table">
             <table className="w-full border-collapse">
@@ -156,25 +169,22 @@ export default function VerGrilla() {
                 </tr>
               </thead>
               <tbody>
-                {courts.map((court) => (
-                  <tr key={court}>
-                    <td className="border p-2 font-medium">{court}</td>
+                {courts.map((court, courtIndex) => (
+                  <tr key={court.nro}>
+                    <td className="border p-2 font-medium">{`Cancha ${court.nro} - ${court.tipo.toUpperCase()}`}</td>
                     {timeSlots.map((time) => {
-                      const key = `${court}-${time}`;
-                      const reservation = reservations[key];
+                      const key = `${time}-${court.nro}`;
+                      const reservation = grid[time]?.[court.nro]?.turno;
                       return (
-                        <td key={key} className="border p-2 h-12">
-                          {reservation && (
-                            <div
-                              className={`w-full h-full rounded ${
-                                reservation === "turnos-fijos"
-                                  ? "bg-blue-500"
-                                  : reservation === "turnos"
-                                  ? "bg-green-500"
-                                  : "bg-orange-500"
-                              }`}
-                            />
-                          )}
+                        <td key={key} className="border max-w-20 p-2 h-12">
+                          {reservation ? (
+                            <div 
+                            onClick={handleNavigationTurno(reservation.id)}
+                            className=" w-full h-full rounded p-1 hover:cursor-pointer" style={{ backgroundColor: reservation.tipo === "fijo" ? "#1E90FF" : reservation.tipo === "unico" ? "#32CD32" : "#FFA500" }}>
+                              <p className="text-xs font-bold">{reservation.usuario.nombre}</p>
+                              <p className="text-xs">{reservation.estado}</p>
+                            </div>
+                          ) : null}
                         </td>
                       );
                     })}

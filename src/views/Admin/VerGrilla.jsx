@@ -11,6 +11,7 @@ import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Loading from '@/components/loading';
 import { useNavigate } from 'react-router-dom';
+import BackButton from '@/components/BackButton';
 
 export default function VerGrilla() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -109,16 +110,17 @@ export default function VerGrilla() {
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4">Grilla de Turnos</h2>
+          <BackButton />
+          <h2 className="text-xl font-semibold mb-4 lg:text-4xl">Grilla de Turnos</h2>
 
           <div className="flex items-center justify-between gap-4 mb-4">
             <div className="flex gap-2 items-center">
-            <button onClick={handlePrevDay} className="p-2 hover:bg-gray-100 rounded">
+            <button onClick={handlePrevDay} className="p-2 hover:bg-gray-100 rounded ">
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={toggleCalendar}
-              className="px-4 py-2 bg-white rounded-lg text-sm lg:text-lg font-medium text-black"
+              className="px-4 py-2 bg-white rounded-lg text-sm lg:text-xl font-medium text-black"
               style={{ borderRadius: '8px' }}
             >
               {currentDate ? format(currentDate, 'PPP', { locale: es }) : <CalendarDays className='w-48' />}
@@ -129,7 +131,8 @@ export default function VerGrilla() {
             </div>
             <button
             onClick={exportToPDF}
-            className=" px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            style={{ borderRadius: '8px' }}
+            className=" p-3 bg-blue-500 text-white  hover:bg-blue-600 lg:text-xl "
           >
             Exportar a PDF
           </button>
@@ -141,7 +144,7 @@ export default function VerGrilla() {
             </div>
           )}
 
-          <div className="flex gap-6 mb-4">
+          <div className="flex gap-8 mb-4 lg:text-xl">
             <div className="flex items-center gap-2">
               <div className="w-6 h-3 bg-blue-500 rounded"></div>
               <span>Turnos fijos</span>
@@ -162,7 +165,7 @@ export default function VerGrilla() {
                 <tr>
                   <th className="border p-2"></th>
                   {timeSlots.map((time) => (
-                    <th key={time} className="border p-2 min-w-[60px]">
+                    <th key={time} className="border p-2 min-w-[60px] lg:text-xl">
                       {time}
                     </th>
                   ))}
@@ -171,7 +174,7 @@ export default function VerGrilla() {
               <tbody>
                 {courts.map((court, courtIndex) => (
                   <tr key={court.nro}>
-                    <td className="border p-2 font-medium">{`Cancha ${court.nro} - ${court.tipo.toUpperCase()}`}</td>
+                    <td className="border p-2 font-medium lg:text-xl">{`Cancha ${court.nro} - ${court.tipo.toUpperCase()}`}</td>
                     {timeSlots.map((time) => {
                       const key = `${time}-${court.nro}`;
                       const reservation = grid[time]?.[court.nro]?.turno;
@@ -181,8 +184,8 @@ export default function VerGrilla() {
                             <div 
                             onClick={handleNavigationTurno(reservation.id)}
                             className=" w-full h-full rounded p-1 hover:cursor-pointer" style={{ backgroundColor: reservation.tipo === "fijo" ? "#1E90FF" : reservation.tipo === "unico" ? "#32CD32" : "#FFA500" }}>
-                              <p className="text-xs font-bold">{reservation.usuario.nombre}</p>
-                              <p className="text-xs">{reservation.estado}</p>
+                              <p className="text-xs lg:text-base font-bold">{reservation.usuario.nombre}</p>
+                              <p className="text-xs lg:text-base">{reservation.estado}</p>
                             </div>
                           ) : null}
                         </td>

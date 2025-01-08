@@ -28,7 +28,7 @@ export default function ZonasA() {
         <div className="max-w-7xl lg:max-w-full mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl lg:text-4xl font-bold">Zonas</h1>
-            <button onClick={handleNuevaZonaClick} className="bg-black hover:bg-black/90 px-2 py-1 lg:p-3 lg:text-xl text-sm text-white" style={{borderRadius: '8px'}}>
+            <button onClick={handleNuevaZonaClick} className="bg-black hover:bg-black/80 p-3 lg:text-[1.4rem] font-inter text-white" style={{borderRadius: '8px'}}>
               + Nueva Zona
             </button>
           </div>

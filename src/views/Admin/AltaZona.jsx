@@ -71,13 +71,12 @@ export default function AltaZona() {
               <option value="Fase de Grupos">Fase de Grupos</option>
             </select>
             
-            <Button
-              variant="default"
-              className="bg-black hover:bg-black/90 text-white py-0 lg:p-4 lg:h-10 h-8 mt-4 text-sm lg:text-lg"
+            <button
+              className="bg-black hover:bg-black/80 text-white p-3 mt-4 lg:text-[1.4rem] font-inter"
               style={{ borderRadius: '8px' }}
             >
               Cargar Equipo +
-            </Button>
+            </button>
             <div className='justify-start w-full'>
             <div className="mt-4 mx-0 w-full bg-white rounded-lg shadow " style={{ borderRadius: '8px' }}>
               <ul className="divide-y divide-gray-200">

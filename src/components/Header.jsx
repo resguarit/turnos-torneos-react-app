@@ -3,10 +3,21 @@ import MenuMovil from './MenuMovil';
 import { CircleUserRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { UserCog } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 export function Header() {
   const navigate = useNavigate();
   const [username, setUserName] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const closeMenu = () => {
+    setIsOpen(false);
+  };
 
   useEffect(() => {
     const name = localStorage.getItem('username');
@@ -19,7 +30,7 @@ export function Header() {
     localStorage.removeItem('user_id');
     localStorage.removeItem('username');
     setUserName(null);
-    navigate('/login');
+    navigate('/');
   };
 
   return (
@@ -37,13 +48,40 @@ export function Header() {
             <a href="/reglamento" className="hover:opacity-80">Reglamento</a>
             <a href="/premios" className="hover:opacity-80">Premios</a>
             {username ? (
-              <button
-                onClick={() => navigate('/perfil-usuario')}
-                className="flex items-center gap-2 hover:opacity-80"
-              >
-                <span>{username}</span>
-                <CircleUserRound className="h-7 w-7" />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={toggleMenu}
+                  className="flex items-center gap-2 hover:opacity-80"
+                >
+                  <span>{username}</span>
+                  <CircleUserRound className="h-7 w-7" />
+                </button>
+                {isOpen && (
+                  <div className="absolute font-inter text-xl right-0 mt-2 w-52 bg-white text-zinc-800 rounded-xl shadow-lg z-50">
+                    <div className="flex flex-col items-start px-4 py-4 space-y-2">
+                      <button
+                        onClick={() => {
+                          navigate('/user-profile');
+                          closeMenu();
+                        }}
+                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2 py-1 rounded-xl"
+                      >
+                        Mi Panel <UserCog />
+                      </button>
+                      <span className="w-full h-[1px] bg-gray-300 my-2"></span>
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          closeMenu();
+                        }}
+                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2 py-1 rounded-xl"
+                      >
+                        Cerrar Sesión <LogOut />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : (
               <a href="/login" className="hover:opacity-80 flex flex-row items-center gap-2">
                 Iniciar Sesión <CircleUserRound className="h-7 w-7" />

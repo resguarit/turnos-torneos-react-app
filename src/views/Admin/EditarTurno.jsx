@@ -5,6 +5,11 @@ import { Footer } from '@/components/Footer';
 import BackButton from '@/components/BackButton';
 import api from '@/lib/axiosConfig';
 import Loading from '@/components/Loading';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 function EditarTurno() {
   const { id } = useParams(); // Obtener el ID de la reserva desde la URL
@@ -30,7 +35,6 @@ function EditarTurno() {
   });
 
   useEffect(() => {
-    // Obtener los detalles de la reserva
     api.get(`/turnos/${id}`)
       .then((response) => {
         const turno = response.data.turno;
@@ -50,7 +54,6 @@ function EditarTurno() {
           usuario_email: turno.usuario.email,
           tipo_turno: turno.tipo
         });
-        console.log("La reserva es", turno);
       })
       .catch((error) => {
         setError(error.message);
@@ -60,7 +63,6 @@ function EditarTurno() {
     api.get('/canchas')
       .then((response) => {
         setCanchaOptions(response.data.canchas);
-        console.log("Las canchas son", response.data.canchas);
       })
       .catch((error) => {
         setError(error.message);
@@ -110,112 +112,137 @@ function EditarTurno() {
       <Header />
       <main className="flex-1 grow p-6 bg-gray-100">
         <BackButton />
-        <div className="max-w-7xl lg:max-w-full mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl lg:text-4xl font-bold">Editar Turno: </h1>
-          </div>
-          <div className="flex flex-col justify-between items-start space-y-4 "> 
-          <div className="flex flex-col space-y-8 w-1/2 h-full mb-10">
-            <p className="text-lg lg:text-2xl "><strong>Nombre:</strong> {turnoData.usuario_nombre}</p>
-            <p className="text-lg lg:text-2xl "><strong>Teléfono:</strong> {turnoData.usuario_telefono}</p>
-            <p className="text-lg lg:text-2xl "><strong>Email:</strong> {turnoData.usuario_email}</p>
-            <p className="text-lg lg:text-2xl "><strong>Fecha Reserva:</strong> {turnoData.fecha_reserva}</p>
-            <p className="text-lg lg:text-2xl "><strong>Tipo Turno:</strong> {turnoData.tipo_turno}</p>
-          </div>
-          <div className="w-1/2">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm lg:text-2xl font-semibold text-gray-700">Fecha del Turno</label>
-              <input
-                type="date"
-                name="fecha_turno"
-                value={formData.fecha_turno}
-                onChange={handleChange}
-                className="mt-1 block w-full p-2 border lg:text-xl border-gray-300 rounded-xl"
-              />
+        <Card className="max-w-2xl mx-auto">
+          <CardHeader>
+            <CardTitle>Detalles del Turno</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Información del Cliente - Read Only */}
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label>Nombre:</Label>
+                <div className="col-span-3">{turnoData.usuario_nombre}</div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label>Teléfono:</Label>
+                <div className="col-span-3">{turnoData.usuario_telefono}</div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label>Email:</Label>
+                <div className="col-span-3">{turnoData.usuario_email}</div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label>Fecha Reserva:</Label>
+                <div className="col-span-3">{turnoData.fecha_reserva}</div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label>Tipo Turno:</Label>
+                <div className="col-span-3">{turnoData.tipo_turno}</div>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm lg:text-2xl font-semibold text-gray-700">Cancha</label>
-              <select
-                name="cancha_id"
-                value={formData.cancha_id}
-                onChange={handleChange}
-                className="mt-1 block w-full p-2 border lg:text-xl text-black border-gray-300 rounded-xl"
-              >
-                <option className="text-black" value="">Selecciona una cancha</option>
-                {canchaOptions.map((cancha) => (
-                  <option  className="text-black" key={cancha.id} value={cancha.id}>
-                    {cancha.nro} - {cancha.tipo_cancha}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm lg:text-2xl font-semibold text-gray-700">Horario</label>
-              <select
-                name="horario_id"
-                value={formData.horario_id}
-                onChange={handleChange}
-                className="mt-1 block w-full p-2 border lg:text-xl border-gray-300 rounded-xl overflow-y-auto"
-              >
-                <option value="">Selecciona un horario</option>
-                {horarioOptions.map((horario) => (
-                  <option key={horario.id} value={horario.id}>
-                    {horario.hora_inicio} - {horario.hora_fin}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm lg:text-2xl font-semibold text-gray-700">Monto Total</label>
-              <input
-                type="number"
-                name="monto_total"
-                value={formData.monto_total}
-                onChange={handleChange}
-                className="mt-1 block w-full p-2 border lg:text-xl border-gray-300 rounded-xl"
-              />
-            </div>
-            <div>
-              <label className="block text-sm lg:text-2xl font-semibold text-gray-700">Monto de la Seña</label>
-              <input
-                type="number"
-                name="monto_seña"
-                value={formData.monto_seña}
-                onChange={handleChange}
-                className="mt-1 block w-full p-2 border lg:text-xl border-gray-300 rounded-xl"
-              />
-            </div>
-            <div>
-              <label className="block text-sm lg:text-2xl font-semibold text-gray-700">Estado</label>
-              <select
-                name="estado"
-                value={formData.estado}
-                onChange={handleChange}
-                className="mt-1 block w-full p-2 border lg:text-xl border-gray-300 rounded-xl"
-              >
-                <option value="">Selecciona un estado</option>
-                <option value="Pendiente">Pendiente</option>
-                <option value="Confirmado">Confirmado</option>
-                <option value="cancelado">Cancelado</option>
-              </select>
-            </div>
-            
-            
-          </form>
-          </div>
-          
-          </div>
-          <div className="flex justify-end mt-8">
-              <button
-                type="submit"
-                className="px-4 py-3 lg:text-xl bg-naranja text-white rounded-xl hover:bg-naranja/80"
-                onClick={handleSubmit}
-              >
-                Guardar Cambios
-              </button>
-            </div>
-        </div>
+
+            {/* Formulario de Edición */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid gap-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="fecha_turno">Fecha del Turno:</Label>
+                  <Input
+                    id="fecha_turno"
+                    type="date"
+                    name="fecha_turno"
+                    value={formData.fecha_turno}
+                    onChange={handleChange}
+                    className="col-span-3"
+                  />
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="cancha_id">Cancha:</Label>
+                  <Select 
+                    value={formData.cancha_id}
+                    onValueChange={(value) => setFormData({...formData, cancha_id: value})}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Seleccionar cancha" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {canchaOptions.map((cancha) => (
+                        <SelectItem key={cancha.id} value={cancha.id}>
+                          {`Cancha ${cancha.nro} - ${cancha.tipo_cancha}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="horario_id">Horario:</Label>
+                  <Select 
+                    value={formData.horario_id}
+                    onValueChange={(value) => setFormData({...formData, horario_id: value})}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Seleccionar horario" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {horarioOptions.map((horario) => (
+                        <SelectItem key={horario.id} value={horario.id}>
+                          {`${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="monto_total">Monto Total:</Label>
+                  <Input
+                    id="monto_total"
+                    type="number"
+                    name="monto_total"
+                    value={formData.monto_total}
+                    onChange={handleChange}
+                    className="col-span-3"
+                  />
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="monto_seña">Monto de la Seña:</Label>
+                  <Input
+                    id="monto_seña"
+                    type="number"
+                    name="monto_seña"
+                    value={formData.monto_seña}
+                    onChange={handleChange}
+                    className="col-span-3"
+                  />
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="estado">Estado:</Label>
+                  <Select 
+                    value={formData.estado}
+                    onValueChange={(value) => setFormData({...formData, estado: value})}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Seleccionar estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Pendiente">Pendiente</SelectItem>
+                      <SelectItem value="Señado">Señado</SelectItem>
+                      <SelectItem value="Pagado">Pagado</SelectItem>
+                      <SelectItem value="Cancelado">Cancelado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-4">
+                <Button type="submit">Guardar Cambios</Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </main>
       <Footer />
     </div>

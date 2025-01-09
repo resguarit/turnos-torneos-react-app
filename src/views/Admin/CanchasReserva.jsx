@@ -71,10 +71,6 @@ export default function CanchasReserva() {
     console.log("La respuesta es", selectedDate, selectedTime, selectedCourt.id, userId);
   };
 
-  if (!courts.length) {
-    return <div><Loading /></div>;
-  }
-
   const confirmSubmit = async () => {
     setShowModal(false);
     try {
@@ -124,6 +120,10 @@ export default function CanchasReserva() {
     </div>
   );
 
+  if (!courts.length) {
+    return <div><Loading /></div>;
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <Header />
@@ -139,7 +139,6 @@ export default function CanchasReserva() {
             <div>
               <h5 className="text-sm font-medium mb-3 lg:text-xl">Canchas Disponibles</h5>
               <div className="space-y-2">
-              {console.log("Las canchas son", courts)}
                 {courts.filter(court => court.disponible).map(court => (
                   <button
                     key={court.id}
@@ -154,6 +153,7 @@ export default function CanchasReserva() {
                 ))}
               </div>
             </div>
+
             <div>
               <h5 className="text-sm font-medium mb-3 lg:text-xl">Canchas Ocupadas</h5>
               <div className="space-y-2">

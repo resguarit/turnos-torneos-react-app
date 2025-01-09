@@ -85,7 +85,7 @@ export default function UserProfile() {
               <span>Mis Torneos</span>
             </Button>
           </div>
-          <Card>
+          <Card className="border-0">
             <CardHeader>
               <CardTitle className="text-3xl ">
                 {activeSection === "appointments"

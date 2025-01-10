@@ -9,7 +9,7 @@ export default function MisTurnos() {
     const fetchTurnos = async () => {
       try {
         const userId = localStorage.getItem('user_id');
-        const response = await api.get(`turnos/usuario/${userId}`);
+        const response = await api.get(`turnos/user-proximos`);
         const adjustedTurnos = response.data.turnos.map(turno => {
           const adjustedFechaTurno = new Date(new Date(turno.fecha_turno).getTime() + new Date(turno.fecha_turno).getTimezoneOffset() * 60000);
           const adjustedFechaReserva = new Date(new Date(turno.fecha_reserva).getTime() + new Date(turno.fecha_reserva).getTimezoneOffset() * 60000);

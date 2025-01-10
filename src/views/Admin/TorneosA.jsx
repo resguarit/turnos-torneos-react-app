@@ -67,7 +67,7 @@ const Modal = ({ onConfirm, onCancel }) => (
         <div className="max-w-7xl lg:max-w-full mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl lg:text-4xl font-bold">Torneos</h1>
-            <button variant="default" className="bg-black hover:bg-black/90 px-2 py-1 lg:p-3 lg:text-xl text-sm text-white" style={{borderRadius: '8px'}} onClick={handleNuevoTorneo}>
+            <button variant="default" className="bg-black hover:bg-black/80 p-3 lg:text-[1.4rem] font-inter text-white" style={{borderRadius: '8px'}} onClick={handleNuevoTorneo}>
               + Nuevo Torneo
             </button>
           </div>

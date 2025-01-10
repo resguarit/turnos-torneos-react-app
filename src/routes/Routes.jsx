@@ -19,6 +19,7 @@ import Login from "@/views/General/Login";
 import SignUp from "@/views/General/SignUp";
 import EditarTurno from "@/views/Admin/EditarTurno";
 import Error from "@/views/General/Error";
+import UserProfile from "@/views/General/UserProfile";
 
 const AppRoutes = () => {
   return (
@@ -43,6 +44,7 @@ const AppRoutes = () => {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/editar-turno/:id" element={<EditarTurno />} />
         <Route path="*" element={<Error />} />
+        <Route path="/user-profile" element={<UserProfile />} />
       </Routes>
     </Router>
   );

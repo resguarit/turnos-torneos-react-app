@@ -5,6 +5,7 @@ import { Footer } from '@/components/footer';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import Loading from '@/components/Loading';
+import BtnNegro from '@/components/BtnNegro';
 
 const DAYS_OF_WEEK = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
@@ -112,9 +113,7 @@ export default function Calendar() {
           <div className=" rounded-lg  ">
             <div className="flex  justify-between items-center mb-6">
               <h2 className="text-2xl font-bold lg:text-4xl">Reservas</h2>
-              <button onClick={handleTurnosClick} className=" text-sm lg:text-xl lg:items-center lg:py-2 lg:h-fit tracking-wide h-8 px-2 items-center bg-black text-white hover:bg-black/90" style={{ borderRadius: '6px' }}>
-                Ver Turnos
-              </button>
+              <BtnNegro ruta="/ver-turnos" texto="Ver turnos" />
             </div>
 
             <div className="flex justify-center gap-8 items-center mb-4 lg:px-6">

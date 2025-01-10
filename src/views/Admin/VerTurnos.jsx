@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton'
 import ModalConfirmation from '@/components/ModalConfirmation';
 import Loading from '@/components/Loading';
+import BtnNegro from '@/components/BtnNegro';
 
 function VerTurnos() {
   const navigate = useNavigate();
@@ -206,14 +207,7 @@ function VerTurnos() {
               </div>
 
               <div className="flex gap-4 items-center">
-                <Button
-                  variant="default"
-                  onClick={handleNavigationGrid}
-                  className="px-4 py-3 bg-black text-white lg:text-lg hover:bg-black"
-                  style={{ borderRadius: '8px' }}
-                >
-                  Ver Grilla
-                </Button>
+                <BtnNegro ruta="/grilla-turnos" texto="Ver Grilla" />
               </div>
             </div>
 

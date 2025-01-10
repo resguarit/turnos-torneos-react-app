@@ -64,8 +64,16 @@ function EditarTurno() {
           usuario_email: turno.usuario.email,
           tipo_turno: turno.tipo
         });
+        setLoading(false);
       })
-      .catch((error) => setError(error.message));
+      .catch((error) => {
+        if (error.response && error.response.status === 404) {
+          navigate('/*');
+        } else {
+          setError(error.message);
+          setLoading(false);
+        }
+      });
 
     api.get('/canchas')
       .then((response) => setCanchaOptions(response.data.canchas))
@@ -77,7 +85,7 @@ function EditarTurno() {
         setLoading(false);
       })
       .catch((error) => setError(error.message));
-  }, [id]);
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     setFormData({
@@ -91,7 +99,7 @@ function EditarTurno() {
       ...formData,
       fecha_turno: date.toISOString().split('T')[0]
     });
-    setIsOpen(false);
+    setIsOpen(false); // Cerrar el calendario después de seleccionar una fecha
   };
 
   const toggleCalendar = () => {
@@ -119,7 +127,7 @@ function EditarTurno() {
         setFetching(false);
         setTurnoExistente(true);
         console.log(error.response.data.message);
-      }
+      } 
       setError(error.message);
     }
   };

@@ -26,6 +26,7 @@ function Login() {
         const response = await login(formData);
         localStorage.setItem('user_id', response.user_id); // Almacena el userId en el localStorage
         localStorage.setItem('username', response.username); // Almacena el nombre del usuario en el localStorage
+        localStorage.setItem('user_role', response.rol)
         navigate('/');
         } catch (error) {
         setError(error.message);

@@ -20,6 +20,8 @@ import SignUp from "@/views/General/SignUp";
 import EditarTurno from "@/views/Admin/EditarTurno";
 import Error from "@/views/General/Error";
 import UserProfile from "@/views/General/UserProfile";
+import ConfirmarTurno from "@/views/General/ConfirmarTurno";
+import ConfirmarLogin from "@/views/General/ConfirmarLogin";
 
 const AppRoutes = () => {
   return (
@@ -45,6 +47,8 @@ const AppRoutes = () => {
         <Route path="/editar-turno/:id" element={<EditarTurno />} />
         <Route path="*" element={<Error />} />
         <Route path="/user-profile" element={<UserProfile />} />
+        <Route path="/confirmar-turno" element={<ConfirmarTurno />} />
+        <Route path="/confirmar-login" element={<ConfirmarLogin />} />
       </Routes>
     </Router>
   );

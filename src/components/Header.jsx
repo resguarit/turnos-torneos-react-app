@@ -27,8 +27,7 @@ export function Header() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('user_id');
-    localStorage.removeItem('username');
+    localStorage.clear()
     setUserName(null);
     navigate('/');
   };

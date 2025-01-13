@@ -67,29 +67,31 @@ export default function CanchasReserva() {
   const handleSubmit = e => {
     e.preventDefault();
     setShowModal(true);
-    const userId = localStorage.getItem('user_id');
-    console.log("La respuesta es", selectedDate, selectedTime, selectedCourt.id, userId);
   };
 
   const confirmSubmit = async () => {
-    setShowModal(false);
-    try {
-      const userId = localStorage.getItem('user_id'); // Asume que el ID del usuario está almacenado en localStorage
-      const response = await api.post('/turnos/turnounico', {
-        fecha_turno: selectedDate,
-        cancha_id: selectedCourt.id,
-        horario_id: selectedTime,
-        monto_total: 100, // Reemplaza con el monto total real
-        monto_seña: 50, // Reemplaza con el monto de seña real
-        estado: 'Pendiente' // Reemplaza con el estado real
-      });
-      
-      if (response.status === 201) {
-        console.log("Reserva creada correctamente:", response.data);
-        navigate('/calendario-admi'); // Redirige a una página de confirmación
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
+      // Redirigir a la pantalla de confirmación de turno para registrarse o iniciar sesión
+      navigate(`/confirmar-turno?time=${selectedTime}&date=${selectedDate}&court=${selectedCourt.id}`);
+    } else {
+      try {
+        const response = await api.post('/turnos/turnounico', {
+          fecha_turno: selectedDate,
+          cancha_id: selectedCourt.id,
+          horario_id: selectedTime,
+          monto_total: 100, // Reemplaza con el monto total real
+          monto_seña: 50, // Reemplaza con el monto de seña real
+          estado: 'Pendiente' // Reemplaza con el estado real
+        });
+        
+        if (response.status === 201) {
+          console.log("Reserva creada correctamente:", response.data);
+          navigate('/calendario-admi'); // Redirige a una página de confirmación
+        }
+      } catch (error) {
+        console.error("Error creating reservation:", error);
       }
-    } catch (error) {
-      console.error("Error creating reservation:", error);
     }
   };
 

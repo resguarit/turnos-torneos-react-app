@@ -45,8 +45,9 @@ function EditarTurno() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    api.get(`/turnos/${id}`)
-      .then((response) => {
+    const fetchTurno = async () => {
+      try {
+        const response = await api.get(`/turnos/${id}`);
         const turno = response.data.turno;
         setBooking(turno);
         setFormData({
@@ -64,28 +65,33 @@ function EditarTurno() {
           usuario_email: turno.usuario.email,
           tipo_turno: turno.tipo
         });
+        fetchHorarios(turno.fecha_turno);
         setLoading(false);
-      })
-      .catch((error) => {
+      } catch (error) {
         if (error.response && error.response.status === 404) {
           navigate('/*');
         } else {
           setError(error.message);
           setLoading(false);
         }
-      });
+      }
+    };
+
+    fetchTurno();
 
     api.get('/canchas')
       .then((response) => setCanchaOptions(response.data.canchas))
       .catch((error) => setError(error.message));
-
-    api.get('/horarios')
-      .then((response) => {
-        setHorarioOptions(response.data.horarios);
-        setLoading(false);
-      })
-      .catch((error) => setError(error.message));
   }, [id, navigate]);
+
+  const fetchHorarios = async (fecha) => {
+    try {
+      const response = await api.get(`/horarios-dia?fecha=${fecha}`);
+      setHorarioOptions(response.data.horarios);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -95,10 +101,13 @@ function EditarTurno() {
   };
 
   const handleDateChange = (date) => {
+    const formattedDate = date.toISOString().split('T')[0];
     setFormData({
       ...formData,
-      fecha_turno: date.toISOString().split('T')[0]
+      fecha_turno: formattedDate,
+      horario_id: '' // Deseleccionar la hora
     });
+    fetchHorarios(formattedDate);
     setIsOpen(false); // Cerrar el calendario después de seleccionar una fecha
   };
 
@@ -127,8 +136,9 @@ function EditarTurno() {
         setFetching(false);
         setTurnoExistente(true);
         console.log(error.response.data.message);
-      } 
-      setError(error.message);
+      } else {
+        setError(error.message);
+      }
     }
   };
 
@@ -314,14 +324,13 @@ function EditarTurno() {
                 </div>
               )}
 
-              <div className="flex justify-end space-x-4 pt-6 border-t">
-                
-              <button 
-              type="submit" 
-              className="border border-naranja p-2 hover:bg-naranja hover:text-white " 
-              style={{borderRadius: '8px'}}>
-                {fetching ? "Guardando Cambios" : "Guardar Cambios"}
-              </button>
+              <div className="flex justify-end space-x-4">
+                <button
+                  type="submit"
+                  className="mt-4 p-2 lg:text-xl bg-naranja text-white rounded-xl hover:bg-naranja/80"
+                >
+                  {fetching ? "Guardando Cambios" : "Guardar Cambios"}
+                </button>
               </div>
             </form>
           </CardContent>

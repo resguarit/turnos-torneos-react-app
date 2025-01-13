@@ -80,8 +80,6 @@ export default function CanchasReserva() {
           fecha_turno: selectedDate,
           cancha_id: selectedCourt.id,
           horario_id: selectedTime,
-          monto_total: 100, // Reemplaza con el monto total real
-          monto_seña: 50, // Reemplaza con el monto de seña real
           estado: 'Pendiente' // Reemplaza con el estado real
         });
         

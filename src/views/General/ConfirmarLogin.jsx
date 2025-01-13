@@ -59,8 +59,6 @@ export default function ConfirmarLogin() {
             cancha_id: selectedCourt,
             horario_id: selectedTime,
             usuario_id: loginResponse.data.user_id,
-            monto_total: 100,
-            monto_seña: 50,
             estado: 'Pendiente'
           });
 

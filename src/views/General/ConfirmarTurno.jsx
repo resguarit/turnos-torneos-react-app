@@ -71,7 +71,7 @@ export default function ConfirmarTurno() {
     e.preventDefault();
     if (validateForm()) {
       try {
-        // Registrar usuario
+        // Register user
         const registerResponse = await api.post('/register', {
           name: formData.name,
           email: formData.email,
@@ -80,54 +80,41 @@ export default function ConfirmarTurno() {
           password_confirmation: formData.password_confirmation
         });
 
-        console.log('Respuesta registro:', registerResponse);
-
         if (registerResponse.status === 201) {
-          // Hacer login después del registro
+          // Login after registration
           const loginResponse = await api.post('/login', {
             email: formData.email,
             password: formData.password
           });
 
-          console.log('Respuesta login:', loginResponse);
+          if (loginResponse.data.token) {
+            // Store user data
+            localStorage.setItem('user_id', loginResponse.data.user_id);
+            localStorage.setItem('username', loginResponse.data.username);
+            localStorage.setItem('token', loginResponse.data.token);
 
-          // Almacenar datos del usuario
-          localStorage.setItem('user_id', loginResponse.data.user_id);
-          localStorage.setItem('username', loginResponse.data.username);
-          
-          // Crear reserva
-          const reservationResponse = await api.post('/turnos/turnounico', {
-            fecha_turno: selectedDate,
-            cancha_id: selectedCourt,
-            horario_id: selectedTime,
-            usuario_id: loginResponse.data.user_id,
-            monto_total: 100,
-            monto_seña: 50,
-            estado: 'Pendiente'
-          });
+            // Set Authorization header
+            api.defaults.headers.common['Authorization'] = `Bearer ${loginResponse.data.token}`;
 
-          if (reservationResponse.status === 201) {
-            console.log("Reserva creada:", reservationResponse.data);
-            navigate('/calendario-admi');
+            // Create reservation
+            const reservationResponse = await api.post('/turnos/turnounico', {
+              fecha_turno: selectedDate,
+              cancha_id: selectedCourt,
+              horario_id: selectedTime,
+              estado: 'Pendiente'
+            });
+
+            if (reservationResponse.status === 201) {
+              console.log("Reserva creada:", reservationResponse.data);
+              navigate('/calendario-admi');
+            }
           }
         }
-
       } catch (error) {
         console.error('Error completo:', error);
-        
-        if (error.response?.status === 422) {
-          const serverErrors = error.response.data.errors;
-          console.log('Errores del servidor:', serverErrors);
-          setErrors({
-            ...errors,
-            ...serverErrors,
-            form: error.response.data.message
-          });
-        } else {
-          setErrors({ 
-            form: 'Error al procesar la solicitud. Por favor, intente nuevamente.'
-          });
-        }
+        setErrors({
+          form: error.response?.data?.message || 'Error al procesar la solicitud'
+        });
       }
     }
   };
@@ -246,8 +233,7 @@ export default function ConfirmarTurno() {
                       'Cargando...'
                     }
                   </p>
-                  <p className="text-xl"><strong>Monto Total:</strong> $100</p>
-                  <p className="text-xl"><strong>Monto Seña:</strong> $50</p>
+
                   
                 </div>
               </div>

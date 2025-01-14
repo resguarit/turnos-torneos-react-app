@@ -71,7 +71,7 @@ export default function ConfirmarTurno() {
     e.preventDefault();
     if (validateForm()) {
       try {
-        // Register user
+        // Step 1: Register User
         const registerResponse = await api.post('/register', {
           name: formData.name,
           email: formData.email,
@@ -81,39 +81,52 @@ export default function ConfirmarTurno() {
         });
 
         if (registerResponse.status === 201) {
-          // Login after registration
-          const loginResponse = await api.post('/login', {
-            email: formData.email,
-            password: formData.password
-          });
-
-          if (loginResponse.data.token) {
-            // Store user data
-            localStorage.setItem('user_id', loginResponse.data.user_id);
-            localStorage.setItem('username', loginResponse.data.username);
-            localStorage.setItem('token', loginResponse.data.token);
-
-            // Set Authorization header
-            api.defaults.headers.common['Authorization'] = `Bearer ${loginResponse.data.token}`;
-
-            // Create reservation
-            const reservationResponse = await api.post('/turnos/turnounico', {
-              fecha_turno: selectedDate,
-              cancha_id: selectedCourt,
-              horario_id: selectedTime,
-              estado: 'Pendiente'
+          try {
+            // Step 2: Login
+            const loginResponse = await api.post('/login', {
+              email: formData.email,
+              password: formData.password
             });
 
-            if (reservationResponse.status === 201) {
-              console.log("Reserva creada:", reservationResponse.data);
-              navigate('/calendario-admi');
+            if (loginResponse.data.token) {
+              // Store user data
+              localStorage.setItem('user_id', loginResponse.data.user_id);
+              localStorage.setItem('username', loginResponse.data.username);
+              localStorage.setItem('token', loginResponse.data.token);
+
+              // Set token for next request
+              api.defaults.headers.common['Authorization'] = `Bearer ${loginResponse.data.token}`;
+
+              try {
+                // Step 3: Create Reservation
+                const reservationResponse = await api.post('/turnos/turnounico', {
+                  fecha_turno: selectedDate,
+                  cancha_id: selectedCourt,
+                  horario_id: selectedTime,
+                  monto_total: reservationDetails.cancha.precio_por_hora,
+                  monto_seña: reservationDetails.cancha.senia,
+                  estado: 'Pendiente'
+                });
+
+                if (reservationResponse.status === 201) {
+                  navigate('/calendario-admi');
+                }
+              } catch (reservationError) {
+                // Rollback: Delete user if reservation fails
+                await api.delete(`/users/${loginResponse.data.user_id}`);
+                throw new Error('Error al crear la reserva');
+              }
             }
+          } catch (loginError) {
+            // Rollback: Delete user if login fails
+            await api.delete(`/users/${registerResponse.data.id}`);
+            throw new Error('Error al iniciar sesión');
           }
         }
       } catch (error) {
-        console.error('Error completo:', error);
+        console.error('Error en la transacción:', error);
         setErrors({
-          form: error.response?.data?.message || 'Error al procesar la solicitud'
+          form: error.message || 'Error al procesar la solicitud'
         });
       }
     }

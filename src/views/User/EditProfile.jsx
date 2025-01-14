@@ -6,6 +6,8 @@ import { Eye, EyeOff } from 'lucide-react';
 import api from '@/lib/axiosConfig';
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function EditProfile() {
   const navigate = useNavigate();
@@ -109,9 +111,9 @@ export default function EditProfile() {
 
     try {
       await api.patch(`/usuarios/${userId}`, updatedData);
-      alert('Usuario actualizado correctamente');
+      toast.success('Usuario actualizado correctamente');
     } catch (error) {
-      setError(error.response.data.message || error.message);
+      toast.error(error.response.data.message || error.message);
     }
   };
 
@@ -133,7 +135,7 @@ export default function EditProfile() {
   return (
     <Card className="w-full max-w-7xl mx-auto border-0">
       <CardContent className="pt-6">
-        {error && <p className="text-red-500">{error}</p>}
+        <ToastContainer position="bottom-right" />
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Información Personal */}
           <div className="space-y-4">

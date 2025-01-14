@@ -1,5 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoutes";
+import { ROLES } from "@/constants/roles";
 import App from "../App";
 import TorneosA from "../views/Admin/TorneosA";
 import ZonasA from "../views/Admin/ZonasA";
@@ -27,28 +29,145 @@ const AppRoutes = () => {
   return (
     <Router>
       <Routes>
+        {/* Rutas públicas */}
         <Route path="/" element={<App />} />
-        <Route path="/torneos-admi" element={<TorneosA />} />
-        <Route path="/zonas-admi" element={<ZonasA />} />
-        <Route path="/alta-zona" element={<AltaZona />} />
-        <Route path="/calendario-admi" element={<Calendario />} />
-        <Route path="/ver-turnos" element={<VerTurnos />} />
-        <Route path="/grilla-turnos" element={<VerGrilla />} />
-        <Route path="/horariosReserva/:date" element={<HorariosReserva />} />
-        <Route path="/canchas-reserva" element={<CanchasReserva />} />
-        <Route path="/partidos" element={<Partidos />} />
-        <Route path="/ver-partidos" element={<VerPartidos />} />
-        <Route path="/cargar-partido" element={<CargaPartido />} />
-        <Route path="/reglamento" element={<Reglamento />} />
-        <Route path="/premios" element={<Premios />} />
-        <Route path="/perfil-usuario" element={<PerfilUsuario />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/editar-turno/:id" element={<EditarTurno />} />
         <Route path="*" element={<Error />} />
-        <Route path="/user-profile" element={<UserProfile />} />
         <Route path="/confirmar-turno" element={<ConfirmarTurno />} />
         <Route path="/confirmar-login" element={<ConfirmarLogin />} />
+
+        {/* Rutas protegidas para administradores */}
+        <Route
+          path="/torneos-admi"
+          element={
+            <ProtectedRoute requiredRole={ROLES.ADMIN}>
+              <TorneosA />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/zonas-admi"
+          element={
+            <ProtectedRoute requiredRole={ROLES.ADMIN}>
+              <ZonasA />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/alta-zona"
+          element={
+            <ProtectedRoute requiredRole={ROLES.ADMIN}>
+              <AltaZona />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ver-turnos"
+          element={
+            <ProtectedRoute requiredRole={ROLES.ADMIN}>
+              <VerTurnos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/grilla-turnos"
+          element={
+            <ProtectedRoute requiredRole={ROLES.ADMIN}>
+              <VerGrilla />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/editar-turno/:id"
+          element={
+            <ProtectedRoute requiredRole={ROLES.ADMIN}>
+              <EditarTurno />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Rutas protegidas para usuarios y administradores */}
+        <Route
+          path="/calendario-admi"
+          element={
+            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
+              <Calendario />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/horariosReserva/:date"
+          element={
+            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
+              <HorariosReserva />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/canchas-reserva"
+          element={
+            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
+              <CanchasReserva />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/perfil-usuario"
+          element={
+            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
+              <PerfilUsuario />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/user-profile"
+          element={
+            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
+              <UserProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/partidos"
+          element={
+            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
+              <Partidos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ver-partidos"
+          element={
+            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
+              <VerPartidos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cargar-partido"
+          element={
+            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
+              <CargaPartido />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reglamento"
+          element={
+            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
+              <Reglamento />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/premios"
+          element={
+            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
+              <Premios />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );

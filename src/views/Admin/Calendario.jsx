@@ -10,11 +10,12 @@ import BtnNegro from '@/components/BtnNegro';
 const DAYS_OF_WEEK = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 export default function Calendar() {
-  const navigate = useNavigate()
-  const today = new Date()
-  const [currentMonth, setCurrentMonth] = useState(today.getMonth())
-  const [currentYear, setCurrentYear] = useState(today.getFullYear())
-  const [reservations, setReservations] = useState()
+  const navigate = useNavigate();
+  const today = new Date();
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [reservations, setReservations] = useState();
+  const userRole = localStorage.getItem('user_role');
 
   useEffect(() => {
     api.get('/disponibilidad')
@@ -113,7 +114,9 @@ export default function Calendar() {
           <div className=" rounded-lg  ">
             <div className="flex  justify-between items-center mb-6">
               <h2 className="text-2xl font-bold lg:text-4xl">Reservas</h2>
-              <BtnNegro ruta="/ver-turnos" texto="Ver turnos" />
+              {(userRole === 'admin' || userRole === 'moderador') && (
+                <BtnNegro ruta="/ver-turnos" texto="Ver turnos" />
+              )}
             </div>
 
             <div className="flex justify-center gap-8 items-center mb-4 lg:px-6">
@@ -133,6 +136,14 @@ export default function Calendar() {
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
+
+            <div className="flex gap-8 mb-4 lg:text-xl">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-3 bg-naranja rounded"></div>
+                <span>Turnos no disponibles</span>
+              </div>
+            </div>
+
             <div className="overflow-x-auto ">
               <div className="grid grid-cols-7 gap-px bg-gray-200">
                 {DAYS_OF_WEEK.map(day => (
@@ -151,7 +162,9 @@ export default function Calendar() {
                       }`}
                       onClick={() => handleDayClick(day.date)}
                     >
-                      <span className="block text-sm mb-1">{day.day}</span>
+                      <span className={`block text-sm mb-1`}>
+                        {day.day}
+                      </span>
                       {reservations.map((reservation, idx) => (
                         <div
                           key={idx}

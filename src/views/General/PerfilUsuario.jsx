@@ -1,7 +1,7 @@
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import api from '@/lib/axiosConfig';
 import { LogOut } from 'lucide-react';
 
@@ -101,8 +101,10 @@ function PerfilUsuario() {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
-    navigate('/');
+    localStorage.clear()
+
+    // Redirigir al usuario a la página de inicio de sesión
+    navigate('/login');
   };
 
   return (

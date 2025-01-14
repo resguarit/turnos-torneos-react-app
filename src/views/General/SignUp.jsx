@@ -2,7 +2,8 @@ import video from '../../assets/rng.mp4';
 import React, { useState } from 'react';
 import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from 'react-router-dom';
-import { register } from '@/services/authService';
+import { register, login } from '@/services/authService';
+import api from '@/lib/axiosConfig';
 
 function SignUp() {
 
@@ -31,8 +32,23 @@ function SignUp() {
         return;
         }
         try {
-        await register(formData);
-        navigate('/login');
+            const registerResponse = await api.post('/register', {
+                name: formData.name,
+                email: formData.email,
+                telefono: formData.telefono,
+                password: formData.password,
+                password_confirmation: formData.password_confirmation
+              });
+                if (registerResponse.status === 201) {
+                    const loginResponse = await api.post('/login', {
+                        email: formData.email,
+                        password: formData.password
+                    });
+                    localStorage.setItem('user_id', loginResponse.data.user_id);
+                    localStorage.setItem('username', loginResponse.data.username);
+                    localStorage.setItem('token', loginResponse.data.token);
+                    navigate('/');
+                }
         } catch (error) {
         setError(error.message);
         }

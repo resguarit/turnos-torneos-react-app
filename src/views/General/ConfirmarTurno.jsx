@@ -109,7 +109,7 @@ export default function ConfirmarTurno() {
                 });
 
                 if (reservationResponse.status === 201) {
-                  navigate('/calendario-admi');
+                  navigate('/user-profile');
                 }
               } catch (reservationError) {
                 // Rollback: Delete user if reservation fails

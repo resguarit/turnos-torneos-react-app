@@ -85,7 +85,7 @@ export default function CanchasReserva() {
         
         if (response.status === 201) {
           console.log("Reserva creada correctamente:", response.data);
-          navigate('/calendario-admi'); // Redirige a una página de confirmación
+          navigate('/user-profile'); // Redirige a una página de confirmación
         }
       } catch (error) {
         console.error("Error creating reservation:", error);

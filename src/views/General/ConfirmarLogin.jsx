@@ -64,7 +64,7 @@ export default function ConfirmarLogin() {
 
           if (reservationResponse.status === 201) {
             console.log("Reserva creada:", reservationResponse.data);
-            navigate('/calendario-admi');
+            navigate('/user-profile');
           }
         }
       } catch (error) {

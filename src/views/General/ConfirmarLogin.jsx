@@ -15,6 +15,7 @@ export default function ConfirmarLogin() {
     password: ''
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false); // Estado de carga
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -32,17 +33,23 @@ export default function ConfirmarLogin() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
+      setLoading(true); // Iniciar estado de carga
       try {
         // Iniciar sesión
         const loginResponse = await api.post('/login', {
           email: formData.email,
           password: formData.password
         });
-
-        console.log('Respuesta login:', loginResponse);
 
         if (loginResponse.data.token) {
           // Guardar datos del usuario y token
@@ -63,15 +70,15 @@ export default function ConfirmarLogin() {
           });
 
           if (reservationResponse.status === 201) {
-            console.log("Reserva creada:", reservationResponse.data);
             navigate('/user-profile');
           }
         }
       } catch (error) {
-        console.error('Error:', error);
         setErrors({ 
           form: error.response?.data?.message || 'Error al procesar la solicitud'
         });
+      } finally {
+        setLoading(false); // Finalizar estado de carga
       }
     }
   };
@@ -80,74 +87,79 @@ export default function ConfirmarLogin() {
     navigate(`/confirmar-turno?time=${selectedTime}&date=${selectedDate}&court=${selectedCourt}`);
   };
 
-
   return (
     <div className="min-h-screen flex flex-col justify-start bg-gray-100 font-inter">
-        <Header />
-        <main className="max-w-7xl lg:max-w-full p-6 grow">
-      <Card className="max-w-5xl mx-auto border-0">
-        <CardHeader>
-          <CardTitle className="text-4xl font-semibold">Iniciar Sesión</CardTitle>
-          <CardDescription className="text-xl text-gray-600">
-            Ingrese sus datos para iniciar sesión.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1 flex flex-col">
-                <Label htmlFor="email" className="text-2xl font-semibold">Email</Label>
-                <input
+      <Header />
+      <main className="max-w-7xl lg:max-w-full p-6 grow">
+        <h1 className="text-4xl font-semibold mb-2">Iniciar Sesión y Confirmar Turno</h1>
+        <p className="text-xl text-gray-600 mb-8">
+          Inicie sesión para confirmar su reserva.
+        </p>
+        <Card className="max-w-5xl mx-auto border-0">
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-4">
+                <div className="space-y-1 flex flex-col">
+                  <Label htmlFor="email" className="text-xl">Email</Label>
+                  <input
                     id="email"
                     type="email"
+                    name="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className={`${errors.email ? 'border-red-500' : ''} border-gray-300 border p-2`}
-                    style={{ borderRadius: '8px'}}
-                />
-                {errors.email && (
+                    onChange={handleChange}
+                    className={`w-full text-black text-lg border-2 border-gray-300 p-2 rounded-xl ${errors.email ? 'border-red-500' : ''}`}
+                  />
+                  {errors.email && (
                     <p className="text-sm text-red-500">{errors.email}</p>
-                )}
+                  )}
                 </div>
-            <div className="space-y-1 flex flex-col">
-              <Label htmlFor="password" className="text-2xl font-semibold">Contraseña</Label>
-              <input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className={`${errors.password ? 'border-red-500' : ''} border-gray-300 border p-2`}
-                    style={{ borderRadius: '8px'}}
-              />
-              {errors.password && (
-                <p className="text-sm text-red-500">{errors.password}</p>
+
+                <div className="space-y-1 flex flex-col">
+                  <Label htmlFor="password" className="text-xl">Contraseña</Label>
+                  <input
+                    id="password"
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={`w-full text-black text-lg border-2 border-gray-300 p-2 rounded-xl ${errors.password ? 'border-red-500' : ''}`}
+                  />
+                  {errors.password && (
+                    <p className="text-sm text-red-500">{errors.password}</p>
+                  )}
+                </div>
+              </div>
+
+              {errors.form && (
+                <div className="text-red-500 text-sm mb-4">
+                  {errors.form}
+                </div>
               )}
+
+              <button type="submit" className="w-full bg-naranja p-2 text-xl text-white rounded-[10px] hover:bg-white hover:text-naranja border border-naranja" disabled={loading}>
+                {loading ? 'Iniciando Sesión y Confirmando Turno...' : 'Iniciar Sesión y Confirmar Turno'}
+              </button>
+            </form>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-lg uppercase">
+                <span className="px-2 text-muted-foreground">
+                  O si no tienes una cuenta
+                </span>
+              </div>
             </div>
-              <div className='w-full justify-center flex '>
-            <button type="submit" className="w-1/2 text-white p-2 rounded-[0.60rem] mt-6 text-xl bg-naranja hover:bg-naranja/90">
-              Iniciar Sesión y Confirmar Turno
+            <button 
+              className="w-1/2 bg-white border border-naranja text-naranja text-xl p-2 rounded-[10px] hover:bg-naranja hover:text-white"
+              onClick={navigateToSignUp}
+              disabled={loading}
+            >
+              Registrarse
             </button>
-            </div>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xl">
-              <span className=" px-2 text-muted-foreground">
-                Si no tenés una cuenta
-              </span>
-              <a onClick={navigateToSignUp} >
-              <span className="text-naranja underline cursor-pointer  text-muted-foreground">
-                Registrate
-              </span>
-              </a>
-            </div>
-          </div>
-          
-        </CardFooter>
-      </Card>
+          </CardContent>
+        </Card>
       </main>
       <Footer />
     </div>

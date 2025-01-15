@@ -13,6 +13,8 @@ export default function CanchasReserva() {
   const [selectedCourt, setSelectedCourt] = useState(null);
   const [courts, setCourts] = useState([]);
   const [formattedTime, setFormattedTime] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false); // Estado de carga
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -70,12 +72,23 @@ export default function CanchasReserva() {
   };
 
   const confirmSubmit = async () => {
+    setLoading(true); // Iniciar estado de carga
     const userId = localStorage.getItem('user_id');
     if (!userId) {
       // Redirigir a la pantalla de confirmación de turno para registrarse o iniciar sesión
       navigate(`/confirmar-turno?time=${selectedTime}&date=${selectedDate}&court=${selectedCourt.id}`);
     } else {
       try {
+        // Crear bloqueo temporal
+        const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
+          horario_id: selectedTime,
+          fecha: selectedDate,
+          cancha_id: selectedCourt.id
+        });
+
+        console.log('Bloqueo temporal creado:', bloqueoResponse.data);
+
+        // Crear reserva
         const response = await api.post('/turnos/turnounico', {
           fecha_turno: selectedDate,
           cancha_id: selectedCourt.id,
@@ -89,6 +102,18 @@ export default function CanchasReserva() {
         }
       } catch (error) {
         console.error("Error creating reservation:", error);
+        if (error.response) {
+          console.error('Response data:', error.response.data);
+          console.error('Response status:', error.response.status);
+          console.error('Response headers:', error.response.headers);
+        } else if (error.request) {
+          console.error('Request data:', error.request);
+        } else {
+          console.error('Error message:', error.message);
+        }
+        setError(error.response?.data?.message || 'Error al crear la reserva');
+      } finally {
+        setLoading(false); // Finalizar estado de carga
       }
     }
   };
@@ -112,8 +137,9 @@ export default function CanchasReserva() {
             onClick={onConfirm}
             className="px-4 py-2 bg-naranja text-white lg:text-xl"
             style={{ borderRadius: "6px" }}
+            disabled={loading}
           >
-            Reservar
+            {loading ? 'Procesando...' : 'Reservar'}
           </button>
         </div>
       </div>
@@ -184,6 +210,7 @@ export default function CanchasReserva() {
           </div>
         </div>
         {showModal && <Modal onConfirm={confirmSubmit} onCancel={closeModal} />}
+        {error && <p className="text-red-500 mt-4">{error}</p>}
       </main>
       <Footer />
     </div>

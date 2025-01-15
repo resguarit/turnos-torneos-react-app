@@ -23,6 +23,7 @@ export default function VerGrilla() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+
   useEffect(() => {
     const fetchGrid = async () => {
       try {

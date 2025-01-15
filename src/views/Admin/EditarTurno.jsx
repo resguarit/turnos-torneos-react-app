@@ -86,7 +86,7 @@ function EditarTurno() {
 
   const fetchHorarios = async (fecha) => {
     try {
-      const response = await api.get(`/horarios-dia?fecha=${fecha}`);
+      const response = await api.get(`/disponibilidad/fecha?fecha=${fecha}`);
       setHorarioOptions(response.data.horarios);
     } catch (error) {
       setError(error.message);
@@ -101,7 +101,7 @@ function EditarTurno() {
   };
 
   const handleDateChange = (date) => {
-    const formattedDate = date.toISOString().split('T')[0];
+    const formattedDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().split('T')[0];
     setFormData({
       ...formData,
       fecha_turno: formattedDate,

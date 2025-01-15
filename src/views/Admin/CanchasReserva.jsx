@@ -7,12 +7,14 @@ import { Footer } from "@/components/Footer";
 import BackButton from "@/components/BackButton";
 import api from '@/lib/axiosConfig';
 import Loading from '@/components/Loading';
+import useTimeout from '@/components/useTimeout';
 
 export default function CanchasReserva() {
   const [showModal, setShowModal] = useState(false);
   const [selectedCourt, setSelectedCourt] = useState(null);
   const [courts, setCourts] = useState([]);
   const [formattedTime, setFormattedTime] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,11 +42,19 @@ export default function CanchasReserva() {
         }
       } catch (error) {
         console.error("Error fetching horario:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     if (selectedTime) fetchHorario();
   }, [selectedTime]);
+
+  useTimeout(() => {
+    if (loading) {
+      navigate('/error');
+    }
+  }, 15000);
 
   // Cargar canchas
   useEffect(() => {
@@ -120,7 +130,7 @@ export default function CanchasReserva() {
     </div>
   );
 
-  if (!courts.length) {
+  if (loading) {
     return <div><Loading /></div>;
   }
 

@@ -17,6 +17,8 @@ import BackButton from '@/components/BackButton'
 import ModalConfirmation from '@/components/ModalConfirmation';
 import Loading from '@/components/Loading';
 import BtnNegro from '@/components/BtnNegro';
+import useTimeout from '@/components/useTimeout';
+
 
 function VerTurnos() {
   const navigate = useNavigate();
@@ -36,7 +38,7 @@ function VerTurnos() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let url = 'http://127.0.0.1:8000/api/turnos';
+    let url = '/turnos';
     if (viewOption === 'day' && selectedDate) {
       const formattedDate = selectedDate.toISOString().split('T')[0];
       url += `?fecha=${formattedDate}`;
@@ -64,6 +66,12 @@ function VerTurnos() {
         setLoading(false); // En caso de error, establecer loading a false
       });
   }, [selectedDate, startDate, endDate, viewOption]);
+
+  useTimeout(() => {
+    if (loading) {
+      navigate('/error');
+    }
+  }, 15000);
 
   useEffect(() => {
     api.get('/canchas')

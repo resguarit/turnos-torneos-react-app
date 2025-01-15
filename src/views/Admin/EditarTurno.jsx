@@ -86,7 +86,7 @@ function EditarTurno() {
 
   const fetchHorarios = async (fecha) => {
     try {
-      const response = await api.get(`/horarios-dia?fecha=${fecha}`);
+      const response = await api.get(`/disponibilidad/fecha?fecha=${fecha}`);
       setHorarioOptions(response.data.horarios);
     } catch (error) {
       setError(error.message);
@@ -101,7 +101,7 @@ function EditarTurno() {
   };
 
   const handleDateChange = (date) => {
-    const formattedDate = date.toISOString().split('T')[0];
+    const formattedDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().split('T')[0];
     setFormData({
       ...formData,
       fecha_turno: formattedDate,
@@ -157,56 +157,54 @@ function EditarTurno() {
       <Header />
       <main className="flex-1 grow p-6 bg-gray-100">
         <BackButton />
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader className="border-b">
-            <CardTitle className="text-2xl font-bold">Detalles del Turno</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6 pt-4">
+        <h1 className='text-4xl font-semibold '>Detalles del Turno</h1>
+        <Card className="max-w-7xl mx-auto border-0 shadow-none">
+          <CardContent className="space-y-6 pt-4 ">
             {/* Campos de solo lectura */}
             <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-bold mb-1 block">Nombre:</Label>
-                  <div className="p-2 bg-white rounded-md border">{turnoData.usuario_nombre}</div>
+                  <Label className="text-2xl font-bold mb-1 block">Nombre:</Label>
+                  <div className="p-2 text-xl bg-white rounded-md border">{turnoData.usuario_nombre}</div>
                 </div>
                 <div>
-                  <Label className="text-sm font-bold mb-1 block">Teléfono:</Label>
-                  <div className="p-2 bg-white rounded-md border">{turnoData.usuario_telefono}</div>
+                  <Label className="text-2xl font-bold mb-1 block">Teléfono:</Label>
+                  <div className="p-2 text-xl bg-white rounded-md border">{turnoData.usuario_telefono}</div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-bold mb-1 block">Email:</Label>
-                  <div className="p-2 bg-white rounded-md border">{turnoData.usuario_email}</div>
+                  <Label className="text-2xl font-bold mb-1 block">Email:</Label>
+                  <div className="p-2 text-xl bg-white rounded-md border">{turnoData.usuario_email}</div>
                 </div>
                 <div>
-                  <Label className="text-sm font-bold mb-1 block">Tipo de Turno:</Label>
-                  <div className="p-2 bg-white rounded-md border">{turnoData.tipo_turno}</div>
+                  <Label className="text-2xl font-bold mb-1 block">Tipo de Turno:</Label>
+                  <div className="p-2 text-xl bg-white rounded-md border">{turnoData.tipo_turno}</div>
                 </div>
               </div>
               <div>
-                <Label className="text-sm font-bold mb-1 block">Fecha de Reserva:</Label>
-                <div className="p-2 bg-white rounded-md border">{turnoData.fecha_reserva}</div>
+                <Label className="text-2xl font-bold mb-1 block">Fecha de Reserva:</Label>
+                <div className="p-2 text-xl bg-white rounded-md border">{turnoData.fecha_reserva}</div>
               </div>
             </div>
 
             {/* Formulario editable */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 bg-gray-50 p-4">
               <div className="space-y-4">
                 <div>
-                  <Label className="text-sm font-medium mb-1 block">Fecha del Turno</Label>
+                  <Label className="text-2xl font-semibold mb-1 block">Fecha del Turno</Label>
                   <div className="relative">
                     <button
                       type="button"
                       onClick={toggleCalendar}
-                      className="w-full p-2 border rounded-md pl-10 bg-white text-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-naranja focus:border-naranja"
+                      className="w-full text-xl p-2 border rounded-md pl-10 bg-white text-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-naranja focus:border-naranja"
                     >
                       {formData.fecha_turno ? format(parseISO(formData.fecha_turno), 'PPP', { locale: es }) : 'Seleccionar Fecha'}
                     </button>
                     <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
                     {isOpen && (
                       <div className="absolute mt-2 z-10">
-                        <div className="bg-white border rounded-lg shadow-lg p-4">
+                        <div className="bg-white  border rounded-lg shadow-lg p-4">
                           <DayPicker
                             selected={parseISO(formData.fecha_turno)}
                             onDayClick={handleDateChange}
@@ -219,21 +217,21 @@ function EditarTurno() {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium mb-1 block">Cancha</Label>
+                  <Label className="text-2xl font-semibold mb-1 block">Cancha</Label>
                   <Select 
                     value={formData.cancha_id.toString()}
                     onValueChange={(value) => setFormData({...formData, cancha_id: value})}
                   >
-                    <SelectTrigger className="w-full bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja">
+                    <SelectTrigger className="w-full text-xl bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja">
                       <SelectValue placeholder="Seleccionar cancha" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border shadow-lg">
+                    <SelectContent className="bg-white text-xl border shadow-lg">
                       <ScrollArea className="h-[200px]">
                         {canchaOptions.map((cancha) => (
                           <SelectItem 
                             key={cancha.id} 
                             value={cancha.id.toString()}
-                            className="hover:bg-gray-100"
+                            className="hover:bg-gray-100 text-xl"
                           >
                             {`Cancha ${cancha.nro} - ${cancha.tipo_cancha}`}
                           </SelectItem>
@@ -244,21 +242,21 @@ function EditarTurno() {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium mb-1 block">Horario</Label>
+                  <Label className="text-2xl font-semibold mb-1 block">Horario</Label>
                   <Select 
                     value={formData.horario_id.toString()}
                     onValueChange={(value) => setFormData({...formData, horario_id: value})}
                   >
-                    <SelectTrigger className="w-full bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja">
+                    <SelectTrigger className="w-full text-xl bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja">
                       <SelectValue placeholder="Seleccionar horario"/>
                     </SelectTrigger>
-                    <SelectContent className="bg-white border shadow-lg">
+                    <SelectContent className="bg-white border shadow-lg text-xl">
                       <ScrollArea className="h-[200px]">
                         {horarioOptions.map((horario) => (
                           <SelectItem 
                             key={horario.id} 
                             value={horario.id.toString()}
-                            className="hover:bg-gray-100"
+                            className="hover:bg-gray-100 text-xl"
                           >
                             {`${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`}
                           </SelectItem>
@@ -270,29 +268,29 @@ function EditarTurno() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-medium mb-1 block">Monto Total</Label>
+                    <Label className="text-2xl font-semibold mb-1 block">Monto Total</Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-2.5 text-gray-500">$</span>
-                      <Input
+                      <span className="absolute left-3 text-xl top-2 text-gray-500">$</span>
+                      <input
                         type="number"
                         name="monto_total"
                         value={formData.monto_total}
                         onChange={handleChange}
-                        className="pl-8 w-full bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja"
+                        className="pl-8 text-xl items-center py-1 w-full bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja"
                         placeholder="0.00"
                       />
                     </div>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium mb-1 block">Monto de la Seña</Label>
+                    <Label className="text-2xl font-semibold mb-1 block">Monto de la Seña</Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-2.5 text-gray-500">$</span>
-                      <Input
+                      <span className="absolute text-xl left-3 top-2 text-gray-500">$</span>
+                      <input
                         type="number"
                         name="monto_seña"
                         value={formData.monto_seña}
                         onChange={handleChange}
-                        className="pl-8 w-full bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja"
+                        className="pl-8 py-1 w-full text-xl bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja"
                         placeholder="0.00"
                       />
                     </div>
@@ -300,26 +298,26 @@ function EditarTurno() {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium mb-1 block">Estado</Label>
+                  <Label className="text-2xl font-semibold mb-1 block">Estado</Label>
                   <Select 
                     value={formData.estado}
                     onValueChange={(value) => setFormData({...formData, estado: value})}
                   >
-                    <SelectTrigger className="w-full bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja">
+                    <SelectTrigger className="w-full text-xl bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja">
                       <SelectValue placeholder="Seleccionar estado" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border shadow-lg">
-                      <SelectItem value="Pendiente" className="hover:bg-gray-100">Pendiente</SelectItem>
-                      <SelectItem value="Señado" className="hover:bg-gray-100">Señado</SelectItem>
-                      <SelectItem value="Pagado" className="hover:bg-gray-100">Pagado</SelectItem>
-                      <SelectItem value="Cancelado" className="hover:bg-gray-100">Cancelado</SelectItem>
+                    <SelectContent className="bg-white border shadow-lg text-xl">
+                      <SelectItem value="Pendiente" className="hover:bg-gray-100 text-xl">Pendiente</SelectItem>
+                      <SelectItem value="Señado" className="hover:bg-gray-100 text-xl">Señado</SelectItem>
+                      <SelectItem value="Pagado" className="hover:bg-gray-100 text-xl">Pagado</SelectItem>
+                      <SelectItem value="Cancelado" className="hover:bg-gray-100 text-xl">Cancelado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
               {turnoExistente && (
-                <div className="text-red-500 text-sm">
+                <div className="text-red-500 text-2xl">
                   Ya existe un turno para esa cancha en esta fecha y horario.
                 </div>
               )}
@@ -327,7 +325,7 @@ function EditarTurno() {
               <div className="flex justify-end space-x-4">
                 <button
                   type="submit"
-                  className="mt-4 p-2 lg:text-xl bg-naranja text-white rounded-xl hover:bg-naranja/80"
+                  className="mt-4 p-3 lg:text-2xl bg-naranja text-white rounded-xl hover:bg-naranja/80"
                 >
                   {fetching ? "Guardando Cambios" : "Guardar Cambios"}
                 </button>

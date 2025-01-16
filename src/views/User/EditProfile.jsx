@@ -40,7 +40,7 @@ export default function EditProfile() {
   });
 
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false); // Estado de carga
+  const [isLoading, setIsLoading] = useState(false); // Estado de carga
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -91,7 +91,7 @@ export default function EditProfile() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Iniciar estado de carga
+    setIsLoading(true); // Iniciar estado de carga
     const userId = localStorage.getItem('user_id');
     const updatedData = {};
 
@@ -106,12 +106,12 @@ export default function EditProfile() {
     if (userPassword.current_password) {
       if (!userPassword.password || !userPassword.password_confirmation) {
         setError('Debe ingresar la nueva contraseña y la confirmación de la contraseña.');
-        setLoading(false); // Finalizar estado de carga
+        setIsLoading(false); // Finalizar estado de carga
         return;
       }
       if (userPassword.password !== userPassword.password_confirmation) {
         setError('Las contraseñas no coinciden');
-        setLoading(false); // Finalizar estado de carga
+        setIsLoading(false); // Finalizar estado de carga
         return;
       }
       updatedData.password = userPassword.password;
@@ -130,7 +130,7 @@ export default function EditProfile() {
     } catch (error) {
       toast.error(error.response.data.message || error.message);
     } finally {
-      setLoading(false); // Finalizar estado de carga
+      setIsLoading(false); // Finalizar estado de carga
     }
   };
 
@@ -283,8 +283,8 @@ export default function EditProfile() {
                 <button type="button" className='bg-red-500 p-3 text-white text-xl rounded-[10px]' onClick={handleCancelarClick}>
                   Cancelar
                 </button>
-                <button type="submit" className='bg-naranja text-white p-3 text-xl rounded-[10px]' disabled={loading}>
-              {loading ? 'Guardando...' : 'Guardar Cambios'}
+                <button type="submit" className='bg-naranja text-white p-3 text-xl rounded-[10px]' disabled={isLoading}>
+              {isLoading ? 'Guardando...' : 'Guardar Cambios'}
             </button>
               </div>
             </form>

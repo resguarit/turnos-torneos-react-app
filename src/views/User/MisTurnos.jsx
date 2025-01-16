@@ -1,56 +1,97 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import api from '@/lib/axiosConfig';
+import Loading from '@/components/Loading';
 
 export default function MisTurnos() {
   const [turnos, setTurnos] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showProximos, setShowProximos] = useState(true);
+  const [expandedTurno, setExpandedTurno] = useState(null);
 
   useEffect(() => {
-    const fetchTurnos = async () => {
-      try {
-        const userId = localStorage.getItem('user_id');
-        const response = await api.get(`turnos/user-proximos`);
-        const adjustedTurnos = response.data.turnos.map(turno => {
-          const adjustedFechaTurno = new Date(new Date(turno.fecha_turno).getTime() + new Date(turno.fecha_turno).getTimezoneOffset() * 60000);
-          const adjustedFechaReserva = new Date(new Date(turno.fecha_reserva).getTime() + new Date(turno.fecha_reserva).getTimezoneOffset() * 60000);
-          return { ...turno, fecha_turno: adjustedFechaTurno, fecha_reserva: adjustedFechaReserva };
-        });
-        setTurnos(adjustedTurnos);
-      } catch (error) {
-        setError(error.message);
-      }
-    };
-
     fetchTurnos();
-  }, []);
+  }, [showProximos]);
 
-  const [isOpen, setIsOpen] = useState(false);
-
-  const seeMore = () => {
-    setIsOpen(!isOpen);
+  const fetchTurnos = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get('turnos/user');
+      if (response.data && response.data.turnos) {
+        const fechaHoy = new Date().toISOString().split('T')[0];
+        const turnosFiltrados = response.data.turnos.filter(turno => {
+          return showProximos ? turno.fecha_turno >= fechaHoy : turno.fecha_turno < fechaHoy;
+        });
+        const turnosOrdenados = turnosFiltrados.sort((a, b) => {
+          const fechaA = new Date(a.fecha_turno);
+          const fechaB = new Date(b.fecha_turno);
+          if (fechaA.getTime() === fechaB.getTime()) {
+            return new Date(`1970-01-01T${a.horario.hora_inicio}`) - new Date(`1970-01-01T${b.horario.hora_inicio}`);
+          }
+          return fechaA - fechaB;
+        });
+        setTurnos(turnosOrdenados);
+      } else {
+        setTurnos([]);
+      }
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const toggleTurnos = () => {
+    setShowProximos(!showProximos);
+  };
+
+  const toggleExpand = (turnoId) => {
+    setExpandedTurno(expandedTurno === turnoId ? null : turnoId);
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + 1); // Sumar un día para corregir el desfase
+    const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+    return date.toLocaleDateString('es-ES', options);
+  };
+
 
   return (
     <div>
-      <h2 className="font-semibold mb-4 text-2xl">Próximos Turnos</h2>
       {error && <p className="text-red-500">{error}</p>}
-      <ul className="space-y-4">
-        {turnos.map((turno) => (
-          <li key={turno.id} className="bg-white p-4 lg:text-xl rounded-xl shadow">
-            <h1 className='lg:text-2xl text-xl font-semibold '>Fecha: {new Date(turno.fecha_turno).toLocaleDateString()}</h1>
-            <p className='lg:text-2xl text-xl  '>Hora: {turno.horario.hora_inicio} - {turno.horario.hora_fin}</p>
-            <p className="lg:text-2xl text-xl">Cancha: {turno.cancha.tipo_cancha} (Nro: {turno.cancha.nro})</p>
-            <button className="text-gray-600 py-1 rounded-md" onClick={seeMore}>Ver más</button>
-            {isOpen &&
-            <div>
-              <p>Fecha de Reserva: {new Date(turno.fecha_reserva).toLocaleDateString()}</p>
-              <p>Monto Total: ${turno.monto_total}</p>
-              <p>Monto Seña: ${turno.monto_seña}</p>
+      <h1 className="text-2xl">{showProximos ? 'Próximos Turnos' : 'Historial Turnos'}</h1>
+      <div className="w-full flex justify-end">
+      <button
+          onClick={toggleTurnos}
+          className="mb-6 p-3 bg-naranja text-white text-xl rounded-[8px]"
+        >
+          {showProximos ? 'Ver Turnos Anteriores' : 'Ver Turnos Próximos'}
+        </button>
+        </div>
+        {error && <p className="text-red-500">{error}</p>}
+        <div className="flex flex-col gap-4 w-full"> 
+          {turnos.map((turno) => (
+            <div key={turno.id} className="bg-white p-4 rounded-lg shadow-md">
+              <h2 className="text-2xl font-semibold">{formatDate(turno.fecha_turno)}</h2>
+              <p className="text-xl"><span className="font-semibold">Cancha:</span> {turno.cancha.nro} - {turno.cancha.tipo_cancha}</p>
+              <p className="text-xl"><span className=" font-semibold">Horario:</span> {turno.horario.hora_inicio} - {turno.horario.hora_fin}</p>
+              {expandedTurno === turno.id && (
+                <div className="mt-4 text-gray-600">
+                  <p><span className="font-semibold">Fecha reserva</span> {turno.fecha_reserva}</p>
+                  <p><span className="font-semibold">Monto Total:</span> {turno.monto_total}</p>
+                  <p><span className="font-semibold">Monto Seña:</span> {turno.monto_seña}</p>
+                </div>
+              )}
+              <button
+                onClick={() => toggleExpand(turno.id)}
+                className="mt-4 p-2 bg-gray-200 text-black rounded-lg"
+              >
+                {expandedTurno === turno.id ? 'Ver Menos' : 'Ver Más'}
+              </button>
             </div>
-            }
-          </li>
-        ))}
-      </ul>
+          ))}
+</div>
     </div>
   );
 }

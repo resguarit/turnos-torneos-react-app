@@ -83,49 +83,62 @@ export default function CanchasReserva() {
   const confirmSubmit = async () => {
     setLoading(true); // Iniciar estado de carga
     const userId = localStorage.getItem('user_id');
+    
     if (!userId) {
-      // Redirigir a la pantalla de confirmación de turno para registrarse o iniciar sesión
-      navigate(`/confirmar-turno?time=${selectedTime}&date=${selectedDate}&court=${selectedCourt.id}`);
-    } else {
-      try {
+        setLoading(false);
+        navigate(`/confirmar-turno?time=${selectedTime}&date=${selectedDate}&court=${selectedCourt.id}`);
+        return;
+    }
+
+    try {
+        // Primero verificar disponibilidad
+        const disponibilidadResponse = await api.get(`/disponibilidad/cancha?fecha=${selectedDate}&horario_id=${selectedTime}`);
+        const canchaDisponible = disponibilidadResponse.data.canchas.some(
+            cancha => cancha.id === selectedCourt.id && cancha.disponible
+        );
+
+        if (!canchaDisponible) {
+            setError('El turno ya no está disponible');
+            setLoading(false);
+            return;
+        }
+
         // Crear bloqueo temporal
         const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
-          horario_id: selectedTime,
-          fecha: selectedDate,
-          cancha_id: selectedCourt.id
+            fecha: selectedDate,
+            horario_id: selectedTime,
+            cancha_id: selectedCourt.id
         });
 
-        console.log('Bloqueo temporal creado:', bloqueoResponse.data);
-
-        // Crear reserva
-        const response = await api.post('/turnos/turnounico', {
-          fecha_turno: selectedDate,
-          cancha_id: selectedCourt.id,
-          horario_id: selectedTime,
-          estado: 'Pendiente' // Reemplaza con el estado real
-        });
-        
-        if (response.status === 201) {
-          console.log("Reserva creada correctamente:", response.data);
-          navigate('/user-profile'); // Redirige a una página de confirmación
+        if (bloqueoResponse.status === 201) {
+            try {
+                // Crear reserva
+                const response = await api.post('/turnos/turnounico', {
+                    fecha_turno: selectedDate,
+                    cancha_id: selectedCourt.id,
+                    horario_id: selectedTime,
+                    estado: 'Pendiente'
+                });
+                
+                if (response.status === 201) {
+                    navigate('/user-profile');
+                }
+            } catch (reservaError) {
+                // Si falla la creación de la reserva, liberar el bloqueo temporal
+                await api.delete(`/turnos/bloqueotemporal/${bloqueoResponse.data.id}`);
+                throw reservaError;
+            }
         }
-      } catch (error) {
-        console.error("Error creating reservation:", error);
-        if (error.response) {
-          console.error('Response data:', error.response.data);
-          console.error('Response status:', error.response.status);
-          console.error('Response headers:', error.response.headers);
-        } else if (error.request) {
-          console.error('Request data:', error.request);
-        } else {
-          console.error('Error message:', error.message);
-        }
-        setError(error.response?.data?.message || 'Error al crear la reserva');
-      } finally {
-        setLoading(false); // Finalizar estado de carga
-      }
+    } catch (error) {
+        console.error("Error en la reserva:", error);
+        setError(
+            error.response?.data?.message || 
+            'Error al crear la reserva. Por favor, intente nuevamente.'
+        );
+    } finally {
+        setLoading(false);
     }
-  };
+};
 
   const closeModal = () => {
     setShowModal(false);

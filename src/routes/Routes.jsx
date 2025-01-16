@@ -24,6 +24,7 @@ import Error from "@/views/General/Error";
 import UserProfile from "@/views/General/UserProfile";
 import ConfirmarTurno from "@/views/General/ConfirmarTurno";
 import ConfirmarLogin from "@/views/General/ConfirmarLogin";
+import EditProfile from "@/views/User/EditProfile";
 
 const AppRoutes = () => {
   return (
@@ -165,6 +166,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
               <Premios />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/editar-perfil"
+          element={
+            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
+              <EditProfile />
             </ProtectedRoute>
           }
         />

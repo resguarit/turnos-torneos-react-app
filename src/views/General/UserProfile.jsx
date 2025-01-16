@@ -5,7 +5,6 @@ import { Button } from "../../components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/Card";
 import { CalendarDays, UserCircle, Users, Trophy } from "lucide-react";
 import MisTurnos from "../User/MisTurnos";
-import EditProfile from "../User/EditProfile";
 import MisEquipos from "../User/MisEquipos";
 import MisTorneos from "../User/MisTorneos";
 
@@ -16,8 +15,6 @@ export default function UserProfile() {
     switch (activeSection) {
       case "appointments":
         return <MisTurnos />;
-      case "profile":
-        return <EditProfile />;
       case "teams":
         return <MisEquipos />;
       case "tournaments":
@@ -50,18 +47,6 @@ export default function UserProfile() {
             </Button>
             <Button
             style={{ borderRadius: "12px" }}
-              onClick={() => setActiveSection("profile")}
-              className={`flex lg:text-2xl items-center justify-center gap-2 h-20 ${
-                activeSection === "profile"
-                  ? "bg-naranja hover:bg-naranja/90 text-white"
-                  : "bg-white hover:bg-gray-100"
-              }`}
-            >
-              <UserCircle style={{height: '28px', width:'28px'}} className="h-6 w-6" />
-              <span>Editar Perfil</span>
-            </Button>
-            <Button
-            style={{ borderRadius: "12px" }}
               onClick={() => setActiveSection("teams")}
               className={`flex lg:text-2xl items-center justify-center gap-2 h-20 ${
                 activeSection === "teams"
@@ -90,8 +75,6 @@ export default function UserProfile() {
               <CardTitle className="text-3xl ">
                 {activeSection === "appointments"
                   ? "Mis Turnos"
-                  : activeSection === "profile"
-                  ? "Editar Perfil"
                   : activeSection === "teams"
                   ? "Mis Equipos"
                   : "Mis Torneos"}

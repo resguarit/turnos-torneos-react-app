@@ -10,18 +10,65 @@ import useTimeout from '@/components/useTimeout';
 
 const DAYS_OF_WEEK = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
+const combineConsecutiveTimeSlots = (horarios) => {
+  if (!horarios || horarios.length === 0) return [];
+  
+  // Ordenar horarios por hora de inicio
+  const sortedHorarios = [...horarios].sort((a, b) => {
+    const timeA = a.split(' - ')[0];
+    const timeB = b.split(' - ')[0];
+    return timeA.localeCompare(timeB);
+  });
+
+  const combinedHorarios = [];
+  let currentRange = {
+    start: sortedHorarios[0].split(' - ')[0],
+    end: sortedHorarios[0].split(' - ')[1]
+  };
+
+  for (let i = 1; i < sortedHorarios.length; i++) {
+    const [start, end] = sortedHorarios[i].split(' - ');
+    
+    if (currentRange.end === start) {
+      // Horarios consecutivos, actualizar final del rango
+      currentRange.end = end;
+    } else {
+      // No son consecutivos, guardar el rango actual y empezar uno nuevo
+      combinedHorarios.push(`${currentRange.start} - ${currentRange.end}`);
+      currentRange = { start, end };
+    }
+  }
+  
+  // Agregar el último rango
+  combinedHorarios.push(`${currentRange.start} - ${currentRange.end}`);
+  
+  return combinedHorarios;
+};
+
 export default function Calendar() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
-  const [reservations, setReservations] = useState();
+  const [reservations, setReservations] = useState({});
   const userRole = localStorage.getItem('user_role');
 
   useEffect(() => {
     api.get('/disponibilidad')
-      .then(response => setReservations(response.data))
+      .then(response => {
+        const horariosNoDisponibles = response.data.horarios_no_disponibles;
+        const formattedReservations = {};
+        
+        Object.keys(horariosNoDisponibles).forEach(fecha => {
+          const horarios = horariosNoDisponibles[fecha].map(horario => 
+            `${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`
+          );
+          formattedReservations[fecha] = combineConsecutiveTimeSlots(horarios);
+        });
+        
+        setReservations(formattedReservations);
+      })
       .catch(error => console.error('Error fetching reservations:', error))
       .finally(() => setLoading(false));
   }, []);
@@ -162,7 +209,7 @@ export default function Calendar() {
                 ))}
 
                 {generateCalendarDays().map((day, index) => {
-                  const reservations = getReservationsForDate(day.date);
+                  const reservationsForDay = getReservationsForDate(day.date);
                   return (
                     <div
                       key={index}
@@ -174,14 +221,18 @@ export default function Calendar() {
                       <span className={`block text-sm mb-1`}>
                         {day.day}
                       </span>
-                      {reservations.map((reservation, idx) => (
-                        <div
-                          key={idx}
-                          className="text-xs bg-[#FF5533] text-white p-1 mb-1 rounded"
-                        >
-                          {reservation}
+                      {reservationsForDay.length > 0 && (
+                        <div className="flex flex-col gap-1">
+                          {reservationsForDay.map((horario, idx) => (
+                            <div
+                              key={idx}
+                              className="text-xs bg-naranja text-white p-1 rounded"
+                            >
+                              {horario}
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
                   );
                 })}

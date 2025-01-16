@@ -12,11 +12,12 @@ export default function ConfirmarTurno() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    telefono: '',
+    telefono: null,
     password: '',
     password_confirmation: ''
   });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false); // Estado de carga
   const [reservationDetails, setReservationDetails] = useState({
     horario: null,
     cancha: null
@@ -70,6 +71,7 @@ export default function ConfirmarTurno() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
+      setLoading(true); // Iniciar estado de carga
       try {
         // Step 1: Register User
         const registerResponse = await api.post('/register', {
@@ -128,6 +130,8 @@ export default function ConfirmarTurno() {
         setErrors({
           form: error.message || 'Error al procesar la solicitud'
         });
+      } finally {
+        setLoading(false); // Finalizar estado de carga
       }
     }
   };
@@ -223,8 +227,8 @@ export default function ConfirmarTurno() {
                   </div>
                 )}
 
-                <button type="submit" className="w-full  bg-naranja p-2 text-xl text-white rounded-[10px] hover:bg-white hover:text-naranja border border-naranja">
-                  Registrarse y Confirmar Reserva
+                <button type="submit" className="w-full  bg-naranja p-2 text-xl text-white rounded-[10px] hover:bg-white hover:text-naranja border border-naranja" disabled={loading}>
+                  {loading ? 'Procesando...' : 'Registrarse y Confirmar Reserva'}
                 </button>
               </form>
 
@@ -266,6 +270,7 @@ export default function ConfirmarTurno() {
             <button 
               className="w-1/2 bg-white border border-naranja text-naranja text-xl p-2 rounded-[10px] hover:bg-naranja hover:text-white"
               onClick={navigateToLogin}
+              disabled={loading}
             >
               Iniciar Sesión
             </button>

@@ -14,7 +14,8 @@ export default function CanchasReserva() {
   const [selectedCourt, setSelectedCourt] = useState(null);
   const [courts, setCourts] = useState([]);
   const [formattedTime, setFormattedTime] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false); // Estado de carga
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -80,28 +81,64 @@ export default function CanchasReserva() {
   };
 
   const confirmSubmit = async () => {
+    setLoading(true); // Iniciar estado de carga
     const userId = localStorage.getItem('user_id');
+    
     if (!userId) {
-      // Redirigir a la pantalla de confirmación de turno para registrarse o iniciar sesión
-      navigate(`/confirmar-turno?time=${selectedTime}&date=${selectedDate}&court=${selectedCourt.id}`);
-    } else {
-      try {
-        const response = await api.post('/turnos/turnounico', {
-          fecha_turno: selectedDate,
-          cancha_id: selectedCourt.id,
-          horario_id: selectedTime,
-          estado: 'Pendiente' // Reemplaza con el estado real
-        });
-        
-        if (response.status === 201) {
-          console.log("Reserva creada correctamente:", response.data);
-          navigate('/user-profile'); // Redirige a una página de confirmación
-        }
-      } catch (error) {
-        console.error("Error creating reservation:", error);
-      }
+        setLoading(false);
+        navigate(`/confirmar-turno?time=${selectedTime}&date=${selectedDate}&court=${selectedCourt.id}`);
+        return;
     }
-  };
+
+    try {
+        // Primero verificar disponibilidad
+        const disponibilidadResponse = await api.get(`/disponibilidad/cancha?fecha=${selectedDate}&horario_id=${selectedTime}`);
+        const canchaDisponible = disponibilidadResponse.data.canchas.some(
+            cancha => cancha.id === selectedCourt.id && cancha.disponible
+        );
+
+        if (!canchaDisponible) {
+            setError('El turno ya no está disponible');
+            setLoading(false);
+            return;
+        }
+
+        // Crear bloqueo temporal
+        const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
+            fecha: selectedDate,
+            horario_id: selectedTime,
+            cancha_id: selectedCourt.id
+        });
+
+        if (bloqueoResponse.status === 201) {
+            try {
+                // Crear reserva
+                const response = await api.post('/turnos/turnounico', {
+                    fecha_turno: selectedDate,
+                    cancha_id: selectedCourt.id,
+                    horario_id: selectedTime,
+                    estado: 'Pendiente'
+                });
+                
+                if (response.status === 201) {
+                    navigate('/user-profile');
+                }
+            } catch (reservaError) {
+                // Si falla la creación de la reserva, liberar el bloqueo temporal
+                await api.delete(`/turnos/bloqueotemporal/${bloqueoResponse.data.id}`);
+                throw reservaError;
+            }
+        }
+    } catch (error) {
+        console.error("Error en la reserva:", error);
+        setError(
+            error.response?.data?.message || 
+            'Error al crear la reserva. Por favor, intente nuevamente.'
+        );
+    } finally {
+        setLoading(false);
+    }
+};
 
   const closeModal = () => {
     setShowModal(false);
@@ -122,8 +159,9 @@ export default function CanchasReserva() {
             onClick={onConfirm}
             className="px-4 py-2 bg-naranja text-white lg:text-xl"
             style={{ borderRadius: "6px" }}
+            disabled={loading}
           >
-            Reservar
+            {loading ? 'Procesando...' : 'Reservar'}
           </button>
         </div>
       </div>
@@ -194,6 +232,7 @@ export default function CanchasReserva() {
           </div>
         </div>
         {showModal && <Modal onConfirm={confirmSubmit} onCancel={closeModal} />}
+        {error && <p className="text-red-500 mt-4">{error}</p>}
       </main>
       <Footer />
     </div>

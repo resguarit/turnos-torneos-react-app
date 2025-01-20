@@ -7,6 +7,8 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import api from '@/lib/axiosConfig';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function ConfirmarTurno() {
   const [formData, setFormData] = useState({
@@ -60,8 +62,13 @@ export default function ConfirmarTurno() {
     if (!formData.email) newErrors.email = 'El email es requerido';
     if (!formData.telefono) newErrors.telefono = 'El teléfono es requerido';
     if (!formData.password) newErrors.password = 'La contraseña es requerida';
+    if (formData.password.length < 8) newErrors.password = 'La contraseña debe tener al menos 8 caracteres';
     if (formData.password !== formData.password_confirmation) {
       newErrors.password_confirmation = 'Las contraseñas no coinciden';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      Object.values(newErrors).forEach(error => toast.error(error));
     }
 
     setErrors(newErrors);
@@ -111,7 +118,10 @@ export default function ConfirmarTurno() {
                 });
 
                 if (reservationResponse.status === 201) {
-                  navigate('/user-profile');
+                  toast.success('Reserva confirmada exitosamente');
+                  setTimeout(() => {
+                    navigate('/user-profile');
+                  }, 2000); // Esperar 2 segundos antes de redirigir
                 }
               } catch (reservationError) {
                 // Rollback: Delete user if reservation fails
@@ -127,9 +137,7 @@ export default function ConfirmarTurno() {
         }
       } catch (error) {
         console.error('Error en la transacción:', error);
-        setErrors({
-          form: error.message || 'Error al procesar la solicitud'
-        });
+        toast.error(error.message || 'Error al procesar la solicitud');
       } finally {
         setLoading(false); // Finalizar estado de carga
       }
@@ -160,9 +168,6 @@ export default function ConfirmarTurno() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className={`w-full text-black text-lg border-2 border-gray-300 p-2 rounded-xl ${errors.name ? 'border-red-500' : ''}`}
                   />
-                  {errors.name && (
-                    <p className="text-sm text-red-500">{errors.name}</p>
-                  )}
                 </div>
 
                 <div className="space-y-1">
@@ -174,9 +179,6 @@ export default function ConfirmarTurno() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className={`w-full text-black text-lg border-2 border-gray-300 p-2 rounded-xl ${errors.email ? 'border-red-500' : ''}`}
                   />
-                  {errors.email && (
-                    <p className="text-sm text-red-500">{errors.email}</p>
-                  )}
                 </div>
 
                 <div className="space-y-1">
@@ -202,9 +204,6 @@ export default function ConfirmarTurno() {
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className={`w-full text-black text-lg border-2 border-gray-300 p-2 rounded-xl ${errors.password ? 'border-red-500' : ''}`}
                   />
-                  {errors.password && (
-                    <p className="text-sm text-red-500">{errors.password}</p>
-                  )}
                 </div>
 
                 <div className="space-y-1">
@@ -216,9 +215,6 @@ export default function ConfirmarTurno() {
                     onChange={(e) => setFormData({ ...formData, password_confirmation: e.target.value })}
                     className={`w-full text-black text-lg border-2 border-gray-300 p-2 rounded-xl ${errors.password_confirmation ? 'border-red-500' : ''}`}
                   />
-                  {errors.password_confirmation && (
-                    <p className="text-sm text-red-500">{errors.password_confirmation}</p>
-                  )}
                 </div>
 
                 {errors.form && (
@@ -278,6 +274,7 @@ export default function ConfirmarTurno() {
         </Card>
       </main>
       <Footer />
+      <ToastContainer position="top-right" />
     </div>
   );
 }

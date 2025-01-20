@@ -8,6 +8,8 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function ConfirmarLogin() {
   const [formData, setFormData] = useState({
@@ -29,6 +31,9 @@ export default function ConfirmarLogin() {
     const newErrors = {};
     if (!formData.email) newErrors.email = 'El email es requerido';
     if (!formData.password) newErrors.password = 'La contraseña es requerida';
+    if (Object.keys(newErrors).length > 0) {
+      Object.values(newErrors).forEach(error => toast.error(error));
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -70,13 +75,14 @@ export default function ConfirmarLogin() {
           });
 
           if (reservationResponse.status === 201) {
-            navigate('/user-profile');
+            toast.success('Turno confirmado exitosamente');
+            setTimeout(() => {
+              navigate('/user-profile');
+            }, 2000); // Esperar 2 segundos antes de redirigir
           }
         }
       } catch (error) {
-        setErrors({ 
-          form: error.response?.data?.message || 'Error al procesar la solicitud'
-        });
+        toast.error(error.response?.data?.message || 'Error al procesar la solicitud');
       } finally {
         setLoading(false); // Finalizar estado de carga
       }
@@ -162,6 +168,7 @@ export default function ConfirmarLogin() {
         </Card>
       </main>
       <Footer />
+      <ToastContainer position="top-right" />
     </div>
   );
 }

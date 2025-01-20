@@ -67,7 +67,6 @@ function EditarTurno() {
           usuario_email: turno.usuario.email,
           tipo_turno: turno.tipo
         });
-        fetchHorarios(turno.fecha_turno);
         setLoading(false);
       } catch (error) {
         if (error.response && error.response.status === 404) {
@@ -81,18 +80,25 @@ function EditarTurno() {
     };
 
     fetchTurno();
-
-    api.get('/canchas')
-      .then((response) => setCanchaOptions(response.data.canchas))
-      .catch((error) => toast.error('Error al cargar las canchas'));
   }, [id, navigate]);
 
   const fetchHorarios = async (fecha) => {
     try {
       const response = await api.get(`/disponibilidad/fecha?fecha=${fecha}`);
-      setHorarioOptions(response.data.horarios);
+      const horariosDisponibles = response.data.horarios.filter(horario => horario.disponible);
+      setHorarioOptions(horariosDisponibles);
     } catch (error) {
       toast.error('Error al cargar los horarios');
+    }
+  };
+
+  const fetchCanchas = async (fecha, horarioId) => {
+    try {
+      const response = await api.get(`/disponibilidad/cancha?fecha=${fecha}&horario_id=${horarioId}`);
+      const canchasDisponibles = response.data.canchas.filter(cancha => cancha.disponible);
+      setCanchaOptions(canchasDisponibles);
+    } catch (error) {
+      toast.error('Error al cargar las canchas');
     }
   };
 
@@ -108,10 +114,20 @@ function EditarTurno() {
     setFormData({
       ...formData,
       fecha_turno: formattedDate,
-      horario_id: '' // Deseleccionar la hora
+      horario_id: '', // Deseleccionar la hora
+      cancha_id: '' // Deseleccionar la cancha
     });
     fetchHorarios(formattedDate);
     setIsOpen(false); // Cerrar el calendario después de seleccionar una fecha
+  };
+
+  const handleHorarioChange = (value) => {
+    setFormData({
+      ...formData,
+      horario_id: value,
+      cancha_id: '' // Deseleccionar la cancha
+    });
+    fetchCanchas(formData.fecha_turno, value);
   };
 
   const toggleCalendar = () => {
@@ -135,7 +151,7 @@ function EditarTurno() {
         setFetching(false);
         setTimeout(() => {
           navigate('/ver-turnos');
-        }, 2000);
+        }, 2000); // Esperar 2 segundos antes de redirigir
       }
     } catch (error) {
       if (error.response && error.response.status === 409){
@@ -225,35 +241,11 @@ function EditarTurno() {
                 </div>
 
                 <div>
-                  <Label className="text-2xl font-semibold mb-1 block">Cancha</Label>
-                  <Select 
-                    value={formData.cancha_id.toString()}
-                    onValueChange={(value) => setFormData({...formData, cancha_id: value})}
-                  >
-                    <SelectTrigger className="w-full text-xl bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja">
-                      <SelectValue placeholder="Seleccionar cancha" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white text-xl border shadow-lg">
-                      <ScrollArea className="h-[200px]">
-                        {canchaOptions.map((cancha) => (
-                          <SelectItem 
-                            key={cancha.id} 
-                            value={cancha.id.toString()}
-                            className="hover:bg-gray-100 text-xl"
-                          >
-                            {`Cancha ${cancha.nro} - ${cancha.tipo_cancha}`}
-                          </SelectItem>
-                        ))}
-                      </ScrollArea>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
                   <Label className="text-2xl font-semibold mb-1 block">Horario</Label>
                   <Select 
                     value={formData.horario_id.toString()}
-                    onValueChange={(value) => setFormData({...formData, horario_id: value})}
+                    onValueChange={handleHorarioChange}
+                    disabled={!formData.fecha_turno}
                   >
                     <SelectTrigger className="w-full text-xl bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja">
                       <SelectValue placeholder="Seleccionar horario"/>
@@ -267,6 +259,32 @@ function EditarTurno() {
                             className="hover:bg-gray-100 text-xl"
                           >
                             {`${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`}
+                          </SelectItem>
+                        ))}
+                      </ScrollArea>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-2xl font-semibold mb-1 block">Cancha</Label>
+                  <Select 
+                    value={formData.cancha_id.toString()}
+                    onValueChange={(value) => setFormData({...formData, cancha_id: value})}
+                    disabled={!formData.horario_id}
+                  >
+                    <SelectTrigger className="w-full text-xl bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja">
+                      <SelectValue placeholder="Seleccionar cancha" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white text-xl border shadow-lg">
+                      <ScrollArea className="h-[200px]">
+                        {canchaOptions.map((cancha) => (
+                          <SelectItem 
+                            key={cancha.id} 
+                            value={cancha.id.toString()}
+                            className="hover:bg-gray-100 text-xl"
+                          >
+                            {`Cancha ${cancha.nro} - ${cancha.tipo}`}
                           </SelectItem>
                         ))}
                       </ScrollArea>

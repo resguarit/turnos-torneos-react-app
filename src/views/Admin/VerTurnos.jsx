@@ -18,6 +18,8 @@ import ModalConfirmation from '@/components/ModalConfirmation';
 import Loading from '@/components/Loading';
 import BtnNegro from '@/components/BtnNegro';
 import useTimeout from '@/components/useTimeout';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 function VerTurnos() {
@@ -144,10 +146,10 @@ function VerTurnos() {
   const confirmDeleteSubmit = async () => {
     setShowModal(false);
     try {
-      const response = await api.delete(`/turnos/${selectedBooking.id}`);
+      const response = await api.patch(`/turnos/${selectedBooking.id}`, { estado: 'Cancelado' });
       if (response.status === 200) {
-        console.log("Reserva eliminada correctamente:", response.data);
-        // Actualiza el estado para reflejar la eliminación
+        toast.success('Turno cancelado correctamente');
+        // Actualiza el estado para reflejar la cancelación
         setGroupedBookings(prev => {
           const updated = { ...prev };
           const date = selectedBooking.fecha_turno.split('T')[0];
@@ -159,7 +161,8 @@ function VerTurnos() {
         });
       }
     } catch (error) {
-      console.error("Error deleting reservation:", error);
+      toast.error('Error al cancelar el turno');
+      console.error("Error canceling reservation:", error);
     }
   };
 

@@ -25,6 +25,7 @@ import UserProfile from "@/views/General/UserProfile";
 import ConfirmarTurno from "@/views/General/ConfirmarTurno";
 import ConfirmarLogin from "@/views/General/ConfirmarLogin";
 import EditProfile from "@/views/User/EditProfile";
+import TurnoFijo from '../views/Admin/TurnoFijo';
 
 const AppRoutes = () => {
   return (
@@ -84,6 +85,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute requiredRole={ROLES.ADMIN}>
               <EditarTurno />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/turno-fijo"
+          element={
+            <ProtectedRoute requiredRole={ROLES.ADMIN}>
+              <TurnoFijo/>
             </ProtectedRoute>
           }
         />

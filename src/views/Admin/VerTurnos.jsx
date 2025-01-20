@@ -212,16 +212,10 @@ function VerTurnos() {
                   </select>
                 </div>
 
-                <div className="flex gap-4 items-center">
-                  <BtnNegro ruta="/ver-turnos" texto="Ver Turnos" />
-                  <Button
-                    onClick={() => navigate('/turno-fijo')}
-                    className="bg-black hover:bg-black/80 text-white p-3 lg:text-[1.4rem] font-inter"
-                    style={{ borderRadius: '8px' }}
-                  >
-                    Nuevo Turno Fijo
-                  </Button>
-                </div>
+                <div className="flex gap-4 items-center mb-4">
+                  <BtnNegro ruta="/grilla-turnos" texto="Ver Grilla" />
+                  <BtnNegro ruta="/turno-fijo" texto="Nuevo turno fijo" />
+              </div>
               </div>
 
               <div className='w-full items-center justify-center'>

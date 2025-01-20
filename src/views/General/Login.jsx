@@ -7,11 +7,11 @@ import api from '@/lib/axiosConfig';
 
 function Login() {
     const [formData, setFormData] = useState({
-        email: '',
+        dni: '', // Cambiado de email a dni
         password: ''
     });
     const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false); // Estado de carga
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     
     const handleChange = (e) => {
@@ -23,17 +23,17 @@ function Login() {
     
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true); // Iniciar estado de carga
+        setLoading(true);
         try {
             const response = await login(formData);
-            localStorage.setItem('user_id', response.user_id); // Almacena el userId en el localStorage
-            localStorage.setItem('username', response.username); // Almacena el nombre del usuario en el localStorage
+            localStorage.setItem('user_id', response.user_id);
+            localStorage.setItem('username', response.username);
             localStorage.setItem('user_role', response.rol);
             navigate('/');
         } catch (error) {
             setError(error.message);
         } finally {
-            setLoading(false); // Finalizar estado de carga
+            setLoading(false);
         }
     };
 
@@ -52,10 +52,10 @@ function Login() {
                         {error && <p className="text-red-500">{error}</p>}
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <input
-                                type="email"
-                                name="email"
-                                placeholder="Correo electrónico"
-                                value={formData.email}
+                                type="text"
+                                name="dni"
+                                placeholder="DNI"
+                                value={formData.dni}
                                 onChange={handleChange}
                                 className="w-full text-black text-lg border-2 border-gray-300 p-3 rounded-xl"
                             />
@@ -79,7 +79,7 @@ function Login() {
                                 <span className="px-2 text-lg bg-white text-gray-500">O continúa con</span>
                             </div>
                         </div>
-            <button variant="outline" className="w-full rounded-xl text-lg p-2 border-2 items-center flex justify-center gap-4">
+                        <button onClick={handleGoogleLogin} className="w-full rounded-xl text-lg p-2 border-2 items-center flex justify-center gap-4">
                             <FcGoogle className='h-8 w-8' />
                             Google
                         </button>

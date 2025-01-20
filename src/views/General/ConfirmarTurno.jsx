@@ -11,8 +11,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 export default function ConfirmarTurno() {
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
-    telefono: null,
+    dni: '', // Changed from email to dni
+    telefono: '',
     password: '',
     password_confirmation: ''
   });
@@ -57,7 +57,7 @@ export default function ConfirmarTurno() {
     const newErrors = {};
 
     if (!formData.name) newErrors.name = 'El nombre es requerido';
-    if (!formData.email) newErrors.email = 'El email es requerido';
+    if (!formData.dni) newErrors.dni = 'El DNI es requerido';
     if (!formData.telefono) newErrors.telefono = 'El teléfono es requerido';
     if (!formData.password) newErrors.password = 'La contraseña es requerida';
     if (formData.password !== formData.password_confirmation) {
@@ -76,7 +76,7 @@ export default function ConfirmarTurno() {
         // Step 1: Register User
         const registerResponse = await api.post('/register', {
           name: formData.name,
-          email: formData.email,
+          dni: formData.dni,
           telefono: formData.telefono,
           password: formData.password,
           password_confirmation: formData.password_confirmation
@@ -86,7 +86,7 @@ export default function ConfirmarTurno() {
           try {
             // Step 2: Login
             const loginResponse = await api.post('/login', {
-              email: formData.email,
+              dni: formData.dni,
               password: formData.password
             });
 
@@ -166,16 +166,15 @@ export default function ConfirmarTurno() {
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor="email" className="text-xl font-semibold">Email</Label>
+                  <Label htmlFor="dni" className="text-xl font-semibold">DNI</Label>
                   <input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className={`w-full text-black text-lg border-2 border-gray-300 p-2 rounded-xl ${errors.email ? 'border-red-500' : ''}`}
+                    id="dni"
+                    value={formData.dni}
+                    onChange={(e) => setFormData({ ...formData, dni: e.target.value })}
+                    className={`w-full text-black text-lg border-2 border-gray-300 p-2 rounded-xl ${errors.dni ? 'border-red-500' : ''}`}
                   />
-                  {errors.email && (
-                    <p className="text-sm text-red-500">{errors.email}</p>
+                  {errors.dni && (
+                    <p className="text-sm text-red-500">{errors.dni}</p>
                   )}
                 </div>
 

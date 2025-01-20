@@ -11,7 +11,7 @@ import api from '@/lib/axiosConfig';
 
 export default function ConfirmarLogin() {
   const [formData, setFormData] = useState({
-    email: '',
+    dni: '', // Cambiado de email a dni
     password: ''
   });
   const [errors, setErrors] = useState({});
@@ -27,7 +27,7 @@ export default function ConfirmarLogin() {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.email) newErrors.email = 'El email es requerido';
+    if (!formData.dni) newErrors.dni = 'El DNI es requerido';
     if (!formData.password) newErrors.password = 'La contraseña es requerida';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -100,17 +100,17 @@ export default function ConfirmarLogin() {
             <form onSubmit={handleSubmit} className="space-y-8">
               <div className="space-y-4">
                 <div className="space-y-1 flex flex-col">
-                  <Label htmlFor="email" className="text-xl">Email</Label>
+                  <Label htmlFor="dni" className="text-xl">DNI</Label>
                   <input
-                    id="email"
-                    type="email"
-                    name="email"
-                    value={formData.email}
+                    id="dni"
+                    type="text"
+                    name="dni"
+                    value={formData.dni}
                     onChange={handleChange}
-                    className={`w-full text-black text-lg border-2 border-gray-300 p-2 rounded-xl ${errors.email ? 'border-red-500' : ''}`}
+                    className={`w-full text-black text-lg border-2 border-gray-300 p-2 rounded-xl ${errors.dni ? 'border-red-500' : ''}`}
                   />
-                  {errors.email && (
-                    <p className="text-sm text-red-500">{errors.email}</p>
+                  {errors.dni && (
+                    <p className="text-sm text-red-500">{errors.dni}</p>
                   )}
                 </div>
 

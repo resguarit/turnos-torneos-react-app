@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import api from '@/lib/axiosConfig';
-import { Header } from '@/components/header'
-import { Footer } from '@/components/footer'
-import { CalendarDays } from 'lucide-react'
-import { Trash2 } from 'lucide-react'
-import { Eye } from 'lucide-react'
-import { Phone } from 'lucide-react'
-import { PenSquare } from 'lucide-react'
-import { Button } from '@/components/ui/button'; 
+import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
+import { CalendarDays } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
+import { Eye } from 'lucide-react';
+import { Phone } from 'lucide-react';
+import { PenSquare } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { DayPicker } from 'react-day-picker';
-import 'react-day-picker/dist/style.css'; 
+import 'react-day-picker/dist/style.css';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
-import BackButton from '@/components/BackButton'
+import BackButton from '@/components/BackButton';
 import ModalConfirmation from '@/components/ModalConfirmation';
 import Loading from '@/components/Loading';
 import BtnNegro from '@/components/BtnNegro';
 import useTimeout from '@/components/useTimeout';
-
 
 function VerTurnos() {
   const navigate = useNavigate();
@@ -102,7 +101,7 @@ function VerTurnos() {
   const handleNavigationGrid = () => {
     navigate('/grilla-turnos');
   };
-    
+
   const handleVerTurno = (booking) => {
     setSelectedBooking(booking);
     setIsModalOpen(true);
@@ -129,7 +128,6 @@ function VerTurnos() {
     }
     return acc;
   }, {});
-
 
   const handleDeleteSubmit = (booking) => {
     setSelectedBooking(booking);
@@ -177,47 +175,54 @@ function VerTurnos() {
             <div className="space-y-4">
               <h1 className="text-2xl font-bold lg:text-4xl">Turnos</h1>
               <div className='flex justify-between'>
-              <div className="flex flex-col gap-4 items-start lg:flex-row lg:items-center lg:gap-2">
-                <span className="text-sm font-semibold lg:text-xl">Selecciona el Día o Intervalo:</span>
-                <Button onClick={() => setViewOption('day')} variant={viewOption === 'day' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-lg hover:bg-naranja hover:opacity-70  hover:text-white ${viewOption === 'day' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Día</Button>
-                <Button onClick={() => setViewOption('range')} variant={viewOption === 'range' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-lg hover:bg-naranja hover:opacity-70 hover:text-white ${viewOption === 'range' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Intervalo</Button>
-                <input
-                  type="text"
-                  placeholder="Buscar por nombre"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="px-4 py-2 bg-white rounded-lg text-sm lg:text-lg font-medium text-black"
-                  style={{ borderRadius: '8px' }}
-                />
-                <select
-                  value={selectedCourt}
-                  onChange={(e) => setSelectedCourt(e.target.value)}
-                  className="px-4 py-3 bg-white rounded-lg text-sm lg:text-lg font-medium text-black"
-                  style={{ borderRadius: '8px' }}
-                >
-                  <option value="">Todas las canchas</option>
-                  {courts.map(court => (
-                    <option key={court.id} value={court.nro}>Cancha {court.nro}</option>
-                  ))}
-                </select>
-                <select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="px-4 py-3 bg-white rounded-lg text-sm lg:text-lg font-medium text-black"
-                  style={{ borderRadius: '8px' }}
-                >
-                  <option value="">Todos los estados</option>
-                  <option value="Pendiente">Pendiente</option>
-                  <option value="Señado">Señado</option>
-                  <option value="Pagado">Pagado</option>
-                  <option value="Cancelado">Cancelado</option>
-                </select>
-              </div>
+                <div className="flex flex-col gap-4 items-start lg:flex-row lg:items-center lg:gap-2">
+                  <span className="text-sm font-semibold lg:text-xl">Selecciona el Día o Intervalo:</span>
+                  <Button onClick={() => setViewOption('day')} variant={viewOption === 'day' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-lg hover:bg-naranja hover:opacity-70  hover:text-white ${viewOption === 'day' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Día</Button>
+                  <Button onClick={() => setViewOption('range')} variant={viewOption === 'range' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-lg hover:bg-naranja hover:opacity-70 hover:text-white ${viewOption === 'range' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Intervalo</Button>
+                  <input
+                    type="text"
+                    placeholder="Buscar por nombre"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="px-4 py-2 bg-white rounded-lg text-sm lg:text-lg font-medium text-black"
+                    style={{ borderRadius: '8px' }}
+                  />
+                  <select
+                    value={selectedCourt}
+                    onChange={(e) => setSelectedCourt(e.target.value)}
+                    className="px-4 py-3 bg-white rounded-lg text-sm lg:text-lg font-medium text-black"
+                    style={{ borderRadius: '8px' }}
+                  >
+                    <option value="">Todas las canchas</option>
+                    {courts.map(court => (
+                      <option key={court.id} value={court.nro}>Cancha {court.nro}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    className="px-4 py-3 bg-white rounded-lg text-sm lg:text-lg font-medium text-black"
+                    style={{ borderRadius: '8px' }}
+                  >
+                    <option value="">Todos los estados</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Señado">Señado</option>
+                    <option value="Pagado">Pagado</option>
+                    <option value="Cancelado">Cancelado</option>
+                  </select>
+                </div>
 
-              <div className="flex gap-4 items-center">
-                <BtnNegro ruta="/grilla-turnos" texto="Ver Grilla" />
+                <div className="flex gap-4 items-center">
+                  <BtnNegro ruta="/ver-turnos" texto="Ver Turnos" />
+                  <Button
+                    onClick={() => navigate('/turno-fijo')}
+                    className="bg-black hover:bg-black/80 text-white p-3 lg:text-[1.4rem] font-inter"
+                    style={{ borderRadius: '8px' }}
+                  >
+                    Nuevo Turno Fijo
+                  </Button>
+                </div>
               </div>
-            </div>
 
               <div className='w-full items-center justify-center'>
                 <div className='relative'>
@@ -240,7 +245,7 @@ function VerTurnos() {
                     <>
                       <button
                         onClick={toggleCalendar}
-                        className="px-4 py-2 bg-white rounded-lg text-sm font-medium text-black" style={{ borderRadius: '8px' }}
+                        className="px-4 py-2 bg-white rounded-lg text-sm lg:text-lg font-medium text-black" style={{ borderRadius: '8px' }}
                       >
                         {startDate && endDate ? `${format(startDate, 'PPP', { locale: es })} - ${format(endDate, 'PPP', { locale: es })}` : 'Seleccionar Intervalo'}
                       </button>
@@ -379,15 +384,11 @@ function VerTurnos() {
                 </select>
               </div>
             </div>
-            <div className="flex justify-end mt-4">
-              <button style={{ borderRadius: '8px' }} onClick={handleCloseModal} className="bg-naranja text-white lg:text-2xl font-semibold px-4 py-2 hover:bg-[#FF5533]/90">
-                Cerrar
-              </button>
-            </div>
           </div>
         </div>
       )}
     </>
-  )
+  );
 }
+
 export default VerTurnos;

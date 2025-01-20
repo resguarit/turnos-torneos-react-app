@@ -114,7 +114,7 @@ export default function MisTurnos() {
                   )}
                   <button
                     onClick={() => toggleExpand(turno.id)}
-                    className="mt-4 p-2 bg-gray-200 text-black rounded-lg"
+                    className="mt-4 p-2 bg-gray-200 text-black rounded-[8px]"
                   >
                     {expandedTurno === turno.id ? 'Ver Menos' : 'Ver Más'}
                   </button>
@@ -123,7 +123,7 @@ export default function MisTurnos() {
                   <div className='flex items-center'>
                     <button
                       onClick={() => handleCancelarClick(turno.id)}
-                      className="mt-4 p-2 bg-red-500 text-white rounded-lg"
+                      className="mt-4 p-2 bg-red-500 text-white rounded-[8px]"
                     >
                       Cancelar Turno
                     </button>

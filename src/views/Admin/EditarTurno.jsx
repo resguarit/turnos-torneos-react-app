@@ -16,6 +16,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import 'react-day-picker/dist/style.css';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function EditarTurno() {
   const { id } = useParams();
@@ -71,6 +73,7 @@ function EditarTurno() {
         if (error.response && error.response.status === 404) {
           navigate('/*');
         } else {
+          toast.error('Error al cargar el turno');
           setError(error.message);
           setLoading(false);
         }
@@ -81,7 +84,7 @@ function EditarTurno() {
 
     api.get('/canchas')
       .then((response) => setCanchaOptions(response.data.canchas))
-      .catch((error) => setError(error.message));
+      .catch((error) => toast.error('Error al cargar las canchas'));
   }, [id, navigate]);
 
   const fetchHorarios = async (fecha) => {
@@ -89,7 +92,7 @@ function EditarTurno() {
       const response = await api.get(`/disponibilidad/fecha?fecha=${fecha}`);
       setHorarioOptions(response.data.horarios);
     } catch (error) {
-      setError(error.message);
+      toast.error('Error al cargar los horarios');
     }
   };
 
@@ -128,15 +131,19 @@ function EditarTurno() {
     try {
       const response = await api.patch(`/turnos/${id}`, updatedData);
       if (response.status === 200) {
+        toast.success('Turno actualizado correctamente');
         setFetching(false);
-        navigate('/ver-turnos');
+        setTimeout(() => {
+          navigate('/ver-turnos');
+        }, 2000);
       }
     } catch (error) {
       if (error.response && error.response.status === 409){
         setFetching(false);
         setTurnoExistente(true);
-        console.log(error.response.data.message);
+        toast.error('Ya existe un turno para esa cancha en esta fecha y horario');
       } else {
+        toast.error('Error al actualizar el turno');
         setError(error.message);
       }
     }
@@ -160,6 +167,7 @@ function EditarTurno() {
         <h1 className='text-4xl font-semibold '>Detalles del Turno</h1>
         <Card className="max-w-7xl mx-auto border-0 shadow-none">
           <CardContent className="space-y-6 pt-4 ">
+            <ToastContainer position="bottom-right" />
             {/* Campos de solo lectura */}
             <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
               <div className="grid grid-cols-2 gap-4">

@@ -13,14 +13,14 @@ function ModalConfirmation({ onConfirm, onCancel, title, subtitle, botonText1, b
                 <div className="flex justify-evenly">
                     <button
                         onClick={onCancel}
-                        className="px-4 py-2 bg-white text-naranja border-2 border-naranja font-semibold lg:text-2xl"
+                        className="px-4 py-2 bg-white text-naranja border-2 border-naranja  lg:text-2xl"
                         style={{ borderRadius: "8px" }}
                     >
                         {botonText1}
                     </button>
                     <button
                         onClick={onConfirm}
-                        className="px-4 py-2 bg-naranja font-semibold text-white lg:text-2xl"
+                        className="px-4 py-2 bg-naranja  text-white lg:text-2xl"
                         style={{ borderRadius: "8px" }}
                     >
                         {botonText2}

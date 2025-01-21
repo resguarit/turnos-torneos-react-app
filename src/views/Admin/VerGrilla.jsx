@@ -54,7 +54,7 @@ export default function VerGrilla() {
     if (loading) {
       navigate('/error');
     }
-  }, 15000);
+  }, 20000);
 
   if (loading) {
     return <Loading />;

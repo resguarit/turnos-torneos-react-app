@@ -73,7 +73,7 @@ function VerTurnos() {
     if (loading) {
       navigate('/error');
     }
-  }, 15000);
+  }, 20000);
 
   useEffect(() => {
     api.get('/canchas')

@@ -55,7 +55,7 @@ export default function CanchasReserva() {
     if (loading) {
       navigate('/error');
     }
-  }, 15000);
+  }, 20000);
 
   // Cargar canchas
   useEffect(() => {

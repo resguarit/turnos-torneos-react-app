@@ -36,7 +36,7 @@ export default function HorariosReserva() {
     if (loading) {
       navigate('/error');
     }
-  }, 15000);
+  }, 20000);
 
   const handleReserve = (id) => {
     navigate(

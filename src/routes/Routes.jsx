@@ -26,6 +26,8 @@ import ConfirmarTurno from "@/views/General/ConfirmarTurno";
 import ConfirmarLogin from "@/views/General/ConfirmarLogin";
 import EditProfile from "@/views/User/EditProfile";
 import TurnoFijo from '../views/Admin/TurnoFijo';
+import AdminPanel from '@/views/Admin/AdminPanel';
+import NuevoPanelAdmin from '@/views/Admin/NuevoPanelAdmin';
 
 const AppRoutes = () => {
   return (
@@ -92,7 +94,23 @@ const AppRoutes = () => {
           path="/turno-fijo"
           element={
             <ProtectedRoute requiredRole={ROLES.ADMIN}>
-              <TurnoFijo/>
+              <TurnoFijo />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/panel-admin"
+          element={
+            <ProtectedRoute requiredRole={ROLES.ADMIN}>
+              <AdminPanel />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/nuevo-panel-admin"
+          element={
+            <ProtectedRoute requiredRole={ROLES.ADMIN}>
+              <NuevoPanelAdmin />
             </ProtectedRoute>
           }
         />

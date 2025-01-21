@@ -25,10 +25,10 @@ import UserProfile from "@/views/General/UserProfile";
 import ConfirmarTurno from "@/views/General/ConfirmarTurno";
 import ConfirmarLogin from "@/views/General/ConfirmarLogin";
 import EditProfile from "@/views/User/EditProfile";
+import NuevaReserva from "@/views/Admin/NuevaReserva";
 
 const AppRoutes = () => {
   return (
-    <Router>
       <Routes>
         {/* Rutas públicas */}
         <Route path="/" element={<App />} />
@@ -37,6 +37,7 @@ const AppRoutes = () => {
         <Route path="*" element={<Error />} />
         <Route path="/confirmar-turno" element={<ConfirmarTurno />} />
         <Route path="/confirmar-login" element={<ConfirmarLogin />} />
+        <Route path="/nueva-reserva" element={<NuevaReserva />} />
 
         {/* Rutas protegidas para administradores */}
         <Route
@@ -178,7 +179,6 @@ const AppRoutes = () => {
           }
         />
       </Routes>
-    </Router>
   );
 };
 

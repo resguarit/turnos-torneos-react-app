@@ -66,8 +66,9 @@ export default function ConfirmarLogin() {
           api.defaults.headers.common['Authorization'] = `Bearer ${loginResponse.data.token}`;
 
           // Crear reserva con token
+          const formattedDate = new Date(selectedDate).toISOString().split('T')[0];
           const reservationResponse = await api.post('/turnos/turnounico', {
-            fecha_turno: selectedDate,
+            fecha_turno: formattedDate,
             cancha_id: selectedCourt,
             horario_id: selectedTime,
             usuario_id: loginResponse.data.user_id,

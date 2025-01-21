@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function SignUp() {
     const [formData, setFormData] = useState({
@@ -12,7 +14,6 @@ function SignUp() {
         password: '',
         password_confirmation: ''
     });
-    const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false); // Estado de carga
     const navigate = useNavigate();
 
@@ -23,12 +24,27 @@ function SignUp() {
         });
     };
 
+    const validateForm = () => {
+        const { name, email, telefono, password, password_confirmation } = formData;
+        if (!name || !email || !telefono || !password || !password_confirmation) {
+            toast.error('Todos los campos son obligatorios');
+            return false;
+        }
+        if (password.length < 8) {
+            toast.error('La contraseña debe tener al menos 8 caracteres');
+            return false;
+        }
+        if (password !== password_confirmation) {
+            toast.error('Las contraseñas no coinciden');
+            return false;
+        }
+        // Puedes agregar más validaciones aquí (por ejemplo, formato de email, longitud de la contraseña, etc.)
+        return true;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (formData.password !== formData.password_confirmation) {
-            setError('Las contraseñas no coinciden');
-            return;
-        }
+        if (!validateForm()) return;
         setLoading(true); // Iniciar estado de carga
         try {
             const registerResponse = await api.post('/register', {
@@ -46,16 +62,13 @@ function SignUp() {
                 localStorage.setItem('user_id', loginResponse.data.user_id);
                 localStorage.setItem('username', loginResponse.data.username);
                 localStorage.setItem('token', loginResponse.data.token);
-                navigate('/');
+                toast.success('Registro exitoso');
+                setTimeout(() => {
+                    navigate('/');
+                }, 2000); 
             }
         } catch (error) {
-            console.error('Error en la transacción:', error);
-            if (error.response) {
-                console.error('Response data:', error.response.data);
-                setError(error.response.data.message || 'Error al procesar la solicitud');
-            } else {
-                setError(error.message);
-            }
+            toast.error('Error al registrar el usuario');
         } finally {
             setLoading(false); // Finalizar estado de carga
         }
@@ -63,13 +76,14 @@ function SignUp() {
 
     return (
         <div className="min-h-screen w-full relative font-inter">
+            <ToastContainer position="top-right" />
             <video className="absolute top-0 left-0 w-full h-full object-cover z-10" src={video} autoPlay loop muted></video>
             <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50 z-20"></div>
             <div className="relative z-30 flex justify-center items-center min-h-screen text-center px-4">
                 <div className="w-full max-w-md bg-white rounded-xl p-10 space-y-6">
                     <div className="space-y-4">
                         <h2 className="text-2xl font-bold text-center lg:text-4xl">Registrarse</h2>
-                        {error && <p className="text-red-500">{error}</p>}
+                        
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <input
                                 type="text"
@@ -95,6 +109,7 @@ function SignUp() {
                                 onChange={handleChange}
                                 className="w-full text-black text-lg border-2 border-gray-300 p-3 rounded-xl"
                             />
+                             <p className="text-sm text-gray-500">La contraseña debe tener al menos 8 caracteres.</p>
                             <input
                                 type="password"
                                 name="password"
@@ -103,6 +118,7 @@ function SignUp() {
                                 onChange={handleChange}
                                 className="w-full text-black text-lg border-2 border-gray-300 p-3 rounded-xl"
                             />
+                            
                             <input
                                 type="password"
                                 name="password_confirmation"

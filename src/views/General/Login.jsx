@@ -4,6 +4,8 @@ import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from 'react-router-dom';
 import { login } from '@/services/authService';
 import api from '@/lib/axiosConfig';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Login() {
     const [formData, setFormData] = useState({
@@ -29,9 +31,10 @@ function Login() {
             localStorage.setItem('user_id', response.user_id);
             localStorage.setItem('username', response.username);
             localStorage.setItem('user_role', response.rol);
+            
             navigate('/');
         } catch (error) {
-            setError(error.message);
+            toast.error(error.response?.data?.message || 'Error al iniciar sesión');
         } finally {
             setLoading(false);
         }
@@ -44,12 +47,12 @@ function Login() {
     return (
         <div className="min-h-screen w-full relative font-inter">
             <video className="absolute top-0 left-0 w-full h-full object-cover z-10" src={video} autoPlay loop muted></video>
+            <ToastContainer position="top-right" />
             <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50 z-20"></div>
             <div className="relative z-30 flex justify-center items-center min-h-screen text-center px-4">
                 <div className="w-full max-w-md bg-white rounded-xl p-10 space-y-6">
                     <div className="space-y-4">
                         <h2 className="text-2xl font-bold text-center lg:text-4xl">Iniciar Sesión</h2>
-                        {error && <p className="text-red-500">{error}</p>}
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <input
                                 type="text"

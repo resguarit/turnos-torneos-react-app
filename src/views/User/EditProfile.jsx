@@ -157,7 +157,7 @@ export default function EditProfile() {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow bg-gray-100 p-6">
-        <h1 className='text-3xl font-semibold'>Editar Perfil</h1>
+        <h1 className='text-2xl font-bold'>Editar Perfil</h1>
         <Card className="w-full max-w-7xl mx-auto  shadow-none border-0 ">
           <CardContent className="pt-6">
             <ToastContainer position="bottom-right" />

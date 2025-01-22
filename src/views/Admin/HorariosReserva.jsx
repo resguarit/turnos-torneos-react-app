@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import BackButton from "@/components/BackButton";
 import api from '@/lib/axiosConfig';
 import Loading from '@/components/Loading';
+import useTimeout from '@/components/useTimeout';
 
 export default function HorariosReserva() {
   const { date } = useParams(); // Obtener la fecha de la URL
@@ -14,6 +15,7 @@ export default function HorariosReserva() {
   const dia = new Date(`${date}T00:00:00`).getDay();
   const diaSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
   const fechaFormateada = `${diaSemana[dia]} - ${date}`;
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Obtener horarios y disponibilidad
@@ -26,8 +28,15 @@ export default function HorariosReserva() {
         });
         setAvailability(availabilityStatus);
       })
-      .catch(error => console.error('Error fetching availability:', error));
+      .catch(error => console.error('Error fetching availability:', error))
+      .finally(() => setLoading(false));
   }, [date]);
+
+  useTimeout(() => {
+    if (loading) {
+      navigate('/error');
+    }
+  }, 20000);
 
   const handleReserve = (id) => {
     navigate(
@@ -37,7 +46,7 @@ export default function HorariosReserva() {
     );
   };
 
-  if (!availability.length) {
+  if (loading) {
     return <div><Loading /></div>;
   }
 

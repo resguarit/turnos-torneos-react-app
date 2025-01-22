@@ -5,11 +5,14 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { UserCog } from 'lucide-react';
 import { LogOut } from 'lucide-react';
+import ModalConfirmation from './ModalConfirmation';
+import { Pencil } from 'lucide-react';
 
 export function Header() {
   const navigate = useNavigate();
   const [username, setUserName] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);	
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -24,13 +27,32 @@ export function Header() {
     if (name) {
       setUserName(name);
     }
+
+    const handleStorageChange = () => {
+      const updatedName = localStorage.getItem('username');
+      setUserName(updatedName);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('user_id');
-    localStorage.removeItem('username');
+  const handleModal = () => {
+    setShowModal(true);
+  };
+
+  const handleConfirmSubmit = () => {
+    setShowModal(false);
+    localStorage.clear()
     setUserName(null);
     navigate('/');
+  };
+
+  const closeConfirmModal = () => {
+    setShowModal(false);
   };
 
   return (
@@ -59,6 +81,16 @@ export function Header() {
                 {isOpen && (
                   <div className="absolute font-inter text-xl right-0 mt-2 w-52 bg-white text-zinc-800 rounded-xl shadow-lg z-50">
                     <div className="flex flex-col items-start px-4 py-4 space-y-2">
+                    <button
+                        onClick={() => {
+                          navigate('/editar-perfil');
+                          closeMenu();
+                        }}
+                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2 py-1 rounded-xl"
+                      >
+                        Editar Perfil <Pencil />
+                      </button>
+                      <span className="w-full h-[1px] bg-gray-300 my-2"></span>
                       <button
                         onClick={() => {
                           navigate('/user-profile');
@@ -71,7 +103,7 @@ export function Header() {
                       <span className="w-full h-[1px] bg-gray-300 my-2"></span>
                       <button
                         onClick={() => {
-                          handleLogout();
+                          handleModal();
                           closeMenu();
                         }}
                         className="w-full flex justify-between text-left hover:bg-gray-200 px-2 py-1 rounded-xl"
@@ -91,6 +123,7 @@ export function Header() {
         </div>
         <MenuMovil />
       </nav>
+      {showModal && <ModalConfirmation onConfirm={handleConfirmSubmit} onCancel={closeConfirmModal} title="Cerrar Sesión" subtitle={"Desea cerrar la sesión?"} botonText1={"Cancelar"} botonText2={"Cerrar Sesión"} />}
     </header>
   );
 }

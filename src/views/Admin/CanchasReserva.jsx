@@ -7,12 +7,15 @@ import { Footer } from "@/components/Footer";
 import BackButton from "@/components/BackButton";
 import api from '@/lib/axiosConfig';
 import Loading from '@/components/Loading';
+import useTimeout from '@/components/useTimeout';
 
 export default function CanchasReserva() {
   const [showModal, setShowModal] = useState(false);
   const [selectedCourt, setSelectedCourt] = useState(null);
   const [courts, setCourts] = useState([]);
   const [formattedTime, setFormattedTime] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false); // Estado de carga
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,11 +43,19 @@ export default function CanchasReserva() {
         }
       } catch (error) {
         console.error("Error fetching horario:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     if (selectedTime) fetchHorario();
   }, [selectedTime]);
+
+  useTimeout(() => {
+    if (loading) {
+      navigate('/error');
+    }
+  }, 20000);
 
   // Cargar canchas
   useEffect(() => {
@@ -67,31 +78,67 @@ export default function CanchasReserva() {
   const handleSubmit = e => {
     e.preventDefault();
     setShowModal(true);
-    const userId = localStorage.getItem('user_id');
-    console.log("La respuesta es", selectedDate, selectedTime, selectedCourt.id, userId);
   };
 
   const confirmSubmit = async () => {
-    setShowModal(false);
-    try {
-      const userId = localStorage.getItem('user_id'); // Asume que el ID del usuario está almacenado en localStorage
-      const response = await api.post('/turnos/turnounico', {
-        fecha_turno: selectedDate,
-        cancha_id: selectedCourt.id,
-        horario_id: selectedTime,
-        monto_total: 100, // Reemplaza con el monto total real
-        monto_seña: 50, // Reemplaza con el monto de seña real
-        estado: 'Pendiente' // Reemplaza con el estado real
-      });
-      
-      if (response.status === 201) {
-        console.log("Reserva creada correctamente:", response.data);
-        navigate('/calendario-admi'); // Redirige a una página de confirmación
-      }
-    } catch (error) {
-      console.error("Error creating reservation:", error);
+    setLoading(true); // Iniciar estado de carga
+    const userId = localStorage.getItem('user_id');
+    
+    if (!userId) {
+        setLoading(false);
+        navigate(`/confirmar-turno?time=${selectedTime}&date=${selectedDate}&court=${selectedCourt.id}`);
+        return;
     }
-  };
+
+    try {
+        // Primero verificar disponibilidad
+        const disponibilidadResponse = await api.get(`/disponibilidad/cancha?fecha=${selectedDate}&horario_id=${selectedTime}`);
+        const canchaDisponible = disponibilidadResponse.data.canchas.some(
+            cancha => cancha.id === selectedCourt.id && cancha.disponible
+        );
+
+        if (!canchaDisponible) {
+            setError('El turno ya no está disponible');
+            setLoading(false);
+            return;
+        }
+
+        // Crear bloqueo temporal
+        const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
+            fecha: selectedDate,
+            horario_id: selectedTime,
+            cancha_id: selectedCourt.id
+        });
+
+        if (bloqueoResponse.status === 201) {
+            try {
+                // Crear reserva
+                const response = await api.post('/turnos/turnounico', {
+                    fecha_turno: selectedDate,
+                    cancha_id: selectedCourt.id,
+                    horario_id: selectedTime,
+                    estado: 'Pendiente'
+                });
+                
+                if (response.status === 201) {
+                    navigate('/user-profile');
+                }
+            } catch (reservaError) {
+                // Si falla la creación de la reserva, liberar el bloqueo temporal
+                await api.delete(`/turnos/bloqueotemporal/${bloqueoResponse.data.id}`);
+                throw reservaError;
+            }
+        }
+    } catch (error) {
+        console.error("Error en la reserva:", error);
+        setError(
+            error.response?.data?.message || 
+            'Error al crear la reserva. Por favor, intente nuevamente.'
+        );
+    } finally {
+        setLoading(false);
+    }
+};
 
   const closeModal = () => {
     setShowModal(false);
@@ -112,15 +159,16 @@ export default function CanchasReserva() {
             onClick={onConfirm}
             className="px-4 py-2 bg-naranja text-white lg:text-xl"
             style={{ borderRadius: "6px" }}
+            disabled={loading}
           >
-            Reservar
+            {loading ? 'Procesando...' : 'Reservar'}
           </button>
         </div>
       </div>
     </div>
   );
 
-  if (!courts.length) {
+  if (loading) {
     return <div><Loading /></div>;
   }
 
@@ -184,6 +232,7 @@ export default function CanchasReserva() {
           </div>
         </div>
         {showModal && <Modal onConfirm={confirmSubmit} onCancel={closeModal} />}
+        {error && <p className="text-red-500 mt-4">{error}</p>}
       </main>
       <Footer />
     </div>

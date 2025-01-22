@@ -12,6 +12,7 @@ import { es } from 'date-fns/locale';
 import Loading from '@/components/loading';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
+import useTimeout from '@/components/useTimeout';
 
 export default function VerGrilla() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -21,6 +22,7 @@ export default function VerGrilla() {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
 
   useEffect(() => {
     const fetchGrid = async () => {
@@ -40,11 +42,19 @@ export default function VerGrilla() {
         setLoading(false);
       } catch (error) {
         console.error('Error fetching grid:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchGrid();
   }, [currentDate]);
+
+  useTimeout(() => {
+    if (loading) {
+      navigate('/error');
+    }
+  }, 20000);
 
   if (loading) {
     return <Loading />;

@@ -4,23 +4,23 @@ import { X } from "lucide-react";
 function ModalConfirmation({ onConfirm, onCancel, title, subtitle, botonText1, botonText2 }){
     return(
             <div className="z-50 fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center font-inter">
-              <div className="bg-white text-black z-20 p-4 rounded-xl shadow-lg w-11/12 md:w-1/3">
+              <div className="bg-white text-black z-20 p-4 rounded-xl shadow-lg w-11/12 md:w-2/3 lg:w-1/3">
                 <div className="flex justify-between">
-                  <h2 className="text-xl font-bold mb-4 lg:text-2xl">{title}</h2>
+                  <h2 className="text-lg font-bold mb-4 md:text-2xl">{title}</h2>
                   <X onClick={onCancel} className="cursor-pointer" />
                 </div>
-                <p className="mb-6 lg:text-xl">{subtitle}</p>
+                <p className="mb-6 text-base md:text-lg">{subtitle}</p>
                 <div className="flex justify-evenly">
                     <button
                         onClick={onCancel}
-                        className="py-1 px-3 bg-white text-naranja border-2 border-naranja  lg:text-lg"
+                        className="py-1 px-3 bg-white text-naranja border border-naranja text-sm  lg:text-lg"
                         style={{ borderRadius: "8px" }}
                     >
                         {botonText1}
                     </button>
                     <button
                         onClick={onConfirm}
-                        className="py-1 px-3 bg-naranja  text-white lg:text-lg"
+                        className="py-1 px-3 bg-naranja  text-white text-sm lg:text-lg"
                         style={{ borderRadius: "8px" }}
                     >
                         {botonText2}

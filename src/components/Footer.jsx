@@ -2,10 +2,10 @@ import { Facebook, Instagram, PhoneIcon as WhatsApp } from 'lucide-react'
 
 export function Footer() {
   return (
-    <footer className="bg-footer py-3 px-6 lg:py-5">
+    <footer className="bg-footer py-3 px-6 lg:py-4">
       <div className="max-w-7xl mx-auto flex justify-center gap-6">
       <a href="https://www.instagram.com" target="_blank" aria-label="Instagram">
-      <svg className="h-6 lg:h-8" version="1.0" xmlns="http://www.w3.org/2000/svg"
+      <svg className="h-6 lg:h-6" version="1.0" xmlns="http://www.w3.org/2000/svg"
          viewBox="0 0 512.000000 512.000000"
         preserveAspectRatio="xMidYMid meet">
         <metadata>
@@ -42,7 +42,7 @@ export function Footer() {
     </a>
 
     <a href="https://www.facebook.com" target="_blank" aria-label="Facebook">
-        <svg className="h-6 lg:h-8" version="1.0" xmlns="http://www.w3.org/2000/svg"
+        <svg className="h-6 " version="1.0" xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 512.000000 512.000000"
         preserveAspectRatio="xMidYMid meet">
         <metadata>
@@ -64,7 +64,7 @@ export function Footer() {
         </svg>
     </a>
     <a href="https://www.whatsapp.com" target="_blank" aria-label="WhatsApp">
-        <svg className="h-6 lg:h-8" version="1.0" xmlns="http://www.w3.org/2000/svg"
+        <svg className="h-6 " version="1.0" xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 512.000000 512.000000"
         preserveAspectRatio="xMidYMid meet">
         <metadata>

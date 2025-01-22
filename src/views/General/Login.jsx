@@ -50,9 +50,9 @@ function Login() {
             <ToastContainer position="top-right" />
             <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50 z-20"></div>
             <div className="relative z-30 flex justify-center items-center min-h-screen text-center px-4">
-                <div className="w-full max-w-md bg-white rounded-xl p-10 space-y-6">
+                <div className="w-full max-w-md bg-white rounded-xl p-8 space-y-6">
                     <div className="space-y-4">
-                        <h2 className="text-2xl font-bold text-center lg:text-4xl">Iniciar Sesión</h2>
+                        <h2 className="text-2xl font-bold text-center lg:text-3xl">Iniciar Sesión</h2>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <input
                                 type="text"
@@ -60,7 +60,7 @@ function Login() {
                                 placeholder="DNI"
                                 value={formData.dni}
                                 onChange={handleChange}
-                                className="w-full text-black text-lg border-2 border-gray-300 p-3 rounded-xl"
+                                className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
                             />
                             <input
                                 type="password"
@@ -68,9 +68,9 @@ function Login() {
                                 placeholder="Contraseña"
                                 value={formData.password}
                                 onChange={handleChange}
-                                className="w-full text-black text-lg border-2 border-gray-300 p-3 rounded-xl"
+                                className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
                             />
-                            <button type="submit" className="w-full bg-[#FF5115] text-2xl font-medium rounded-xl p-3 hover:bg-[#FF5115]/90 text-white" disabled={loading}>
+                            <button type="submit" className="w-full bg-naranja text-lg font-medium rounded-xl p-2 hover:bg-naranja/90 text-white" disabled={loading}>
                                 {loading ? 'Procesando...' : 'Iniciar Sesión'}
                             </button>
                         </form>
@@ -79,17 +79,17 @@ function Login() {
                                 <div className="w-full border-t"></div>
                             </div>
                             <div className="relative flex justify-center text-sm">
-                                <span className="px-2 text-lg bg-white text-gray-500">O continúa con</span>
+                                <span className="px-2 text-sm bg-white text-gray-500">O continúa con</span>
                             </div>
                         </div>
-                        <button onClick={handleGoogleLogin} className="w-full rounded-xl text-lg p-2 border-2 items-center flex justify-center gap-4">
-                            <FcGoogle className='h-8 w-8' />
+                        <button onClick={handleGoogleLogin} className="w-full rounded-xl text-base p-2 border-2 items-center flex justify-center gap-4">
+                            <FcGoogle className='h-6 w-6' />
                             Google
                         </button>
                     </div>
-                    <div className="text-center pt-4 mt-6 border-t text-lg">
+                    <div className="text-center pt-4 mt-6 border-t text-sm">
                         <p>¿No tienes una cuenta? 
-                            <Link to="/signup" className="text-[#FF5115] hover:underline ml-1">
+                            <Link to="/signup" className="text-naranja hover:underline ml-1">
                                 Regístrate
                             </Link>
                         </p>

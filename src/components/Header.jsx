@@ -56,7 +56,7 @@ export function Header() {
   };
 
   return (
-    <header className="bg-naranja max-w-full text-white px-6 py-5">
+    <header className="bg-naranja max-w-full text-white px-6 py-4">
       <nav className=" mx-auto flex items-center justify-between">
         <a href="/" >
           <img src={Logo} alt="Logo" className="h-6 lg:h-8 xl:h-9" />

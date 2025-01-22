@@ -27,19 +27,19 @@ export default function UserProfile() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-grow bg-gray-100 p-6">
+      <main className="flex-grow bg-gray-100 md:p-6 p-4">
         <div className="max-w-7xl lg:max-w-full mx-auto">
-          <h1 className="text-2xl font-bold text-black mb-6">
+          <h1 className="text-xl md:text-2xl font-bold text-black mb-6">
             Mi Panel de Usuario
           </h1>
           <div className="flex flex-col items-center justify-center">
           <div className="grid grid-cols-1 w-[80vw] md:grid-cols-3 gap-6 mb-6">
             <Button
               onClick={() => setActiveSection("appointments")}
-              className={`flex lg:text-lg items-center justify-center rounded-[12px] gap-2 p-8 ${
+              className={`flex lg:text-lg items-center justify-center rounded-[12px] gap-2 p-3  md:p-8 ${
                 activeSection === "appointments"
                   ? "bg-naranja hover:bg-naranja/90 text-white "
-                  : "bg-white hover:bg-gray-100"
+                  : "bg-white "
               }`}
             >
               <CalendarDays style={{height: '24px', width:'24px'}} />
@@ -47,10 +47,10 @@ export default function UserProfile() {
             </Button>
             <Button
               onClick={() => setActiveSection("teams")}
-              className={`flex lg:text-lg items-center justify-center rounded-[12px] gap-2 p-8  ${
+              className={`flex lg:text-lg items-center justify-center rounded-[12px] gap-2 p-3  md:p-8  ${
                 activeSection === "teams"
                   ? "bg-naranja hover:bg-naranja/90 text-white"
-                  : "bg-white hover:bg-gray-100"
+                  : "bg-white "
               }`}
             >
               <Users style={{height: '24px', width:'24px'}} className="h-6 w-6" />
@@ -58,10 +58,10 @@ export default function UserProfile() {
             </Button>
             <Button
               onClick={() => setActiveSection("tournaments")}
-              className={`flex lg:text-lg items-center justify-center rounded-[12px] gap-2 p-8  ${
+              className={`flex lg:text-lg items-center justify-center rounded-[12px] gap-2 p-3  md:p-8  ${
                 activeSection === "tournaments"
                   ? "bg-naranja hover:bg-naranja/90 text-white"
-                  : "bg-white hover:bg-gray-100"
+                  : "bg-white "
               }`}
             >
               <Trophy style={{height: '24px', width:'24px'}} className="h-6 w-6" />
@@ -69,16 +69,7 @@ export default function UserProfile() {
             </Button>
           </div>
           </div>
-          <Card className="border-0">
-            <CardHeader>
-              <CardTitle className="text-3xl ">
-                {activeSection === "appointments"
-                  ? "Mis Turnos"
-                  : activeSection === "teams"
-                  ? "Mis Equipos"
-                  : "Mis Torneos"}
-              </CardTitle>
-            </CardHeader>
+          <Card className="border-0 shadow-none">
             <CardContent>{renderSection()}</CardContent>
           </Card>
         </div>

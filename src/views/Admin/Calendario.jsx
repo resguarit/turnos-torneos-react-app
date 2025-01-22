@@ -77,7 +77,7 @@ export default function Calendar() {
     if (loading) {
       navigate('/error');
     }
-  }, 15000);
+  }, 20000);
 
   const getDaysInMonth = (year, month) => {
     return new Date(year, month + 1, 0).getDate();

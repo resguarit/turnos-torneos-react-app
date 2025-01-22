@@ -1,14 +1,8 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Carrusel from './Carrusel';
 import video from '../assets/rng.mp4';
 
 function Hero() {
-  const navigate = useNavigate();
-
-  const handleReservarClick = () => {
-    navigate("calendario-admi");
-  };
-
   return (
     <>
       <div className="relative min-h-screen-full w-full">
@@ -35,12 +29,13 @@ function Hero() {
           <h2 className="font-inter tracking-wide font-medium text-sm md:text-xl lg:text-2xl text-white">
             Descubrí las mejores canchas de fútbol y unite a la comunidad más grande de jugadores
           </h2>
-          <button
-            onClick={handleReservarClick}
-            className="bg-naranja rounded-xl text-white p-2 font-inter font-medium text-xs md:text-sm lg:text-lg tracking-wide w-full md:w-1/3"
-          >
-            QUIERO RESERVAR UN TURNO
-          </button>
+          <Link to="/calendario-admi">
+            <button
+              className="bg-naranja rounded-xl text-white p-2 font-inter font-medium text-xs md:text-sm lg:text-lg tracking-wide w-full "
+            >
+              QUIERO RESERVAR UN TURNO
+            </button>
+          </Link>
         </div>
       </div>
     </>

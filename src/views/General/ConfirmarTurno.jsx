@@ -108,8 +108,9 @@ export default function ConfirmarTurno() {
 
               try {
                 // Step 3: Create Reservation
+                const formattedDate = new Date(selectedDate).toISOString().split('T')[0];
                 const reservationResponse = await api.post('/turnos/turnounico', {
-                  fecha_turno: selectedDate,
+                  fecha_turno: formattedDate,
                   cancha_id: selectedCourt,
                   horario_id: selectedTime,
                   monto_total: reservationDetails.cancha.precio_por_hora,

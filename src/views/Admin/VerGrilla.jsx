@@ -13,6 +13,7 @@ import Loading from '@/components/loading';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
 import useTimeout from '@/components/useTimeout';
+import * as XLSX from 'xlsx';
 
 export default function VerGrilla() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -115,6 +116,63 @@ export default function VerGrilla() {
     });
   };
 
+  const exportToExcel = () => {
+    // Crear el encabezado con las fechas dinámicamente
+    const headers = ['Cancha', ...timeSlots];
+  
+    // Construir las filas de datos
+    const rows = courts.map((court) => {
+      const row = [`Cancha ${court.nro} - ${court.tipo}`]; // Primera celda con la cancha
+      timeSlots.forEach((time) => {
+        const reservation = grid[time]?.[court.nro]?.turno;
+        row.push(
+          reservation
+            ? `${reservation.usuario.nombre || ''}\n(${reservation.estado || ''})\n${reservation.tipo || ''}`
+            : ''
+        );
+      });
+      return row;
+    });
+  
+    // Combinar encabezados y filas
+    const data = [headers, ...rows];
+  
+    // Crear la hoja de cálculo a partir del arreglo bidimensional
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+  
+    // Aplicar estilos a la hoja de cálculo
+    const range = XLSX.utils.decode_range(worksheet['!ref']);
+  
+    // Configuración de las columnas (ancho inicial)
+    worksheet['!cols'] = Array(range.e.c + 1).fill({ wpx: 120 }); // Ajustar ancho inicial
+  
+    // Configurar filas y aplicar la propiedad de ajustar texto
+    worksheet['!rows'] = []; // Inicializar las filas
+    for (let R = range.s.r; R <= range.e.r; ++R) {
+      worksheet['!rows'][R] = { hpx: 50 }; // Ajustar la altura inicial de las filas
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cellAddress = { c: C, r: R };
+        const cellRef = XLSX.utils.encode_cell(cellAddress);
+        if (worksheet[cellRef]) {
+          if (!worksheet[cellRef].s) worksheet[cellRef].s = {}; // Asegurarse de inicializar estilos
+          worksheet[cellRef].s.alignment = {
+            wrapText: true, // Activar ajustar texto
+            vertical: 'center', // Alinear verticalmente al centro
+            horizontal: 'center', // Alinear horizontalmente al centro
+          };
+          worksheet[cellRef].s.font = { name: 'Arial', sz: 12 }; // Configurar la fuente
+        }
+      }
+    }
+  
+    // Crear el libro y agregar la hoja
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Grilla de Turnos');
+  
+    const dateStr = format(currentDate, 'yyyy-MM-dd');
+    XLSX.writeFile(workbook, `grilla-${dateStr}.xlsx`);
+  };
+
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
@@ -139,13 +197,22 @@ export default function VerGrilla() {
               <ChevronRight className="w-5 h-5" />
             </button>
             </div>
-            <button
-            onClick={exportToPDF}
-            style={{ borderRadius: '8px' }}
-            className=" p-3 bg-blue-500 text-white  hover:bg-blue-600 lg:text-xl "
-          >
-            Exportar a PDF
-          </button>
+            <div className="flex gap-4">
+              <button
+                onClick={exportToPDF}
+                style={{ borderRadius: '8px' }}
+                className=" p-3 bg-blue-500 text-white  hover:bg-blue-600 lg:text-xl "
+              >
+                Exportar a PDF
+              </button>
+              <button
+                onClick={exportToExcel}
+                style={{ borderRadius: '8px' }}
+                className="p-3 bg-green-500 text-white lg:text-xl hover:bg-green-600"
+              >
+                Exportar a Excel
+              </button>
+            </div>
           </div>
 
           {isOpen && (

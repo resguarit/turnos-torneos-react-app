@@ -65,7 +65,7 @@ export default function NuevaReserva() {
 
   useEffect(() => {
     if (selectedDate) {
-      const formattedDate = selectedDate.toISOString().split('T')[0];
+      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
       fetchAvailability(formattedDate);
     }
   }, [selectedDate]);
@@ -92,7 +92,8 @@ export default function NuevaReserva() {
     const userId = localStorage.getItem('user_id');
     
     if (!userId) {
-        navigate(`/confirmar-turno?time=${selectedTime}&date=${selectedDate}&court=${selectedCourt}`);
+        const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+        navigate(`/confirmar-turno?time=${selectedTime}&date=${formattedDate}&court=${selectedCourt}`);
         return;
     }
 
@@ -205,7 +206,7 @@ export default function NuevaReserva() {
                             variant={selectedDate?.toDateString() === day.toDateString() ? "default" : "outline"}
                             className={`flex flex-col items-center rounded-[8px] p-2 h-auto ${
                               selectedDate?.toDateString() === day.toDateString()
-                                ? "bg-[#FF5533] hover:bg-[#FF5533]/90 text-white"
+                                ? "bg-naranja hover:bg-naranja/90 text-white"
                                 : ""
                             }`}
                             onClick={() => setSelectedDate(day)}
@@ -229,9 +230,10 @@ export default function NuevaReserva() {
                         {availability.map((slot) => (
                           <Button
                             key={slot.id}
-                            variant={selectedTime === slot.time ? "default" : "outline"}
-                            className={selectedTime === slot.time ? "bg-[#FF5533] hover:bg-[#FF5533]/90 rounded-[8px] text-white" : "rounded-[8px]"}
-                            onClick={() => {setSelectedTime(slot.id); 
+                            variant={selectedTime === slot.id ? "default" : "outline"}
+                            className={selectedTime === slot.id ? "bg-naranja hover:bg-naranja/90 rounded-[8px] text-white" : "rounded-[8px]"}
+                            onClick={() => {
+                              setSelectedTime(slot.id); 
                               setSelectedTimeName(slot.time);
                             }}
                           >
@@ -252,7 +254,7 @@ export default function NuevaReserva() {
                             key={court.id}
                             variant={selectedCourt === court.nro ? "default" : "outline"}
                             className={`h-auto flex rounded-[8px] flex-col items-start p-4 ${
-                              selectedCourt === court.nro ? "bg-[#FF5533] hover:bg-[#FF5533]/90 text-white" : ""
+                              selectedCourt === court.nro ? "bg-naranja hover:bg-naranja/90 text-white" : ""
                             }`}
                             onClick={() => setSelectedCourt(court.nro)}
                           >
@@ -279,7 +281,7 @@ export default function NuevaReserva() {
                     {selectedCourt && <p className="text-sm text-gray-600">Cancha: {selectedCourt}</p>}
                   </div>
                   <Button
-                    className="bg-[#FF5533] hover:bg-[#FF5533]/90 text-white rounded-[8px]"
+                    className="bg-naranja hover:bg-naranja/90 text-white rounded-[8px]"
                     disabled={!selectedDate || !selectedTime || !selectedCourt}
                     onClick={handleSubmit}
                   >

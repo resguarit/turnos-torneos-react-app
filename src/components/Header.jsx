@@ -79,16 +79,16 @@ export function Header() {
                   <CircleUserRound className="h-7 w-7" />
                 </button>
                 {isOpen && (
-                  <div className="absolute font-inter text-xl right-0 mt-2 w-52 bg-white text-zinc-800 rounded-xl shadow-lg z-50">
+                  <div className="absolute font-inter text-base right-0 mt-2 w-48 bg-white text-zinc-800 rounded-xl shadow-lg z-50">
                     <div className="flex flex-col items-start px-4 py-4 space-y-2">
                     <button
                         onClick={() => {
                           navigate('/editar-perfil');
                           closeMenu();
                         }}
-                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2 py-1 rounded-xl"
+                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2  rounded-xl"
                       >
-                        Editar Perfil <Pencil />
+                        Editar Perfil <Pencil className='w-5'/>
                       </button>
                       <span className="w-full h-[1px] bg-gray-300 my-2"></span>
                       <button
@@ -96,9 +96,9 @@ export function Header() {
                           navigate('/user-profile');
                           closeMenu();
                         }}
-                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2 py-1 rounded-xl"
+                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2  rounded-xl"
                       >
-                        Mi Panel <UserCog />
+                        Mi Panel <UserCog className='w-5'/>
                       </button>
                       <span className="w-full h-[1px] bg-gray-300 my-2"></span>
                       <button
@@ -106,9 +106,9 @@ export function Header() {
                           handleModal();
                           closeMenu();
                         }}
-                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2 py-1 rounded-xl"
+                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2  rounded-xl"
                       >
-                        Cerrar Sesión <LogOut />
+                        Cerrar Sesión <LogOut className='w-5'/>
                       </button>
                     </div>
                   </div>

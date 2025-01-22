@@ -23,7 +23,10 @@ export default function MisTurnos() {
     setLoading(true);
     try {
       const response = await api.get('turnos/user');
-      if (response.data && response.data.turnos) {
+      if (response.status === 404) {
+        setTurnos([]);
+        setError('No tienes turnos.');
+      } else if (response.data && response.data.turnos) {
         const fechaHoy = new Date().toISOString().split('T')[0];
         const turnosFiltrados = response.data.turnos.filter(turno => {
           return showProximos ? turno.fecha_turno >= fechaHoy && turno.estado !== 'Cancelado' : turno.fecha_turno < fechaHoy || turno.estado === 'Cancelado';
@@ -37,11 +40,18 @@ export default function MisTurnos() {
           return fechaA - fechaB;
         });
         setTurnos(turnosOrdenados);
+        setError(null);
       } else {
         setTurnos([]);
+        setError('No tienes turnos.');
       }
     } catch (error) {
-      setError(error.message);
+      if (error.response && error.response.status === 404) {
+        setTurnos([]);
+        setError('No tienes turnos.');
+      } else {
+        setError('Error al cargar los turnos. Por favor, intente nuevamente.');
+      }
     } finally {
       setLoading(false);
     }
@@ -97,42 +107,46 @@ export default function MisTurnos() {
           </button>
         </div>
         {error && <p className="text-red-500">{error}</p>}
-        <div className="flex flex-col gap-4 w-full">
-          {turnos.map((turno) => (
-            <div key={turno.id} className="bg-white p-4 rounded-lg shadow-md">
-              <div className='flex justify-between'>
-                <div>
-                  <h2 className="text-2xl font-semibold">{formatDate(turno.fecha_turno)}</h2>
-                  <p className="text-xl"><span className="font-semibold">Cancha:</span> {turno.cancha.nro} - {turno.cancha.tipo_cancha}</p>
-                  <p className="text-xl"><span className="font-semibold">Horario:</span> {turno.horario.hora_inicio} - {turno.horario.hora_fin}</p>
-                  {expandedTurno === turno.id && (
-                    <div className="mt-4 text-gray-600">
-                      <p><span className="font-semibold">Fecha reserva:</span> {formatDate(turno.fecha_reserva)}</p>
-                      <p><span className="font-semibold">Monto Total:</span> {turno.monto_total}</p>
-                      <p><span className="font-semibold">Monto Seña:</span> {turno.monto_seña}</p>
-                    </div>
-                  )}
-                  <button
-                    onClick={() => toggleExpand(turno.id)}
-                    className="mt-4 p-2 bg-gray-200 text-black rounded-[8px]"
-                  >
-                    {expandedTurno === turno.id ? 'Ver Menos' : 'Ver Más'}
-                  </button>
-                </div>
-                {showProximos && (
-                  <div className='flex items-center'>
+        {turnos.length === 0 && !error ? (
+          <p className="text-gray-600">No tienes turnos.</p>
+        ) : (
+          <div className="flex flex-col gap-4 w-full">
+            {turnos.map((turno) => (
+              <div key={turno.id} className="bg-white p-4 rounded-lg shadow-md">
+                <div className='flex justify-between'>
+                  <div>
+                    <h2 className="text-2xl font-semibold">{formatDate(turno.fecha_turno)}</h2>
+                    <p className="text-xl"><span className="font-semibold">Cancha:</span> {turno.cancha.nro} - {turno.cancha.tipo_cancha}</p>
+                    <p className="text-xl"><span className="font-semibold">Horario:</span> {turno.horario.hora_inicio} - {turno.horario.hora_fin}</p>
+                    {expandedTurno === turno.id && (
+                      <div className="mt-4 text-gray-600">
+                        <p><span className="font-semibold">Fecha reserva:</span> {formatDate(turno.fecha_reserva)}</p>
+                        <p><span className="font-semibold">Monto Total:</span> {turno.monto_total}</p>
+                        <p><span className="font-semibold">Monto Seña:</span> {turno.monto_seña}</p>
+                      </div>
+                    )}
                     <button
-                      onClick={() => handleCancelarClick(turno.id)}
-                      className="mt-4 p-2 bg-red-500 text-white rounded-[8px]"
+                      onClick={() => toggleExpand(turno.id)}
+                      className="mt-4 p-2 bg-gray-200 text-black rounded-[8px]"
                     >
-                      Cancelar Turno
+                      {expandedTurno === turno.id ? 'Ver Menos' : 'Ver Más'}
                     </button>
                   </div>
-                )}
+                  {showProximos && (
+                    <div className='flex items-center'>
+                      <button
+                        onClick={() => handleCancelarClick(turno.id)}
+                        className="mt-4 p-2 bg-red-500 text-white rounded-[8px]"
+                      >
+                        Cancelar Turno
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </main>
       {isOpen && (
         <ModalConfirmation

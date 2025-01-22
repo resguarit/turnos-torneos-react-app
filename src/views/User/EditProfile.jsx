@@ -157,52 +157,52 @@ export default function EditProfile() {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow bg-gray-100 p-6">
-        <h1 className='text-4xl font-semibold'>Editar Perfil</h1>
-        <Card className="w-full max-w-7xl mx-auto mt-20 shadow-none border-0 ">
+        <h1 className='text-3xl font-semibold'>Editar Perfil</h1>
+        <Card className="w-full max-w-7xl mx-auto  shadow-none border-0 ">
           <CardContent className="pt-6">
             <ToastContainer position="bottom-right" />
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Información Personal */}
               <div className="space-y-4">
                 <div>
-                  <h2 className="text-2xl font-semibold">Información Personal</h2>
-                  <p className="text-xl text-muted-foreground">
+                  <h2 className="text-xl font-semibold">Información Personal</h2>
+                  <p className="text-lg text-muted-foreground">
                     Actualiza tu información personal y de contacto.
                   </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1 flex flex-col">
-                    <Label htmlFor="name" className="text-xl">Nombre</Label>
+                    <Label htmlFor="name" className="text-lg">Nombre</Label>
                     <input
                       id="name"
                       name="name"
                       value={userData.name}
                       onChange={handleChange}
-                      className="bg-white p-2 border border-gray-400"
+                      className="bg-white p-1 border border-gray-400"
                       style={{ borderRadius: '12px' }}
                     />
                   </div>
                   <div className="space-y-1 flex flex-col">
-                    <Label htmlFor="email" className="text-xl">Email</Label>
+                    <Label htmlFor="email" className="text-lg">Email</Label>
                     <input
                       id="email"
                       name="email"
                       type="email"
                       value={userData.email}
                       onChange={handleChange}
-                      className="bg-white p-2 border border-gray-400"
+                      className="bg-white p-1 border border-gray-400"
                       style={{ borderRadius: '12px' }}
                     />
                   </div>
                   <div className="space-y-1 flex flex-col">
-                    <Label htmlFor="telefono" className="text-xl">Teléfono</Label>
+                    <Label htmlFor="telefono" className="text-lg">Teléfono</Label>
                     <input
                       id="telefono"
                       name="telefono"
                       type="tel"
                       value={userData.telefono}
                       onChange={handleChange}
-                      className="bg-white p-2 border border-gray-400"
+                      className="bg-white p-1 border border-gray-400"
                       style={{ borderRadius: '12px' }}
                     />
                   </div>
@@ -212,67 +212,67 @@ export default function EditProfile() {
               {/* Cambiar Contraseña */}
               <div className="space-y-4">
                 <div>
-                  <h2 className="text-2xl font-semibold">Cambiar Contraseña</h2>
-                  <p className="text-xl text-muted-foreground">
+                  <h2 className="text-xl font-semibold">Cambiar Contraseña</h2>
+                  <p className="text-lg text-muted-foreground">
                     Asegúrate de usar una contraseña segura.
                   </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1 flex flex-col relative">
-                    <Label htmlFor="current_password" className="text-xl">Contraseña Actual</Label>
+                    <Label htmlFor="current_password" className="text-lg">Contraseña Actual</Label>
                     <input
                       id="current_password"
                       name="current_password"
                       type={showPassword.current_password ? "text" : "password"}
                       value={userPassword.current_password}
                       onChange={handlePasswordChange}
-                      className="bg-white p-2 border border-gray-400"
+                      className="bg-white p-1 border border-gray-400"
                       style={{ borderRadius: '12px' }}
                     />
                     <button
                       type="button"
                       onClick={() => toggleShowPassword('current_password')}
-                      className="absolute right-2 top-12 transform -translate-y-1/2"
+                      className="absolute right-2 top-11 transform -translate-y-1/2"
                     >
-                      {showPassword.current_password ? <EyeOff /> : <Eye />}
+                      {showPassword.current_password ? <EyeOff className='h-5 w-5'/> : <Eye className='h-5 w-5'/>}
                     </button>
                   </div>
                   <div className="space-y-1 flex flex-col relative">
-                    <Label htmlFor="password" className="text-xl">Nueva Contraseña</Label>
+                    <Label htmlFor="password" className="text-lg">Nueva Contraseña</Label>
                     <input
                       id="password"
                       name="password"
                       type={showPassword.password ? "text" : "password"}
                       value={userPassword.password}
                       onChange={handlePasswordChange}
-                      className="bg-white p-2 border border-gray-400"
+                      className="bg-white p-1 border border-gray-400"
                       style={{ borderRadius: '12px' }}
                     />
                     <button
                       type="button"
                       onClick={() => toggleShowPassword('password')}
-                      className="absolute right-2 top-12 transform -translate-y-1/2"
+                      className="absolute right-2 top-11 transform -translate-y-1/2"
                     >
-                      {showPassword.password ? <EyeOff /> : <Eye />}
+                      {showPassword.password ? <EyeOff className='h-5 w-5'/> : <Eye className='h-5 w-5'/>}
                     </button>
                   </div>
                   <div className="space-y-1 flex flex-col relative">
-                    <Label htmlFor="password_confirmation" className="text-xl">Confirmar Contraseña</Label>
+                    <Label htmlFor="password_confirmation" className="text-lg">Confirmar Contraseña</Label>
                     <input
                       id="password_confirmation"
                       name="password_confirmation"
                       type={showPassword.password_confirmation ? "text" : "password"}
                       value={userPassword.password_confirmation}
                       onChange={handlePasswordChange}
-                      className="bg-white p-2 border border-gray-400"
+                      className="bg-white p-1 border border-gray-400"
                       style={{ borderRadius: '12px' }}
                     />
                     <button
                       type="button"
                       onClick={() => toggleShowPassword('password_confirmation')}
-                      className="absolute right-2 top-12 transform -translate-y-1/2"
+                      className="absolute right-2 top-11 transform -translate-y-1/2"
                     >
-                      {showPassword.password_confirmation ? <EyeOff /> : <Eye />}
+                      {showPassword.password_confirmation ? <EyeOff className='h-5 w-5'/> : <Eye className='h-5 w-5'/>}
                     </button>
                   </div>
                 </div>
@@ -280,10 +280,10 @@ export default function EditProfile() {
 
               {/* Acciones del Formulario */}
               <div className="flex justify-between">
-                <button type="button" className='bg-red-500 p-3 text-white text-xl rounded-[10px]' onClick={handleCancelarClick}>
+                <button type="button" className='bg-red-500 h-10 p-2 items-center flex text-white text-base md:text-lg rounded-[10px]' onClick={handleCancelarClick}>
                   Cancelar
                 </button>
-                <button type="submit" className='bg-naranja text-white p-3 text-xl rounded-[10px]' disabled={isLoading}>
+                <button type="submit" className='bg-naranja h-10 text-white items-center flex p-2 text-base md:text-lg rounded-[10px]' disabled={isLoading}>
               {isLoading ? 'Guardando...' : 'Guardar Cambios'}
             </button>
               </div>

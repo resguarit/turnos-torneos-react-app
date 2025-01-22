@@ -121,7 +121,7 @@ export default function CanchasReserva() {
                 });
                 
                 if (response.status === 201) {
-                    navigate('/user-profile');
+                    navigate('/ver-turnos');
                 }
             } catch (reservaError) {
                 // Si falla la creación de la reserva, liberar el bloqueo temporal
@@ -138,7 +138,7 @@ export default function CanchasReserva() {
     } finally {
         setLoading(false);
     }
-};
+  };
 
   const closeModal = () => {
     setShowModal(false);

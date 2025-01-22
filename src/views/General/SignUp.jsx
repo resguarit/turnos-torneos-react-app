@@ -11,6 +11,7 @@ function SignUp() {
         name: '',
         email: '',
         telefono: '',
+        dni: '',
         password: '',
         password_confirmation: ''
     });
@@ -25,8 +26,8 @@ function SignUp() {
     };
 
     const validateForm = () => {
-        const { name, email, telefono, password, password_confirmation } = formData;
-        if (!name || !email || !telefono || !password || !password_confirmation) {
+        const { name, email, telefono, dni, password, password_confirmation } = formData;
+        if (!name || !email || !telefono || !dni || !password || !password_confirmation) {
             toast.error('Todos los campos son obligatorios');
             return false;
         }
@@ -51,12 +52,13 @@ function SignUp() {
                 name: formData.name,
                 email: formData.email,
                 telefono: formData.telefono,
+                dni: formData.dni,
                 password: formData.password,
                 password_confirmation: formData.password_confirmation
             });
             if (registerResponse.status === 201) {
                 const loginResponse = await api.post('/login', {
-                    email: formData.email,
+                    dni: formData.dni,
                     password: formData.password
                 });
                 localStorage.setItem('user_id', loginResponse.data.user_id);
@@ -106,6 +108,14 @@ function SignUp() {
                                 name="telefono"
                                 placeholder="Teléfono"
                                 value={formData.telefono}
+                                onChange={handleChange}
+                                className="w-full text-black text-lg border-2 border-gray-300 p-3 rounded-xl"
+                            />
+                            <input
+                                type="text"
+                                name="dni"
+                                placeholder="DNI"
+                                value={formData.dni}
                                 onChange={handleChange}
                                 className="w-full text-black text-lg border-2 border-gray-300 p-3 rounded-xl"
                             />

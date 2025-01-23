@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { addDays, format, startOfWeek } from "date-fns";
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, CalendarDays, Clock, X } from "lucide-react";
@@ -9,6 +9,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import api from '@/lib/axiosConfig';
 import { useNavigate } from 'react-router-dom';
+import LoadingSinHF from "@/components/LoadingSinHF";
 
 export default function NuevaReserva() {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -21,13 +22,19 @@ export default function NuevaReserva() {
   const [availability, setAvailability] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState(null);
+  const [loadingHorario, setLoadingHorario] = useState(false);
+  const [loadingCancha, setLoadingCancha] = useState(false);
 
   const navigate = useNavigate();
+  const carouselRef = useRef(null); // Referencia para el carrusel
+  const horariosRef = useRef(null); // Referencia para la sección de horarios
+  const canchasRef = useRef(null); // Referencia para la sección de canchas
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
 
   const fetchAvailability = async (date) => {
     try {
+      setLoadingHorario(true);
       const response = await api.get(`/disponibilidad/fecha?fecha=${date}`);
       const availabilityStatus = response.data.horarios
         .filter(horario => horario.disponible) // Filtrar horarios disponibles
@@ -40,14 +47,14 @@ export default function NuevaReserva() {
     } catch (error) {
       console.error('Error fetching availability:', error);
     } finally {
+      setLoadingHorario(false);
     }
   };
-
-  
 
   useEffect(() => {
     const fetchCanchas = async () => {
       try {
+        setLoadingCancha(true);
         const formattedDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null;
         const response = await api.get(`/disponibilidad/cancha?fecha=${formattedDate}&horario_id=${selectedTime}`);
         const data = response.data;
@@ -58,6 +65,8 @@ export default function NuevaReserva() {
         }
       } catch (error) {
         console.error("Error fetching canchas:", error);
+      } finally {
+        setLoadingCancha(false);
       }
     };
 
@@ -106,11 +115,11 @@ export default function NuevaReserva() {
           cancha => cancha.id === selectedCourt && cancha.disponible
       );
 
-      /* if (!canchaDisponible) {
+      /*  if (!canchaDisponible) {
           setError('El turno ya no está disponible');
           return;
-      }
-  */
+      } */
+  
       // Crear bloqueo temporal
       const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
           fecha: formattedDate,
@@ -164,14 +173,13 @@ export default function NuevaReserva() {
         <div className="flex justify-center">
           <button
             onClick={onConfirm}
-            className="px-4 py-2 bg-naranja text-white lg:text-xl"
+            className="px-4 py-2 bg-naranja text-white lg:text-xl rounded-[10px]"
           >Confirmar
           </button>
         </div>
       </div>
     </div>
   );
-
 
   return (
     <div className="min-h-screen flex flex-col font-inter">
@@ -182,7 +190,7 @@ export default function NuevaReserva() {
             <CardContent className="p-6">
               <h2 className="text-2xl font-bold mb-6">Reserva tu cancha</h2>
 
-              <Carousel className="w-full">
+              <Carousel className="w-full" ref={carouselRef}>
                 <CarouselContent>
                   {/* Step 1: Select Date */}
                   <CarouselItem>
@@ -210,7 +218,10 @@ export default function NuevaReserva() {
                                 ? "bg-naranja hover:bg-naranja/90 text-white"
                                 : ""
                             }`}
-                            onClick={() => setSelectedDate(day)}
+                            onClick={() => {
+                              setSelectedDate(day);
+                              horariosRef.current.scrollIntoView({ behavior: 'smooth' }); // Desplazar a la sección de horarios
+                            }}
                           >
                             <span className="text-xs">{format(day, "EEE", { locale: es })}</span>
                             <span className="text-lg">{format(day, "d")}</span>
@@ -221,50 +232,63 @@ export default function NuevaReserva() {
                   </CarouselItem>
 
                   {/* Step 2: Select Time */}
-                  <CarouselItem>
+                  <CarouselItem ref={horariosRef}>
                     <div className="p-4">
                       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Clock className="w-5 h-5" />
                         Selecciona un horario
                       </h3>
                       <div className="grid grid-cols-3 gap-2">
-                        {availability.map((slot) => (
-                          <Button
-                            key={slot.id}
-                            variant={selectedTime === slot.id ? "default" : "outline"}
-                            className={selectedTime === slot.id ? "bg-naranja hover:bg-naranja/90 rounded-[8px] text-white" : "rounded-[8px]"}
-                            onClick={() => {
-                              setSelectedTime(slot.id); 
-                              setSelectedTimeName(slot.time);
-                            }}
-                          >
-                            {slot.time}
-                          </Button>
-                        ))}
+                      {loadingHorario ? (
+                          <div className="col-span-3 flex justify-center items-center">
+                            <LoadingSinHF />
+                          </div>
+                        ) : (
+                          availability.map((slot) => (
+                            <Button
+                              key={slot.id}
+                              variant={selectedTime === slot.id ? "default" : "outline"}
+                              className={selectedTime === slot.id ? "bg-naranja hover:bg-naranja/90 rounded-[8px] text-white" : "rounded-[8px]"}
+                              onClick={() => {
+                                setSelectedTime(slot.id); 
+                                setSelectedTimeName(slot.time);
+                                canchasRef.current.scrollIntoView({ behavior: 'smooth' }); // Desplazar a la sección de canchas
+                              }}
+                            >
+                              {slot.time}
+                            </Button>
+                          ))
+                        )}
                       </div>
                     </div>
                   </CarouselItem>
 
                   {/* Step 3: Select Court */}
-                  <CarouselItem>
+                  <CarouselItem ref={canchasRef}>
                     <div className="p-4">
                       <h3 className="text-lg font-semibold mb-4">Selecciona una cancha</h3>
                       <div className="grid grid-cols-2 gap-4">
-                        {courts.map((court) => (
-                          <Button
-                            key={court.id}
-                            variant={selectedCourt === court.nro ? "default" : "outline"}
-                            className={`h-auto flex rounded-[8px] flex-col items-start p-4 ${
-                              selectedCourt === court.nro ? "bg-naranja hover:bg-naranja/90 text-white" : ""
-                            }`}
-                            onClick={() => setSelectedCourt(court.nro)}
-                          >
-                            <span className="font-bold">Cancha {court.nro}</span>
-                            <span className="text-sm">{court.tipo_cancha}</span>
-                            <span className="text-sm mt-2">${court.precio_por_hora}</span>
-                            <span className="text-sm mt-2">${court.seña}</span>
-                          </Button>
-                        ))}
+                      {loadingCancha ? (
+                          <div className="col-span-2 flex justify-center items-center">
+                            <LoadingSinHF />
+                          </div>
+                        ) : (
+                          courts.map((court) => (
+                            <Button
+                              key={court.id}
+                              variant={selectedCourt === court.nro ? "default" : "outline"}
+                              className={`h-auto flex rounded-[8px] flex-col items-start p-4 ${
+                                selectedCourt === court.nro ? "bg-naranja hover:bg-naranja/90 text-white" : ""
+                              }`}
+                              onClick={() => setSelectedCourt(court.nro)}
+                            >
+                              <span className="font-bold">Cancha {court.nro}</span>
+                              <span className="text-sm">{court.tipo_cancha}</span>
+                              <span className="text-sm mt-2">${court.precio_por_hora}</span>
+                              <span className="text-sm mt-2">${court.seña}</span>
+                            </Button>
+                          ))
+                        )}
                       </div>
                     </div>
                   </CarouselItem>

@@ -59,7 +59,7 @@ export function Header() {
     <header className="bg-naranja max-w-full text-white px-6 py-4">
       <nav className=" mx-auto flex items-center justify-between">
         <a href="/" >
-          <img src={Logo} alt="Logo" className="h-6 lg:h-8 xl:h-9" />
+          <img src={Logo} alt="Logo" className="h-7 lg:h-8 xl:h-9" />
         </a>
         <div className="hidden md:block">
           <div className="flex gap-8 lg:gap-12  font-inter text-sm xl:text-lg">

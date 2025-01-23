@@ -27,59 +27,49 @@ export default function UserProfile() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-grow bg-gray-100 p-6">
+      <main className="flex-grow bg-gray-100 md:p-6 p-4">
         <div className="max-w-7xl lg:max-w-full mx-auto">
-          <h1 className="text-3xl font-bold text-black mb-6">
+          <h1 className="text-xl md:text-2xl font-bold text-black mb-6">
             Mi Panel de Usuario
           </h1>
-          <div className="grid grid-cols-1  md:grid-cols-3 gap-6 mb-6">
+          <div className="flex flex-col items-center justify-center">
+          <div className="grid grid-cols-1 w-[80vw] md:grid-cols-3 gap-6 mb-6">
             <Button
-            style={{ borderRadius: "12px" }}
               onClick={() => setActiveSection("appointments")}
-              className={`flex lg:text-2xl items-center justify-center gap-2 h-20 ${
+              className={`flex lg:text-lg items-center justify-center rounded-[12px] gap-2 p-3  md:p-8 ${
                 activeSection === "appointments"
-                  ? "bg-naranja hover:bg-naranja/90 text-white"
-                  : "bg-white hover:bg-gray-100"
+                  ? "bg-naranja hover:bg-naranja/90 text-white "
+                  : "bg-white "
               }`}
             >
-              <CalendarDays style={{height: '28px', width:'28px'}} className="size-10" />
+              <CalendarDays style={{height: '24px', width:'24px'}} />
               <span>Mis Turnos</span>
             </Button>
             <Button
-            style={{ borderRadius: "12px" }}
               onClick={() => setActiveSection("teams")}
-              className={`flex lg:text-2xl items-center justify-center gap-2 h-20 ${
+              className={`flex lg:text-lg items-center justify-center rounded-[12px] gap-2 p-3  md:p-8  ${
                 activeSection === "teams"
                   ? "bg-naranja hover:bg-naranja/90 text-white"
-                  : "bg-white hover:bg-gray-100"
+                  : "bg-white "
               }`}
             >
-              <Users style={{height: '28px', width:'28px'}} className="h-6 w-6" />
+              <Users style={{height: '24px', width:'24px'}} className="h-6 w-6" />
               <span>Mis Equipos</span>
             </Button>
             <Button
-            style={{ borderRadius: "12px" }}
               onClick={() => setActiveSection("tournaments")}
-              className={`flex lg:text-2xl items-center justify-center gap-2 h-20 ${
+              className={`flex lg:text-lg items-center justify-center rounded-[12px] gap-2 p-3  md:p-8  ${
                 activeSection === "tournaments"
                   ? "bg-naranja hover:bg-naranja/90 text-white"
-                  : "bg-white hover:bg-gray-100"
+                  : "bg-white "
               }`}
             >
-              <Trophy style={{height: '28px', width:'28px'}} className="h-6 w-6" />
+              <Trophy style={{height: '24px', width:'24px'}} className="h-6 w-6" />
               <span>Mis Torneos</span>
             </Button>
           </div>
-          <Card className="border-0">
-            <CardHeader>
-              <CardTitle className="text-3xl ">
-                {activeSection === "appointments"
-                  ? "Mis Turnos"
-                  : activeSection === "teams"
-                  ? "Mis Equipos"
-                  : "Mis Torneos"}
-              </CardTitle>
-            </CardHeader>
+          </div>
+          <Card className="border-0 shadow-none">
             <CardContent>{renderSection()}</CardContent>
           </Card>
         </div>

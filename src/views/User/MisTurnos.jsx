@@ -25,7 +25,7 @@ export default function MisTurnos() {
       const response = await api.get('turnos/user');
       if (response.status === 404) {
         setTurnos([]);
-        setError('No tienes turnos.');
+        setError('No tienes turnos');
       } else if (response.data && response.data.turnos) {
         const fechaHoy = new Date().toISOString().split('T')[0];
         const turnosFiltrados = response.data.turnos.filter(turno => {
@@ -43,12 +43,12 @@ export default function MisTurnos() {
         setError(null);
       } else {
         setTurnos([]);
-        setError('No tienes turnos.');
+        setError('No tienes turnos');
       }
     } catch (error) {
       if (error.response && error.response.status === 404) {
         setTurnos([]);
-        setError('No tienes turnos.');
+        setError('No tienes turnos');
       } else {
         setError('Error al cargar los turnos. Por favor, intente nuevamente.');
       }
@@ -96,28 +96,29 @@ export default function MisTurnos() {
 
   return (
     <div className="flex flex-col">
-      <ToastContainer position="bottom-right" />
-      <main className="flex-grow bg-gray-100 p-6">
-        <div className="w-full flex justify-end">
+      <ToastContainer position="top-right" />
+      <main className="flex-grow bg-gray-100 md:p-6  p-0">
+        <div className="w-full flex md:justify-between justify-evenly gap-8 items-center">
+          <h1 className="md:text-2xl text-base font-medium text-black mb-6">{showProximos ? 'Próximos Turnos' : 'Historial Turnos'}</h1>
           <button
             onClick={toggleTurnos}
-            className="mb-6 p-3 bg-naranja text-white text-xl rounded-[8px]"
+            className="mb-4 p-1 px-0 w-24 bg-black text-white md:w-fit md:p-2    md:text-lg text-sm  rounded-[8px]"
           >
             {showProximos ? 'Ver Turnos Anteriores' : 'Ver Turnos Próximos'}
           </button>
         </div>
-        {error && <p className="text-red-500">{error}</p>}
+        {error && <p className="mt-4 text-center text-xl">{error}</p>}
         {turnos.length === 0 && !error ? (
           <p className="text-gray-600">No tienes turnos.</p>
         ) : (
           <div className="flex flex-col gap-4 w-full">
             {turnos.map((turno) => (
               <div key={turno.id} className="bg-white p-4 rounded-lg shadow-md">
-                <div className='flex justify-between'>
+                <div className='flex md:justify-between md:flex-row flex-col'>
                   <div>
-                    <h2 className="text-2xl font-semibold">{formatDate(turno.fecha_turno)}</h2>
-                    <p className="text-xl"><span className="font-semibold">Cancha:</span> {turno.cancha.nro} - {turno.cancha.tipo_cancha}</p>
-                    <p className="text-xl"><span className="font-semibold">Horario:</span> {turno.horario.hora_inicio} - {turno.horario.hora_fin}</p>
+                    <h2 className=" text-lg md:text-xl font-semibold">{formatDate(turno.fecha_turno)}</h2>
+                    <p className="text-base md:text-lg"><span className="font-semibold">Cancha:</span> {turno.cancha.nro} - {turno.cancha.tipo_cancha}</p>
+                    <p className="text-base md:text-lg"><span className="font-semibold">Horario:</span> {turno.horario.hora_inicio} - {turno.horario.hora_fin}</p>
                     {expandedTurno === turno.id && (
                       <div className="mt-4 text-gray-600">
                         <p><span className="font-semibold">Fecha reserva:</span> {formatDate(turno.fecha_reserva)}</p>
@@ -127,7 +128,7 @@ export default function MisTurnos() {
                     )}
                     <button
                       onClick={() => toggleExpand(turno.id)}
-                      className="mt-4 p-2 bg-gray-200 text-black rounded-[8px]"
+                      className="mt-4 p-2 bg-gray-200 text-black rounded-[8px] md:text-base text-sm"
                     >
                       {expandedTurno === turno.id ? 'Ver Menos' : 'Ver Más'}
                     </button>
@@ -136,7 +137,7 @@ export default function MisTurnos() {
                     <div className='flex items-center'>
                       <button
                         onClick={() => handleCancelarClick(turno.id)}
-                        className="mt-4 p-2 bg-red-500 text-white rounded-[8px]"
+                        className="mt-4 p-2 bg-red-500 text-white rounded-[8px] md:text-base text-sm"
                       >
                         Cancelar Turno
                       </button>

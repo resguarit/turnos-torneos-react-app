@@ -52,7 +52,8 @@ export default function NuevaReserva() {
         const response = await api.get(`/disponibilidad/cancha?fecha=${formattedDate}&horario_id=${selectedTime}`);
         const data = response.data;
         if (data.status === 200) {
-          setCourts(data.canchas);
+          const availableCourts = data.canchas.filter(court => court.disponible);
+          setCourts(availableCourts);
           console.log("Las canchas son", data.canchas); 
         }
       } catch (error) {
@@ -177,7 +178,7 @@ export default function NuevaReserva() {
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
         <div className="max-w-4xl mx-auto p-6">
-          <Card className="rounded-2xl">
+          <Card className="rounded-2xl bg-white">
             <CardContent className="p-6">
               <h2 className="text-2xl font-bold mb-6">Reserva tu cancha</h2>
 
@@ -191,11 +192,11 @@ export default function NuevaReserva() {
                         Selecciona una fecha
                       </h3>
                       <div className="flex justify-between items-center mb-4">
-                        <Button className="rounded-[8px]" variant="outline" size="icon" onClick={handlePrevWeek}>
+                        <Button className="rounded-[10px]" variant="outline" size="icon" onClick={handlePrevWeek}>
                           <ChevronLeft className="h-4 w-4" />
                         </Button>
                         <span className="text-sm font-medium">{format(currentWeekStart, "MMMM yyyy", { locale: es })}</span>
-                        <Button className="rounded-[8px]" variant="outline" size="icon" onClick={handleNextWeek}>
+                        <Button className="rounded-[10px]" variant="outline" size="icon" onClick={handleNextWeek}>
                           <ChevronRight className="h-4 w-4" />
                         </Button>
                       </div>

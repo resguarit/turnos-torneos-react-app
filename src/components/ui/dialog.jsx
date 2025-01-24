@@ -31,7 +31,7 @@ const DialogContent = forwardRef(({ className, children, ...props }, ref) => (
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed z-50 grid w-full gap-4 rounded-lg bg-white p-6 shadow-lg transition-transform duration-300 sm:max-w-lg",
+        "fixed z-50 grid w-full gap-4 rounded-lg bg-white p-6 shadow-lg transition-transform duration-300 md:max-w-sm",
         className
       )}
       {...props}

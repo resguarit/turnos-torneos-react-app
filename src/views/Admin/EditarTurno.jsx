@@ -150,7 +150,7 @@ function EditarTurno() {
         toast.success('Turno actualizado correctamente');
         setFetching(false);
         setTimeout(() => {
-          navigate('/ver-turnos');
+          navigate('/nuevo-panel-admin');
         }, 2000); // Esperar 2 segundos antes de redirigir
       }
     } catch (error) {

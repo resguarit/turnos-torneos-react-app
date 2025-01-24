@@ -26,6 +26,14 @@ const PestanaPistas = () => {
   const [pistas, setPistas] = useState(pistasIniciales);
   const [agregando, setAgregando] = useState(false);
 
+  const toggleDisponibilidad = (id) => {
+    setPistas((prevPistas) =>
+      prevPistas.map((pista) =>
+        pista.id === id ? { ...pista, disponible: !pista.disponible } : pista
+      )
+    );
+  };
+
   return (
     <div className="py-6">
       <div className="flex justify-between items-center mb-6">
@@ -39,22 +47,65 @@ const PestanaPistas = () => {
         </button>
       </div>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul className="divide-y divide-gray-200">
-          {pistas.map((pista) => (
-            <li key={pista.id}>
-              <div className="px-4 py-4 sm:px-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-blue-600 truncate">{pista.nombre}</p>
-                    <span className={`ml-2 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      pista.disponible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {pista.disponible ? 'Disponible' : 'No Disponible'}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <button className="text-gray-400 hover:text-gray-500">
+      {/* Tabla con estilo similar a PestanaHorario */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Nombre
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Tipo
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Precio
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Seña
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Estado
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {pistas.map((pista) => (
+              <tr key={pista.id}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <p className="text-sm font-medium text-blue-600 truncate">
+                    {pista.nombre}
+                  </p>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <p className="text-sm text-gray-500">{pista.tipo}</p>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <p className="text-sm text-gray-500">{pista.precio} €/hora</p>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <p className="text-sm text-gray-500">{pista.deposito} €</p>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span
+                    className={`ml-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                      pista.disponible
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}
+                  >
+                    {pista.disponible ? 'Disponible' : 'No Disponible'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => toggleDisponibilidad(pista.id)}
+                      className="text-gray-400 hover:text-gray-500"
+                    >
                       {pista.disponible ? (
                         <ToggleRight className="h-5 w-5" />
                       ) : (
@@ -68,25 +119,13 @@ const PestanaPistas = () => {
                       <Trash2 className="h-5 w-5" />
                     </button>
                   </div>
-                </div>
-                <div className="mt-2 sm:flex sm:justify-between">
-                  <div className="sm:flex">
-                    <p className="flex items-center text-sm text-gray-500">
-                      Tipo: {pista.tipo}
-                    </p>
-                    <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                      Precio: {pista.precio}€/hora
-                    </p>
-                    <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                      Fianza: {pista.deposito}€
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
+      {/* Aquí podrías gestionar el modal para "agregar" una pista, etc. */}
     </div>
   );
 };

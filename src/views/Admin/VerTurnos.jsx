@@ -15,11 +15,11 @@ import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
 import ModalConfirmation from '@/components/ModalConfirmation';
-import Loading from '@/components/Loading';
 import BtnNegro from '@/components/BtnNegro';
 import useTimeout from '@/components/useTimeout';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import LoadingSinHF from '@/components/LoadingSinHF';
 
 function VerTurnos() {
   const navigate = useNavigate();
@@ -165,23 +165,21 @@ function VerTurnos() {
   };
 
   if (loading) {
-    return <Loading />;
+    return <LoadingSinHF />;
   }
 
   return (
     <>
       <div className="min-h-screen flex flex-col font-inter">
-        <Header />
         <main className="flex-1 p-6 bg-gray-100">
-          <BackButton />
           <div className=" mb-8">
             <div className="space-y-4">
               <h1 className="text-2xl font-bold lg:text-4xl">Turnos</h1>
               <div className='flex justify-between'>
                 <div className="flex flex-col gap-4 items-start lg:flex-row lg:items-center lg:gap-2">
                   <span className="text-sm font-semibold lg:text-xl">Selecciona el Día o Intervalo:</span>
-                  <Button onClick={() => setViewOption('day')} variant={viewOption === 'day' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-lg hover:bg-naranja hover:opacity-70  hover:text-white ${viewOption === 'day' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Día</Button>
-                  <Button onClick={() => setViewOption('range')} variant={viewOption === 'range' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-lg hover:bg-naranja hover:opacity-70 hover:text-white ${viewOption === 'range' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Intervalo</Button>
+                  <Button onClick={() => setViewOption('day')} variant={viewOption === 'day' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-lg rounded-[8px] hover:bg-naranja hover:opacity-70  hover:text-white ${viewOption === 'day' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Día</Button>
+                  <Button onClick={() => setViewOption('range')} variant={viewOption === 'range' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-lg rounded-[8px] hover:bg-naranja hover:opacity-70 hover:text-white ${viewOption === 'range' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Intervalo</Button>
                   <input
                     type="text"
                     placeholder="Buscar por nombre"
@@ -216,8 +214,13 @@ function VerTurnos() {
                 </div>
 
                 <div className="flex gap-4 items-center mb-4">
-                  <BtnNegro ruta="/grilla-turnos" texto="Ver Grilla" />
-                  <BtnNegro ruta="/turno-fijo" texto="Nuevo turno fijo" />
+            {/* <Button
+                    onClick={() => navigate('/nuevo-turno')}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg text-sm lg:text-lg font-medium"
+                    style={{ borderRadius: '8px' }}
+                  >
+                    Nuevo Turno
+                  </Button> */}
               </div>
               </div>
 

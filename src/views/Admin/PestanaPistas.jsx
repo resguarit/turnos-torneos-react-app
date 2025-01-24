@@ -209,7 +209,7 @@ const PestanaPistas = () => {
             <li key={pista.id}>
               <div className="px-4 py-4 sm:px-6">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-indigo-600 truncate">{`Cancha ${pista.nro} - ${pista.tipo_cancha}`}</p>
+                  <p className="text-sm font-medium text-orange-500 truncate">{`Cancha ${pista.nro} - ${pista.tipo_cancha}`}</p>
                   <div className="ml-2 flex-shrink-0 flex">
                     <button onClick={() => handleEditClick(pista)} className="text-gray-400 hover:text-indigo-500">
                       <Edit2 className="h-5 w-5" />

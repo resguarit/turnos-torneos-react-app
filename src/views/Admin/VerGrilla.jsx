@@ -9,11 +9,11 @@ import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import Loading from '@/components/loading';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
 import useTimeout from '@/components/useTimeout';
 import * as XLSX from 'xlsx';
+import LoadingSinHF from '@/components/LoadingSinHF';
 
 export default function VerGrilla() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -58,7 +58,7 @@ export default function VerGrilla() {
   }, 20000);
 
   if (loading) {
-    return <Loading />;
+    return <LoadingSinHF />;
   }
 
   const handlePrevDay = () => {
@@ -175,10 +175,8 @@ export default function VerGrilla() {
 
   return (
     <div className="min-h-screen flex flex-col font-inter">
-      <Header />
       <main className="flex-1 p-6 bg-gray-100">
         <div className="mb-6">
-          <BackButton />
           <h2 className="text-xl font-semibold mb-4 lg:text-4xl">Grilla de Turnos</h2>
 
           <div className="flex items-center justify-between gap-4 mb-4">

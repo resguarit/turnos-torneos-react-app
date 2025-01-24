@@ -119,6 +119,7 @@ export default function MisTurnos() {
                     <h2 className=" text-lg md:text-xl font-semibold">{formatDate(turno.fecha_turno)}</h2>
                     <p className="text-base md:text-lg"><span className="font-semibold">Cancha:</span> {turno.cancha.nro} - {turno.cancha.tipo_cancha}</p>
                     <p className="text-base md:text-lg"><span className="font-semibold">Horario:</span> {turno.horario.hora_inicio} - {turno.horario.hora_fin}</p>
+                    <p className="text-base md:text-lg"><span className="font-semibold">Estado:</span> {turno.estado}</p>
                     {expandedTurno === turno.id && (
                       <div className="mt-4 text-gray-600">
                         <p><span className="font-semibold">Fecha reserva:</span> {formatDate(turno.fecha_reserva)}</p>

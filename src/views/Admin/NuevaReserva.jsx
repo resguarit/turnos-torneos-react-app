@@ -175,7 +175,7 @@ export default function NuevaReserva() {
           <div className="grid grid-cols-2 gap-y-4">
             <div>
               <p className="text-muted-foreground">Fecha</p>
-              <p className="font-medium">{SeelectedDate}</p>
+              <p className="font-medium">{selectedDate}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Hora</p>

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -9,7 +10,15 @@ import PestanaUsuarios from './PestanaUsuarios';
 import PestanaTurnos from './PestanaTurnos';
 
 const NuevoPanelAdmin = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialTab = queryParams.get('tab') || 'dashboard';
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    navigate(`?tab=${activeTab}`, { replace: true });
+  }, [activeTab, navigate]);
 
   const renderContenidoPestana = () => {
     switch (activeTab) {

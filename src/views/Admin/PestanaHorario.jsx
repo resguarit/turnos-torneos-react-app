@@ -5,15 +5,8 @@ import { Switch } from "@/components/ui/switch"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 
 const PestanaHorario = () => {
-  const [schedules, setSchedules] = useState([
-    { id: 1, day: "Lunes", start: "09:00", end: "21:00", enabled: true },
-    { id: 2, day: "Martes", start: "09:00", end: "21:00", enabled: true },
-    { id: 3, day: "Miércoles", start: "09:00", end: "21:00", enabled: true },
-    { id: 4, day: "Jueves", start: "09:00", end: "21:00", enabled: true },
-    { id: 5, day: "Viernes", start: "09:00", end: "21:00", enabled: true },
-    { id: 6, day: "Sábado", start: "09:00", end: "23:00", enabled: true },
-    { id: 7, day: "Domingo", start: "09:00", end: "21:00", enabled: true },
-  ])
+  const [schedules, setSchedules] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
   const [showDisableModal, setShowDisableModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showConfigModal, setShowConfigModal] = useState(false)
@@ -24,7 +17,6 @@ const PestanaHorario = () => {
   const [editStart, setEditStart] = useState("")
   const [editEnd, setEditEnd] = useState("")
   const [disabledRanges, setDisabledRanges] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
   const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false)
   const [showError, setShowError] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
@@ -59,28 +51,35 @@ const PestanaHorario = () => {
 
   // Cargar horarios al montar el componente
   useEffect(() => {
-    fetchSchedules()
-  }, [])
+    fetchActiveScheduleExtremes();
+  }, []);
 
-  const fetchSchedules = async () => {
+  const fetchActiveScheduleExtremes = async () => {
     try {
-      const response = await api.get("/horarios")
-      console.log("Respuesta API:", response.data) // Para debuggear
+      setIsLoading(true);
+      const response = await api.get("/horarios-extremos-activos");
+      console.log("Raw API Response:", response.data);
 
-      // Mapear la respuesta al formato que espera el componente
-      const formattedSchedules = response.data.map((horario) => ({
-        id: horario.id,
+      // Obtener el array de horarios_extremos
+      const horarios = response.data.horarios_extremos;
+      
+      // Convertir el array en el formato que necesitas
+      const formattedSchedules = horarios.map(horario => ({
+        id: Date.now() + daysOfWeek.indexOf(horario.dia),
         day: horario.dia,
-        start: horario.hora_inicio,
-        end: horario.hora_fin,
-        enabled: horario.activo,
-      }))
+        start: horario.hora_inicio.slice(0, 5), // Quitar los segundos (:00)
+        end: horario.hora_fin.slice(0, 5), // Quitar los segundos (:00)
+        enabled: true
+      }));
 
-      setSchedules(formattedSchedules)
+      console.log("Final formatted schedules:", formattedSchedules);
+      setSchedules(formattedSchedules);
     } catch (error) {
-      console.error("Error al cargar horarios:", error)
+      console.error("Error al cargar horarios extremos:", error);
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   const fetchDisabledRanges = async () => {
     setIsLoading(true)
@@ -96,58 +95,79 @@ const PestanaHorario = () => {
     }
   }
 
-  const toggleHorario = async (id, day) => {
-    // Find current schedule
-    const currentSchedule = schedules.find(s => s.id === id);
-    const newEnabled = !currentSchedule.enabled;
+  const getDayDate = (dayName) => {
+    const today = new Date();
+    const days = {
+      'Lunes': 1, 'Martes': 2, 'Miércoles': 3, 
+      'Jueves': 4, 'Viernes': 5, 'Sábado': 6, 'Domingo': 0
+    };
+    
+    const dayNumber = days[dayName];
+    const currentDay = today.getDay();
+    const distance = (dayNumber - currentDay + 7) % 7;
+    
+    const targetDate = new Date(today);
+    targetDate.setDate(today.getDate() + distance);
+    
+    return targetDate.toISOString().split('T')[0]; // Returns YYYY-MM-DD
+  };
 
+  const toggleHorario = async (id) => {
     try {
+      const currentSchedule = schedules.find(s => s.id === id);
+      const newEnabled = !currentSchedule.enabled;
+
       const data = {
-        dia: currentSchedule.day,
+        dia: currentSchedule.day, // Ahora enviamos el nombre del día directamente
         hora_inicio: currentSchedule.start,
         hora_fin: currentSchedule.end
       };
 
-      console.log('Sending data:', data); // For debugging
-      await api.put("/deshabilitar-franja-horaria", data);
-      
-      // Update local state
-      setSchedules(prev => 
-        prev.map(s => 
-          s.day === day 
-            ? { ...s, enabled: newEnabled }
-            : s
-        )
-      );
+      const endpoint = newEnabled ? 
+        "/habilitar-franja-horaria" : 
+        "/deshabilitar-franja-horaria";
 
-      // Refresh disabled ranges
-      await fetchDisabledRanges();
+      const response = await api.put(endpoint, data);
 
+      if (response.status === 200) {
+        // Actualizar estado local
+        setSchedules(prev =>
+          prev.map(s =>
+            s.id === id ? { ...s, enabled: newEnabled } : s
+          )
+        );
+
+        // Recargar franjas deshabilitadas si el collapsible está abierto
+        if (isCollapsibleOpen) {
+          await fetchDisabledRanges();
+        }
+      }
     } catch (error) {
-      console.error("Error al deshabilitar franja horaria:", error);
-      alert("Error al deshabilitar franja horaria: " + error.response?.data?.message || error.message);
+      console.error("Error al actualizar horario:", error.response?.data || error);
+      alert("Error al actualizar horario: " + 
+        (error.response?.data?.message || error.message));
     }
   };
 
   const handleDisableRange = async () => {
     try {
       await api.put("/deshabilitar-franja-horaria", {
-        dia: disableDay,
+        dia: disableDay, // Send day name directly (Lunes, Martes, etc)
         hora_inicio: disableStart,
         hora_fin: disableEnd,
-      })
+      });
 
-      await fetchSchedules()
-      await fetchDisabledRanges()
-      setShowDisableModal(false)
-      setShowError(false)
+      await fetchSchedules();
+      await fetchDisabledRanges();
+      setShowDisableModal(false);
+      setShowError(false);
     } catch (error) {
       if (error.response?.status === 409) {
-        setShowError(true)
+        setShowError(true);
       }
-      console.error("Error al deshabilitar franja horaria:", error)
+      console.error("Error al deshabilitar franja horaria:", error);
     }
-  }
+  };
 
   const openEditModal = (schedule) => {
     setEditId(schedule.id)
@@ -280,17 +300,15 @@ const PestanaHorario = () => {
                   {/* Toggle habilitar/deshabilitar */}
                   <Switch
                     checked={schedule.enabled}
-                    onCheckedChange={() => toggleHorario(schedule.id, schedule.day)}
+                    onCheckedChange={() => toggleHorario(schedule.id)}
                     className={`${
                       schedule.enabled ? "!bg-green-500" : "!bg-red-500"
-                    } relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2`}
-                    data-state={schedule.enabled ? "checked" : "unchecked"}
+                    } relative inline-flex h-7 w-12 items-center rounded-full`}
                   >
                     <span
                       className={`${
                         schedule.enabled ? "translate-x-6" : "translate-x-1"
-                      } inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-200 ease-in-out shadow-lg`}
-                      data-state={schedule.enabled ? "checked" : "unchecked"}
+                      } inline-block h-5 w-5 transform rounded-full bg-white transition-transform`}
                     />
                   </Switch>
 
@@ -393,7 +411,7 @@ const PestanaHorario = () => {
             <label className="block mb-2">
               Hora inicio:
               <select
-                className="border rounded px-2 py-1 w-full"
+                className="border rounded9 px-2 py-1 w-full"
                 value={disableStart}
                 onChange={(e) => setDisableStart(e.target.value)}
               >

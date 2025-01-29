@@ -16,16 +16,26 @@ const PestanaUsuarios = () => {
     email: '',
     dni: '',
     telefono: '',
+    password: '',
+    password_confirmation: '',
+    rol: 'cliente',
+  });
+  const [editUsuario, setEditUsuario] = useState({
+    name: '',
+    email: '',
+    dni: '',
+    telefono: '',
     rol: 'cliente',
   });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [clear, setClear] = useState(false);
+  const [isSaving, setIsSaving] = useState(false); // Estado de guardado
+  const [validationErrors, setValidationErrors] = useState({}); // Estado para errores de validación
 
   const fetchUsuarios = async () => {
     setLoading(true);
-    setClear(false);
     try {
       const response = await api.get(`/usuarios`, {
         params: {
@@ -60,14 +70,15 @@ const PestanaUsuarios = () => {
 
   const handleEditUsuario = async (e) => {
     e.preventDefault();
+    setIsSaving(true); // Iniciar estado de guardado
     try {
-      const response = await api.patch(`/usuarios/${editando.id}`, newUsuario);
+      const response = await api.patch(`/usuarios/${editando.id}`, editUsuario);
       if (response.status === 200) {
         const updatedUsuarios = usuarios.map(usuario => 
-          usuario.id === editando.id ? { ...usuario, ...newUsuario } : usuario
+          usuario.id === editando.id ? { ...usuario, ...editUsuario } : usuario
         );
         setUsuarios(updatedUsuarios);
-        setNewUsuario({
+        setEditUsuario({
           name: '',
           email: '',
           dni: '',
@@ -75,17 +86,26 @@ const PestanaUsuarios = () => {
           rol: 'cliente',
         });
         setEditando(null);
+        setValidationErrors({});
         setAgregando(false);
         toast.success('Usuario editado correctamente');
       }
     } catch (error) {
       console.error('Error editing usuario:', error);
       toast.error('Error al editar el usuario');
+    } finally {
+      setIsSaving(false); // Finalizar estado de guardado
     }
   };
 
   const handleEditClick = (usuario) => {
-    setNewUsuario(usuario);
+    setEditUsuario({
+      name: usuario.name || '',
+      email: usuario.email || '',
+      dni: usuario.dni || '',
+      telefono: usuario.telefono || '',
+      rol: usuario.rol || 'cliente',
+    });
     setEditando(usuario);
     setAgregando(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -101,18 +121,50 @@ const PestanaUsuarios = () => {
 
   const handleSearch = () => {
     if (page > 1){
-      setPage(1);
+    setPage(1);
     } else {
-      fetchUsuarios();
+    fetchUsuarios();
     }
   };
 
   const handleClearSearch = () => {
     setSearchTerm('');
     if(page > 1){
-      setPage(1);
+    setPage(1);
     } else {
       setClear(true);
+    }
+  };
+
+  const handleAddUsuario = async (e) => {
+    e.preventDefault();
+    setIsSaving(true); // Iniciar estado de guardado
+    setValidationErrors({}); // Limpiar errores de validación
+    try {
+      const response = await api.post('/create-user', newUsuario);
+      if (response.status === 201) {
+        setUsuarios([response.data.user, ...usuarios]); // Agregar el nuevo usuario al principio de la lista
+        setNewUsuario({
+          name: '',
+          email: '',
+          dni: '',
+          telefono: '',
+          password: '',
+          password_confirmation: '',
+          rol: 'cliente',
+        });
+        setAgregando(false);
+        toast.success('Usuario creado con éxito');
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 422) {
+        setValidationErrors(error.response.data.errors);
+      } else {
+        console.error('Error creating usuario:', error);
+        toast.error('Error al crear el usuario');
+      }
+    } finally {
+      setIsSaving(false); // Finalizar estado de guardado
     }
   };
 
@@ -123,7 +175,23 @@ const PestanaUsuarios = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold text-gray-900">Gestión de Usuarios</h2>
-        <button className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition-colors duration-200 transform hover:scale-105">
+        <button
+          onClick={() => {
+            setAgregando(true);
+            setEditando(null);
+            setNewUsuario({
+              name: '',
+              email: '',
+              dni: '',
+              telefono: '',
+              password: '',
+              password_confirmation: '',
+              rol: 'cliente',
+            });
+          }}
+          className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition-colors duration-200 transform hover:scale-105"
+          disabled={isSaving}
+        >
           <Plus className="h-5 w-5 mr-2" />
           Añadir Usuario
         </button>
@@ -156,12 +224,14 @@ const PestanaUsuarios = () => {
         <button
           onClick={handleSearch}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition-colors duration-200 transform hover:scale-105"
+          disabled={isSaving}
         >
           Buscar
         </button>
         <button
           onClick={handleClearSearch}
           className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow transition-colors duration-200 transform hover:scale-105"
+          disabled={isSaving}
         >
           Limpiar Búsqueda
         </button>
@@ -170,16 +240,16 @@ const PestanaUsuarios = () => {
       {/* Loading */}
       {loading && <LoadingSinHF />}
 
-      {/* Formulario de Edición */}
+      {/* Formulario de Creación/Edición */}
       {!loading && agregando && (
-        <form onSubmit={handleEditUsuario} className="mb-6 bg-white p-4 rounded-lg shadow">
+        <form onSubmit={editando ? handleEditUsuario : handleAddUsuario} className="mb-6 bg-white p-4 rounded-lg shadow">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-gray-700">Nombre</label>
               <input
                 type="text"
-                value={newUsuario.name}
-                onChange={(e) => setNewUsuario({ ...newUsuario, name: e.target.value })}
+                value={editando ? editUsuario.name : newUsuario.name}
+                onChange={(e) => editando ? setEditUsuario({ ...editUsuario, name: e.target.value }) : setNewUsuario({ ...newUsuario, name: e.target.value })}
                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                 required
               />
@@ -188,59 +258,91 @@ const PestanaUsuarios = () => {
               <label className="block text-sm font-medium text-gray-700">Email</label>
               <input
                 type="email"
-                value={newUsuario.email}
-                onChange={(e) => setNewUsuario({ ...newUsuario, email: e.target.value })}
+                value={editando ? editUsuario.email : newUsuario.email}
+                onChange={(e) => editando ? setEditUsuario({ ...editUsuario, email: e.target.value }) : setNewUsuario({ ...newUsuario, email: e.target.value })}
                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                 required
               />
+              {validationErrors.email && <p className="text-red-500 text-sm">{validationErrors.email[0]}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">DNI</label>
               <input
                 type="text"
-                value={newUsuario.dni}
-                onChange={(e) => setNewUsuario({ ...newUsuario, dni: e.target.value })}
+                value={editando ? editUsuario.dni : newUsuario.dni}
+                onChange={(e) => editando ? setEditUsuario({ ...editUsuario, dni: e.target.value }) : setNewUsuario({ ...newUsuario, dni: e.target.value })}
                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                 required
               />
+              {validationErrors.dni && <p className="text-red-500 text-sm">{validationErrors.dni[0]}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Teléfono</label>
               <input
                 type="tel"
-                value={newUsuario.telefono}
-                onChange={(e) => setNewUsuario({ ...newUsuario, telefono: e.target.value })}
+                value={editando ? editUsuario.telefono : newUsuario.telefono}
+                onChange={(e) => editando ? setEditUsuario({ ...editUsuario, telefono: e.target.value }) : setNewUsuario({ ...newUsuario, telefono: e.target.value })}
                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                 required
               />
             </div>
+            {!editando && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Contraseña</label>
+                  <input
+                    type="password"
+                    value={newUsuario.password}
+                    onChange={(e) => setNewUsuario({ ...newUsuario, password: e.target.value })}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Confirmar Contraseña</label>
+                  <input
+                    type="password"
+                    value={newUsuario.password_confirmation}
+                    onChange={(e) => setNewUsuario({ ...newUsuario, password_confirmation: e.target.value })}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    required
+                  />
+                </div>
+              </>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700">Rol</label>
               <select
-                value={newUsuario.rol}
-                onChange={(e) => setNewUsuario({ ...newUsuario, rol: e.target.value })}
+                value={editando ? editUsuario.rol : newUsuario.rol}
+                onChange={(e) => editando ? setEditUsuario({ ...editUsuario, rol: e.target.value }) : setNewUsuario({ ...newUsuario, rol: e.target.value })}
                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                 required
               >
                 <option value="cliente">Cliente</option>
-                <option value="admin">Admin</option>
                 <option value="moderador">Moderador</option>
+                <option value="admin">Admin</option>
               </select>
             </div>
           </div>
           <div className="mt-4 flex justify-end">
             <button
               type="button"
-              onClick={() => setAgregando(false)}
+              onClick={() => {
+                setAgregando(false);
+                setEditando(null);
+                setValidationErrors({});
+              }}
               className="mr-4 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              disabled={isSaving}
             >
               Cancelar
             </button>
             <button
               type="submit"
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+              disabled={isSaving}
             >
-              {editando ? 'Guardar Cambios' : 'Guardar'}
+              {isSaving ? 'Guardando...' : (editando ? 'Guardar Cambios' : 'Guardar')}
             </button>
           </div>
         </form>
@@ -272,13 +374,13 @@ const PestanaUsuarios = () => {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                      <button onClick={() => handleEditClick(usuario)} className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200">
+                      <button onClick={() => handleEditClick(usuario)} className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200" disabled={isSaving}>
                         <Edit2 className="h-5 w-5" />
                       </button>
-                      <button className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200">
+                      <button className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" disabled={isSaving}>
                         <Trash2 className="h-5 w-5" />
                       </button>
-                      <button onClick={() => handleViewTurnosClick(usuario.id)} className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors duration-200">
+                      <button onClick={() => handleViewTurnosClick(usuario.id)} className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors duration-200" disabled={isSaving}>
                         Ver Turnos
                       </button>
                     </div>
@@ -300,7 +402,7 @@ const PestanaUsuarios = () => {
 
                     <div className="flex items-center space-x-2 text-gray-600">
                       <Phone className="h-4 w-4 text-gray-400" />
-                      <span className="font-bold">Telefono: </span>
+                      <span className="font-bold">Teléfono: </span>
                       <span>{usuario.telefono}</span>
                     </div>
 
@@ -322,7 +424,7 @@ const PestanaUsuarios = () => {
         <div className="flex justify-between items-center mt-4">
           <button
             onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1}
+            disabled={page === 1 || isSaving}
             className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50"
           >
             Anterior
@@ -330,7 +432,7 @@ const PestanaUsuarios = () => {
           <span>Página {page} de {totalPages}</span>
           <button
             onClick={() => handlePageChange(page + 1)}
-            disabled={page === totalPages}
+            disabled={page === totalPages || isSaving}
             className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50"
           >
             Siguiente

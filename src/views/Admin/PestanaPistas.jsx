@@ -3,6 +3,7 @@ import { Edit2, Plus, Trash2 } from 'lucide-react';
 import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import LoadingSinHF from '@/components/LoadingSinHF';
 import ModalConfirmation from '@/components/ModalConfirmation';
 
 const PestanaPistas = () => {
@@ -17,33 +18,35 @@ const PestanaPistas = () => {
     seña: '',
     activa: true,
   });
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false); // Estado de guardado
+
+  const fetchPistas = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get('/canchas');
+      if (response.status === 200) {
+        setPistas(response.data.canchas);
+      }
+    } catch (error) {
+      console.error('Error fetching pistas:', error);
+      toast.error('Error al cargar las pistas');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPistas = async () => {
-      try {
-        const response = await api.get('/canchas');
-        if (response.data.status === 200) {
-          setPistas(response.data.canchas);
-        }
-      } catch (error) {
-        console.error('Error fetching canchas:', error);
-      }
-    };
-
     fetchPistas();
   }, []);
 
   const handleAddPista = async (e) => {
     e.preventDefault();
+    setIsSaving(true); // Iniciar estado de guardado
     try {
       const response = await api.post('/canchas', newPista);
       if (response.status === 201) {
-        const formattedPista = {
-          ...response.data.cancha,
-          precio_por_hora: parseFloat(response.data.cancha.precio_por_hora).toFixed(2),
-          seña: parseFloat(response.data.cancha.seña).toFixed(2),
-        };
-        setPistas([...pistas, formattedPista]);
+        setPistas([response.data.cancha, ...pistas]); // Agregar la nueva pista al principio de la lista
         setNewPista({
           nro: '',
           tipo_cancha: '',
@@ -57,20 +60,21 @@ const PestanaPistas = () => {
     } catch (error) {
       console.error('Error adding cancha:', error);
       toast.error('Error al añadir la pista');
+    } finally {
+      setIsSaving(false); // Finalizar estado de guardado
     }
   };
 
   const handleEditPista = async (e) => {
     e.preventDefault();
+    setIsSaving(true); // Iniciar estado de guardado
     try {
       const response = await api.patch(`/canchas/${editando.id}`, newPista);
       if (response.status === 200) {
-        const formattedPista = {
-          ...response.data.cancha,
-          precio_por_hora: parseFloat(response.data.cancha.precio_por_hora).toFixed(2),
-          seña: parseFloat(response.data.cancha.seña).toFixed(2),
-        };
-        setPistas(pistas.map(pista => pista.id === editando.id ? formattedPista : pista));
+        const updatedPistas = pistas.map(pista => 
+          pista.id === editando.id ? { ...pista, ...newPista } : pista
+        );
+        setPistas(updatedPistas);
         setNewPista({
           nro: '',
           tipo_cancha: '',
@@ -85,6 +89,8 @@ const PestanaPistas = () => {
     } catch (error) {
       console.error('Error editing cancha:', error);
       toast.error('Error al editar la pista');
+    } finally {
+      setIsSaving(false); // Finalizar estado de guardado
     }
   };
 
@@ -109,10 +115,10 @@ const PestanaPistas = () => {
   };
 
   return (
-    <div className="py-6">
+    <div className="p-6 max-w-7xl mx-auto">
       <ToastContainer position="top-right" />
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg font-medium text-gray-900">Gestión de Pistas</h2>
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900">Gestión de Pistas</h2>
         <button
           onClick={() => {
             setAgregando(true);
@@ -125,131 +131,130 @@ const PestanaPistas = () => {
               activa: true,
             });
           }}
-          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+          className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition-colors duration-200 transform hover:scale-105"
+          disabled={isSaving}
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="h-5 w-5 mr-2" />
           Añadir Pista
         </button>
       </div>
 
-      {agregando && (
-        <form onSubmit={editando ? handleEditPista : handleAddPista} className="mb-6 bg-white p-4 rounded-lg shadow">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Número</label>
-              <input
-                type="text"
-                value={newPista.nro}
-                onChange={(e) => setNewPista({ ...newPista, nro: e.target.value })}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Tipo de Cancha</label>
-              <input
-                type="text"
-                value={newPista.tipo_cancha}
-                onChange={(e) => setNewPista({ ...newPista, tipo_cancha: e.target.value })}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Precio por Hora</label>
-              <input
-                type="number"
-                value={newPista.precio_por_hora}
-                onChange={(e) => setNewPista({ ...newPista, precio_por_hora: e.target.value })}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Seña</label>
-              <input
-                type="number"
-                value={newPista.seña}
-                onChange={(e) => setNewPista({ ...newPista, seña: e.target.value })}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                required
-              />
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={newPista.activa}
-                onChange={(e) => setNewPista({ ...newPista, activa: e.target.checked })}
-                className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-              />
-              <label className="ml-2 block text-sm font-medium text-gray-700">Activa</label>
-            </div>
-          </div>
-          <div className="mt-4 flex justify-end">
-            <button
-              type="button"
-              onClick={() => setAgregando(false)}
-              className="mr-4 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
-            >
-              {editando ? 'Guardar Cambios' : 'Guardar'}
-            </button>
-          </div>
-        </form>
-      )}
-
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul className="divide-y divide-gray-200">
-          {pistas.map((pista) => (
-            <li key={pista.id}>
-              <div className="px-4 py-4 sm:px-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-orange-500 truncate">{`Cancha ${pista.nro} - ${pista.tipo_cancha}`}</p>
-                  <div className="ml-2 flex-shrink-0 flex">
-                    <button onClick={() => handleEditClick(pista)} className="text-gray-400 hover:text-indigo-500">
-                      <Edit2 className="h-5 w-5" />
-                    </button>
-                    <button onClick={() => setPistaToDelete(pista)} className="text-gray-400 hover:text-red-500">
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                  </div>
+      {loading ? (
+        <LoadingSinHF />
+      ) : (
+        <>
+          {agregando && (
+            <form onSubmit={editando ? handleEditPista : handleAddPista} className="mb-6 bg-white p-4 rounded-lg shadow">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Número</label>
+                  <input
+                    type="text"
+                    value={newPista.nro}
+                    onChange={(e) => setNewPista({ ...newPista, nro: e.target.value })}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    required
+                  />
                 </div>
-                <div className="mt-2 sm:flex sm:justify-between">
-                  <div className="sm:flex">
-                    <p className="flex items-center text-sm text-gray-500">
-                      Tipo: {pista.tipo_cancha}
-                    </p>
-                    <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                      Precio: ${pista.precio_por_hora}/hora
-                    </p>
-                    <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                      Seña: ${pista.seña}
-                    </p>
-                    <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                      Activa: {pista.activa ? 'Si' : 'No'}
-                    </p>
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Tipo de Cancha</label>
+                  <input
+                    type="text"
+                    value={newPista.tipo_cancha}
+                    onChange={(e) => setNewPista({ ...newPista, tipo_cancha: e.target.value })}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Precio por Hora</label>
+                  <input
+                    type="number"
+                    value={newPista.precio_por_hora}
+                    onChange={(e) => setNewPista({ ...newPista, precio_por_hora: e.target.value })}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Seña</label>
+                  <input
+                    type="number"
+                    value={newPista.seña}
+                    onChange={(e) => setNewPista({ ...newPista, seña: e.target.value })}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    required
+                  />
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={newPista.activa}
+                    onChange={(e) => setNewPista({ ...newPista, activa: e.target.checked })}
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                  />
+                  <label className="ml-2 block text-sm font-medium text-gray-700">Activa</label>
                 </div>
               </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setAgregando(false)}
+                  className="mr-4 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  disabled={isSaving}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                  disabled={isSaving}
+                >
+                  {isSaving ? 'Guardando...' : (editando ? 'Guardar Cambios' : 'Guardar')}
+                </button>
+              </div>
+            </form>
+          )}
 
-      {pistaToDelete && (
-        <ModalConfirmation
-          onConfirm={handleDeletePista}
-          onCancel={() => setPistaToDelete(null)}
-          title="Eliminar Pista"
-          subtitle={`¿Estás seguro de que deseas eliminar la pista ${pistaToDelete.nro}?`}
-          botonText1="Cancelar"
-          botonText2="Eliminar"
-        />
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+            <ul className="divide-y divide-gray-100">
+              {pistas.map((pista) => (
+                <li key={pista.id} className="hover:bg-gray-50 transition-colors duration-150">
+                  <div className="p-6 flex justify-between items-center">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-orange-500 rounded-lg p-2">
+                        <span className="text-lg font-semibold text-white">{`Cancha ${pista.nro} - ${pista.tipo_cancha}`}</span>
+                      </div>
+                      <span className="text-gray-600 font-bold">Precio por Hora: <span className="font-normal">${pista.precio_por_hora}</span></span>
+                      <span className="text-gray-600 font-bold">Seña: <span className="font-normal">${pista.seña}</span></span>
+                      <span className="text-gray-600 font-bold">Activa: <span className="font-normal">{pista.activa ? 'Sí' : 'No'}</span></span>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <button onClick={() => handleEditClick(pista)} className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200" disabled={isSaving}>
+                        <Edit2 className="h-5 w-5" />
+                      </button>
+                      <button onClick={() => setPistaToDelete(pista)} className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" disabled={isSaving}>
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {pistaToDelete && (
+            <ModalConfirmation
+              onConfirm={handleDeletePista}
+              onCancel={() => setPistaToDelete(null)}
+              title="Eliminar Pista"
+              subtitle={`¿Estás seguro de que deseas eliminar la pista ${pistaToDelete.nro}?`}
+              botonText1="Cancelar"
+              botonText2="Eliminar"
+            />
+          )}
+        </>
       )}
     </div>
   );

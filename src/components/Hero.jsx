@@ -29,7 +29,7 @@ function Hero() {
           <h2 className="font-inter tracking-wide font-medium text-sm md:text-lg lg:text-xl text-white">
             Descubrí las mejores canchas de fútbol y unite a la comunidad más grande de jugadores
           </h2>
-          <Link to="/calendario-admi">
+          <Link to="/nueva-reserva">
             <button
               className="bg-naranja rounded-xl text-white p-2 font-inter font-medium text-xs md:text-sm  tracking-wide w-full "
             >

@@ -63,14 +63,17 @@ const PestanaHorario = () => {
       // Obtener el array de horarios_extremos
       const horarios = response.data.horarios_extremos;
       
-      // Convertir el array en el formato que necesitas
-      const formattedSchedules = horarios.map(horario => ({
-        id: Date.now() + daysOfWeek.indexOf(horario.dia),
-        day: horario.dia,
-        start: horario.hora_inicio.slice(0, 5), // Quitar los segundos (:00)
-        end: horario.hora_fin.slice(0, 5), // Quitar los segundos (:00)
-        enabled: true
-      }));
+      // Asegurarse de que todos los días estén representados
+      const formattedSchedules = daysOfWeek.map(day => {
+        const horario = horarios.find(h => h.dia === day);
+        return {
+          id: Date.now() + daysOfWeek.indexOf(day),
+          day: day,
+          start: horario?.hora_inicio ? horario.hora_inicio.slice(0, 5) : "", 
+          end: horario?.hora_fin ? horario.hora_fin.slice(0, 5) : "",
+          enabled: !horario?.inactivo // Si inactivo es true, enabled será false
+        };
+      });
 
       console.log("Final formatted schedules:", formattedSchedules);
       setSchedules(formattedSchedules);
@@ -81,19 +84,26 @@ const PestanaHorario = () => {
     }
   };
 
+  // Actualiza la función fetchDisabledRanges para mejor manejo de errores y logging
   const fetchDisabledRanges = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const response = await api.get("/franjas-horarias-no-disponibles")
-      if (response.data && response.data.horarios) {
-        setDisabledRanges(response.data.horarios)
+      const response = await api.get("/franjas-horarias-no-disponibles");
+      console.log("Respuesta franjas deshabilitadas:", response.data); // Debug
+
+      if (response.data && Array.isArray(response.data.horarios)) {
+        setDisabledRanges(response.data.horarios);
+      } else {
+        console.error("Formato de respuesta inválido:", response.data);
+        setDisabledRanges([]);
       }
     } catch (error) {
-      console.error("Error al cargar franjas deshabilitadas:", error)
+      console.error("Error al cargar franjas deshabilitadas:", error);
+      setDisabledRanges([]);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const getDayDate = (dayName) => {
     const today = new Date();
@@ -112,35 +122,64 @@ const PestanaHorario = () => {
     return targetDate.toISOString().split('T')[0]; // Returns YYYY-MM-DD
   };
 
+  const handleEnableRange = (range) => {
+    const data = {
+      dia: range.dia,
+      hora_inicio: range.hora_inicio,
+      hora_fin: range.hora_fin
+    };
+    api.put("/habilitar-franja-horaria", data)
+      .then(() => fetchDisabledRanges())
+      .catch((error) => {
+        console.error("Error al habilitar franja horaria:", error);
+        alert("Error al habilitar franja horaria: " + error.response?.data?.message || error.message);
+      });
+  };
+
   const toggleHorario = async (id) => {
     try {
       const currentSchedule = schedules.find(s => s.id === id);
       const newEnabled = !currentSchedule.enabled;
 
-      const data = {
-        dia: currentSchedule.day, // Ahora enviamos el nombre del día directamente
-        hora_inicio: currentSchedule.start,
-        hora_fin: currentSchedule.end
-      };
+      // Si está intentando habilitar y no tiene horarios seleccionados, no permitir
+      if (newEnabled && (!currentSchedule.start || !currentSchedule.end)) {
+        return; // No permitir habilitar si no hay horarios seleccionados
+      }
 
-      const endpoint = newEnabled ? 
-        "/habilitar-franja-horaria" : 
-        "/deshabilitar-franja-horaria";
+      // Solo hacer la llamada API si hay horarios seleccionados
+      if (currentSchedule.start && currentSchedule.end) {
+        const data = {
+          dia: currentSchedule.day,
+          hora_inicio: currentSchedule.start,
+          hora_fin: currentSchedule.end
+        };
 
-      const response = await api.put(endpoint, data);
+        const endpoint = newEnabled ? 
+          "/habilitar-franja-horaria" : 
+          "/deshabilitar-franja-horaria";
 
-      if (response.status === 200) {
-        // Actualizar estado local
+        const response = await api.put(endpoint, data);
+
+        if (response.status === 200) {
+          // Actualizar estado local solo si la API fue exitosa
+          setSchedules(prev =>
+            prev.map(s =>
+              s.id === id ? { ...s, enabled: newEnabled } : s
+            )
+          );
+
+          // Recargar franjas deshabilitadas si el collapsible está abierto
+          if (isCollapsibleOpen) {
+            await fetchDisabledRanges();
+          }
+        }
+      } else {
+        // Si no hay horarios, solo actualizar el estado local
         setSchedules(prev =>
           prev.map(s =>
             s.id === id ? { ...s, enabled: newEnabled } : s
           )
         );
-
-        // Recargar franjas deshabilitadas si el collapsible está abierto
-        if (isCollapsibleOpen) {
-          await fetchDisabledRanges();
-        }
       }
     } catch (error) {
       console.error("Error al actualizar horario:", error.response?.data || error);
@@ -151,21 +190,29 @@ const PestanaHorario = () => {
 
   const handleDisableRange = async () => {
     try {
-      await api.put("/deshabilitar-franja-horaria", {
-        dia: disableDay, // Send day name directly (Lunes, Martes, etc)
+      const response = await api.put("/deshabilitar-franja-horaria", {
+        dia: disableDay,
         hora_inicio: disableStart,
         hora_fin: disableEnd,
       });
 
-      await fetchSchedules();
-      await fetchDisabledRanges();
-      setShowDisableModal(false);
-      setShowError(false);
+
+      if (response.status === 200) {
+        await fetchSchedules();
+        await handleCollapsibleOpen();
+        setShowError(false);
+        setShowDisableModal(false); // Cerrar el modal
+        alert("Franja horaria deshabilitada correctamente");
+      }
     } catch (error) {
       if (error.response?.status === 409) {
         setShowError(true);
       }
-      console.error("Error al deshabilitar franja horaria:", error);
+    } finally {
+      setShowDisableModal(false);
+      if (isCollapsibleOpen) {
+        await fetchDisabledRanges();
+      }
     }
   };
 
@@ -182,15 +229,18 @@ const PestanaHorario = () => {
   }
 
   const buildRequestData = () => {
-    const dias = {}
+    const dias = {};
     schedules.forEach((schedule) => {
-      dias[schedule.day] = {
-        hora_apertura: schedule.start,
-        hora_cierre: schedule.end,
+      // Solo incluir el día si tanto start como end tienen valores
+      if (schedule.start && schedule.end) {
+        dias[schedule.day] = {
+          hora_apertura: schedule.start,
+          hora_cierre: schedule.end,
+        };
       }
-    })
-    return { dias }
-  }
+    });
+    return { dias };
+  };
 
   const handleSubmitConfig = async () => {
     try {
@@ -204,12 +254,13 @@ const PestanaHorario = () => {
     }
   }
 
+  // Asegúrate de que el collapsible llame a fetchDisabledRanges cuando se abre
   const handleCollapsibleOpen = (open) => {
-    setIsCollapsibleOpen(open)
+    setIsCollapsibleOpen(open);
     if (open) {
-      fetchDisabledRanges()
+      fetchDisabledRanges();
     }
-  }
+  };
 
   const handleScheduleChange = (id, field, value) => {
     setSchedules((prev) => prev.map((s) => (s.id === id ? { ...s, [field]: value } : s)))
@@ -275,6 +326,7 @@ const PestanaHorario = () => {
                     onChange={(e) => handleScheduleChange(schedule.id, "start", e.target.value)}
                     className="border rounded px-2 py-1"
                   >
+                  <option value=""></option>
                     {timeOptions.map((time) => (
                       <option key={time} value={time}>
                         {time}
@@ -284,11 +336,11 @@ const PestanaHorario = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <select
-                    disabled={!schedule.enabled}
                     value={schedule.end}
                     onChange={(e) => handleScheduleChange(schedule.id, "end", e.target.value)}
                     className="border rounded px-2 py-1"
                   >
+                    <option value=""></option>
                     {timeOptions.map((time) => (
                       <option key={time} value={time}>
                         {time}
@@ -299,17 +351,22 @@ const PestanaHorario = () => {
                 <td className="px-6 py-4 whitespace-nowrap space-x-3 flex items-center">
                   {/* Toggle habilitar/deshabilitar */}
                   <Switch
-                    checked={schedule.enabled}
-                    onCheckedChange={() => toggleHorario(schedule.id)}
-                    className={`${
-                      schedule.enabled ? "!bg-green-500" : "!bg-red-500"
-                    } relative inline-flex h-7 w-12 items-center rounded-full`}
-                  >
-                    <span
+                      checked={schedule.enabled}
+                      onCheckedChange={() => toggleHorario(schedule.id)}
+                      disabled={!schedule.start || !schedule.end}
                       className={`${
-                        schedule.enabled ? "translate-x-6" : "translate-x-1"
-                      } inline-block h-5 w-5 transform rounded-full bg-white transition-transform`}
-                    />
+                        schedule.enabled && schedule.start && schedule.end 
+                          ? "!bg-green-500" 
+                          : "!bg-red-500"
+                      } relative inline-flex h-7 w-12 items-center rounded-full ${
+                        (!schedule.start || !schedule.end) ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      <span
+                        className={`${
+                          schedule.enabled ? "translate-x-6" : "translate-x-1"
+                        } inline-block h-5 w-5 transform rounded-full bg-white transition-transform`}
+                      />
                   </Switch>
 
                   {/* Editar */}
@@ -328,6 +385,7 @@ const PestanaHorario = () => {
         </table>
       </div>
 
+      {/* Actualiza la sección del collapsible en el JSX */}
       <Collapsible className="mt-4" open={isCollapsibleOpen} onOpenChange={handleCollapsibleOpen}>
         <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4 font-medium">
           Franjas horarias deshabilitadas
@@ -341,40 +399,37 @@ const PestanaHorario = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-red-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
-                      Día
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
-                      Hora Inicio
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
-                      Hora Fin
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">
-                      Acciones
-                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">Día</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">Hora Inicio</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">Hora Fin</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {disabledRanges
-                    .filter((range) => range.activo === 0)
-                    .map((range, index) => (
-                      <tr key={index} className="bg-red-50">
-                        <td className="px-6 py-4 whitespace-nowrap">{range.dia}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{range.hora_inicio.slice(0, 5)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{range.hora_fin.slice(0, 5)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <button className="text-red-500 hover:text-red-700">
-                            <Trash2 size={18} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                  {disabledRanges.map((range, index) => (
+                    <tr key={index} className="bg-red-50">
+                      <td className="px-6 py-4 whitespace-nowrap">{range.dia}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {range.hora_inicio ? range.hora_inicio.slice(0, 5) : ''}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {range.hora_fin ? range.hora_fin.slice(0, 5) : ''}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button 
+                          className="text-red-500 hover:text-red-700"
+                          onClick={() => handleEnableRange(range)}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             ) : (
               <p>No hay franjas horarias deshabilitadas</p>
-            ) }
+            )}
           </div>
         </CollapsibleContent>
       </Collapsible>

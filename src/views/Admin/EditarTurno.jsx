@@ -33,6 +33,7 @@ function EditarTurno() {
     fecha_reserva: '',
     usuario_nombre: '',
     usuario_telefono: '',
+    usuario_dni: '',
     usuario_email: '',
     tipo_turno: ''
   });
@@ -51,6 +52,7 @@ function EditarTurno() {
       try {
         const response = await api.get(`/turnos/${id}`);
         const turno = response.data.turno;
+        console.log(turno)
         setBooking(turno);
         setFormData({
           fecha_turno: turno.fecha_turno,
@@ -64,6 +66,7 @@ function EditarTurno() {
           fecha_reserva: turno.fecha_reserva,
           usuario_nombre: turno.usuario.nombre,
           usuario_telefono: turno.usuario.telefono,
+          usuario_dni: turno.usuario.dni,
           usuario_email: turno.usuario.email,
           tipo_turno: turno.tipo
         });
@@ -202,14 +205,18 @@ function EditarTurno() {
                   <div className="p-2 text-xl bg-white rounded-md border">{turnoData.usuario_email}</div>
                 </div>
                 <div>
+                  <Label className="text-2xl font-bold mb-1 block">DNI:</Label>
+                  <div className="p-2 text-xl bg-white rounded-md border">{turnoData.usuario_dni}</div>
+                </div>
+                <div>
+                  <Label className="text-2xl font-bold mb-1 block">Fecha de Reserva:</Label>
+                  <div className="p-2 text-xl bg-white rounded-md border">{turnoData.fecha_reserva}</div>
+                </div>
+                <div>
                   <Label className="text-2xl font-bold mb-1 block">Tipo de Turno:</Label>
                   <div className="p-2 text-xl bg-white rounded-md border">{turnoData.tipo_turno}</div>
                 </div>
-              </div>
-              <div>
-                <Label className="text-2xl font-bold mb-1 block">Fecha de Reserva:</Label>
-                <div className="p-2 text-xl bg-white rounded-md border">{turnoData.fecha_reserva}</div>
-              </div>
+              </div>     
             </div>
 
             {/* Formulario editable */}

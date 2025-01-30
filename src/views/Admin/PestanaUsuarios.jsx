@@ -111,8 +111,8 @@ const PestanaUsuarios = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleViewTurnosClick = (usuarioId) => {
-    window.location.href = `/ver-turnos?usuarioId=${usuarioId}`;
+  const handleViewTurnosClick = (usuarioDni) => {
+    window.location.href = `/nuevo-panel-admin?tab=turnos&usuario=${usuarioDni}`;
   };
 
   const handlePageChange = (newPage) => {
@@ -380,7 +380,7 @@ const PestanaUsuarios = () => {
                       <button className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" disabled={isSaving}>
                         <Trash2 className="h-5 w-5" />
                       </button>
-                      <button onClick={() => handleViewTurnosClick(usuario.id)} className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors duration-200" disabled={isSaving}>
+                      <button onClick={() => handleViewTurnosClick(usuario.dni)} className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors duration-200" disabled={isSaving}>
                         Ver Turnos
                       </button>
                     </div>

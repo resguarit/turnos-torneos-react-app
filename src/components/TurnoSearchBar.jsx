@@ -33,12 +33,11 @@ const SearchBar = ({ searchType, setSearchType, searchTerm, setSearchTerm, handl
         Filtros
       </button>
       <button
-        onClick={handleSearch}
+        onClick={() => handleSearch(searchType, searchTerm)}
         className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition-colors duration-200 transform hover:scale-105"
       >
         Buscar
       </button>
-     
     </div>
   );
 };

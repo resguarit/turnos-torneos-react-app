@@ -122,18 +122,28 @@ const PestanaHorario = () => {
     return targetDate.toISOString().split('T')[0]; // Returns YYYY-MM-DD
   };
 
-  const handleEnableRange = (range) => {
+  const handleEnableRange = async (range) => {
+    const formatTime = (time) => time.slice(0, 5); // Formatear la hora para eliminar los segundos
+
     const data = {
       dia: range.dia,
-      hora_inicio: range.hora_inicio,
-      hora_fin: range.hora_fin
+      hora_inicio: formatTime(range.hora_inicio),
+      hora_fin: formatTime(range.hora_fin)
     };
-    api.put("/habilitar-franja-horaria", data)
-      .then(() => fetchDisabledRanges())
-      .catch((error) => {
-        console.error("Error al habilitar franja horaria:", error);
-        alert("Error al habilitar franja horaria: " + error.response?.data?.message || error.message);
-      });
+
+    try {
+      const response = await api.put("/habilitar-franja-horaria", data);
+      if (response.status === 200) {
+        console.log(response);
+        fetchDisabledRanges(); // Recargar las franjas deshabilitadas
+        fetchActiveScheduleExtremes();
+      } else{
+        console.log("no existe response")
+      }
+    } catch (error) {
+      console.error("Error al habilitar franja horaria:", error);
+      alert("Error al habilitar franja horaria: " + error.response?.data?.message || error.message);
+    }
   };
 
   const toggleHorario = async (id) => {
@@ -147,7 +157,7 @@ const PestanaHorario = () => {
       }
 
       // Solo hacer la llamada API si hay horarios seleccionados
-      if (currentSchedule.start && currentSchedule.end) {
+      if (currentSchedule.start && currentSchedule.end) { 
         const data = {
           dia: currentSchedule.day,
           hora_inicio: currentSchedule.start,
@@ -232,7 +242,7 @@ const PestanaHorario = () => {
     const dias = {};
     schedules.forEach((schedule) => {
       // Solo incluir el día si tanto start como end tienen valores
-      if (schedule.start && schedule.end) {
+      if (schedule.start && schedule.end && schedule.enabled) {
         dias[schedule.day] = {
           hora_apertura: schedule.start,
           hora_cierre: schedule.end,
@@ -304,15 +314,9 @@ const PestanaHorario = () => {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Día</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Hora Inicio
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Hora Fin
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Acciones
-              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora Inicio</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora Fin</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -326,7 +330,7 @@ const PestanaHorario = () => {
                     onChange={(e) => handleScheduleChange(schedule.id, "start", e.target.value)}
                     className="border rounded px-2 py-1"
                   >
-                  <option value=""></option>
+                    <option value=""></option>
                     {timeOptions.map((time) => (
                       <option key={time} value={time}>
                         {time}
@@ -349,50 +353,37 @@ const PestanaHorario = () => {
                   </select>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap space-x-3 flex items-center">
-                  {/* Toggle habilitar/deshabilitar */}
                   <Switch
-                      checked={schedule.enabled}
-                      onCheckedChange={() => toggleHorario(schedule.id)}
-                      disabled={!schedule.start || !schedule.end}
+                    checked={schedule.enabled}
+                    onCheckedChange={() => toggleHorario(schedule.id)}
+                    disabled={!schedule.start || !schedule.end}
+                    className={`${
+                      schedule.enabled && schedule.start && schedule.end 
+                        ? "!bg-green-500" 
+                        : "!bg-red-500"
+                    } relative inline-flex h-7 w-12 items-center rounded-full ${
+                      (!schedule.start || !schedule.end) ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <span
                       className={`${
-                        schedule.enabled && schedule.start && schedule.end 
-                          ? "!bg-green-500" 
-                          : "!bg-red-500"
-                      } relative inline-flex h-7 w-12 items-center rounded-full ${
-                        (!schedule.start || !schedule.end) ? "opacity-50 cursor-not-allowed" : ""
-                      }`}
-                    >
-                      <span
-                        className={`${
-                          schedule.enabled ? "translate-x-6" : "translate-x-1"
-                        } inline-block h-5 w-5 transform rounded-full bg-white transition-transform`}
-                      />
+                        schedule.enabled ? "translate-x-6" : "translate-x-1"
+                      } inline-block h-5 w-5 transform rounded-full bg-white transition-transform`}
+                    />
                   </Switch>
-
-                  {/* Editar */}
-                  <button className="text-gray-400 hover:text-gray-500" onClick={() => openEditModal(schedule)}>
-                    <Edit2 size={18} />
-                  </button>
-
-                  {/* Eliminar (opcional, por ahora no implementa lógica) */}
-                  <button className="text-gray-400 hover:text-gray-500">
-                    <Trash2 size={18} />
-                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-
-      {/* Actualiza la sección del collapsible en el JSX */}
       <Collapsible className="mt-4" open={isCollapsibleOpen} onOpenChange={handleCollapsibleOpen}>
         <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4 font-medium">
           Franjas horarias deshabilitadas
           <ChevronDown className="h-5 w-5" />
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="mt-2">
+          <div className="min-w-full divide-y">
             {isLoading ? (
               <p>Cargando franjas horarias deshabilitadas...</p>
             ) : disabledRanges && disabledRanges.length > 0 ? (
@@ -417,10 +408,10 @@ const PestanaHorario = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button 
-                          className="text-red-500 hover:text-red-700"
+                          className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
                           onClick={() => handleEnableRange(range)}
                         >
-                          <Trash2 size={18} />
+                          Habilitar franja horaria
                         </button>
                       </td>
                     </tr>

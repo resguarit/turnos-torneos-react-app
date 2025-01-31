@@ -3,6 +3,8 @@ import { Edit2, Trash2, ToggleLeft, ToggleRight, ChevronDown } from "lucide-reac
 import api from "@/lib/axiosConfig"
 import { Switch } from "@/components/ui/switch"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const PestanaHorario = () => {
   const [schedules, setSchedules] = useState([])
@@ -20,6 +22,8 @@ const PestanaHorario = () => {
   const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(false)
   const [showError, setShowError] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const daysOfWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
   const timeOptions = [
@@ -54,12 +58,24 @@ const PestanaHorario = () => {
     fetchActiveScheduleExtremes();
   }, []);
 
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      setSuccessMessage(null); // Reset the message after showing the toast
+    }
+  }, [successMessage]);
+
+  useEffect(() => {
+    if (errorMessage) {
+      toast.error(errorMessage);
+      setErrorMessage(null); // Reset the message after showing the toast
+    }
+  }, [errorMessage]);
+
   const fetchActiveScheduleExtremes = async () => {
     try {
       setIsLoading(true);
       const response = await api.get("/horarios-extremos-activos");
-      console.log("Raw API Response:", response.data);
-
       // Obtener el array de horarios_extremos
       const horarios = response.data.horarios_extremos;
       
@@ -74,11 +90,9 @@ const PestanaHorario = () => {
           enabled: !horario?.inactivo // Si inactivo es true, enabled será false
         };
       });
-
-      console.log("Final formatted schedules:", formattedSchedules);
       setSchedules(formattedSchedules);
     } catch (error) {
-      console.error("Error al cargar horarios extremos:", error);
+      setErrorMessage(error.response?.data?.message || 'Error al cargar horarios extremos');
     } finally {
       setIsLoading(false);
     }
@@ -89,16 +103,15 @@ const PestanaHorario = () => {
     setIsLoading(true);
     try {
       const response = await api.get("/franjas-horarias-no-disponibles");
-      console.log("Respuesta franjas deshabilitadas:", response.data); // Debug
 
       if (response.data && Array.isArray(response.data.horarios)) {
         setDisabledRanges(response.data.horarios);
       } else {
-        console.error("Formato de respuesta inválido:", response.data);
+        setErrorMessage(error.response?.data?.message || 'Error al cargar franjas horarias deshabilitadas');
         setDisabledRanges([]);
       }
     } catch (error) {
-      console.error("Error al cargar franjas deshabilitadas:", error);
+      setErrorMessage(error.response?.data?.message || 'Error al cargar franjas horarias deshabilitadas');
       setDisabledRanges([]);
     } finally {
       setIsLoading(false);
@@ -133,16 +146,13 @@ const PestanaHorario = () => {
 
     try {
       const response = await api.put("/habilitar-franja-horaria", data);
-      if (response.status === 200) {
-        console.log(response);
-        fetchDisabledRanges(); // Recargar las franjas deshabilitadas
-        fetchActiveScheduleExtremes();
-      } else{
-        console.log("no existe response")
+      if (response.data.status === 200) {
+        setSuccessMessage(response.data.message || 'Franja horaria habilitada correctamente');
+        await fetchDisabledRanges(); // Recargar las franjas deshabilitadas
+        await fetchActiveScheduleExtremes();
       }
     } catch (error) {
-      console.error("Error al habilitar franja horaria:", error);
-      alert("Error al habilitar franja horaria: " + error.response?.data?.message || error.message);
+      setErrorMessage(error.response?.data?.message || 'Error al habilitar franja horaria');
     }
   };
 
@@ -170,7 +180,8 @@ const PestanaHorario = () => {
 
         const response = await api.put(endpoint, data);
 
-        if (response.status === 200) {
+        if (response.data.status === 200) {
+          setSuccessMessage(response.data.message || `Franja horaria ${newEnabled ? 'habilitada' : 'deshabilitada'} correctamente`);
           // Actualizar estado local solo si la API fue exitosa
           setSchedules(prev =>
             prev.map(s =>
@@ -192,9 +203,8 @@ const PestanaHorario = () => {
         );
       }
     } catch (error) {
-      console.error("Error al actualizar horario:", error.response?.data || error);
-      alert("Error al actualizar horario: " + 
-        (error.response?.data?.message || error.message));
+      setErrorMessage(error.response?.data?.message || `Error al ${newEnabled ? 'habilitar' : 'deshabilitar'} franja horaria`);
+      console.log(error);
     }
   };
 
@@ -206,18 +216,18 @@ const PestanaHorario = () => {
         hora_fin: disableEnd,
       });
 
-
-      if (response.status === 200) {
-        await fetchSchedules();
-        await handleCollapsibleOpen();
+      if (response.data.status === 200) {
+        setSuccessMessage(response.data.message || 'Franja horaria deshabilitada correctamente');
+        await fetchActiveScheduleExtremes();
+        await fetchDisabledRanges(); // Recargar las franjas deshabilitadas
         setShowError(false);
         setShowDisableModal(false); // Cerrar el modal
-        alert("Franja horaria deshabilitada correctamente");
+      } else {
+        setErrorMessage(response.data.message || 'Error al deshabilitar franja horaria');
       }
     } catch (error) {
-      if (error.response?.status === 409) {
-        setShowError(true);
-      }
+      console.error("Error al deshabilitar franja horaria:", error);
+      setErrorMessage(error.response?.data?.message || 'Error al deshabilitar franja horaria');
     } finally {
       setShowDisableModal(false);
       if (isCollapsibleOpen) {
@@ -254,22 +264,24 @@ const PestanaHorario = () => {
 
   const handleSubmitConfig = async () => {
     try {
-      const data = buildRequestData()
-      await api.post("/configurar-horarios", data)
+      const data = buildRequestData();
+      console.log("Datos a enviar:", data); // Para debug
+      
+      const response = await api.post("/configurar-horarios", data);
       setHasChanges(false)
-      alert("Horarios configurados correctamente")
+      setSuccessMessage(response.data.message || 'Horarios configurados correctamente');
+      if (response.data.status === 200) {
+        // Recargar horarios
+        await fetchActiveScheduleExtremes();
+        // Recargar franjas horarias deshabilitadas
+        await fetchDisabledRanges();
+        // Recargar extremos activos
+        await fetchActiveScheduleExtremes();
+      }
     } catch (error) {
-      console.error(error)
-      alert("Error al configurar horarios: " + error.response?.data?.message || error.message)
+      setErrorMessage(error.response?.data?.message || 'Error al cargar configurar los horarios');
     }
-  }
-
-  // Asegúrate de que el collapsible llame a fetchDisabledRanges cuando se abre
-  const handleCollapsibleOpen = (open) => {
-    setIsCollapsibleOpen(open);
-    if (open) {
-      fetchDisabledRanges();
-    }
+    setSuccessMessage(response.data.message || 'Horarios configurados correctamente');
   };
 
   const handleScheduleChange = (id, field, value) => {
@@ -277,53 +289,62 @@ const PestanaHorario = () => {
     setHasChanges(true)
   }
 
-  return (
-    <div>
-      {/* Botones arriba */}
-      <div className="flex justify-end mb-4 mt-2">
-        <div className="ml-auto">
-          {showError ? (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4 flex flex-col">
-              <p className="text-red-700 font-medium">Error al deshabilitar franja horaria</p>
-              <p className="text-red-600 text-sm">
-                Ya existe una franja horaria deshabilitada en ese rango para el día especificado
-              </p>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowDisableModal(true)}
-              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md font-medium transition-colors mr-2"
-            >
-              Deshabilitar franja horaria
-            </button>
-          )}
-        </div>
-        <button
-          onClick={hasChanges ? handleSubmitConfig : () => setShowConfigModal(true)}
-          className={`px-4 py-2 ${
-            hasChanges ? "bg-green-500 hover:bg-green-600" : "bg-blue-600 hover:bg-blue-700"
-          } text-white rounded-md font-medium transition-colors`}
-        >
-          {hasChanges ? "Aplicar cambios" : "Configurar Horarios"}
-        </button>
-      </div>
+    // Asegúrate de que el collapsible llame a fetchDisabledRanges cuando se abre
+    const handleCollapsibleOpen = (open) => {
+      setIsCollapsibleOpen(open);
+      if (open) {
+        fetchDisabledRanges();
+      }
+    };
 
-      {/* Tabla de horarios */}
-      <div className="overflow-x-auto">
+    return (
+      <div>
+        <ToastContainer position="top-right" />
+        {/* Botones arriba */}
+        <div className="flex justify-end mb-4 mt-2">
+          <div className="ml-auto">
+            {showError ? (
+              <div className="bg-red-50 border-l-4 border-red-500 p-4 flex flex-col">
+                <p className="text-red-700 font-medium">Error al deshabilitar franja horaria</p>
+                <p className="text-red-600 text-sm">
+                  Ya existe una franja horaria deshabilitada en ese rango para el día especificado
+                </p>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowDisableModal(true)}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md font-medium transition-colors mr-2"
+              >
+                Deshabilitar franja horaria
+              </button>
+            )}
+          </div>
+          <button
+            onClick={hasChanges ? handleSubmitConfig : () => setShowConfigModal(true)}
+            className={`px-4 py-2 ${
+              hasChanges ? "bg-green-500 hover:bg-green-600" : "bg-blue-600 hover:bg-blue-700"
+            } text-white rounded-md font-medium transition-colors`}
+          >
+            {hasChanges ? "Aplicar cambios" : "Configurar Horarios"}
+          </button>
+        </div>
+
+        {/* Tabla de horarios */}
+        <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Día</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora Inicio</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora Fin</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Día</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Hora Inicio</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Hora Fin</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Acciones</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {schedules.map((schedule) => (
               <tr key={schedule.id} className={!schedule.enabled ? "opacity-50" : ""}>
-                <td className="px-6 py-4 whitespace-nowrap">{schedule.day}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 whitespace-nowrap w-1/4">{schedule.day}</td>
+                <td className="px-6 py-4 whitespace-nowrap w-1/4">
                   <select
                     disabled={!schedule.enabled}
                     value={schedule.start}
@@ -338,7 +359,7 @@ const PestanaHorario = () => {
                     ))}
                   </select>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 whitespace-nowrap w-1/4">
                   <select
                     value={schedule.end}
                     onChange={(e) => handleScheduleChange(schedule.id, "end", e.target.value)}
@@ -352,7 +373,7 @@ const PestanaHorario = () => {
                     ))}
                   </select>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap space-x-3 flex items-center">
+                <td className="px-6 py-4 whitespace-nowrap w-1/4 space-x-3 flex items-center">
                   <Switch
                     checked={schedule.enabled}
                     onCheckedChange={() => toggleHorario(schedule.id)}
@@ -376,204 +397,204 @@ const PestanaHorario = () => {
             ))}
           </tbody>
         </table>
-      </div>
-      <Collapsible className="mt-4" open={isCollapsibleOpen} onOpenChange={handleCollapsibleOpen}>
-        <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4 font-medium">
-          Franjas horarias deshabilitadas
-          <ChevronDown className="h-5 w-5" />
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="min-w-full divide-y">
-            {isLoading ? (
-              <p>Cargando franjas horarias deshabilitadas...</p>
-            ) : disabledRanges && disabledRanges.length > 0 ? (
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-red-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">Día</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">Hora Inicio</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">Hora Fin</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {disabledRanges.map((range, index) => (
-                    <tr key={index} className="bg-red-50">
-                      <td className="px-6 py-4 whitespace-nowrap">{range.dia}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {range.hora_inicio ? range.hora_inicio.slice(0, 5) : ''}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {range.hora_fin ? range.hora_fin.slice(0, 5) : ''}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <button 
-                          className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-                          onClick={() => handleEnableRange(range)}
-                        >
-                          Habilitar franja horaria
-                        </button>
-                      </td>
+        </div>
+        <Collapsible className="mt-4" open={isCollapsibleOpen} onOpenChange={handleCollapsibleOpen}>
+          <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4 font-medium">
+            Franjas horarias deshabilitadas
+            <ChevronDown className="h-5 w-5" />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="min-w-full divide-y">
+              {isLoading ? (
+                <p>Cargando franjas horarias deshabilitadas...</p>
+              ) : disabledRanges && disabledRanges.length > 0 ? (
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-red-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/4">Día</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/4">Hora Inicio</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/4">Hora Fin</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/4">Acciones</th>
                     </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {disabledRanges.map((range, index) => (
+                      <tr key={index} className="bg-red-50">
+                        <td className="px-6 py-4 whitespace-nowrap w-1/4">{range.dia}</td>
+                        <td className="px-6 py-4 whitespace-nowrap w-1/4">
+                          {range.hora_inicio ? range.hora_inicio.slice(0, 5) : ''}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap w-1/4">
+                          {range.hora_fin ? range.hora_fin.slice(0, 5) : ''}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap w-1/4">
+                          <button 
+                            className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                            onClick={() => handleEnableRange(range)}
+                          >
+                            Habilitar franja horaria
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p>No hay franjas horarias deshabilitadas</p>
+              )}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Modal para deshabilitar franja específica */}
+        {showDisableModal && (
+          <div className="fixed inset-0 flex items-center justify-center z-10 bg-gray-900 bg-opacity-50">
+            <div className="bg-white rounded-md p-6 w-80">
+              <h2 className="text-lg font-bold mb-4">Deshabilitar franja horaria</h2>
+
+              {showError && (
+                <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4">
+                  <p className="text-red-700 font-medium">Error al deshabilitar franja horaria</p>
+                  <p className="text-red-600 text-sm">
+                    Ya existe una franja horaria deshabilitada en ese rango para el día especificado
+                  </p>
+                </div>
+              )}
+
+              <label className="block mb-2">
+                Día:
+                <select
+                  className="border rounded px-2 py-1 w-full"
+                  value={disableDay}
+                  onChange={(e) => setDisableDay(e.target.value)}
+                >
+                  {daysOfWeek.map((day) => (
+                    <option key={day} value={day}>
+                      {day}
+                    </option>
                   ))}
-                </tbody>
-              </table>
-            ) : (
-              <p>No hay franjas horarias deshabilitadas</p>
-            )}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* Modal para deshabilitar franja específica */}
-      {showDisableModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-10 bg-gray-900 bg-opacity-50">
-          <div className="bg-white rounded-md p-6 w-80">
-            <h2 className="text-lg font-bold mb-4">Deshabilitar franja horaria</h2>
-
-            {showError && (
-              <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4">
-                <p className="text-red-700 font-medium">Error al deshabilitar franja horaria</p>
-                <p className="text-red-600 text-sm">
-                  Ya existe una franja horaria deshabilitada en ese rango para el día especificado
-                </p>
+                </select>
+              </label>
+              <label className="block mb-2">
+                Hora inicio:
+                <select
+                  className="border rounded9 px-2 py-1 w-full"
+                  value={disableStart}
+                  onChange={(e) => setDisableStart(e.target.value)}
+                >
+                  {timeOptions.map((time) => (
+                    <option key={time} value={time}>
+                      {time}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block mb-4">
+                Hora fin:
+                <select
+                  className="border rounded px-2 py-1 w-full"
+                  value={disableEnd}
+                  onChange={(e) => setDisableEnd(e.target.value)}
+                >
+                  {timeOptions.map((time) => (
+                    <option key={time} value={time}>
+                      {time}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowDisableModal(false)}
+                  className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDisableRange}
+                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                >
+                  Deshabilitar
+                </button>
               </div>
-            )}
+            </div>
+          </div>
+        )}
 
-            <label className="block mb-2">
-              Día:
-              <select
-                className="border rounded px-2 py-1 w-full"
-                value={disableDay}
-                onChange={(e) => setDisableDay(e.target.value)}
-              >
-                {daysOfWeek.map((day) => (
-                  <option key={day} value={day}>
-                    {day}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block mb-2">
-              Hora inicio:
-              <select
-                className="border rounded9 px-2 py-1 w-full"
-                value={disableStart}
-                onChange={(e) => setDisableStart(e.target.value)}
-              >
-                {timeOptions.map((time) => (
-                  <option key={time} value={time}>
-                    {time}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block mb-4">
-              Hora fin:
-              <select
-                className="border rounded px-2 py-1 w-full"
-                value={disableEnd}
-                onChange={(e) => setDisableEnd(e.target.value)}
-              >
-                {timeOptions.map((time) => (
-                  <option key={time} value={time}>
-                    {time}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="flex justify-end space-x-3">
+        {/* Modal para editar */}
+        {showEditModal && (
+          <div className="fixed inset-0 flex items-center justify-center z-10 bg-gray-900 bg-opacity-50">
+            <div className="bg-white rounded-md p-6 w-80">
+              <h2 className="text-lg font-bold mb-4">Editar franja horaria</h2>
+              <label className="block mb-2">
+                Hora inicio:
+                <select
+                  className="border rounded px-2 py-1 w-full"
+                  value={editStart}
+                  onChange={(e) => setEditStart(e.target.value)}
+                >
+                  {timeOptions.map((time) => (
+                    <option key={time} value={time}>
+                      {time}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block mb-4">
+                Hora fin:
+                <select
+                  className="border rounded px-2 py-1 w-full"
+                  value={editEnd}
+                  onChange={(e) => setEditEnd(e.target.value)}
+                >
+                  {timeOptions.map((time) => (
+                    <option key={time} value={time}>
+                      {time}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleEditSave}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                >
+                  Guardar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de configurar horarios */}
+        {showConfigModal && (
+          <div className="fixed inset-0 flex items-center justify-center z-10 bg-black bg-opacity-50">
+            <div className="bg-white rounded-md p-6 w-80">
+              <h2 className="text-lg font-bold mb-4">Configurar Horarios</h2>
+              <p className="mb-4">Ajusta las horas de apertura/cierre para cada día.</p>
               <button
-                onClick={() => setShowDisableModal(false)}
-                className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+                onClick={() => setShowConfigModal(false)}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition-colors mr-2"
+              >
+                Confirmar
+              </button>
+              <button
+                onClick={() => setShowConfigModal(false)}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md font-medium transition-colors"
               >
                 Cancelar
               </button>
-              <button
-                onClick={handleDisableRange}
-                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-              >
-                Deshabilitar
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+    )
+  }
 
-      {/* Modal para editar */}
-      {showEditModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-10 bg-gray-900 bg-opacity-50">
-          <div className="bg-white rounded-md p-6 w-80">
-            <h2 className="text-lg font-bold mb-4">Editar franja horaria</h2>
-            <label className="block mb-2">
-              Hora inicio:
-              <select
-                className="border rounded px-2 py-1 w-full"
-                value={editStart}
-                onChange={(e) => setEditStart(e.target.value)}
-              >
-                {timeOptions.map((time) => (
-                  <option key={time} value={time}>
-                    {time}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block mb-4">
-              Hora fin:
-              <select
-                className="border rounded px-2 py-1 w-full"
-                value={editEnd}
-                onChange={(e) => setEditEnd(e.target.value)}
-              >
-                {timeOptions.map((time) => (
-                  <option key={time} value={time}>
-                    {time}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleEditSave}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-              >
-                Guardar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de configurar horarios */}
-      {showConfigModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-10 bg-black bg-opacity-50">
-          <div className="bg-white rounded-md p-6 w-80">
-            <h2 className="text-lg font-bold mb-4">Configurar Horarios</h2>
-            <p className="mb-4">Ajusta las horas de apertura/cierre para cada día.</p>
-            <button
-              onClick={() => setShowConfigModal(false)}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition-colors mr-2"
-            >
-              Confirmar
-            </button>
-            <button
-              onClick={() => setShowConfigModal(false)}
-              className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md font-medium transition-colors"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-export default PestanaHorario
+  export default PestanaHorario

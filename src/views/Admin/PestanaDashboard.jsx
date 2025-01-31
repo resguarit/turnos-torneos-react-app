@@ -1,34 +1,68 @@
-import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TarjetaMetrica } from './TarjetaMetrica';
-
-const datos = [
-  { nombre: 'Ene', valor: 65 },
-  { nombre: 'Feb', valor: 59 },
-  { nombre: 'Mar', valor: 80 },
-  { nombre: 'Abr', valor: 81 },
-  { nombre: 'May', valor: 56 },
-  { nombre: 'Jun', valor: 55 },
-  { nombre: 'Jul', valor: 40 },
-];
-
-const metricas = [
-  { etiqueta: 'Total Reservas', valor: '1.234', cambio: 12, tendencia: 'subida' },
-  { etiqueta: 'Usuarios Activos', valor: '856', cambio: 5.3, tendencia: 'subida' },
-  { etiqueta: 'Ingresos', valor: '12.345€', cambio: -2.1, tendencia: 'bajada' },
-  { etiqueta: 'Tasa de Ocupación', valor: '78%', cambio: 3.2, tendencia: 'subida' },
-];
-
-const metricasSecundarias = [
-  { etiqueta: 'Duración Media Reserva', valor: '1,5 horas' },
-  { etiqueta: 'Pista Más Popular', valor: 'Pista de Tenis 1' },
-  { etiqueta: 'Horas Punta', valor: '17:00 - 20:00' },
-  { etiqueta: 'Satisfacción Cliente', valor: '4,8/5' },
-];
+import React, { useState, useEffect } from 'react';
+import api from '@/lib/axiosConfig';
+import TarjetaMetrica from './TarjetaMetrica';
+import LoadingSinHF from '@/components/LoadingSinHF';
+import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts';
 
 const PestanaDashboard = () => {
+  const [metricas, setMetricas] = useState([]);
+  const [metricasSecundarias, setMetricasSecundarias] = useState([]);
+  const [datos, setDatos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMetricas = async () => {
+      try {
+        const [
+          reservasPorMesRes,
+          horasPuntaRes,
+          canchaMasPopularRes,
+          tasaOcupacionRes,
+          ingresosRes,
+          usuariosActivosRes,
+          totalReservasRes
+        ] = await Promise.all([
+          api.get('/dashboard/reservas-por-mes'),
+          api.get('/dashboard/horas-pico'),
+          api.get('/dashboard/cancha-mas-popular'),
+          api.get('/dashboard/tasa-ocupacion'),
+          api.get('/dashboard/ingresos'),
+          api.get('/dashboard/usuarios-activos'),
+          api.get('/dashboard/total-reservas')
+        ]);
+
+        const reservasPorMes = Object.keys(reservasPorMesRes.data).map(mes => ({
+          nombre: mes,
+          valor: reservasPorMesRes.data[mes]
+        }));
+
+        setDatos(reservasPorMes);
+
+        setMetricas([
+          { etiqueta: 'Total Reservas', valor: totalReservasRes.data.total_reservas, cambio: totalReservasRes.data.cambio, tendencia: totalReservasRes.data.tendencia, descripcion: 'Total de reservas realizadas en el ultimo mes' },
+          { etiqueta: 'Usuarios Activos', valor: usuariosActivosRes.data.usuarios_activos, cambio: usuariosActivosRes.data.cambio, tendencia: usuariosActivosRes.data.tendencia, descripcion: 'Número de usuarios activos que hicieron al menos una reserva en el ultimo mes' },
+          { etiqueta: 'Ingresos', valor: `$${ingresosRes.data.ingresos.toLocaleString('es-AR')}`, cambio: ingresosRes.data.cambio, tendencia: ingresosRes.data.tendencia, descripcion: 'Ingresos totales en el ultimo mes' },
+          { etiqueta: 'Tasa de Ocupación', valor: `${tasaOcupacionRes.data.tasa_ocupacion}%`, cambio: tasaOcupacionRes.data.cambio, tendencia: tasaOcupacionRes.data.tendencia, descripcion: 'Porcentaje de ocupación de las canchas para el dia actual' }
+        ]);
+
+        setMetricasSecundarias([
+          { etiqueta: 'Pista Más Popular', valor: `${canchaMasPopularRes.data.tipo} ${canchaMasPopularRes.data.nro}`, descripcion: 'La cancha con más reservas' },
+          { etiqueta: 'Horas Punta', valor: horasPuntaRes.data.hora_pico, descripcion: 'Hora del día con más reservas' }
+        ]);
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching dashboard metrics:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchMetricas();
+  }, []);
+
   return (
     <div className="space-y-6 py-6">
+      <h1 className="text-xl">Metricas del mes actual respecto al mes anterior</h1>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {metricas.map((metrica) => (
           <TarjetaMetrica key={metrica.etiqueta} metrica={metrica} />
@@ -50,6 +84,9 @@ const PestanaDashboard = () => {
         </div>
       </div>
 
+      <div>
+        <h1 className="text-xl">Metricas historicas</h1>
+      </div>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {metricasSecundarias.map((metrica) => (
           <TarjetaMetrica key={metrica.etiqueta} metrica={metrica} />

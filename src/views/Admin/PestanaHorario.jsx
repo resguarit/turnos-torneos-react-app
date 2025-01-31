@@ -408,37 +408,54 @@ const PestanaHorario = () => {
               {isLoading ? (
                 <p>Cargando franjas horarias deshabilitadas...</p>
               ) : disabledRanges && disabledRanges.length > 0 ? (
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-red-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/4">Día</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/4">Hora Inicio</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/4">Hora Fin</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/4">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {disabledRanges.map((range, index) => (
-                      <tr key={index} className="bg-red-50">
-                        <td className="px-6 py-4 whitespace-nowrap w-1/4">{range.dia}</td>
-                        <td className="px-6 py-4 whitespace-nowrap w-1/4">
-                          {range.hora_inicio ? range.hora_inicio.slice(0, 5) : ''}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap w-1/4">
-                          {range.hora_fin ? range.hora_fin.slice(0, 5) : ''}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap w-1/4">
-                          <button 
-                            className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-                            onClick={() => handleEnableRange(range)}
-                          >
-                            Habilitar franja horaria
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                // Agrupar franjas horarias por día
+                Object.entries(
+                  disabledRanges.reduce((acc, range) => {
+                    if (!acc[range.dia]) {
+                      acc[range.dia] = [];
+                    }
+                    acc[range.dia].push(range);
+                    return acc;
+                  }, {})
+                ).map(([dia, franjas]) => (
+                  <Collapsible key={dia} className="mb-4">
+                    <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4  bg-red-50">
+                      {dia}
+                      <ChevronDown className="h-5 w-5" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead>
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/3">Hora Inicio</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/3">Hora Fin</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/3">Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {franjas.map((range, index) => (
+                            <tr key={index} className="bg-red-50">
+                              <td className="px-6 py-4 whitespace-nowrap w-1/3">
+                                {range.hora_inicio ? range.hora_inicio.slice(0, 5) : ''}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap w-1/3">
+                                {range.hora_fin ? range.hora_fin.slice(0, 5) : ''}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap w-1/3">
+                                <button
+                                  className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                                  onClick={() => handleEnableRange(range)}
+                                >
+                                  Habilitar franja horaria
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </CollapsibleContent>
+                  </Collapsible>
+                ))
               ) : (
                 <p>No hay franjas horarias deshabilitadas</p>
               )}

@@ -135,11 +135,23 @@ const PestanaHorario = () => {
     return targetDate.toISOString().split('T')[0]; // Returns YYYY-MM-DD
   };
 
+  const dayMapping = {
+    'lunes': 'Lunes',
+    'martes': 'Martes',
+    'miercoles': 'Miércoles',
+    'jueves': 'Jueves',
+    'viernes': 'Viernes',
+    'sabado': 'Sábado',
+    'domingo': 'Domingo'
+  };
+
   const handleEnableRange = async (range) => {
     const formatTime = (time) => time.slice(0, 5); // Formatear la hora para eliminar los segundos
 
+    const dayCorrect = dayMapping[range.dia.toLowerCase()] || range.dia;
+
     const data = {
-      dia: range.dia,
+      dia: dayCorrect,
       hora_inicio: formatTime(range.hora_inicio),
       hora_fin: formatTime(range.hora_fin)
     };

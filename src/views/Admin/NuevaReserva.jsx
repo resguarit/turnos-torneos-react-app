@@ -200,12 +200,14 @@ export default function NuevaReserva() {
     setShowModal(false);
   };
 
+  const señaPercentage = selectedCourt ? (selectedCourt.seña / selectedCourt.precio_por_hora) * 100 : 0;
+
   const Modal = ({ onConfirm, onCancel, selectedDate, selectedTimeName, selectedCourt, user}) => (
-    <Dialog open={showModal} onClose={onCancel}>
-      <DialogContent className="max-w-[400px] p-0 rounded-2xl">
-        <div className="p-6 space-y-6">
+    <Dialog open={showModal} onClose={onCancel} >
+      <DialogContent className="max-w-[250px] lg:max-w-[400px] p-0 rounded-2xl">
+        <div className="md:p-6 p-4 space-y-3 md:space-y-6 ">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-center">
+            <DialogTitle className="text-lg lg:text-xl font-semibold text-center">
               Detalles de la Reserva
             </DialogTitle>
             <div className="flex items-center justify-center text-sm text-muted-foreground">
@@ -214,15 +216,15 @@ export default function NuevaReserva() {
             </div>
           </DialogHeader>
   
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <Calendar className="w-5 h-5 text-gray-500" />
                 <div className="w-full">
                   <p className="text-sm text-gray-500">Fecha y Hora</p>
                   <div className="flex full justify-between items-center">
-                  <p className="font-medium ">{selectedDate}</p>
-                  <p className="font-medium "> {selectedTimeName}</p>
+                  <p className="font-medium text-xs md:text-sm">{selectedDate}</p>
+                  <p className="font-medium text-xs md:text-sm"> {selectedTimeName}</p>
                   </div>
                 </div>
               </div>
@@ -233,40 +235,41 @@ export default function NuevaReserva() {
                   <p className="text-sm text-gray-500">Duración y Cancha</p>
                   {console.log("cancha es", selectedCourt)}
                   <div className="flex w-full justify-between items-center">
-                    <p className="font-medium">60 min </p>
-                    <p className="font-medium">Cancha {selectedCourt.nro} {selectedCourt.tipo} </p>
+                    <p className="font-medium text-xs md:text-sm">60 min </p>
+                    <p className="font-medium text-xs md:text-sm">Cancha {selectedCourt.nro} {selectedCourt.tipo} </p>
                   </div>
                 </div>
               </div>
             </div>
   
-            <div className="pt-4 border-t">
+            <div className="pt-3 md:pt-4 border-t">
               <div className="flex items-center space-x-3">
                 <User className="w-5 h-5 text-gray-500" />
                 <div className="flex-1">
                   <p className="text-sm text-gray-500">Reservado por</p>
                   <div className="flex justify-between">
                     {console.log("usuario es", user)}
-                    <p className="font-medium">{user.name}</p>
-                    <p className="text-gray-500">DNI: {user.dni}</p>
+                    <p className="font-medium text-xs md:text-sm">{user.name}</p>
+                    <p className="text-gray-500 text-xs md:text-sm">DNI: {user.dni}</p>
                   </div>
                 </div>
               </div>
             </div>
   
-            <div className="pt-4 border-t">
+            <div className="pt-3 md:pt-4 border-t">
               <div className="flex items-center space-x-3">
                 <CreditCard className="w-5 h-5 text-gray-500" />
                 <div className="flex-1">
                   <p className="text-sm text-gray-500">Resumen de pago</p>
                   <div className="space-y-1">
                     <div className="flex justify-between">
-                      <p>Total</p>
-                      <p className="font-medium">${selectedCourt.precio_por_hora}</p>
+                      <p className="text-xs md:text-sm">Total</p>
+                      <p className="font-medium text-xs md:text-sm">${selectedCourt.precio_por_hora}</p>
                     </div>
-                    <div className="flex justify-between text-green-600">
-                      <p>Seña (50%)</p>
-                      <p className="font-medium">${selectedCourt?.seña}</p>
+                    
+                    <div className="flex justify-between text-naranja">
+                      <p className="text-xs md:text-sm">Seña ({señaPercentage.toFixed(0)}%)</p>
+                      <p className="font-medium text-xs md:text-sm">${selectedCourt?.seña}</p>
                     </div>
                   </div>
                 </div>
@@ -275,19 +278,19 @@ export default function NuevaReserva() {
           </div>
   
           <div className="space-y-3">
-            <Button 
-              className="w-full bg-green-600 hover:bg-green-700 text-white"
+            <button 
+              className="text-sm md:text-base w-full bg-naranja hover:bg-naranja/90 text-white rounded-[10px] py-2"
               onClick={onConfirm}
             >
               Confirmar Reserva
-            </Button>
-            <Button 
+            </button>
+            <button 
               variant="outline"
-              className="w-full"
+              className=" text-sm md:text-base w-full rounded-[10px] py-2 border border-black "
               onClick={onCancel}
             >
               Cancelar
-            </Button>
+            </button>
           </div>
         </div>
       </DialogContent>
@@ -363,7 +366,7 @@ export default function NuevaReserva() {
                             <Button
                               key={slot.id}
                               variant={selectedTime === slot.id ? "default" : "outline"}
-                              className={selectedTime === slot.id ? "bg-naranja hover:bg-naranja/90 rounded-[8px] text-white" : "p-1 rounded-[8px]"}
+                              className={selectedTime === slot.id ? "bg-naranja hover:bg-naranja/90 rounded-[8px] text-white" : " rounded-[8px]"}
                               onClick={() => {
                                 setSelectedTime(slot.id); 
                                 setSelectedTimeName(slot.time);
@@ -391,9 +394,9 @@ export default function NuevaReserva() {
                           courts.map((court) => (
                             <Button
                               key={court.id}
-                              variant={selectedCourt === court.nro ? "default" : "outline"}
+                              variant={selectedCourt === court ? "default" : "outline"}
                               className={`h-auto w-[80%] lg:w-auto flex rounded-[8px] flex-col items-start p-2 md:p-4 ${
-                                selectedCourt === court.nro ? "bg-naranja hover:bg-naranja/90 text-white" : ""
+                                selectedCourt === court ? "bg-naranja hover:bg-naranja/90 text-white" : ""
                               }`}
                               onClick={() => setSelectedCourt(court)}
                             >

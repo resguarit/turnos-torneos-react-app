@@ -76,7 +76,7 @@ const PestanaDashboard = () => {
   }
 
   return (
-    <div className="space-y-6 py-6">
+    <div className="space-y-6 p-6">
       <h1 className="text-xl">Metricas del mes actual respecto al mes anterior</h1>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {metricas.map((metrica) => (

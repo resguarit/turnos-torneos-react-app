@@ -126,7 +126,7 @@ const PestanaPistas = () => {
     <div className="p-6 max-w-7xl mx-auto">
       <ToastContainer position="top-right" />
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Gestión de Pistas</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Gestión de Canchas</h2>
         <button
           onClick={() => {
             setAgregando(true);
@@ -143,7 +143,7 @@ const PestanaPistas = () => {
           disabled={isSaving}
         >
           <Plus className="h-5 w-5 mr-2" />
-          Añadir Pista
+          Añadir Cancha
         </button>
       </div>
 

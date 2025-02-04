@@ -65,7 +65,7 @@ export function Header() {
           <div className="flex gap-8 lg:gap-12  font-inter text-sm xl:text-lg">
             <a href="/" className="hover:opacity-80">Inicio</a>
             <a href="/torneos-admi" className="hover:opacity-80">Torneos</a>
-            <a href="/calendario-admi" className="hover:opacity-80">Reservas</a>
+            <a href="/nueva-reserva" className="hover:opacity-80">Reservas</a>
             <a href="/partidos" className="hover:opacity-80">Partidos</a>
             <a href="/reglamento" className="hover:opacity-80">Reglamento</a>
             <a href="/premios" className="hover:opacity-80">Premios</a>

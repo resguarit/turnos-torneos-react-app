@@ -175,7 +175,7 @@ export default function NuevaReserva() {
           <div className="grid grid-cols-2 gap-y-4">
             <div>
               <p className="text-muted-foreground">Fecha</p>
-              <p className="font-medium">{SeelectedDate}</p>
+              <p className="font-medium">Hola</p>
             </div>
             <div>
               <p className="text-muted-foreground">Hora</p>
@@ -183,7 +183,7 @@ export default function NuevaReserva() {
             </div>
             <div>
               <p className="text-muted-foreground">Duración</p>
-              <p className="font-medium">90 minutos</p>
+              <p className="font-medium">60 minutos</p>
             </div>
             <div>
               <p className="text-muted-foreground">Cancha</p>
@@ -258,6 +258,7 @@ export default function NuevaReserva() {
                             }`}
                             onClick={() => {
                               setSelectedDate(day);
+                              console.log("La fecha seleccionada es", selectedDate);
                               horariosRef.current.scrollIntoView({ behavior: "smooth" }); // Desplazar a la sección de horarios
                             }}
                           >

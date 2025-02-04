@@ -11,6 +11,9 @@ const PestanaDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const fetchMetricas = async () => {
       try {
         const [
@@ -22,13 +25,13 @@ const PestanaDashboard = () => {
           usuariosActivosRes,
           totalReservasRes
         ] = await Promise.all([
-          api.get('/dashboard/reservas-por-mes'),
-          api.get('/dashboard/horas-pico'),
-          api.get('/dashboard/cancha-mas-popular'),
-          api.get('/dashboard/tasa-ocupacion'),
-          api.get('/dashboard/ingresos'),
-          api.get('/dashboard/usuarios-activos'),
-          api.get('/dashboard/total-reservas')
+          api.get('/dashboard/reservas-por-mes', { signal }),
+          api.get('/dashboard/horas-pico', { signal }),
+          api.get('/dashboard/cancha-mas-popular', { signal }),
+          api.get('/dashboard/tasa-ocupacion', { signal }),
+          api.get('/dashboard/ingresos', { signal }),
+          api.get('/dashboard/usuarios-activos', { signal }),
+          api.get('/dashboard/total-reservas', { signal })
         ]);
 
         const reservasPorMes = Object.keys(reservasPorMesRes.data).map(mes => ({
@@ -52,13 +55,25 @@ const PestanaDashboard = () => {
 
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching dashboard metrics:', error);
-        setLoading(false);
+        if (error.name === 'AbortError' || error.name === 'CanceledError'){
+          console.log('Fetch abortado')
+        } else {
+          console.error('Error fetching dasboard metrics:', error)
+          setLoading(false);
+        }
       }
     };
 
     fetchMetricas();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
+
+  if (loading) {
+    return <LoadingSinHF />;
+  }
 
   return (
     <div className="space-y-6 py-6">

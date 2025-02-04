@@ -26,10 +26,13 @@ export default function VerGrilla() {
 
 
   useEffect(() => {
-    const fetchGrid = async () => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    const fetchGrid = async (signal) => {
       try {
         const formattedDate = currentDate.toISOString().split('T')[0];
-        const response = await api.get(`/grilla?fecha=${formattedDate}`);
+        const response = await api.get(`/grilla?fecha=${formattedDate}`, {signal});
         setGrid(response.data.grid);
 
         const times = Object.keys(response.data.grid);
@@ -42,13 +45,21 @@ export default function VerGrilla() {
         setCourts(courts);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching grid:', error);
+        if (!signal?.aborted) {
+          console.error('Error fetching grid:', error);
+        }
       } finally {
-        setLoading(false);
+        if (!signal?.aborted){
+          setLoading(false);
+        }
       }
     };
 
-    fetchGrid();
+    fetchGrid(signal);
+
+    return () => {
+      controller.abort();
+    };
   }, [currentDate]);
 
   useTimeout(() => {

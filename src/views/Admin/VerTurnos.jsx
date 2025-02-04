@@ -32,20 +32,27 @@ function VerTurnos() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const queryParams = new URLSearchParams(location.search);
     const usuarioDni = queryParams.get('usuario');
     if (usuarioDni) {
       setSearchType('dni');
       setSearchTerm(usuarioDni);
-      handleSearch('dni', usuarioDni);
+      handleSearch('dni', usuarioDni, signal);
     } else {
       if ((startDate && endDate) || (!startDate && !endDate)) {
-        fetchTurnos();
+        fetchTurnos(signal);
       }
     }
+
+    return () => {
+      controller.abort();
+    };
   }, [location.search, selectedDate, startDate, endDate]);
 
-  const fetchTurnos = async () => {
+  const fetchTurnos = async (signal) => {
     setLoading(true);
     let url = '/turnos';
     const params = {};
@@ -65,7 +72,7 @@ function VerTurnos() {
     }
 
     try {
-      const response = await api.get(url, { params });
+      const response = await api.get(url, { params, signal });
       const grouped = response.data.turnos.reduce((acc, booking) => {
         const date = booking.fecha_turno.split('T')[0];
         if (!acc[date]) {
@@ -76,17 +83,32 @@ function VerTurnos() {
       }, {});
       setGroupedBookings(grouped);
     } catch (error) {
-      console.error('Error fetching reservations:', error);
-      toast.error('Error al cargar los turnos');
+      if (!signal?.aborted){
+        console.error('Error fetching reservations:', error);
+        toast.error('Error al cargar los turnos');
+      }
     } finally {
-      setLoading(false);
+      if(!signal?.aborted){
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    api.get('/canchas')
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    api.get('/canchas', {signal})
       .then(response => setCourts(response.data.canchas))
-      .catch(error => console.error('Error fetching courts:', error));
+      .catch(error => {
+        if (!signal?.aborted){
+          console.error('Error fetching courts:', error)
+        }
+      });
+
+    return () => {
+      controller.abort();
+    }
   }, []);
 
   const toggleCalendar = () => {
@@ -113,7 +135,7 @@ function VerTurnos() {
     setIsFilterOpen((prev) => !prev);
   };
 
-  const handleSearch = async (type = searchType, term = searchTerm) => {
+  const handleSearch = async (type = searchType, term = searchTerm, signal) => {
     setLoading(true);
     let url = '/turnos';
     const params = {
@@ -131,7 +153,7 @@ function VerTurnos() {
     }
 
     try {
-      const response = await api.get(url, { params });
+      const response = await api.get(url, { params, signal });
       const grouped = response.data.turnos.reduce((acc, booking) => {
         const date = booking.fecha_turno.split('T')[0];
         if (!acc[date]) {
@@ -142,10 +164,14 @@ function VerTurnos() {
       }, {});
       setGroupedBookings(grouped);
     } catch (error) {
-      console.error('Error fetching reservations:', error);
-      toast.error('Error al buscar los turnos');
+      if (!signal?.aborted){
+        console.error('Error fetching reservations:', error);
+        toast.error('Error al buscar los turnos');
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted){
+        setLoading(false);
+      }
     }
   };
 

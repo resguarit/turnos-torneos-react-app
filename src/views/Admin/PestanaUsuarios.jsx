@@ -34,7 +34,7 @@ const PestanaUsuarios = () => {
   const [isSaving, setIsSaving] = useState(false); // Estado de guardado
   const [validationErrors, setValidationErrors] = useState({}); // Estado para errores de validación
 
-  const fetchUsuarios = async () => {
+  const fetchUsuarios = async (signal) => {
     setLoading(true);
     try {
       const response = await api.get(`/usuarios`, {
@@ -45,22 +45,34 @@ const PestanaUsuarios = () => {
           order: 'desc',
           searchTerm: searchTerm,
           searchType: searchType
-        }
+        },
+        signal
       });
       if (response.data.status === 200) {
         setUsuarios(response.data.usuarios);
         setTotalPages(response.data.totalPages);
       }
     } catch (error) {
-      console.error('Error fetching usuarios:', error);
-      toast.error('Error al cargar los usuarios');
+      if (error.name !== 'AbortError' && error.name !== 'CanceledError'){
+        console.error('Error fetching usuarios:', error);
+        toast.error('Error al cargar los usuarios');
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted){
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    fetchUsuarios();
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    fetchUsuarios(signal);
+
+    return () => {
+      controller.abort();
+    };
   }, [page, clear]);
 
   const formatDate = (dateString) => {

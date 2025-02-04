@@ -21,23 +21,31 @@ const PestanaPistas = () => {
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false); // Estado de guardado
 
-  const fetchPistas = async () => {
+  const fetchPistas = async (signal) => {
     setLoading(true);
     try {
-      const response = await api.get('/canchas');
+      const response = await api.get('/canchas', { signal });
       if (response.status === 200) {
         setPistas(response.data.canchas);
       }
-    } catch (error) {
-      console.error('Error fetching pistas:', error);
-      toast.error('Error al cargar las pistas');
-    } finally {
       setLoading(false);
+    } catch (error) {
+      if (error.name !== 'AbortError' && error.name !== 'CanceledError') {
+        console.error('Error fetching pistas:', error);
+        toast.error('Error al cargar las pistas');
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    fetchPistas();
+    const controller = new AbortController();
+
+    fetchPistas(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const handleAddPista = async (e) => {

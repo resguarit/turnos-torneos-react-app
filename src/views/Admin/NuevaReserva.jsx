@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { addDays, format, startOfWeek } from "date-fns";
 import { es } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, CalendarDays, Clock, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import LoadingSinHF from "@/components/LoadingSinHF";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, MapPin, User } from "lucide-react";
+import { Calendar, MapPin, User, Clock, CreditCard } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function NuevaReserva() {
@@ -28,6 +28,7 @@ export default function NuevaReserva() {
   const [error, setError] = useState(null);
   const [loadingHorario, setLoadingHorario] = useState(false);
   const [loadingCancha, setLoadingCancha] = useState(false);
+  const [user, setUser] = useState(null);
 
   const navigate = useNavigate();
   const carouselRef = useRef(null); // Referencia para el carrusel
@@ -35,6 +36,24 @@ export default function NuevaReserva() {
   const canchasRef = useRef(null); // Referencia para la sección de canchas
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      const userId = localStorage.getItem('user_id');
+      if (userId) {
+        try {
+          const response = await api.get(`/usuarios/${userId}`);
+          const userData = response.data.user;
+          setUser(userData); // Almacenar el usuario completo en el estado
+          console.log("El usuario es", userData);
+        } catch (error) {
+          console.error('Error fetching user details:', error);
+        }
+      }
+    };
+  
+    fetchUserDetails();
+  }, []);
 
   const fetchAvailability = async (date) => {
     try {
@@ -65,7 +84,6 @@ export default function NuevaReserva() {
         if (data.status === 200) {
           const availableCourts = data.canchas.filter(court => court.disponible);
           setCourts(availableCourts);
-          console.log("Las canchas son", data.canchas); 
         }
       } catch (error) {
         console.error("Error fetching canchas:", error);
@@ -85,7 +103,7 @@ export default function NuevaReserva() {
   }, [selectedDate]);
 
   const handleTimeSlotClick = (courtId, time) => {
-    setSelectedCourt(`Cancha ${courtId}`);
+    setSelectedCourt();
     setSelectedTime(time);
   };
 
@@ -107,7 +125,7 @@ export default function NuevaReserva() {
     
     if (!userId) {
         const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-        navigate(`/confirmar-turno?time=${selectedTime}&date=${formattedDate}&court=${selectedCourt}`);
+        navigate(`/confirmar-turno?time=${selectedTime}&date=${formattedDate}&court=${selectedCourt.id}`);
         return;
     }
 
@@ -116,7 +134,7 @@ export default function NuevaReserva() {
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
        const disponibilidadResponse = await api.get(`/disponibilidad/cancha?fecha=${formattedDate}&horario_id=${selectedTime}`);
       const canchaDisponible = disponibilidadResponse.data.canchas.some(
-          cancha => cancha.id === selectedCourt && cancha.disponible
+          cancha => cancha.id === selectedCourt.id && cancha.disponible
       );
 
       /*  if (!canchaDisponible) {
@@ -128,7 +146,7 @@ export default function NuevaReserva() {
       const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
           fecha: formattedDate,
           horario_id: selectedTime,
-          cancha_id: selectedCourt
+          cancha_id: selectedCourt.id
       });
 
       if (bloqueoResponse.status === 201) {
@@ -136,7 +154,7 @@ export default function NuevaReserva() {
               // Crear reserva
               const response = await api.post('/turnos/turnounico', {
                   fecha_turno: formattedDate,
-                  cancha_id: selectedCourt,
+                  cancha_id: selectedCourt.id,
                   horario_id: selectedTime,
                   estado: 'Pendiente'
               });
@@ -160,60 +178,117 @@ export default function NuevaReserva() {
   }
   };
 
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      const userId = localStorage.getItem('user_id');
+      if (userId) {
+        try {
+          const response = await api.get(`/usuarios/${userId}`);
+          const user = response.data;
+          setUsername(user.nombre); // Asumiendo que el nombre del usuario está en la propiedad 'nombre'
+          setDni(user.dni); // Asumiendo que el DNI del usuario está en la propiedad 'dni'
+        } catch (error) {
+          console.error('Error fetching user details:', error);
+        }
+      }
+    };
+  
+    fetchUserDetails();
+  }, []);
+
   const closeModal = () => {
     setShowModal(false);
   };
 
-  const Modal = ({ onConfirm, onCancel, selectedDate, selectedTimeName, selectedCourt }) => (
-       <Dialog open={showModal} onClose={onCancel} >
+  const Modal = ({ onConfirm, onCancel, selectedDate, selectedTimeName, selectedCourt, user}) => (
+    <Dialog open={showModal} onClose={onCancel}>
       <DialogContent className="max-w-[400px] p-0 rounded-2xl">
         <div className="p-6 space-y-6">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-center">Detalles de la Reserva</DialogTitle>
-            <p className="text-center text-muted-foreground font-normal">Rock & Gol 520 esq. 20</p>
+            <DialogTitle className="text-xl font-semibold text-center">
+              Detalles de la Reserva
+            </DialogTitle>
+            <div className="flex items-center justify-center text-sm text-muted-foreground">
+              <MapPin className="w-4 h-4 mr-1" />
+              Rock & Gol 520 esq. 20
+            </div>
           </DialogHeader>
-          <div className="grid grid-cols-2 gap-y-4">
-            <div>
-              <p className="text-muted-foreground">Fecha</p>
-              <p className="font-medium">{selectedDate}</p>
+  
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <Calendar className="w-5 h-5 text-gray-500" />
+                <div className="w-full">
+                  <p className="text-sm text-gray-500">Fecha y Hora</p>
+                  <div className="flex full justify-between items-center">
+                  <p className="font-medium ">{selectedDate}</p>
+                  <p className="font-medium "> {selectedTimeName}</p>
+                  </div>
+                </div>
+              </div>
+  
+              <div className="flex items-center space-x-3">
+                <Clock className="w-5 h-5 text-gray-500" />
+                <div className="w-full">
+                  <p className="text-sm text-gray-500">Duración y Cancha</p>
+                  {console.log("cancha es", selectedCourt)}
+                  <div className="flex w-full justify-between items-center">
+                    <p className="font-medium">60 min </p>
+                    <p className="font-medium">Cancha {selectedCourt.nro} {selectedCourt.tipo} </p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-muted-foreground">Hora</p>
-              <p className="font-medium">{selectedTimeName}</p>
+  
+            <div className="pt-4 border-t">
+              <div className="flex items-center space-x-3">
+                <User className="w-5 h-5 text-gray-500" />
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500">Reservado por</p>
+                  <div className="flex justify-between">
+                    {console.log("usuario es", user)}
+                    <p className="font-medium">{user.name}</p>
+                    <p className="text-gray-500">DNI: {user.dni}</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-muted-foreground">Duración</p>
-              <p className="font-medium">90 minutos</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Cancha</p>
-              <p className="font-medium">Cancha 2</p>
+  
+            <div className="pt-4 border-t">
+              <div className="flex items-center space-x-3">
+                <CreditCard className="w-5 h-5 text-gray-500" />
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500">Resumen de pago</p>
+                  <div className="space-y-1">
+                    <div className="flex justify-between">
+                      <p>Total</p>
+                      <p className="font-medium">${selectedCourt.precio_por_hora}</p>
+                    </div>
+                    <div className="flex justify-between text-green-600">
+                      <p>Seña (50%)</p>
+                      <p className="font-medium">${selectedCourt?.seña}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-
-          <div className="grid grid-cols-2 gap-y-4">
-            <div>
-              <p className="text-muted-foreground">Reservado por:</p>
-              <p className="font-medium">Juan Pérez</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">DNI:</p>
-              <p className="font-medium">32456789</p>
-            </div>
+  
+          <div className="space-y-3">
+            <Button 
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+              onClick={onConfirm}
+            >
+              Confirmar Reserva
+            </Button>
+            <Button 
+              variant="outline"
+              className="w-full"
+              onClick={onCancel}
+            >
+              Cancelar
+            </Button>
           </div>
-
-          <div className="flex justify-between items-center">
-            <p className="font-medium">Total:</p>
-            <p className="font-medium">$28000</p>
-          </div>
-          <div className="flex justify-between items-center">
-            <p className="font-medium">Seña</p>
-            <p className="font-medium ">{selectedCourt.precio_por_hora}</p>
-          </div>
-
-          <Button className="w-full bg-naranja hover:bg-naranja/90 text-white rounded-[8px]" onClick={onCancel}>
-            Confirmar Reserva
-          </Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -258,6 +333,7 @@ export default function NuevaReserva() {
                             }`}
                             onClick={() => {
                               setSelectedDate(day);
+                              console.log("La fecha seleccionada es", selectedDate);
                               horariosRef.current.scrollIntoView({ behavior: "smooth" }); // Desplazar a la sección de horarios
                             }}
                           >
@@ -319,7 +395,7 @@ export default function NuevaReserva() {
                               className={`h-auto w-[80%] lg:w-auto flex rounded-[8px] flex-col items-start p-2 md:p-4 ${
                                 selectedCourt === court.nro ? "bg-naranja hover:bg-naranja/90 text-white" : ""
                               }`}
-                              onClick={() => setSelectedCourt(court.nro)}
+                              onClick={() => setSelectedCourt(court)}
                             >
                               <span className="font-bold md:text-base text-sm">Cancha {court.nro} - {court.tipo}</span>
                               <span className="md:text-sm text-xs">Precio: ${court.precio_por_hora}</span>
@@ -341,7 +417,7 @@ export default function NuevaReserva() {
                     <p className="font-medium md:text-base text-sm">Resumen de reserva</p>
                     {selectedDate && <p className="text-xs md:text-sm text-gray-600">Fecha: {format(selectedDate, "dd/MM/yyyy")}</p>}
                     {selectedTime && <p className=" text-xs md:text-sm text-gray-600">Hora: {selectedTimeName}</p>}
-                    {selectedCourt && <p className="text-xs md:text-sm text-gray-600">Cancha: {selectedCourt}</p>}
+                    {selectedCourt && <p className="text-xs md:text-sm text-gray-600">Cancha: {selectedCourt.nro}</p>}
                   </div>
                   <Button
                     className="bg-naranja hover:bg-naranja/90 text-white rounded-[8px]"
@@ -361,9 +437,11 @@ export default function NuevaReserva() {
       <Modal 
           onConfirm={confirmSubmit} 
           onCancel={closeModal}            
-          selectedDate={selectedDate}
+          selectedDate={selectedDate ? format(selectedDate, "dd/MM/yyyy") : ''}
           selectedTimeName={selectedTimeName}
-          selectedCourt={selectedCourt}/>
+          selectedCourt={selectedCourt}
+          user={user}
+          />
         )}
       {error && <p className="text-red-500 mt-4">{error}</p>}
     </div>

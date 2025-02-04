@@ -5,9 +5,11 @@ import ModalConfirmation from '@/components/ModalConfirmation';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import LoadingSinHF from '@/components/LoadingSinHF';
+import ListaMisTurnos from '@/components/ListaMisTurnos';
 
 export default function MisTurnos() {
   const [turnos, setTurnos] = useState([]);
+  const [turnosPrueba, setTurnosPrueba] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showProximos, setShowProximos] = useState(true);
@@ -27,6 +29,7 @@ export default function MisTurnos() {
         setTurnos([]);
         setError('No tienes turnos');
       } else if (response.data && response.data.turnos) {
+        setTurnosPrueba(response.data.turnos);
         const fechaHoy = new Date().toISOString().split('T')[0];
         const turnosFiltrados = response.data.turnos.filter(turno => {
           return showProximos ? turno.fecha_turno >= fechaHoy && turno.estado !== 'Cancelado' : turno.fecha_turno < fechaHoy || turno.estado === 'Cancelado';
@@ -107,48 +110,7 @@ export default function MisTurnos() {
             {showProximos ? 'Ver Turnos Anteriores' : 'Ver Turnos Próximos'}
           </button>
         </div>
-        {error && <p className="mt-4 text-center text-xl">{error}</p>}
-        {turnos.length === 0 && !error ? (
-          <p className="text-gray-600">No tienes turnos.</p>
-        ) : (
-          <div className="flex flex-col gap-4 w-full">
-            {turnos.map((turno) => (
-              <div key={turno.id} className="bg-white p-4 rounded-lg shadow-md">
-                <div className='flex md:justify-between md:flex-row flex-col'>
-                  <div>
-                    <h2 className=" text-lg md:text-xl font-semibold">{formatDate(turno.fecha_turno)}</h2>
-                    <p className="text-base md:text-lg"><span className="font-semibold">Cancha:</span> {turno.cancha.nro} - {turno.cancha.tipo_cancha}</p>
-                    <p className="text-base md:text-lg"><span className="font-semibold">Horario:</span> {turno.horario.hora_inicio} - {turno.horario.hora_fin}</p>
-                    <p className="text-base md:text-lg"><span className="font-semibold">Estado:</span> {turno.estado}</p>
-                    {expandedTurno === turno.id && (
-                      <div className="mt-4 text-gray-600">
-                        <p><span className="font-semibold">Fecha reserva:</span> {formatDate(turno.fecha_reserva)}</p>
-                        <p><span className="font-semibold">Monto Total:</span> {turno.monto_total}</p>
-                        <p><span className="font-semibold">Monto Seña:</span> {turno.monto_seña}</p>
-                      </div>
-                    )}
-                    <button
-                      onClick={() => toggleExpand(turno.id)}
-                      className="mt-4 p-2 bg-gray-200 text-black rounded-[8px] md:text-base text-sm"
-                    >
-                      {expandedTurno === turno.id ? 'Ver Menos' : 'Ver Más'}
-                    </button>
-                  </div>
-                  {showProximos && (
-                    <div className='flex items-center'>
-                      <button
-                        onClick={() => handleCancelarClick(turno.id)}
-                        className="mt-4 p-2 bg-red-500 text-white rounded-[8px] md:text-base text-sm"
-                      >
-                        Cancelar Turno
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <ListaMisTurnos turnos={turnosPrueba} />
       </main>
       {isOpen && (
         <ModalConfirmation

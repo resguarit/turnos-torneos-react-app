@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { addDays, format, startOfWeek } from "date-fns";
 import { es } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, CalendarDays, Clock, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import LoadingSinHF from "@/components/LoadingSinHF";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, MapPin, User } from "lucide-react";
+import { Calendar, MapPin, User, Clock, CreditCard } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function NuevaReserva() {
@@ -165,55 +165,86 @@ export default function NuevaReserva() {
   };
 
   const Modal = ({ onConfirm, onCancel, selectedDate, selectedTimeName, selectedCourt }) => (
-       <Dialog open={showModal} onClose={onCancel} >
+    <Dialog open={showModal} onClose={onCancel}>
       <DialogContent className="max-w-[400px] p-0 rounded-2xl">
         <div className="p-6 space-y-6">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-center">Detalles de la Reserva</DialogTitle>
-            <p className="text-center text-muted-foreground font-normal">Rock & Gol 520 esq. 20</p>
+            <DialogTitle className="text-xl font-semibold text-center">
+              Detalles de la Reserva
+            </DialogTitle>
+            <div className="flex items-center justify-center text-sm text-muted-foreground">
+              <MapPin className="w-4 h-4 mr-1" />
+              Rock & Gol 520 esq. 20
+            </div>
           </DialogHeader>
-          <div className="grid grid-cols-2 gap-y-4">
-            <div>
-              <p className="text-muted-foreground">Fecha</p>
-              <p className="font-medium">Hola</p>
+  
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <Calendar className="w-5 h-5 text-gray-500" />
+                <div>
+                  <p className="text-sm text-gray-500">Fecha y Hora</p>
+                  <p className="font-medium ">{selectedDate} ({selectedTimeName})</p>
+                </div>
+              </div>
+  
+              <div className="flex items-center space-x-3">
+                <Clock className="w-5 h-5 text-gray-500" />
+                <div>
+                  <p className="text-sm text-gray-500">Duración y Cancha</p>
+                  <p className="font-medium">60 min - Cancha {selectedCourt} - {selectedCourt.tipo}</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-muted-foreground">Hora</p>
-              <p className="font-medium">{selectedTimeName}</p>
+  
+            <div className="pt-4 border-t">
+              <div className="flex items-center space-x-3">
+                <User className="w-5 h-5 text-gray-500" />
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500">Reservado por</p>
+                  <div className="flex justify-between">
+                    <p className="font-medium">Juan Pérez</p>
+                    <p className="text-gray-500">DNI: 32456789</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-muted-foreground">Duración</p>
-              <p className="font-medium">60 minutos</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Cancha</p>
-              <p className="font-medium">Cancha 2</p>
+  
+            <div className="pt-4 border-t">
+              <div className="flex items-center space-x-3">
+                <CreditCard className="w-5 h-5 text-gray-500" />
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500">Resumen de pago</p>
+                  <div className="space-y-1">
+                    <div className="flex justify-between">
+                      <p>Total</p>
+                      <p className="font-medium">$28000</p>
+                    </div>
+                    <div className="flex justify-between text-green-600">
+                      <p>Seña (50%)</p>
+                      <p className="font-medium">${selectedCourt?.precio_por_hora}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-
-          <div className="grid grid-cols-2 gap-y-4">
-            <div>
-              <p className="text-muted-foreground">Reservado por:</p>
-              <p className="font-medium">Juan Pérez</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">DNI:</p>
-              <p className="font-medium">32456789</p>
-            </div>
+  
+          <div className="space-y-3">
+            <Button 
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+              onClick={onConfirm}
+            >
+              Confirmar Reserva
+            </Button>
+            <Button 
+              variant="outline"
+              className="w-full"
+              onClick={onCancel}
+            >
+              Cancelar
+            </Button>
           </div>
-
-          <div className="flex justify-between items-center">
-            <p className="font-medium">Total:</p>
-            <p className="font-medium">$28000</p>
-          </div>
-          <div className="flex justify-between items-center">
-            <p className="font-medium">Seña</p>
-            <p className="font-medium ">{selectedCourt.precio_por_hora}</p>
-          </div>
-
-          <Button className="w-full bg-naranja hover:bg-naranja/90 text-white rounded-[8px]" onClick={onCancel}>
-            Confirmar Reserva
-          </Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -362,7 +393,7 @@ export default function NuevaReserva() {
       <Modal 
           onConfirm={confirmSubmit} 
           onCancel={closeModal}            
-          selectedDate={selectedDate}
+          selectedDate={selectedDate ? format(selectedDate, "dd/MM/yyyy") : ''}
           selectedTimeName={selectedTimeName}
           selectedCourt={selectedCourt}/>
         )}

@@ -202,8 +202,8 @@ export default function NuevaReserva() {
 
   const señaPercentage = selectedCourt ? (selectedCourt.seña / selectedCourt.precio_por_hora) * 100 : 0;
 
-  const Modal = ({ onConfirm, onCancel, selectedDate, selectedTimeName, selectedCourt, user}) => (
-    <Dialog open={showModal} onClose={onCancel} >
+  const Modal = ({ onConfirm, onCancel, selectedDate, selectedTimeName, selectedCourt, user }) => (
+    <Dialog open={showModal} onClose={onCancel}>
       <DialogContent className="max-w-[250px] lg:max-w-[400px] p-0 rounded-2xl">
         <div className="md:p-6 p-4 space-y-3 md:space-y-6 ">
           <DialogHeader>
@@ -223,8 +223,8 @@ export default function NuevaReserva() {
                 <div className="w-full">
                   <p className="text-sm text-gray-500">Fecha y Hora</p>
                   <div className="flex full justify-between items-center">
-                  <p className="font-medium text-xs md:text-sm">{selectedDate}</p>
-                  <p className="font-medium text-xs md:text-sm"> {selectedTimeName}</p>
+                    <p className="font-medium text-xs md:text-sm">{selectedDate}</p>
+                    <p className="font-medium text-xs md:text-sm"> {selectedTimeName}</p>
                   </div>
                 </div>
               </div>
@@ -233,7 +233,6 @@ export default function NuevaReserva() {
                 <Clock className="w-5 h-5 text-gray-500" />
                 <div className="w-full">
                   <p className="text-sm text-gray-500">Duración y Cancha</p>
-                  {console.log("cancha es", selectedCourt)}
                   <div className="flex w-full justify-between items-center">
                     <p className="font-medium text-xs md:text-sm">60 min </p>
                     <p className="font-medium text-xs md:text-sm">Cancha {selectedCourt.nro} {selectedCourt.tipo} </p>
@@ -242,19 +241,20 @@ export default function NuevaReserva() {
               </div>
             </div>
   
-            <div className="pt-3 md:pt-4 border-t">
-              <div className="flex items-center space-x-3">
-                <User className="w-5 h-5 text-gray-500" />
-                <div className="flex-1">
-                  <p className="text-sm text-gray-500">Reservado por</p>
-                  <div className="flex justify-between">
-                    {console.log("usuario es", user)}
-                    <p className="font-medium text-xs md:text-sm">{user.name}</p>
-                    <p className="text-gray-500 text-xs md:text-sm">DNI: {user.dni}</p>
+            {user && (
+              <div className="pt-3 md:pt-4 border-t">
+                <div className="flex items-center space-x-3">
+                  <User className="w-5 h-5 text-gray-500" />
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-500">Reservado por</p>
+                    <div className="flex justify-between">
+                      <p className="font-medium text-xs md:text-sm">{user.name}</p>
+                      <p className="text-gray-500 text-xs md:text-sm">DNI: {user.dni}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
   
             <div className="pt-3 md:pt-4 border-t">
               <div className="flex items-center space-x-3">

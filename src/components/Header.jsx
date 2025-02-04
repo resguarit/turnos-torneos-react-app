@@ -3,7 +3,7 @@ import MenuMovil from './MenuMovil';
 import { CircleUserRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { UserCog } from 'lucide-react';
+import { UserCog, MonitorCog } from 'lucide-react';
 import { LogOut } from 'lucide-react';
 import ModalConfirmation from './ModalConfirmation';
 import { Pencil } from 'lucide-react';
@@ -12,7 +12,8 @@ export function Header() {
   const navigate = useNavigate();
   const [username, setUserName] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [showModal, setShowModal] = useState(false);	
+  const [showModal, setShowModal] = useState(false);
+  const userRole = localStorage.getItem('user_role');	
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -100,6 +101,21 @@ export function Header() {
                       >
                         Mi Panel <UserCog className='w-5'/>
                       </button>
+
+                      {userRole === 'admin' && (
+                        <>
+                          <span className="w-full h-[1px] bg-gray-300 my-2"></span>
+                          <button
+                            onClick={() => {
+                              navigate('/nuevo-panel-admin');
+                              closeMenu();
+                            }}
+                            className="w-full flex justify-between text-left hover:bg-gray-200 px-2 rounded-xl"
+                          >
+                            Admin <MonitorCog className='w-5' />
+                          </button>
+                        </> 
+                      )}
                       <span className="w-full h-[1px] bg-gray-300 my-2"></span>
                       <button
                         onClick={() => {

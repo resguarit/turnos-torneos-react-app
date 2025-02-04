@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
-import { BarChart, Clock, Shield, PencilIcon as Pitch } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import PestanaDashboard from './PestanaDashboard';
 import PestanaHorario from './PestanaHorario';
 import PestanaPistas from './PestanaPistas';
 import PestanaUsuarios from './PestanaUsuarios';
+import PestanaTurnos from './PestanaTurnos';
 
 const NuevoPanelAdmin = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialTab = queryParams.get('tab') || 'dashboard';
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    navigate(`?tab=${activeTab}`, { replace: true });
+  }, [activeTab, navigate]);
 
   const renderContenidoPestana = () => {
     switch (activeTab) {
@@ -20,6 +30,8 @@ const NuevoPanelAdmin = () => {
         return <PestanaPistas />;
       case 'users':
         return <PestanaUsuarios />;
+      case 'turnos':
+        return <PestanaTurnos />;
       default:
         return null;
     }
@@ -66,6 +78,15 @@ const NuevoPanelAdmin = () => {
             >
               <Shield className="inline-block mr-2" size={24} />
               Usuarios
+            </button>
+            <button
+              onClick={() => setActiveTab("turnos")}
+              className={`px-3 py-2 rounded-xl text-md font-medium ${
+                activeTab === "turnos" ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              <CalendarDays className="inline-block mr-2" size={24} />
+              Turnos
             </button>
           </div>
           {renderContenidoPestana()}

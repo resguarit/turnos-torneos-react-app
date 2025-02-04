@@ -13,6 +13,7 @@ import 'react-toastify/dist/ReactToastify.css';
 export default function ConfirmarTurno() {
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
     dni: '', // Changed from email to dni
     telefono: '',
     password: '',
@@ -60,6 +61,7 @@ export default function ConfirmarTurno() {
 
     if (!formData.name) newErrors.name = 'El nombre es requerido';
     if (!formData.dni) newErrors.dni = 'El DNI es requerido';
+    if (!formData.email) newErrors.email = 'El correo electrónico es requerido';
     if (!formData.telefono) newErrors.telefono = 'El teléfono es requerido';
     if (!formData.password) newErrors.password = 'La contraseña es requerida';
     if (formData.password.length < 8) newErrors.password = 'La contraseña debe tener al menos 8 caracteres';
@@ -84,6 +86,7 @@ export default function ConfirmarTurno() {
         const registerResponse = await api.post('/register', {
           name: formData.name,
           dni: formData.dni,
+          email: formData.email,
           telefono: formData.telefono,
           password: formData.password,
           password_confirmation: formData.password_confirmation
@@ -196,6 +199,17 @@ export default function ConfirmarTurno() {
                   {errors.telefono && (
                     <p className="text-sm text-red-500">{errors.telefono}</p>
                   )}
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="email" className="text-xl font-semibold">Correo Electrónico</Label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className={`w-full text-black text-lg border-2 border-gray-300 p-2 rounded-xl ${errors.email ? 'border-red-500' : ''}`}
+                  />
                 </div>
 
                 <div className="space-y-1">

@@ -12,7 +12,8 @@ export const ROUTES = {
     ],
     USER: [
       '/perfil',
-      '/mis-turnos'
+      '/mis-turnos',
+      '/user-profile'
     ],
     ADMIN: [
       '/ver-turnos',

@@ -235,7 +235,7 @@ export default function NuevaReserva() {
                   <p className="text-sm text-gray-500">Duración y Cancha</p>
                   <div className="flex w-full justify-between items-center">
                     <p className="font-medium text-xs md:text-sm">60 min </p>
-                    <p className="font-medium text-xs md:text-sm">Cancha {selectedCourt.nro} {selectedCourt.tipo} </p>
+                    <p className="font-medium text-xs md:text-sm">Cancha {selectedCourt.nro} - {selectedCourt.tipo} </p>
                   </div>
                 </div>
               </div>

@@ -7,7 +7,7 @@ const PestanaTurnos = () => {
   const [activeView, setActiveView] = useState('turnos'); // 'turnos' or 'grilla'
 
   return (
-    <div>
+    <div className="px-8">
       <div className="flex gap-4 mb-4 mt-8">
         <Button
           onClick={() => setActiveView('turnos')}

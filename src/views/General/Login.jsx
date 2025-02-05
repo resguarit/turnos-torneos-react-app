@@ -7,34 +7,54 @@ import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function Login() {
+const Login = () => {
     const [formData, setFormData] = useState({
-        dni: '', // Cambiado de email a dni
+        identifier: '',
         password: ''
     });
-    const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [inputErrors, setInputErrors] = useState({
+        identifier: false,
+        password: false
+    });
     const navigate = useNavigate();
-    
+
     const handleChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
         });
     };
-    
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setError('');
+        setInputErrors({ identifier: false, password: false });
+        const isNumeric = /^\d+$/.test(formData.identifier);
+        
         try {
-            const response = await login(formData);
+            const loginData = {
+                [isNumeric ? 'dni' : 'email']: formData.identifier,
+                password: formData.password
+            };
+            const response = await login(loginData);
             localStorage.setItem('user_id', response.user_id);
             localStorage.setItem('username', response.username);
             localStorage.setItem('user_role', response.rol);
-            
             navigate('/');
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Error al iniciar sesión');
+            if (error.status === 401) {
+                setError('Contraseña incorrecta');
+                setInputErrors({ identifier: false, password: true });
+            } else if (error.status === 404) {
+                setError('Credenciales incorrectas');
+                setInputErrors({ identifier: true, password: true });
+            } else {
+                setError('Error al iniciar sesión');
+                setInputErrors({ identifier: true, password: true });
+            }
         } finally {
             setLoading(false);
         }
@@ -54,24 +74,37 @@ function Login() {
                     <div className="space-y-4">
                         <h2 className="text-2xl font-bold text-center lg:text-3xl">Iniciar Sesión</h2>
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <input
-                                type="text"
-                                name="dni"
-                                placeholder="DNI"
-                                value={formData.dni}
-                                onChange={handleChange}
-                                className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
-                            />
-                            <input
-                                type="password"
-                                name="password"
-                                placeholder="Contraseña"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
-                            />
-                            <button type="submit" className="w-full bg-naranja text-base font-medium rounded-xl p-2 hover:bg-naranja/90 text-white" disabled={loading}>
-                                {loading ? 'Procesando...' : 'Iniciar Sesión'}
+                            <div>
+                                <input
+                                    type="text"
+                                    name="identifier"
+                                    placeholder="Email o DNI"
+                                    value={formData.identifier}
+                                    onChange={handleChange}
+                                    className={`w-full rounded-xl text-base p-2 border-2 ${
+                                        inputErrors.identifier ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <input
+                                    type="password"
+                                    name="password"
+                                    placeholder="Contraseña"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    className={`w-full rounded-xl text-base p-2 border-2 ${
+                                        inputErrors.password ? 'border-red-500' : 'border-gray-200'
+                                    }`}
+                                    required
+                                />
+                            </div>
+                            {error && (
+                                <p className="text-red-500 text-sm mt-1">{error}</p>
+                            )}
+                            <button type="submit" className="w-full bg-naranja text-lg font-medium rounded-xl p-2 hover:bg-naranja/90 text-white" disabled={loading}>
+                                {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                             </button>
                         </form>
                         <div className="relative">

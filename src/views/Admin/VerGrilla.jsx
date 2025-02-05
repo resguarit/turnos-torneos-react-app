@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarDays, User, Phone, AlertCircle } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import api from '@/lib/axiosConfig';
@@ -269,9 +269,19 @@ export default function VerGrilla() {
                           {reservation ? (
                             <div 
                             onClick={handleNavigationTurno(reservation.id)}
-                            className=" w-full h-full rounded p-1 hover:cursor-pointer" style={{ backgroundColor: reservation.tipo === "fijo" ? "#1E90FF" : reservation.tipo === "unico" ? "#32CD32" : "#FFA500" }}>
-                              <p className="text-xs lg:text-base font-bold">{reservation.usuario.nombre}</p>
-                              <p className="text-xs lg:text-base">{reservation.estado}</p>
+                            className=" w-full h-full rounded p-2 hover:cursor-pointer" style={{ backgroundColor: reservation.tipo === "fijo" ? "#1E90FF" : reservation.tipo === "unico" ? "#32CD32" : "#FFA500" }}>
+                              <p className="text-xs lg:text-base font-semibold flex items-center">
+                                <User className="w-4 h-4 mr-1" />
+                                {reservation.usuario.nombre}
+                              </p>
+                              <p className="text-xs lg:text-base flex items-center">
+                                <Phone className="w-4 h-4 mr-1" />
+                                {reservation.usuario.telefono}
+                              </p>
+                              <p className="text-xs lg:text-base flex items-center">
+                                <AlertCircle className="w-4 h-4 mr-1" />
+                                {reservation.estado}
+                              </p>
                             </div>
                           ) : null}
                         </td>
@@ -284,7 +294,6 @@ export default function VerGrilla() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

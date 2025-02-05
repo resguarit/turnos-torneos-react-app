@@ -75,23 +75,6 @@ export default function MisTurnos() {
     return date.toLocaleDateString('es-ES', options);
   };
 
-  const handleCancelarClick = (turnoId) => {
-    setTurnoToCancel(turnoId);
-    setIsOpen(true);
-  };
-
-  const handleConfirmCancel = async () => {
-    try {
-      await api.patch(`turnos/${turnoToCancel}`, { estado: 'Cancelado' });
-      toast.success('Turno cancelado correctamente');
-      fetchTurnos(); // Refrescar la lista de turnos
-    } catch (error) {
-      toast.error('Error al cancelar el turno');
-    } finally {
-      setIsOpen(false);
-      setTurnoToCancel(null);
-    }
-  };
   
   if (loading) {
     return <LoadingSinHF />;
@@ -100,8 +83,11 @@ export default function MisTurnos() {
   return (
     <div className="flex flex-col">
       <ToastContainer position="top-right" />
-      <main className="flex-grow bg-gray-100 md:p-6  p-0">
-        <ListaMisTurnos turnos={turnosPrueba} />
+      <main className="flex-grow bg-gray-100">
+        <ListaMisTurnos 
+          turnos={turnosPrueba} 
+          onTurnoCanceled={fetchTurnos}  
+        />
       </main>
     </div>
   );

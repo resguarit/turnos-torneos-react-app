@@ -188,8 +188,6 @@ export default function VerGrilla() {
     <div className="min-h-screen flex flex-col font-inter">
       <main className="flex-1 p-6 bg-gray-100">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4 lg:text-4xl">Grilla de Turnos</h2>
-
           <div className="flex items-center justify-between gap-4 mb-4">
             <div className="flex gap-2 items-center">
             <button onClick={handlePrevDay} className="p-2 hover:bg-gray-100 rounded ">

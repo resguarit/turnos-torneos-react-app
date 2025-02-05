@@ -70,7 +70,7 @@ function Login() {
                                 onChange={handleChange}
                                 className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
                             />
-                            <button type="submit" className="w-full bg-naranja text-lg font-medium rounded-xl p-2 hover:bg-naranja/90 text-white" disabled={loading}>
+                            <button type="submit" className="w-full bg-naranja text-base font-medium rounded-xl p-2 hover:bg-naranja/90 text-white" disabled={loading}>
                                 {loading ? 'Procesando...' : 'Iniciar Sesión'}
                             </button>
                         </form>

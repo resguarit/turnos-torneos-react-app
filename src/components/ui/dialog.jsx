@@ -1,6 +1,7 @@
 import React, { forwardRef } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 
 const Dialog = DialogPrimitive.Root;
 const DialogTrigger = DialogPrimitive.Trigger;
@@ -8,7 +9,7 @@ const DialogClose = DialogPrimitive.Close;
 
 const DialogPortal = ({ className, children, ...props }) => (
   <DialogPrimitive.Portal className={cn(className)} {...props}>
-    <div className="fixed inset-0 z-50 flex items-start justify-center sm:items-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center sm:items-center">
       {children}
     </div>
   </DialogPrimitive.Portal>
@@ -25,7 +26,7 @@ const DialogOverlay = forwardRef(({ className, ...props }, ref) => (
   />
 ));
 
-const DialogContent = forwardRef(({ className, children, ...props }, ref) => (
+const DialogContent = forwardRef(({ className, children, onCancel, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -37,10 +38,6 @@ const DialogContent = forwardRef(({ className, children, ...props }, ref) => (
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-offset-2">
-        <span className="sr-only">Close</span>
-        ✖
-      </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPortal>
 ));

@@ -26,7 +26,7 @@ function Reglamento() {
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
-      <main className="relative grow max-w-2xl lg:max-w-full lg:mx-0 mx-auto p-6">
+      <main className="relative grow max-w-full lg:mx-0 p-6">
         <video
           className="absolute top-0 left-0 w-full h-full object-cover z-10"
           src={rngBlack}
@@ -34,21 +34,20 @@ function Reglamento() {
           loop
           muted
         ></video>
-        <h1 className="z-50 relative text-2xl font-bold text-white lg:text-4xl">Reglamento</h1>
+        <h1 className="z-40 relative text-2xl font-bold text-white lg:text-3xl">Reglamento</h1>
         <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50 z-20"></div>
         
-        <div className="relative z-30 max-w-4xl lg:max-w-full mx-auto h-[72vh] items-center flex flex-col justify-center">
+        <div className="relative z-30 max-w-4xl lg:max-w-full mx-auto h-[65vh] items-center flex flex-col justify-center">
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mx-80 ">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6  ">
             {downloadButtons.map((button, index) => (
               <a
                 key={index}
                 href={button.url}
                 target="_blank"
-                style={{ borderRadius: '8px' }}
-                className="flex items-center justify-between bg-naranja text-white px-6 py-4 rounded-lg hover:bg-naranja/90 transition-colors lg:text-2xl"
+                className="flex items-center rounded-[8px] justify-between bg-naranja text-white px-6 py-4 hover:bg-naranja/90 transition-colors lg:text-xl"
               >
-                <span>{button.title}</span>
+                <span className="text-sm md:text-base lg:text-lg">{button.title}</span>
                 <DownloadIcon className="h-5 w-5" />
               </a>
             ))}

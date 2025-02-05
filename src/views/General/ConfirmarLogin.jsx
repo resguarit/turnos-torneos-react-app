@@ -68,6 +68,7 @@ export default function ConfirmarLogin() {
           localStorage.setItem('user_id', loginResponse.data.user_id);
           localStorage.setItem('username', loginResponse.data.username);
           localStorage.setItem('token', loginResponse.data.token);
+          localStorage.setItem('user_role', loginResponse.data.rol);
           
           // Configurar token en headers
           api.defaults.headers.common['Authorization'] = `Bearer ${loginResponse.data.token}`;

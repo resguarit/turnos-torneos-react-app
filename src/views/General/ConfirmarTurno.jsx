@@ -110,6 +110,7 @@ export default function ConfirmarTurno() {
               localStorage.setItem('user_id', loginResponse.data.user_id);
               localStorage.setItem('username', loginResponse.data.username);
               localStorage.setItem('token', loginResponse.data.token);
+              localStorage.setItem('user_role', loginResponse.data.rol);
 
               // Set token for next request
               api.defaults.headers.common['Authorization'] = `Bearer ${loginResponse.data.token}`;

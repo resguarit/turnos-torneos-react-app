@@ -234,7 +234,6 @@ function VerTurnos() {
     <>
       <div className="min-h-screen flex flex-col font-inter">
         <main className="flex-1 p-6 bg-gray-100">
-          <PageHeader />
           <div className="mb-8">
             <div className="space-y-4">
               <SearchBar

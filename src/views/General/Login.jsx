@@ -81,7 +81,7 @@ const Login = () => {
                                     placeholder="Email o DNI"
                                     value={formData.identifier}
                                     onChange={handleChange}
-                                    className={`w-full rounded-xl text-base p-2 border-2 ${
+                                    className={`w-full rounded-xl text-sm p-2 border-2 ${
                                         inputErrors.identifier ? 'border-red-500' : 'border-gray-200'
                                     }`}
                                     required
@@ -94,7 +94,7 @@ const Login = () => {
                                     placeholder="Contraseña"
                                     value={formData.password}
                                     onChange={handleChange}
-                                    className={`w-full rounded-xl text-base p-2 border-2 ${
+                                    className={`w-full rounded-xl text-sm p-2 border-2 ${
                                         inputErrors.password ? 'border-red-500' : 'border-gray-200'
                                     }`}
                                     required

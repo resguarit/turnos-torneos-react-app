@@ -10,6 +10,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { MapPin, Calendar, Clock, CreditCard } from 'lucide-react';
+import Loading from '@/components/LoadingSinHF';
 
 export default function ConfirmarTurno() {
   const [formData, setFormData] = useState({
@@ -26,6 +27,7 @@ export default function ConfirmarTurno() {
     horario: null,
     cancha: null
   });
+  const [loadingDetails, setLoadingDetails] = useState(true); // Estado de carga para los detalles de la reserva
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -49,6 +51,8 @@ export default function ConfirmarTurno() {
         });
       } catch (error) {
         console.error('Error fetching details:', error);
+      } finally {
+        setLoadingDetails(false); // Finalizar estado de carga para los detalles de la reserva
       }
     };
 
@@ -106,6 +110,7 @@ export default function ConfirmarTurno() {
               localStorage.setItem('user_id', loginResponse.data.user_id);
               localStorage.setItem('username', loginResponse.data.username);
               localStorage.setItem('token', loginResponse.data.token);
+              localStorage.setItem('user_role', loginResponse.data.rol);
 
               // Set token for next request
               api.defaults.headers.common['Authorization'] = `Bearer ${loginResponse.data.token}`;
@@ -254,74 +259,62 @@ export default function ConfirmarTurno() {
             
               <div className="bg-white p-4 rounded-[10px] shadow-lg flex flex-col justify-between ml-20">
                 <h2 className="text-lg font-bold mb-2">Detalles de la Reserva</h2>
-                <div className="flex items-center justify-center text-sm text-muted-foreground space-y-3 md:space-y-6 mb-4 ">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  Rock & Gol 520 esq. 20
-                </div>
-                <div className="space-y-4 md:space-y-6 mb-4">
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <Calendar className="w-5 h-5 text-gray-500" />
-                      <div className="w-full">
-                        <p className="text-sm text-gray-500">Fecha y Hora</p>
-                        <div className="flex full justify-between items-center">
-                          <p className="font-medium text-xs md:text-sm">{selectedDate}</p>
-                          <p className="font-medium text-xs md:text-sm"> </p>
+                {loadingDetails ? (
+                  <div className="flex justify-center items-center">
+                    <Loading />
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-center text-sm text-muted-foreground space-y-3 md:space-y-6 mb-4 ">
+                      <MapPin className="w-4 h-4 mr-1" />
+                      Rock & Gol 520 esq. 20
+                    </div>
+                    <div className="space-y-4 md:space-y-6 mb-4">
+                      <div className="space-y-4">
+                        <div className="flex items-center space-x-3">
+                          <Calendar className="w-5 h-5 text-gray-500" />
+                          <div className="w-full">
+                            <p className="text-sm text-gray-500">Fecha y Hora</p>
+                            <div className="flex full justify-between items-center">
+                              <p className="font-medium text-xs md:text-sm">{selectedDate}</p>
+                              <p className="font-medium text-xs md:text-sm"> </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <Clock className="w-5 h-5 text-gray-500" />
+                          <div className="w-full">
+                            <p className="text-sm text-gray-500">Duración y Cancha</p>
+                            <div className="flex w-full justify-between items-center">
+                              <p className="font-medium text-xs md:text-sm">60 min </p>
+                              <p className="font-medium text-xs md:text-sm">Cancha {reservationDetails.cancha.nro} - {reservationDetails.cancha.tipo_cancha} </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <Clock className="w-5 h-5 text-gray-500" />
-                      <div className="w-full">
-                        <p className="text-sm text-gray-500">Duración y Cancha</p>
-                        <div className="flex w-full justify-between items-center">
-                          <p className="font-medium text-xs md:text-sm">60 min </p>
-                          <p className="font-medium text-xs md:text-sm">Cancha {reservationDetails.cancha.nro} - {reservationDetails.cancha.tipo_cancha} </p>
+                    <div className="pt-3 md:pt-4 border-t">
+                      <div className="flex items-center space-x-3">
+                        <CreditCard className="w-5 h-5 text-gray-500" />
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-500">Resumen de pago</p>
+                          <div className="space-y-1">
+                            <div className="flex justify-between">
+                              <p className="text-xs md:text-sm">Total</p>
+                              <p className="font-medium text-xs md:text-sm">${reservationDetails.cancha.precio_por_hora} </p>
+                            </div>
+                            {console.log(reservationDetails)}
+                            <div className="flex justify-between text-naranja">
+                              <p className="text-xs md:text-sm">Seña ({señaPercentage.toFixed(0)}%)</p>
+                              <p className="font-medium text-xs md:text-sm">${reservationDetails.cancha.seña}</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </>
+                )}
               </div>
-              <div className="pt-3 md:pt-4 border-t">
-              <div className="flex items-center space-x-3">
-                <CreditCard className="w-5 h-5 text-gray-500" />
-                <div className="flex-1">
-                  <p className="text-sm text-gray-500">Resumen de pago</p>
-                  <div className="space-y-1">
-                    <div className="flex justify-between">
-                      <p className="text-xs md:text-sm">Total</p>
-                      <p className="font-medium text-xs md:text-sm">${reservationDetails.cancha.precio_por_hora} </p>
-                    </div>
-                    {console.log(reservationDetails)}
-                    <div className="flex justify-between text-naranja">
-                      <p className="text-xs md:text-sm">Seña ({señaPercentage.toFixed(0)}%)</p>
-                      <p className="font-medium text-xs md:text-sm">${reservationDetails.cancha.seña}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-              </div>
-                {/* <div className="flex flex-col justify-around h-[90%]">
-                  <p className="text-xl"><strong>Fecha:</strong> {selectedDate}</p>
-                  <p className="text-xl">
-                    <strong>Horario:</strong>{' '}
-                    {reservationDetails.horario ? 
-                      `${reservationDetails.horario.hora_inicio.slice(0, 5)} - ${reservationDetails.horario.hora_fin.slice(0, 5)}` : 
-                      'Cargando...'
-                    }
-                  </p>
-                  <p className="text-xl">
-                    <strong>Cancha:</strong>{' '}
-                    {reservationDetails.cancha ? 
-                      `Cancha ${reservationDetails.cancha.nro} - ${reservationDetails.cancha.tipo_cancha}` : 
-                      'Cargando...'
-                    }
-                  </p>
-
-                  
-                </div> */}
-
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4 pb-0">

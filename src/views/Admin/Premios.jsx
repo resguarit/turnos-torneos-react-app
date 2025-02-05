@@ -51,32 +51,32 @@ export default function Premios() {
       <div className="relative z-20 min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 p-6">
-        <h1 className="relative text-3xl font-bold text-white lg:text-4xl">
+        <h1 className="relative text-2xl font-bold text-white lg:text-3xl mb-2">
               Premios
             </h1>
-          <div className="max-w-6xl h-[72vh] items-center flex flex-col justify-center lg:max-w-full mx-auto">
+          <div className="max-w-6xl items-center flex flex-col justify-center lg:max-w-full mx-auto">
             
 
-            <div className="lg:mx-60 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className=" grid grid-cols-1 md:grid-cols-2 gap-6">
               {prizes.map((prize, index) => (
                 <div
                   key={index}
                   style={{ borderRadius: "12px" }}
-                  className="bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
+                  className="bg-white p-5 shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex flex-col items-center text-center">
-                    <prize.icon className="h-12 w-12 mb-4 text-naranja" />
-                    <h3 className="text-xl font-semibold mb-2 lg:text-3xl">
+                    <prize.icon className="h-12 w-12 mb-2 text-naranja" />
+                    <h3 className="text-base font-semibold mb-1 lg:text-xl">
                       {prize.title}
                     </h3>
-                    <p className="text-sm text-gray-600 mb-1 lg:text-xl">
+                    <p className="text-sm text-gray-600 mb-1 lg:text-base">
                       {prize.subtitle}
                     </p>
-                    <p className="text-sm text-gray-600 lg:text-xl">
+                    <p className="text-sm text-gray-600 lg:text-base">
                       {prize.description}
                     </p>
                     {prize.subtext && (
-                      <p className="text-sm text-gray-600 lg:text-xl">
+                      <p className="text-sm text-gray-600 lg:text-base">
                         {prize.subtext}
                       </p>
                     )}

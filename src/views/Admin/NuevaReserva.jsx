@@ -29,6 +29,7 @@ export default function NuevaReserva() {
   const [loadingHorario, setLoadingHorario] = useState(false);
   const [loadingCancha, setLoadingCancha] = useState(false);
   const [user, setUser] = useState(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   const navigate = useNavigate();
   const carouselRef = useRef(null); // Referencia para el carrusel
@@ -121,11 +122,13 @@ export default function NuevaReserva() {
   };
 
   const confirmSubmit = async () => {
+    setConfirmLoading(true);
     const userId = localStorage.getItem('user_id');
     
     if (!userId) {
         const formattedDate = format(selectedDate, 'yyyy-MM-dd');
         navigate(`/confirmar-turno?time=${selectedTime}&date=${formattedDate}&court=${selectedCourt.id}`);
+        setConfirmLoading(false);
         return;
     }
 
@@ -175,6 +178,7 @@ export default function NuevaReserva() {
           'Error al crear la reserva. Por favor, intente nuevamente.'
       );
   } finally {
+    setConfirmLoading(false);
   }
   };
 
@@ -281,13 +285,15 @@ export default function NuevaReserva() {
             <button 
               className="text-sm md:text-base w-full bg-naranja hover:bg-naranja/90 text-white rounded-[10px] py-2"
               onClick={onConfirm}
+              disabled={confirmLoading}
             >
-              Confirmar Reserva
+              {confirmLoading ? 'Cargando...' : 'Confirmar Reserva'}
             </button>
             <button 
               variant="outline"
               className=" text-sm md:text-base w-full rounded-[10px] py-2 border border-black "
               onClick={onCancel}
+              disabled={confirmLoading}
             >
               Cancelar
             </button>

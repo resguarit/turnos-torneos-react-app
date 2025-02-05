@@ -4,8 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, Clock, User, DollarSign, CheckCircle, XCircle } from "lucide-react";
 import dayjs from "dayjs";
 import { Button } from "@/components/ui/button";
+import {format} from 'date-fns';
+import {es} from 'date-fns/locale'
 
-const ListaMisTurnos = ({ turnos }) => {
+const ListaMisTurnos = ({ turnos }) => {  
     const fechaActual = dayjs().format("YYYY-MM-DD");
 
     const turnosProximos = turnos.filter(
@@ -38,6 +40,10 @@ const ListaMisTurnos = ({ turnos }) => {
   };
   
   const TurnoCard = ({ turno }) => {
+    const fechaFormateada = format(new Date(turno.fecha_turno), "EEEE, d 'de' MMMM 'de' yyyy", {locale:es});
+    const señaPorcentaje = turno.cancha ? (turno.monto_seña / turno.monto_total) * 100 : 0;
+
+
     return (
       <div className="flex justify-center">
       <Card className="mb-4 p-4 border rounded-lg shadow w-1/2">
@@ -51,7 +57,8 @@ const ListaMisTurnos = ({ turnos }) => {
                 <Calendar className="w-4 h-4" />
                 <p className="text-sm font-semibold">Fecha y Hora</p>
               </div>
-              <p className="text-sm">{turno.fecha_turno} | {turno.horario.hora_inicio} - {turno.horario.hora_fin}</p>
+              <p className="text-sm">{fechaFormateada}</p>
+              <p className="text-sm">{turno.horario.hora_inicio} - {turno.horario.hora_fin}</p>
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -91,7 +98,7 @@ const ListaMisTurnos = ({ turnos }) => {
             <div>
               <div className="flex items-center gap-2">
                 <DollarSign className="w-4 h-4" />
-                <p className="text-sm font-semibold">Seña (10%)</p>
+                <p className="text-sm font-semibold">Seña ({señaPorcentaje.toFixed(0)}%)</p>
               </div>
               <p className="text-sm text-red-500">${turno.monto_seña}</p>
             </div>

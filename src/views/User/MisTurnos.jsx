@@ -101,27 +101,8 @@ export default function MisTurnos() {
     <div className="flex flex-col">
       <ToastContainer position="top-right" />
       <main className="flex-grow bg-gray-100 md:p-6  p-0">
-        <div className="w-full flex md:justify-between justify-evenly gap-8 items-center">
-          <h1 className="md:text-2xl text-base font-medium text-black mb-6">{showProximos ? 'Próximos Turnos' : 'Historial Turnos'}</h1>
-          <button
-            onClick={toggleTurnos}
-            className="mb-4 p-1 px-0 w-24 bg-black text-white md:w-fit md:p-2    md:text-lg text-sm  rounded-[8px]"
-          >
-            {showProximos ? 'Ver Turnos Anteriores' : 'Ver Turnos Próximos'}
-          </button>
-        </div>
         <ListaMisTurnos turnos={turnosPrueba} />
       </main>
-      {isOpen && (
-        <ModalConfirmation
-          onConfirm={handleConfirmCancel}
-          onCancel={() => setIsOpen(false)}
-          title="Cancelar Turno"
-          subtitle="¿Estás seguro de que deseas cancelar este turno?"
-          botonText1="No"
-          botonText2="Sí, cancelar"
-        />
-      )}
     </div>
   );
 }

@@ -39,6 +39,7 @@ const ListaMisTurnos = ({ turnos }) => {
   
   const TurnoCard = ({ turno }) => {
     return (
+      <div className="flex justify-center">
       <Card className="mb-4 p-4 border rounded-lg shadow w-1/2">
         <CardContent>
           <h2 className="text-lg font-bold text-left">Detalles de la Reserva</h2>
@@ -101,6 +102,7 @@ const ListaMisTurnos = ({ turnos }) => {
           )}
         </CardContent>
       </Card>
+      </div>
     );
   };
 

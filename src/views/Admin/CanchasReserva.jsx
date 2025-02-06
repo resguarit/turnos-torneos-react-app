@@ -55,7 +55,7 @@ export default function CanchasReserva() {
     if (loading) {
       navigate('/error');
     }
-  }, 20000);
+  }, 15000);
 
   // Cargar canchas
   useEffect(() => {
@@ -121,7 +121,7 @@ export default function CanchasReserva() {
                 });
                 
                 if (response.status === 201) {
-                    navigate('/ver-turnos');
+                    navigate('/user-profile');
                 }
             } catch (reservaError) {
                 // Si falla la creación de la reserva, liberar el bloqueo temporal
@@ -138,7 +138,7 @@ export default function CanchasReserva() {
     } finally {
         setLoading(false);
     }
-  };
+};
 
   const closeModal = () => {
     setShowModal(false);

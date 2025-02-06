@@ -19,7 +19,7 @@ export const TarjetaMetrica = ({ metrica }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 relative">
+    <div className="bg-white rounded-lg shadow p-4 relative">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-gray-500">{metrica.etiqueta}</h3>
         <div className="absolute top-2 right-2">
@@ -32,7 +32,7 @@ export const TarjetaMetrica = ({ metrica }) => {
         </div>
       </div>
       <div className="mt-2 flex items-baseline justify-between">
-        <p className="text-2xl font-semibold text-gray-900">{metrica.valor}</p>
+        <p className="text-xl sm:text-2xl font-semibold text-gray-900">{metrica.valor}</p>
         {metrica.cambio && (
           <div className="flex flex-row items-center gap-2">
             <span className={`text-sm ${

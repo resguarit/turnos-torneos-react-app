@@ -42,11 +42,11 @@ const NuevoPanelAdmin = () => {
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
         <div className="max-w-full mx-auto">
-          <div className="flex gap-4">
+          <div className="grid grid-cols-2  sm:flex sm:flex-row gap-2 sm:gap-4">
             <button
               onClick={() => setActiveTab("dashboard")}
-              className={`px-3 py-2 rounded-xl text-md font-medium ${
-                activeTab === "dashboard" ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-700"
+              className={`px-3 py-1 sm:py-2 rounded-xl text-sm sm:text-base  ${
+                activeTab === "dashboard" ? "bg-orange-500 text-white" : "bg-gray-200 text-black"
               }`}
             >
               <BarChart className="inline-block mr-2" size={24} />
@@ -54,8 +54,8 @@ const NuevoPanelAdmin = () => {
             </button>
             <button
               onClick={() => setActiveTab("schedules")}
-              className={`px-3 py-2 rounded-xl text-md font-medium ${
-                activeTab === "schedules" ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-700"
+              className={`px-3  py-1 sm:py-2 rounded-xl text-sm sm:text-base  ${
+                activeTab === "schedules" ? "bg-orange-500 text-white" : "bg-gray-200 text-black"
               }`}
             >
               <Clock className="inline-block mr-2" size={24} />
@@ -63,8 +63,8 @@ const NuevoPanelAdmin = () => {
             </button>
             <button
               onClick={() => setActiveTab("courts")}
-              className={`px-3 py-2 rounded-xl text-md font-medium ${
-                activeTab === "courts" ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-700"
+              className={`px-3  py-1 sm:py-2 rounded-xl text-sm sm:text-base  ${
+                activeTab === "courts" ? "bg-orange-500 text-white" : "bg-gray-200 text-black"
               }`}
             >
               <Pitch className="inline-block mr-2" size={24} />
@@ -72,8 +72,8 @@ const NuevoPanelAdmin = () => {
             </button>
             <button
               onClick={() => setActiveTab("users")}
-              className={`px-3 py-2 rounded-xl text-md font-medium ${
-                activeTab === "users" ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-700"
+              className={`px-3  py-1 sm:py-2 rounded-xl text-sm sm:text-base  ${
+                activeTab === "users" ? "bg-orange-500 text-white" : "bg-gray-200 text-black"
               }`}
             >
               <Shield className="inline-block mr-2" size={24} />
@@ -81,8 +81,8 @@ const NuevoPanelAdmin = () => {
             </button>
             <button
               onClick={() => setActiveTab("turnos")}
-              className={`px-3 py-2 rounded-xl text-md font-medium ${
-                activeTab === "turnos" ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-700"
+              className={`px-3  py-1 sm:py-2 rounded-xl text-sm sm:text-base  ${
+                activeTab === "turnos" ? "bg-orange-500 text-white" : "bg-gray-200 text-black"
               }`}
             >
               <CalendarDays className="inline-block mr-2" size={24} />

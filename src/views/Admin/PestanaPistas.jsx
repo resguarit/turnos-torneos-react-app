@@ -232,9 +232,9 @@ const PestanaPistas = () => {
                       <div className="bg-orange-500 text-center rounded-[8px] p-2">
                         <span className="text-sm sm:text-base  font-semibold text-white">{`Cancha ${pista.nro} - ${pista.tipo_cancha}`}</span>
                       </div>
-                      <span className=" text-sm sm:text-base font-bold">Precio por Hora: <span className="font-normal">${pista.precio_por_hora}</span></span>
-                      <span className=" text-sm sm:text-base font-bold">Seña: <span className="font-normal">${pista.seña}</span></span>
-                      <span className=" text-sm sm:text-base font-bold">Activa: <span className="font-normal">{pista.activa ? 'Sí' : 'No'}</span></span>
+                      <span className=" text-sm sm:text-base font-bold text-gray-700">Precio por Hora: <span className="font-normal">${pista.precio_por_hora}</span></span>
+                      <span className=" text-sm sm:text-base font-bold text-gray-700">Seña: <span className="font-normal">${pista.seña}</span></span>
+                      <span className=" text-sm sm:text-base font-bold text-gray-700">Activa: <span className="font-normal">{pista.activa ? 'Sí' : 'No'}</span></span>
                     </div>
 
                     <div className="flex items-center space-x-3 sm:space-x-3">
@@ -255,8 +255,8 @@ const PestanaPistas = () => {
             <ModalConfirmation
               onConfirm={handleDeletePista}
               onCancel={() => setPistaToDelete(null)}
-              title="Eliminar Pista"
-              subtitle={`¿Estás seguro de que deseas eliminar la pista ${pistaToDelete.nro}?`}
+              title="Eliminar Cancha"
+              subtitle={`¿Estás seguro de que deseas eliminar la cancha ${pistaToDelete.nro}?`}
               botonText1="Cancelar"
               botonText2="Eliminar"
             />

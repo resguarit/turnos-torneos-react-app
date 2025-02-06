@@ -196,7 +196,7 @@ const MenuMovil = ({ setMenuOpen }) => {
                 {userRole === "admin" && (
                   <button
                     onClick={() => {
-                      navigate("/nuevo-panel-admin")
+                      navigate("/panel-admin")
                       closeMenu()
                     }}
                     className="w-full flex items-center justify-between text-left hover:bg-gray-100 px-4 py-3 text-white transition duration-150 ease-in-out"

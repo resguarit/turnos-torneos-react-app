@@ -153,7 +153,7 @@ function EditarTurno() {
         toast.success('Turno actualizado correctamente');
         setFetching(false);
         setTimeout(() => {
-          navigate('/nuevo-panel-admin?tab=turnos');
+          navigate('/panel-admin?tab=turnos');
         }, 2000); // Esperar 2 segundos antes de redirigir
       }
     } catch (error) {

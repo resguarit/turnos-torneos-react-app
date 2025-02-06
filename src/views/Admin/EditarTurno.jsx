@@ -183,9 +183,9 @@ function EditarTurno() {
       <Header />
       <main className="flex-1 grow p-3 md:p-6 bg-gray-100">
         <BackButton />
-        <h1 className='text-2xl font-semibold '>Detalles del Turno</h1>
+        <h1 className='text-xl md:text-2xl font-semibold '>Detalles del Turno</h1>
         <Card className="max-w-full md:max-w-7xl mx-0 md:mx-auto border-0 shadow-none">
-          <CardContent className="space-y-6 pt-0 md:pt-4 ">
+          <CardContent className="space-y-6 pt-0  md:pt-4 ">
             <ToastContainer position="bottom-right" />
             {/* Campos de solo lectura */}
             <div className="space-y-4 bg-white p-4 rounded-2xl shadow-lg">

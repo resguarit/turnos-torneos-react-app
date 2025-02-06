@@ -29,7 +29,7 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
           onTurnoCanceled();
         }
         setIsCancelling(false);
-      }, 2000);
+      }, 1000);
     } catch (error) {
       console.error('Error al cancelar el turno:', error);
       toast.error('Error al cancelar el turno');

@@ -87,7 +87,7 @@ export function Header() {
                           navigate('/editar-perfil');
                           closeMenu();
                         }}
-                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2  rounded-xl"
+                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2 py-1  rounded-xl"
                       >
                         Editar Perfil <Pencil className='w-5'/>
                       </button>
@@ -97,7 +97,7 @@ export function Header() {
                           navigate('/user-profile');
                           closeMenu();
                         }}
-                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2  rounded-xl"
+                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2 py-1 rounded-xl"
                       >
                         Mi Panel <UserCog className='w-5'/>
                       </button>
@@ -110,7 +110,7 @@ export function Header() {
                               navigate('/nuevo-panel-admin');
                               closeMenu();
                             }}
-                            className="w-full flex justify-between text-left hover:bg-gray-200 px-2 rounded-xl"
+                            className="w-full flex justify-between text-left hover:bg-gray-200 px-2 py-1 rounded-xl"
                           >
                             Admin <MonitorCog className='w-5' />
                           </button>
@@ -122,7 +122,7 @@ export function Header() {
                           handleModal();
                           closeMenu();
                         }}
-                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2  rounded-xl"
+                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2 py-1 rounded-xl"
                       >
                         Cerrar Sesión <LogOut className='w-5'/>
                       </button>

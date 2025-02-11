@@ -8,7 +8,7 @@ import { es } from 'date-fns/locale';
 const CancelacionTurnoDialog = ({ showCancelModal, setShowCancelModal, turno, handleCancelTurno, isCancelling }) => {
   return (
     <Dialog open={showCancelModal} onOpenChange={setShowCancelModal}>
-      <DialogContent className="w-full max-w-4xl mx-auto">
+      <DialogContent className="sm:w-full max-w-4xl mx-auto">
         <DialogHeader>
           <DialogTitle className="text-xl">¿Estás seguro que deseas cancelar este turno?</DialogTitle>
           <DialogDescription className="pt-4 space-y-4">
@@ -28,7 +28,7 @@ const CancelacionTurnoDialog = ({ showCancelModal, setShowCancelModal, turno, ha
                     {locale:es}
                   )
                 }
-              </p>
+              </p>  
             </div>
             <p>Esta acción no se puede deshacer.</p>
             <div className="bg-orange-100 p-4 rounded-lg">

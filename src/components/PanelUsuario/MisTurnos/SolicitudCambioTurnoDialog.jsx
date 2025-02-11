@@ -43,7 +43,7 @@ const SolicitudCambioTurnoDialog = ({ showChangeModal, setShowChangeModal, turno
         </DialogHeader>
         <DialogFooter className=" gap-2 mt-4">
           <Button 
-            className="w-1/4 bg-gray-200 text-gray-800 hover:bg-gray-300" 
+            className="w-full md:w-1/4 bg-gray-200 text-gray-800 hover:bg-gray-300" 
             onClick={() => setShowChangeModal(false)}
             disabled={isSubmitting}
           >

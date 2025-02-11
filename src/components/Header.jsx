@@ -107,7 +107,7 @@ export function Header() {
                           <span className="w-full h-[1px] bg-gray-300 my-2"></span>
                           <button
                             onClick={() => {
-                              navigate('/nuevo-panel-admin');
+                              navigate('/panel-admin');
                               closeMenu();
                             }}
                             className="w-full flex justify-between text-left hover:bg-gray-200 px-2 py-1 rounded-xl"

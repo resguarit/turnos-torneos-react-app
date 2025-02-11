@@ -124,7 +124,7 @@ const PestanaUsuarios = () => {
   };
 
   const handleViewTurnosClick = (usuarioDni) => {
-    window.location.href = `/nuevo-panel-admin?tab=turnos&usuario=${usuarioDni}`;
+    window.location.href = `/panel-admin?tab=turnos&usuario=${usuarioDni}`;
   };
 
   const handlePageChange = (newPage) => {

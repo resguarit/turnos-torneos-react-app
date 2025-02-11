@@ -84,7 +84,7 @@ const PestanaDashboard = () => {
         ))}
       </div>
 
-      <div className="bg-white rounded-lg shadow p-3">
+      <div className="bg-white rounded-[8px] shadow p-3">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Reservas Mensuales</h3>
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%" >

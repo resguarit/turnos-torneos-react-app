@@ -29,6 +29,7 @@ import NuevaReserva from "@/views/Admin/NuevaReserva";
 import TurnoFijo from "@/views/Admin/TurnoFijo";
 import AdminPanel from "@/views/Admin/AdminPanel";
 import NuevoPanelAdmin from "@/views/Admin/NuevoPanelAdmin";
+import ContadorBloqueo from "@/views/General/ContadorBloqueo";
 
 
 const AppRoutes = () => {
@@ -42,6 +43,7 @@ const AppRoutes = () => {
         <Route path="/confirmar-turno" element={<ConfirmarTurno />} />
         <Route path="/confirmar-login" element={<ConfirmarLogin />} />
         <Route path="/nueva-reserva" element={<NuevaReserva />} />
+        <Route path="/bloqueo-reserva" element={<ContadorBloqueo />} />
 
         {/* Rutas protegidas para administradores */}
         <Route

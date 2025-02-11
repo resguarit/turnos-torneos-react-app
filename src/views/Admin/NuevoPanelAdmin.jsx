@@ -45,7 +45,7 @@ const NuevoPanelAdmin = () => {
           <div className="grid grid-cols-2  sm:flex sm:flex-row gap-2 sm:gap-4">
             <button
               onClick={() => setActiveTab("dashboard")}
-              className={`px-3 py-1 sm:py-2 rounded-xl text-sm sm:text-base  ${
+              className={`px-3 py-1 sm:py-2 rounded-[8px] text-sm sm:text-base  ${
                 activeTab === "dashboard" ? "bg-orange-500 text-white" : "bg-gray-200 text-black"
               }`}
             >
@@ -54,7 +54,7 @@ const NuevoPanelAdmin = () => {
             </button>
             <button
               onClick={() => setActiveTab("schedules")}
-              className={`px-3  py-1 sm:py-2 rounded-xl text-sm sm:text-base  ${
+              className={`px-3  py-1 sm:py-2 rounded-[8px] text-sm sm:text-base  ${
                 activeTab === "schedules" ? "bg-orange-500 text-white" : "bg-gray-200 text-black"
               }`}
             >
@@ -63,7 +63,7 @@ const NuevoPanelAdmin = () => {
             </button>
             <button
               onClick={() => setActiveTab("courts")}
-              className={`px-3  py-1 sm:py-2 rounded-xl text-sm sm:text-base  ${
+              className={`px-3  py-1 sm:py-2 rounded-[8px] text-sm sm:text-base  ${
                 activeTab === "courts" ? "bg-orange-500 text-white" : "bg-gray-200 text-black"
               }`}
             >
@@ -72,7 +72,7 @@ const NuevoPanelAdmin = () => {
             </button>
             <button
               onClick={() => setActiveTab("users")}
-              className={`px-3  py-1 sm:py-2 rounded-xl text-sm sm:text-base  ${
+              className={`px-3  py-1 sm:py-2 rounded-[8px] text-sm sm:text-base  ${
                 activeTab === "users" ? "bg-orange-500 text-white" : "bg-gray-200 text-black"
               }`}
             >
@@ -81,7 +81,7 @@ const NuevoPanelAdmin = () => {
             </button>
             <button
               onClick={() => setActiveTab("turnos")}
-              className={`px-3  py-1 sm:py-2 rounded-xl text-sm sm:text-base  ${
+              className={`px-3  py-1 sm:py-2 rounded-[8px] text-sm sm:text-base  ${
                 activeTab === "turnos" ? "bg-orange-500 text-white" : "bg-gray-200 text-black"
               }`}
             >

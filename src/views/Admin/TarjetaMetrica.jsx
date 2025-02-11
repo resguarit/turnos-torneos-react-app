@@ -19,7 +19,7 @@ export const TarjetaMetrica = ({ metrica }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 relative">
+    <div className="bg-white rounded-[8px] shadow p-4 relative">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-gray-500">{metrica.etiqueta}</h3>
         <div className="absolute top-2 right-2">

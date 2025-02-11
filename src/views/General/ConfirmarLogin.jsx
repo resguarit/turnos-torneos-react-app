@@ -176,7 +176,7 @@ export default function ConfirmarLogin() {
         </p>
         <Card className="max-w-5xl mx-auto border-0">
           <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <form onSubmit={handleSubmit} className="space-y-8 h-full  flex flex-col">
               <div className="space-y-4">
                 <div className="space-y-1 flex flex-col">
@@ -221,7 +221,7 @@ export default function ConfirmarLogin() {
               </button>
             </form>
 
-            <div className="bg-white p-4 rounded-[10px] shadow-lg flex flex-col justify-between ml-20">
+            <div className="bg-white p-4 rounded-[10px] shadow-lg flex flex-col justify-between md:ml-20">
                 <h2 className="text-lg font-bold mb-2">Detalles de la Reserva</h2>
                 {loadingDetails ? (
                   <div className="flex justify-center items-center">

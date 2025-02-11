@@ -161,9 +161,9 @@ export default function ConfirmarTurno() {
         </p>
         <Card className="max-w-7xl mx-auto border-0">
           <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <form onSubmit={handleSubmit} className="space-y-2">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 md:gap-6 gap-2 mb-8">
                 <div className="">
                   <Label htmlFor="name" className="text-sm font-semibold">Nombre completo</Label>
                   <input
@@ -248,7 +248,7 @@ export default function ConfirmarTurno() {
                 </button>
               </form>
             
-              <div className="bg-white p-4 rounded-[10px] shadow-lg flex flex-col justify-between ml-20">
+              <div className="bg-white p-4 rounded-[10px] shadow-lg flex flex-col justify-between md:ml-20">
                 <h2 className="text-lg font-bold mb-2">Detalles de la Reserva</h2>
                 {loadingDetails ? (
                   <div className="flex justify-center items-center">

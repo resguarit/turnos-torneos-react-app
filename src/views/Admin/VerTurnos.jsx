@@ -5,11 +5,11 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import LoadingSinHF from '@/components/LoadingSinHF';
 import ModalConfirmation from '@/components/ModalConfirmation';
-import PageHeader from '@/components/TurnoHeader';
-import DateSelector from '@/components/TurnoDateSelector';
-import FilterControls from '@/components/TurnoFilterControls';
-import TurnoList from '@/components/TurnoList';
-import SearchBar from '@/components/TurnoSearchBar';
+import PageHeader from '@/components/PanelAdmin/VerTurnos/TurnoHeader';
+import DateSelector from '@/components/PanelAdmin/VerTurnos/TurnoDateSelector';
+import FilterControls from '@/components/PanelAdmin/VerTurnos/TurnoFilterControls';
+import TurnoList from '@/components/PanelAdmin/VerTurnos/TurnoList';
+import SearchBar from '@/components/PanelAdmin/VerTurnos/TurnoSearchBar';
 import { Button } from '@/components/ui/button';
 
 function VerTurnos() {

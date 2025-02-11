@@ -1,5 +1,5 @@
 import React from 'react';
-import TurnoCard from '@/components/TurnoCard';
+import TurnoCard from '@/components/PanelAdmin/VerTurnos/TurnoCard';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 

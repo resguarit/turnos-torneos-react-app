@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, CreditCard, Clock, User, DollarSign, CheckCircle, XCircle, MinusCircle } from "lucide-react";
@@ -14,7 +14,11 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showChangeModal, setShowChangeModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
-  const fechaFormateada = format(new Date(turno.fecha_turno), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es });
+  
+  // Fix date formatting by using parseISO
+  const fechaFormateada = format(parseISO(turno.fecha_turno), "EEEE, d 'de' MMMM 'de' yyyy", { 
+    locale: es 
+  });
   const señaPorcentaje = turno.cancha ? (turno.monto_seña / turno.monto_total) * 100 : 0;
   const navigate = useNavigate();
 

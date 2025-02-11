@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Calendar, MapPin, User, Clock, CreditCard } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "react-toastify";
 
 export default function NuevaReserva() {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -30,6 +31,8 @@ export default function NuevaReserva() {
   const [loadingCancha, setLoadingCancha] = useState(false);
   const [user, setUser] = useState(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [username, setUsername] = useState('');
+  const [dni, setDni] = useState('');
 
   const navigate = useNavigate();
   const carouselRef = useRef(null); // Referencia para el carrusel
@@ -121,66 +124,53 @@ export default function NuevaReserva() {
     setShowModal(true);
   };
 
-  const confirmSubmit = async () => {
-    setConfirmLoading(true);
-    const userId = localStorage.getItem('user_id');
+  // Modificar la función confirmSubmit
+const confirmSubmit = async () => {
+  setConfirmLoading(true);
+  try {
+    const formattedDate = format(selectedDate, 'yyyy-MM-dd');
     
-    if (!userId) {
-        const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-        navigate(`/confirmar-turno?time=${selectedTime}&date=${formattedDate}&court=${selectedCourt.id}`);
-        setConfirmLoading(false);
-        return;
+    // Crear bloqueo temporal
+    const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
+      fecha: formattedDate,
+      horario_id: selectedTime,
+      cancha_id: selectedCourt.id
+    });
+
+    console.log('Respuesta del bloqueo:', bloqueoResponse.data);
+
+    if (bloqueoResponse.status === 201) {
+      // Guardar datos del bloqueo usando la estructura correcta de la respuesta
+      localStorage.setItem('bloqueoTemp', JSON.stringify({
+        id: bloqueoResponse.data.bloqueo.id,
+        fecha: bloqueoResponse.data.bloqueo.fecha,
+        horario_id: bloqueoResponse.data.bloqueo.horario_id,
+        cancha_id: bloqueoResponse.data.bloqueo.cancha_id,
+        expira_en: bloqueoResponse.data.bloqueo.expira_en
+      }));
+      
+      localStorage.setItem('reservaTemp', JSON.stringify({
+        fecha: formattedDate,
+        horario_id: selectedTime,
+        cancha_id: selectedCourt.id,
+        monto_total: selectedCourt.precio_por_hora,
+        monto_seña: selectedCourt.seña
+      }));
+
+      // Verificar que se guardó correctamente
+      const savedBloqueo = localStorage.getItem('bloqueoTemp');
+      console.log('Bloqueo guardado:', JSON.parse(savedBloqueo));
+
+      setShowModal(false);
+      navigate('/bloqueo-reserva');
     }
-
-    try {
-      // Primero verificar disponibilidad
-      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-       const disponibilidadResponse = await api.get(`/disponibilidad/cancha?fecha=${formattedDate}&horario_id=${selectedTime}`);
-      const canchaDisponible = disponibilidadResponse.data.canchas.some(
-          cancha => cancha.id === selectedCourt.id && cancha.disponible
-      );
-
-      /*  if (!canchaDisponible) {
-          setError('El turno ya no está disponible');
-          return;
-      } */
-  
-      // Crear bloqueo temporal
-      const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
-          fecha: formattedDate,
-          horario_id: selectedTime,
-          cancha_id: selectedCourt.id
-      });
-
-      if (bloqueoResponse.status === 201) {
-          try {
-              // Crear reserva
-              const response = await api.post('/turnos/turnounico', {
-                  fecha_turno: formattedDate,
-                  cancha_id: selectedCourt.id,
-                  horario_id: selectedTime,
-                  estado: 'Pendiente'
-              });
-              
-              if (response.status === 201) {
-                  navigate('/user-profile');
-              }
-          } catch (reservaError) {
-              // Si falla la creación de la reserva, liberar el bloqueo temporal
-              await api.delete(`/turnos/bloqueotemporal/${bloqueoResponse.data.id}`);
-              throw reservaError;
-          }
-      }
   } catch (error) {
-      console.error("Error en la reserva:", error);
-      setError(
-          error.response?.data?.message || 
-          'Error al crear la reserva. Por favor, intente nuevamente.'
-      );
+    console.error('Error completo:', error);
+    toast.error(error.response?.data?.message || 'Error al crear el bloqueo temporal');
   } finally {
     setConfirmLoading(false);
   }
-  };
+};
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -189,7 +179,7 @@ export default function NuevaReserva() {
         try {
           const response = await api.get(`/usuarios/${userId}`);
           const user = response.data;
-          setUsername(user.nombre); // Asumiendo que el nombre del usuario está en la propiedad 'nombre'
+          setUsername(user.name); // Asumiendo que el nombre del usuario está en la propiedad 'nombre'
           setDni(user.dni); // Asumiendo que el DNI del usuario está en la propiedad 'dni'
         } catch (error) {
           console.error('Error fetching user details:', error);

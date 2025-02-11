@@ -49,8 +49,8 @@ const PestanaDashboard = () => {
         ]);
 
         setMetricasSecundarias([
-          { etiqueta: 'Pista Más Popular', valor: `${canchaMasPopularRes.data.tipo} ${canchaMasPopularRes.data.nro}`, descripcion: 'La cancha con más reservas' },
-          { etiqueta: 'Horas Punta', valor: horasPuntaRes.data.hora_pico, descripcion: 'Hora del día con más reservas' }
+          { etiqueta: 'Cancha Más Popular', valor: `Nº${canchaMasPopularRes.data.nro} - ${canchaMasPopularRes.data.tipo} `, descripcion: 'La cancha con más reservas' },
+          { etiqueta: 'Horas Pico', valor: horasPuntaRes.data.hora_pico, descripcion: 'Hora del día con más reservas' }
         ]);
 
         setLoading(false);
@@ -76,18 +76,18 @@ const PestanaDashboard = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <h1 className="text-xl">Metricas del mes actual respecto al mes anterior</h1>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-6 mt-4">
+      <h1 className="text-base sm:text-lg text-gray-700">Metricas del mes actual respecto al mes anterior</h1>
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {metricas.map((metrica) => (
           <TarjetaMetrica key={metrica.etiqueta} metrica={metrica} />
         ))}
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg shadow p-3">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Reservas Mensuales</h3>
         <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" >
             <LineChart data={datos}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="nombre" />
@@ -100,9 +100,9 @@ const PestanaDashboard = () => {
       </div>
 
       <div>
-        <h1 className="text-xl">Metricas historicas</h1>
+        <h1 className="text-base sm:text-lg text-gray-700">Metricas historicas</h1>
       </div>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {metricasSecundarias.map((metrica) => (
           <TarjetaMetrica key={metrica.etiqueta} metrica={metrica} />
         ))}

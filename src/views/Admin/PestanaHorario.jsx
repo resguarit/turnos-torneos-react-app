@@ -313,8 +313,8 @@ const PestanaHorario = () => {
       <div>
         <ToastContainer position="top-right" />
         {/* Botones arriba */}
-        <div className="flex justify-end mb-4 mt-2">
-          <div className="ml-auto">
+        <div className="flex justify-end mb-4 mt-4">
+          <div className="">
             {showError ? (
               <div className="bg-red-50 border-l-4 border-red-500 p-4 flex flex-col">
                 <p className="text-red-700 font-medium">Error al deshabilitar franja horaria</p>
@@ -325,7 +325,7 @@ const PestanaHorario = () => {
             ) : (
               <button
                 onClick={() => setShowDisableModal(true)}
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md font-medium transition-colors mr-2"
+                className="px-3 sm:text-base text-sm py-2 bg-red-600 hover:bg-red-600 text-white rounded-[10px]  transition-colors mr-2"
               >
                 Deshabilitar franja horaria
               </button>
@@ -333,30 +333,30 @@ const PestanaHorario = () => {
           </div>
           <button
             onClick={hasChanges ? handleSubmitConfig : () => setShowConfigModal(true)}
-            className={`px-4 py-2 ${
-              hasChanges ? "bg-green-500 hover:bg-green-600" : "bg-blue-600 hover:bg-blue-700"
-            } text-white rounded-md font-medium transition-colors`}
+            className={`px-3 sm:text-base text-sm py-2 ${
+              hasChanges ? "bg-green-600  hover:bg-green-600" : "bg-blue-600 hover:bg-blue-700"
+            } text-white  rounded-[10px] transition-colors`}
           >
             {hasChanges ? "Aplicar cambios" : "Configurar Horarios"}
           </button>
         </div>
 
         {/* Tabla de horarios */}
-        <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+        <div className="overflow-x-auto rounded-[8px]">
+        <table className="min-w-full divide-y divide-gray-200  ">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Día</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Hora Inicio</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Hora Fin</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Acciones</th>
+              <th className="px-4 py-1 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Día</th>
+              <th className="px-4 py-1 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Hora Inicio</th>
+              <th className="px-4 py-1 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Hora Fin</th>
+              <th className="px-4 py-1 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Acciones</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {schedules.map((schedule) => (
               <tr key={schedule.id} className={!schedule.enabled ? "opacity-50" : ""}>
-                <td className="px-6 py-4 whitespace-nowrap w-1/4">{schedule.day}</td>
-                <td className="px-6 py-4 whitespace-nowrap w-1/4">
+                <td className="px-5 sm:px-6 text-sm sm:text-base  py-2 sm:py-4 whitespace-nowrap w-1/4">{schedule.day}</td>
+                <td className="px-5 sm:px-6 py-2 text-sm sm:text-base sm:py-4 whitespace-nowrap w-1/4">
                   <select
                     disabled={!schedule.enabled}
                     value={schedule.start}
@@ -371,7 +371,7 @@ const PestanaHorario = () => {
                     ))}
                   </select>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap w-1/4">
+                <td className="px-5 sm:px-6 text-sm sm:text-base  py-2 sm:py-4 whitespace-nowrap w-1/4">
                   <select
                     value={schedule.end}
                     onChange={(e) => handleScheduleChange(schedule.id, "end", e.target.value)}
@@ -385,7 +385,7 @@ const PestanaHorario = () => {
                     ))}
                   </select>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap w-1/4 space-x-3 flex items-center">
+                <td className="px-5 sm:px-6 text-sm sm:text-base  py-2 sm:py-4 whitespace-nowrap w-1/4 space-x-3 flex items-center">
                   <Switch
                     checked={schedule.enabled}
                     onCheckedChange={() => toggleHorario(schedule.id)}
@@ -394,7 +394,7 @@ const PestanaHorario = () => {
                       schedule.enabled && schedule.start && schedule.end 
                         ? "!bg-green-500" 
                         : "!bg-red-500"
-                    } relative inline-flex h-7 w-12 items-center rounded-full ${
+                    } relative inline-flex h-5 sm:h-7 sm:w-12 items-center rounded-full ${
                       (!schedule.start || !schedule.end) ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
@@ -411,7 +411,7 @@ const PestanaHorario = () => {
         </table>
         </div>
         <Collapsible className="mt-4" open={isCollapsibleOpen} onOpenChange={handleCollapsibleOpen}>
-          <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4 font-medium">
+          <CollapsibleTrigger className="flex w-full items-center justify-between rounded-t-xl text-sm md:text-base border p-4 font-medium">
             Franjas horarias deshabilitadas
             <ChevronDown className="h-5 w-5" />
           </CollapsibleTrigger>
@@ -430,35 +430,35 @@ const PestanaHorario = () => {
                     return acc;
                   }, {})
                 ).map(([dia, franjas]) => (
-                  <Collapsible key={dia} className="mb-4">
-                    <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4  bg-red-50">
+                  <Collapsible key={dia} className="mb-4 ">
+                    <CollapsibleTrigger className="flex w-full items-center justify-between rounded-b-xl text-sm md:text-base border p-4  bg-red-50">
                       {dia}
                       <ChevronDown className="h-5 w-5" />
                     </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <table className="min-w-full divide-y divide-gray-200">
+                    <CollapsibleContent className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200 overflow-x-auto">
                         <thead>
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/3">Hora Inicio</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/3">Hora Fin</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/3">Acciones</th>
+                            <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/3">Hora Inicio</th>
+                            <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/3">Hora Fin</th>
+                            <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/3">Acciones</th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                           {franjas.map((range, index) => (
                             <tr key={index} className="bg-red-50">
-                              <td className="px-6 py-4 whitespace-nowrap w-1/3">
+                              <td className="px-4 sm:px-6 py-4 text-sm sm:text-base whitespace-nowrap w-1/3">
                                 {range.hora_inicio ? range.hora_inicio.slice(0, 5) : ''}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap w-1/3">
+                              <td className="px-4 sm:px-6 py-4 text-sm sm:text-base whitespace-nowrap w-1/3">
                                 {range.hora_fin ? range.hora_fin.slice(0, 5) : ''}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap w-1/3">
+                              <td className="px-4 sm:px-6 py-4 whitespace-nowrap w-1/3">
                                 <button
-                                  className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                                  className="px-4 py-2 text-sm sm:text-base bg-green-500 text-white rounded-[10px] hover:bg-green-600"
                                   onClick={() => handleEnableRange(range)}
                                 >
-                                  Habilitar franja horaria
+                                  Habilitar Franja 
                                 </button>
                               </td>
                             </tr>
@@ -478,8 +478,8 @@ const PestanaHorario = () => {
         {/* Modal para deshabilitar franja específica */}
         {showDisableModal && (
           <div className="fixed inset-0 flex items-center justify-center z-10 bg-gray-900 bg-opacity-50">
-            <div className="bg-white rounded-md p-6 w-80">
-              <h2 className="text-lg font-bold mb-4">Deshabilitar franja horaria</h2>
+            <div className="bg-white rounded-xl p-4 md:p-6 w-60 md:w-80">
+              <h2 className="text-base md:text-lg font-bold mb-4">Deshabilitar franja horaria</h2>
 
               {showError && (
                 <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4">
@@ -490,10 +490,10 @@ const PestanaHorario = () => {
                 </div>
               )}
 
-              <label className="block mb-2">
+              <label className="block mb-2 ">
                 Día:
                 <select
-                  className="border rounded px-2 py-1 w-full"
+                  className="border rounded-[8px] px-2 py-1 w-full"
                   value={disableDay}
                   onChange={(e) => setDisableDay(e.target.value)}
                 >
@@ -507,7 +507,7 @@ const PestanaHorario = () => {
               <label className="block mb-2">
                 Hora inicio:
                 <select
-                  className="border rounded9 px-2 py-1 w-full"
+                  className="border rounded-[8px] px-2 py-1 w-full"
                   value={disableStart}
                   onChange={(e) => setDisableStart(e.target.value)}
                 >
@@ -521,7 +521,7 @@ const PestanaHorario = () => {
               <label className="block mb-4">
                 Hora fin:
                 <select
-                  className="border rounded px-2 py-1 w-full"
+                  className="border rounded-[8px] px-2 py-1 w-full"
                   value={disableEnd}
                   onChange={(e) => setDisableEnd(e.target.value)}
                 >
@@ -532,16 +532,16 @@ const PestanaHorario = () => {
                   ))}
                 </select>
               </label>
-              <div className="flex justify-end space-x-3">
+              <div className="flex justify-between space-x-3">
                 <button
                   onClick={() => setShowDisableModal(false)}
-                  className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+                  className="px-4 py-2 text-sm md:text-base bg-gray-200 rounded-[8px] hover:bg-gray-300"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleDisableRange}
-                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                  className="px-4 py-2 text-sm md:text-base bg-red-500 text-white rounded-[8px] hover:bg-red-600"
                 >
                   Deshabilitar
                 </button>

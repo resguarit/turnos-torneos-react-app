@@ -123,10 +123,9 @@ const PestanaPistas = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className=" max-w-7xl mx-auto mt-4">
       <ToastContainer position="top-right" />
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Gestión de Canchas</h2>
+      <div className="flex justify-end items-center mb-4">
         <button
           onClick={() => {
             setAgregando(true);
@@ -139,7 +138,7 @@ const PestanaPistas = () => {
               activa: true,
             });
           }}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition-colors duration-200 transform hover:scale-105"
+          className="inline-flex items-center text-sm sm:text-base px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-[10px] shadow transition-colors duration-200 transform hover:scale-105"
           disabled={isSaving}
         >
           <Plus className="h-5 w-5 mr-2" />
@@ -152,7 +151,7 @@ const PestanaPistas = () => {
       ) : (
         <>
           {agregando && (
-            <form onSubmit={editando ? handleEditPista : handleAddPista} className="mb-6 bg-white p-4 rounded-lg shadow">
+            <form onSubmit={editando ? handleEditPista : handleAddPista} className="mb-6 bg-white p-4 rounded-xl shadow">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Número</label>
@@ -208,14 +207,14 @@ const PestanaPistas = () => {
                 <button
                   type="button"
                   onClick={() => setAgregando(false)}
-                  className="mr-4 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  className="mr-4 inline-flex items-center px-4 py-2 border border-gray-300 rounded-[8px] shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                   disabled={isSaving}
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-[8px] shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                   disabled={isSaving}
                 >
                   {isSaving ? 'Guardando...' : (editando ? 'Guardar Cambios' : 'Guardar')}
@@ -224,21 +223,21 @@ const PestanaPistas = () => {
             </form>
           )}
 
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-            <ul className="divide-y divide-gray-100">
+          <div className="bg-white w-full rounded-xl shadow-lg border border-gray-100 overflow-x-auto">
+            <ul className="divide-y divide-gray-100 w-full ">
               {pistas.map((pista) => (
-                <li key={pista.id} className="hover:bg-gray-50 transition-colors duration-150">
-                  <div className="p-6 flex justify-between items-center">
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-orange-500 rounded-lg p-2">
-                        <span className="text-lg font-semibold text-white">{`Cancha ${pista.nro} - ${pista.tipo_cancha}`}</span>
+                <li key={pista.id} className="hover:bg-gray-50 transition-colors duration-150 w-full">
+                  <div className="p-6 flex justify-between items-center space-x-8 sm:space-x-3 ">
+                    <div className="flex  items-center space-x-8 ">
+                      <div className="bg-orange-500 text-center rounded-[8px] p-2">
+                        <span className="text-sm sm:text-base  font-semibold text-white">{`Cancha ${pista.nro} - ${pista.tipo_cancha}`}</span>
                       </div>
-                      <span className="text-gray-600 font-bold">Precio por Hora: <span className="font-normal">${pista.precio_por_hora}</span></span>
-                      <span className="text-gray-600 font-bold">Seña: <span className="font-normal">${pista.seña}</span></span>
-                      <span className="text-gray-600 font-bold">Activa: <span className="font-normal">{pista.activa ? 'Sí' : 'No'}</span></span>
+                      <span className=" text-sm sm:text-base font-bold text-gray-700">Precio por Hora: <span className="font-normal">${pista.precio_por_hora}</span></span>
+                      <span className=" text-sm sm:text-base font-bold text-gray-700">Seña: <span className="font-normal">${pista.seña}</span></span>
+                      <span className=" text-sm sm:text-base font-bold text-gray-700">Activa: <span className="font-normal">{pista.activa ? 'Sí' : 'No'}</span></span>
                     </div>
 
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3 sm:space-x-3">
                       <button onClick={() => handleEditClick(pista)} className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200" disabled={isSaving}>
                         <Edit2 className="h-5 w-5" />
                       </button>
@@ -256,8 +255,8 @@ const PestanaPistas = () => {
             <ModalConfirmation
               onConfirm={handleDeletePista}
               onCancel={() => setPistaToDelete(null)}
-              title="Eliminar Pista"
-              subtitle={`¿Estás seguro de que deseas eliminar la pista ${pistaToDelete.nro}?`}
+              title="Eliminar Cancha"
+              subtitle={`¿Estás seguro de que deseas eliminar la cancha ${pistaToDelete.nro}?`}
               botonText1="Cancelar"
               botonText2="Eliminar"
             />

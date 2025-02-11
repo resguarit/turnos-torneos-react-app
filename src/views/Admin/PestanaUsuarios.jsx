@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Mail, Phone, UserCircle, Calendar, CreditCard, Search } from "lucide-react";
+import { Plus, Edit2, Trash2, Mail, Phone, Eraser, UserCircle, Calendar, CreditCard, Search } from "lucide-react";
 import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -181,12 +181,11 @@ const PestanaUsuarios = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className=" max-w-7xl mx-auto mt-4">
       <ToastContainer position="top-right" />
 
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Gestión de Usuarios</h2>
+      <div className="flex justify-end items-center mb-4">
         <button
           onClick={() => {
             setAgregando(true);
@@ -201,7 +200,7 @@ const PestanaUsuarios = () => {
               rol: 'cliente',
             });
           }}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition-colors duration-200 transform hover:scale-105"
+          className="inline-flex sm:text-base text-sm rounded-[10px] items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow transition-colors duration-200 transform hover:scale-105"
           disabled={isSaving}
         >
           <Plus className="h-5 w-5 mr-2" />
@@ -209,45 +208,53 @@ const PestanaUsuarios = () => {
         </button>
       </div>
 
-      {/* Buscador */}
-      <div className="mb-6 flex gap-4">
-        <div className="relative">
-          <select
-            value={searchType}
-            onChange={(e) => setSearchType(e.target.value)}
-            className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="name">Nombre</option>
-            <option value="dni">DNI</option>
-            <option value="telefono">Teléfono</option>
-            <option value="email">Email</option>
-          </select>
-        </div>
-        <div className="relative flex-1">
-          <input
-            type="text"
-            placeholder={`Buscar por ${searchType}`}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-        </div>
+      <div className="mb-6 flex flex-col sm:flex-row gap-2 sm:gap-4">
+      {/* Selector de búsqueda */}
+      <div className="relative w-full sm:w-1/3">
+        <select
+          value={searchType}
+          onChange={(e) => setSearchType(e.target.value)}
+          className="w-full text-sm sm:text-base px-2 py-1 border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="name">Nombre</option>
+          <option value="dni">DNI</option>
+          <option value="telefono">Teléfono</option>
+          <option value="email">Email</option>
+        </select>
+      </div>
+
+      {/* Input de búsqueda */}
+      <div className="relative flex w-full gap-2">
+        <input
+          type="text"
+          placeholder={`Buscar por ${searchType}`}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full py-1 pl-8 text-sm sm:text-base border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <Search className="absolute left-2 top-2 h-5 w-5 text-gray-400" />
         <button
           onClick={handleSearch}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition-colors duration-200 transform hover:scale-105"
+          className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-green-600 border border-green-600 rounded-[10px] shadow hover:bg-white hover:text-green-600"
           disabled={isSaving}
         >
-          Buscar
+          <Search className="w-5 h-5 sm:hidden" /> {/* Icono en móvil */}
+          <span className="hidden sm:block">Buscar</span> {/* Texto en escritorio */}
         </button>
+
         <button
           onClick={handleClearSearch}
-          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow transition-colors duration-200 transform hover:scale-105"
+          className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-red-600 border border-red-600 rounded-[10px] shadow hover:bg-white hover:text-red-600"
           disabled={isSaving}
         >
-          Limpiar Búsqueda
+          <Eraser className="w-5 h-5 sm:hidden"/>
+          <span className="hidden sm:block">Limpiar </span> {/* Texto en escritorio */}
         </button>
       </div>
+
+     
+    </div>
+
 
       {/* Loading */}
       {loading && <LoadingSinHF />}

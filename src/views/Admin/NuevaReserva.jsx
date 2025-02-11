@@ -124,53 +124,64 @@ export default function NuevaReserva() {
     setShowModal(true);
   };
 
-  // Modificar la función confirmSubmit
-const confirmSubmit = async () => {
-  setConfirmLoading(true);
-  try {
-    const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+  const confirmSubmit = async () => {
+    const token = localStorage.getItem('token');
     
-    // Crear bloqueo temporal
-    const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
-      fecha: formattedDate,
-      horario_id: selectedTime,
-      cancha_id: selectedCourt.id
-    });
-
-    console.log('Respuesta del bloqueo:', bloqueoResponse.data);
-
-    if (bloqueoResponse.status === 201) {
-      // Guardar datos del bloqueo usando la estructura correcta de la respuesta
-      localStorage.setItem('bloqueoTemp', JSON.stringify({
-        id: bloqueoResponse.data.bloqueo.id,
-        fecha: bloqueoResponse.data.bloqueo.fecha,
-        horario_id: bloqueoResponse.data.bloqueo.horario_id,
-        cancha_id: bloqueoResponse.data.bloqueo.cancha_id,
-        expira_en: bloqueoResponse.data.bloqueo.expira_en
-      }));
-      
+    if (!token) {
+      // Si no está logueado, guardar datos y redirigir
       localStorage.setItem('reservaTemp', JSON.stringify({
-        fecha: formattedDate,
+        fecha: format(selectedDate, 'yyyy-MM-dd'),
         horario_id: selectedTime,
         cancha_id: selectedCourt.id,
         monto_total: selectedCourt.precio_por_hora,
         monto_seña: selectedCourt.seña
       }));
-
-      // Verificar que se guardó correctamente
-      const savedBloqueo = localStorage.getItem('bloqueoTemp');
-      console.log('Bloqueo guardado:', JSON.parse(savedBloqueo));
-
       setShowModal(false);
-      navigate('/bloqueo-reserva');
+      // Agregar los parámetros a la URL
+      navigate(`/confirmar-turno?time=${selectedTime}&date=${format(selectedDate, 'yyyy-MM-dd')}&court=${selectedCourt.id}`);
+      return;
     }
-  } catch (error) {
-    console.error('Error completo:', error);
-    toast.error(error.response?.data?.message || 'Error al crear el bloqueo temporal');
-  } finally {
-    setConfirmLoading(false);
-  }
-};
+  
+    // Si está logueado, proceder con el bloqueo temporal
+    setConfirmLoading(true);
+    try {
+      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+      
+      const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
+        fecha: formattedDate,
+        horario_id: selectedTime,
+        cancha_id: selectedCourt.id
+      });
+  
+      console.log('Respuesta del bloqueo:', bloqueoResponse.data);
+  
+      if (bloqueoResponse.status === 201) {
+        localStorage.setItem('bloqueoTemp', JSON.stringify({
+          id: bloqueoResponse.data.bloqueo.id,
+          fecha: bloqueoResponse.data.bloqueo.fecha,
+          horario_id: bloqueoResponse.data.bloqueo.horario_id,
+          cancha_id: bloqueoResponse.data.bloqueo.cancha_id,
+          expira_en: bloqueoResponse.data.bloqueo.expira_en
+        }));
+        
+        localStorage.setItem('reservaTemp', JSON.stringify({
+          fecha: formattedDate,
+          horario_id: selectedTime,
+          cancha_id: selectedCourt.id,
+          monto_total: selectedCourt.precio_por_hora,
+          monto_seña: selectedCourt.seña
+        }));
+  
+        setShowModal(false);
+        navigate('/bloqueo-reserva');
+      }
+    } catch (error) {
+      console.error('Error completo:', error);
+      toast.error(error.response?.data?.message || 'Error al crear el bloqueo temporal');
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchUserDetails = async () => {

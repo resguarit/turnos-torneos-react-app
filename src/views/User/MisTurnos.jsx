@@ -47,7 +47,7 @@ export default function MisTurnos() {
   return (
     <div className="flex flex-col">
       <ToastContainer position="top-right" />
-      <main className="flex-grow bg-gray-100">
+      <main className="flex-grow bg-gray-100 p-1 md:p-6">
         <ListaMisTurnos 
           turnos={turnosPrueba} 
           onTurnoCanceled={fetchTurnos}  

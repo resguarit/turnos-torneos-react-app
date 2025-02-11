@@ -69,9 +69,9 @@ export default function UserProfile() {
             </Button>
           </div>
           </div>
-          <Card className="border-0 shadow-none">
-            <CardContent>{renderSection()}</CardContent>
-          </Card>
+          <div className="border-0 shadow-none">
+           {renderSection()} 
+          </div>
         </div>
       </main>
       <Footer />

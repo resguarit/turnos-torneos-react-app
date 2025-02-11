@@ -14,7 +14,6 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showChangeModal, setShowChangeModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
-  
   // Fix date formatting by using parseISO
   const fechaFormateada = format(parseISO(turno.fecha_turno), "EEEE, d 'de' MMMM 'de' yyyy", { 
     locale: es 
@@ -56,38 +55,40 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
 
   return (
     <div className="flex justify-center">
-      <Card className="mb-4 p-4 border rounded-lg shadow w-1/2">
-        <CardContent>
-          <h2 className="text-lg font-bold text-left">Detalles de la Reserva</h2>
+      <Card className="mb-4 p-4 border rounded-lg shadow w-full md:w-1/2">
+        <CardContent className="p-2 md:p-6">
+          <h2 className="md:text-lg font-bold text-center md:text-left">Detalles de la Reserva</h2>
           <p className="text-sm text-center text-gray-600 mb-4">{turno.ubicacion}</p>
 
-          <div className="grid grid-cols-2 gap-4 py-2">
+          <hr className="my-2" />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
             <div>
               <div className="flex items-center gap-2 pb-1">
                 <Calendar className="w-4 h-4" />
-                <p className="text-sm font-semibold">Fecha y Hora del Turno</p>
+                <p className="text-xs md:text-sm font-semibold">Fecha y Hora del Turno</p>
               </div>
-              <p className="text-sm">{fechaFormateada}</p>
-              <p className="text-sm">{turno.horario.hora_inicio} - {turno.horario.hora_fin}</p>
+              <p className="text-xs md:text-sm">{fechaFormateada}</p>
+              <p className="text-xs md:text-sm">{turno.horario.hora_inicio} - {turno.horario.hora_fin}</p>
             </div>
             <div>
               <div className="flex items-center gap-2 pb-1">
                 <Clock className="w-4 h-4" />
-                <p className="text-sm font-semibold">Duración y Cancha</p>
+                <p className="text-xs md:text-sm font-semibold">Duración y Cancha</p>
               </div>
-              <p className="text-sm">60 min | {turno.cancha.tipo_cancha} #{turno.cancha.nro}</p>
+              <p className="text-xs md:text-sm">60 min | {turno.cancha.tipo_cancha} #{turno.cancha.nro}</p>
             </div>
           </div>
 
           <hr className="my-2" />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <div className="flex items-center gap-2 pb-1">
                 <User className="w-4 h-4" />
-                <p className="text-sm font-semibold">Reservado por</p>
+                <p className="text-xs md:text-sm font-semibold">Reservado por</p>
               </div>
-              <p className="text-sm">{turno.usuario.nombre} - DNI: {turno.usuario.dni}</p>
+              <p className="text-xs md:text-sm">{turno.usuario.nombre} - DNI: {turno.usuario.dni}</p>
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -100,9 +101,9 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
                 ) : (
                   <CheckCircle className="w-4 h-4 text-green-500" />
                 )}
-                <p className="text-sm font-semibold">Estado</p>
+                <p className="text-xs md:text-sm font-semibold">Estado</p>
               </div>
-              <p className="text-sm pt-1">{turno.estado}</p>
+              <p className="text-xs md:text-sm pt-1">{turno.estado}</p>
             </div>
           </div>
 
@@ -113,7 +114,7 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
               <h4 className="text-sm font-semibold">Resumen de Pago</h4>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <div className="flex items-center gap-2">
                 <p className="text-sm font-semibold">Total</p>
@@ -132,11 +133,11 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
             </div>
           </div>
 
-          <div className="flex justify-between">
+          <div className="flex flex-col-reverse lg:flex-row justify-between gap-2">
             {turno.estado !== "Cancelado" && showCancelButton && (
               <Button
                 onClick={() => setShowCancelModal(true)}
-                className="mt-4 w-1/4 bg-red-500 text-white hover:bg-red-600"
+                className="mt-4 w-full lg:w-1/2 bg-red-500 text-white hover:bg-red-600"
               >
                 Cancelar Turno
               </Button>
@@ -144,7 +145,7 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
             {showModifyButton && turno.estado !== "Cancelado" && (
               <Button
                 onClick={() => setShowChangeModal(true)}
-                className="mt-4 w-1/3 bg-green-500 text-white hover:bg-green-600"
+                className="mt-4 min-w-fit w-full lg:w-1/2 py-2 bg-green-500 text-white hover:bg-green-600"
               >
                 Solicitar Cambio del Turno  
               </Button>

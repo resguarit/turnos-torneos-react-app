@@ -5,14 +5,14 @@ import TurnoList from "./TurnoList";
 const TurnoTabs = ({ turnosProximos, turnosAnteriores, turnosCancelados, onTurnoCanceled }) => {
   return (
     <Tabs defaultValue="proximos" className="w-full">
-      <TabsList className="flex justify-center space-x-4 border-b p-2">
-        <TabsTrigger value="proximos" className="px-4 py-2 font-semibold border-b-2 border-transparent data-[state=active]:border-blue-500">
+      <TabsList className="flex justify-center space-x-2 md:space-x-4 border-b p-2">
+        <TabsTrigger value="proximos" className="px-2 md:px-4 py-2 font-semibold border-b-2 border-transparent data-[state=active]:border-blue-500">
           Turnos Próximos
         </TabsTrigger>
-        <TabsTrigger value="anteriores" className="px-4 py-2 font-semibold border-b-2 border-transparent data-[state=active]:border-blue-500">
+        <TabsTrigger value="anteriores" className="px-2 md:px-4 py-2 font-semibold border-b-2 border-transparent data-[state=active]:border-blue-500">
           Turnos Anteriores
         </TabsTrigger>
-        <TabsTrigger value="cancelados" className="px-4 py-2 font-semibold border-b-2 border-transparent data-[state=active]:border-blue-500">
+        <TabsTrigger value="cancelados" className="px-2 md:px-4 py-2 font-semibold border-b-2 border-transparent data-[state=active]:border-blue-500">
           Turnos Cancelados
         </TabsTrigger>
       </TabsList>

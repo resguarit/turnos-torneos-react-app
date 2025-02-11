@@ -268,7 +268,7 @@ export default function ConfirmarTurno() {
                             <p className="text-sm text-gray-500">Fecha y Hora</p>
                             <div className="flex full justify-between items-center">
                               <p className="font-medium text-xs md:text-sm">{selectedDate}</p>
-                              <p className="font-medium text-xs md:text-sm"> </p>
+                              <p className="font-medium text-xs md:text-sm">{reservationDetails.horario.hora_inicio} - {reservationDetails.horario.hora_fin} </p>
                             </div>
                           </div>
                         </div>

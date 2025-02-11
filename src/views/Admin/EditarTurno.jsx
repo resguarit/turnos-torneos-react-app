@@ -52,7 +52,6 @@ function EditarTurno() {
       try {
         const response = await api.get(`/turnos/${id}`);
         const turno = response.data.turno;
-        console.log(turno)
         setBooking(turno);
         setFormData({
           fecha_turno: turno.fecha_turno,
@@ -70,6 +69,8 @@ function EditarTurno() {
           usuario_email: turno.usuario.email,
           tipo_turno: turno.tipo
         });
+        await fetchHorarios(turno.fecha_turno);
+        await fetchCanchas(turno.fecha_turno, response.data.horario_id);
         setLoading(false);
       } catch (error) {
         if (error.response && error.response.status === 404) {
@@ -100,7 +101,7 @@ function EditarTurno() {
       const response = await api.get(`/disponibilidad/cancha?fecha=${fecha}&horario_id=${horarioId}`);
       const canchasDisponibles = response.data.canchas.filter(cancha => cancha.disponible);
       setCanchaOptions(canchasDisponibles);
-    } catch (error) {
+    } catch (error) { 
       toast.error('Error al cargar las canchas');
     }
   };
@@ -112,7 +113,7 @@ function EditarTurno() {
     });
   };
 
-  const handleDateChange = (date) => {
+  const handleDateChange = async (date) => {
     const formattedDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().split('T')[0];
     setFormData({
       ...formData,
@@ -120,17 +121,17 @@ function EditarTurno() {
       horario_id: '', // Deseleccionar la hora
       cancha_id: '' // Deseleccionar la cancha
     });
-    fetchHorarios(formattedDate);
+    await fetchHorarios(formattedDate);
     setIsOpen(false); // Cerrar el calendario después de seleccionar una fecha
   };
 
-  const handleHorarioChange = (value) => {
+  const handleHorarioChange = async (value) => {
     setFormData({
       ...formData,
       horario_id: value,
       cancha_id: '' // Deseleccionar la cancha
     });
-    fetchCanchas(formData.fecha_turno, value);
+    await fetchCanchas(formData.fecha_turno, value);
   };
 
   const toggleCalendar = () => {

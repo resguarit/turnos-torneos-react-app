@@ -6,17 +6,13 @@ import App from "../App";
 import TorneosA from "../views/Admin/TorneosA";
 import ZonasA from "../views/Admin/ZonasA";
 import AltaZona from "@/views/Admin/AltaZona";
-import Calendario from "@/views/Admin/Calendario";
 import VerTurnos from "@/views/Admin/VerTurnos";
-import HorariosReserva from "@/views/Admin/HorariosReserva";
-import CanchasReserva from "@/views/Admin/CanchasReserva";
 import Partidos from "@/views/Admin/Partidos";
 import VerPartidos from "@/views/Admin/VerPartidos";
 import CargaPartido from "@/views/Admin/CargaPartido";
 import Reglamento from "@/views/Admin/Reglamento";
 import Premios from "@/views/Admin/Premios";
 import VerGrilla from "@/views/Admin/VerGrilla";
-import PerfilUsuario from "@/views/General/PerfilUsuario";
 import Login from "@/views/General/Login";
 import SignUp from "@/views/General/SignUp";
 import EditarTurno from "@/views/Admin/EditarTurno";
@@ -111,38 +107,6 @@ const AppRoutes = () => {
         />
 
         {/* Rutas protegidas para usuarios y administradores */}
-        <Route
-          path="/calendario-admi"
-          element={
-            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
-              <Calendario />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/horariosReserva/:date"
-          element={
-            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
-              <HorariosReserva />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/canchas-reserva"
-          element={
-            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
-              <CanchasReserva />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/perfil-usuario"
-          element={
-            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
-              <PerfilUsuario />
-            </ProtectedRoute>
-          }
-        />
         <Route
           path="/user-profile"
           element={

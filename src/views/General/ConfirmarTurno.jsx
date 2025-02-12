@@ -85,9 +85,9 @@ export default function ConfirmarTurno() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      setLoading(true); // Iniciar estado de carga
+      setLoading(true);
       try {
-        // Step 1: Register User
+        // Registrar usuario
         const registerResponse = await api.post('/register', {
           name: formData.name,
           dni: formData.dni,
@@ -98,58 +98,49 @@ export default function ConfirmarTurno() {
         });
 
         if (registerResponse.status === 201) {
-          try {
-            // Step 2: Login
-            const loginResponse = await api.post('/login', {
-              dni: formData.dni,
-              password: formData.password
+          // Login automático
+          const loginResponse = await api.post('/login', {
+            dni: formData.dni,
+            password: formData.password
+          });
+
+          if (loginResponse.data.token) {
+            // Guardar datos del usuario
+            localStorage.setItem('user_id', loginResponse.data.user_id);
+            localStorage.setItem('username', loginResponse.data.username);
+            localStorage.setItem('token', loginResponse.data.token);
+            localStorage.setItem('user_role', loginResponse.data.rol);
+
+            // Configurar token
+            api.defaults.headers.common['Authorization'] = `Bearer ${loginResponse.data.token}`;
+
+            // Crear bloqueo temporal
+            const reservaTemp = JSON.parse(localStorage.getItem('reservaTemp'));
+            const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
+              fecha: reservaTemp.fecha,
+              horario_id: reservaTemp.horario_id,
+              cancha_id: reservaTemp.cancha_id
             });
 
-            if (loginResponse.data.token) {
-              // Store user data
-              localStorage.setItem('user_id', loginResponse.data.user_id);
-              localStorage.setItem('username', loginResponse.data.username);
-              localStorage.setItem('token', loginResponse.data.token);
-              localStorage.setItem('user_role', loginResponse.data.rol);
+            if (bloqueoResponse.status === 201) {
+              // Guardar datos del bloqueo
+              localStorage.setItem('bloqueoTemp', JSON.stringify({
+                id: bloqueoResponse.data.bloqueo.id,
+                fecha: bloqueoResponse.data.bloqueo.fecha,
+                horario_id: bloqueoResponse.data.bloqueo.horario_id,
+                cancha_id: bloqueoResponse.data.bloqueo.cancha_id,
+                expira_en: bloqueoResponse.data.bloqueo.expira_en
+              }));
 
-              // Set token for next request
-              api.defaults.headers.common['Authorization'] = `Bearer ${loginResponse.data.token}`;
-
-              try {
-                // Step 3: Create Reservation
-                const formattedDate = new Date(selectedDate).toISOString().split('T')[0];
-                const reservationResponse = await api.post('/turnos/turnounico', {
-                  fecha_turno: formattedDate,
-                  cancha_id: selectedCourt,
-                  horario_id: selectedTime,
-                  monto_total: reservationDetails.cancha.precio_por_hora,
-                  monto_seña: reservationDetails.cancha.senia,
-                  estado: 'Pendiente'
-                });
-
-                if (reservationResponse.status === 201) {
-                  toast.success('Reserva confirmada exitosamente');
-                  setTimeout(() => {
-                    navigate('/user-profile');
-                  }, 2000); // Esperar 2 segundos antes de redirigir
-                }
-              } catch (reservationError) {
-                // Rollback: Delete user if reservation fails
-                await api.delete(`/users/${loginResponse.data.user_id}`);
-                throw new Error('Error al crear la reserva');
-              }
+              // Redireccionar al contador
+              navigate('/bloqueo-reserva');
             }
-          } catch (loginError) {
-            // Rollback: Delete user if login fails
-            await api.delete(`/users/${registerResponse.data.id}`);
-            throw new Error('Error al iniciar sesión');
           }
         }
       } catch (error) {
-        console.error('Error en la transacción:', error);
-        toast.error(error.message || 'Error al procesar la solicitud');
+        toast.error(error.response?.data?.message || 'Error en el proceso de registro');
       } finally {
-        setLoading(false); // Finalizar estado de carga
+        setLoading(false);
       }
     }
   };
@@ -170,9 +161,9 @@ export default function ConfirmarTurno() {
         </p>
         <Card className="max-w-7xl mx-auto border-0">
           <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <form onSubmit={handleSubmit} className="space-y-2">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 md:gap-6 gap-2 mb-8">
                 <div className="">
                   <Label htmlFor="name" className="text-sm font-semibold">Nombre completo</Label>
                   <input
@@ -257,7 +248,7 @@ export default function ConfirmarTurno() {
                 </button>
               </form>
             
-              <div className="bg-white p-4 rounded-[10px] shadow-lg flex flex-col justify-between ml-20">
+              <div className="bg-white p-4 rounded-[10px] shadow-lg flex flex-col justify-between md:ml-20">
                 <h2 className="text-lg font-bold mb-2">Detalles de la Reserva</h2>
                 {loadingDetails ? (
                   <div className="flex justify-center items-center">
@@ -277,7 +268,7 @@ export default function ConfirmarTurno() {
                             <p className="text-sm text-gray-500">Fecha y Hora</p>
                             <div className="flex full justify-between items-center">
                               <p className="font-medium text-xs md:text-sm">{selectedDate}</p>
-                              <p className="font-medium text-xs md:text-sm"> </p>
+                              <p className="font-medium text-xs md:text-sm">{reservationDetails.horario.hora_inicio} - {reservationDetails.horario.hora_fin} </p>
                             </div>
                           </div>
                         </div>

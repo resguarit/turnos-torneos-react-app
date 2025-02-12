@@ -55,45 +55,50 @@ export default function ConfirmarLogin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      setLoading(true); // Iniciar estado de carga
+      setLoading(true);
       try {
         // Iniciar sesión
         const loginResponse = await api.post('/login', {
           dni: formData.dni,
           password: formData.password
         });
-
+  
         if (loginResponse.data.token) {
-          // Guardar datos del usuario y token
+          // Guardar datos del usuario
           localStorage.setItem('user_id', loginResponse.data.user_id);
           localStorage.setItem('username', loginResponse.data.username);
           localStorage.setItem('token', loginResponse.data.token);
           localStorage.setItem('user_role', loginResponse.data.rol);
           
-          // Configurar token en headers
           api.defaults.headers.common['Authorization'] = `Bearer ${loginResponse.data.token}`;
-
-          // Crear reserva con token
-          const formattedDate = new Date(selectedDate).toISOString().split('T')[0];
-          const reservationResponse = await api.post('/turnos/turnounico', {
-            fecha_turno: formattedDate,
-            cancha_id: selectedCourt,
-            horario_id: selectedTime,
-            usuario_id: loginResponse.data.user_id,
-            estado: 'Pendiente'
+  
+          // Obtener datos de reserva del localStorage
+          const reservaTemp = JSON.parse(localStorage.getItem('reservaTemp'));
+          
+          // Crear bloqueo temporal
+          const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
+            fecha: reservaTemp.fecha,
+            horario_id: reservaTemp.horario_id,
+            cancha_id: reservaTemp.cancha_id
           });
-
-          if (reservationResponse.status === 201) {
-            toast.success('Turno confirmado exitosamente');
-            setTimeout(() => {
-              navigate('/user-profile');
-            }, 2000); // Esperar 2 segundos antes de redirigir
+  
+          if (bloqueoResponse.status === 201) {
+            localStorage.setItem('bloqueoTemp', JSON.stringify({
+              id: bloqueoResponse.data.bloqueo.id,
+              fecha: bloqueoResponse.data.bloqueo.fecha,
+              horario_id: bloqueoResponse.data.bloqueo.horario_id,
+              cancha_id: bloqueoResponse.data.bloqueo.cancha_id,
+              expira_en: bloqueoResponse.data.bloqueo.expira_en
+            }));
+  
+            navigate('/bloqueo-reserva'); // Changed from '/bloqueo-reserva' to '/contador-bloqueo'
           }
         }
       } catch (error) {
-        toast.error(error.response?.data?.message || 'Error al procesar la solicitud');
+        console.error('Error completo:', error);
+        toast.error(error.response?.data?.message || 'Error al iniciar sesión');
       } finally {
-        setLoading(false); // Finalizar estado de carga
+        setLoading(false);
       }
     }
   };
@@ -129,6 +134,38 @@ export default function ConfirmarLogin() {
 
   const señaPercentage = reservationDetails.cancha ? (reservationDetails.cancha.seña / reservationDetails.cancha.precio_por_hora) * 100 : 0;
 
+  useEffect(() => {
+    // Recuperar datos del localStorage
+    const reservaTemp = localStorage.getItem('reservaTemp');
+    if (!reservaTemp) {
+      navigate('/nueva-reserva');
+      return;
+    }
+  
+    const fetchDetails = async () => {
+      try {
+        const reservaData = JSON.parse(reservaTemp);
+        
+        // Obtener detalles del horario
+        const horarioResponse = await api.get(`/horarios/${reservaData.horario_id}`);
+        // Obtener detalles de la cancha
+        const canchaResponse = await api.get(`/canchas/${reservaData.cancha_id}`);
+        
+        setReservationDetails({
+          horario: horarioResponse.data.horario,
+          cancha: canchaResponse.data.cancha
+        });
+      } catch (error) {
+        console.error('Error fetching details:', error);
+        toast.error('Error al cargar los detalles de la reserva');
+      } finally {
+        setLoadingDetails(false);
+      }
+    };
+  
+    fetchDetails();
+  }, [navigate]);
+  
   return (
     <div className="min-h-screen flex flex-col justify-start bg-gray-100 font-inter">
       <Header />
@@ -139,7 +176,7 @@ export default function ConfirmarLogin() {
         </p>
         <Card className="max-w-5xl mx-auto border-0">
           <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <form onSubmit={handleSubmit} className="space-y-8 h-full  flex flex-col">
               <div className="space-y-4">
                 <div className="space-y-1 flex flex-col">
@@ -184,7 +221,7 @@ export default function ConfirmarLogin() {
               </button>
             </form>
 
-            <div className="bg-white p-4 rounded-[10px] shadow-lg flex flex-col justify-between ml-20">
+            <div className="bg-white p-4 rounded-[10px] shadow-lg flex flex-col justify-between md:ml-20">
                 <h2 className="text-lg font-bold mb-2">Detalles de la Reserva</h2>
                 {loadingDetails ? (
                   <div className="flex justify-center items-center">
@@ -204,7 +241,7 @@ export default function ConfirmarLogin() {
                             <p className="text-sm text-gray-500">Fecha y Hora</p>
                             <div className="flex full justify-between items-center">
                               <p className="font-medium text-xs md:text-sm">{selectedDate}</p>
-                              <p className="font-medium text-xs md:text-sm"> </p>
+                              <p className="font-medium text-xs md:text-sm">{reservationDetails.horario.hora_inicio} - {reservationDetails.horario.hora_fin} </p>
                             </div>
                           </div>
                         </div>

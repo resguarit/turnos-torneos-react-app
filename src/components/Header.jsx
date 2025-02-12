@@ -65,11 +65,17 @@ export function Header() {
         <div className="hidden md:flex items-center">
           <div className="flex gap-8 lg:gap-12  font-inter text-sm xl:text-lg">
             <a href="/" className="hover:opacity-80">Inicio</a>
+            {userRole === 'admin' && (
+              <a href="/panel-admin" className="hover:opacity-80 flex items-center gap-1">
+                Administrador 
+              </a>
+            )}
             <a href="/torneos-admi" className="hover:opacity-80">Torneos</a>
             <a href="/nueva-reserva" className="hover:opacity-80">Reservas</a>
             <a href="/partidos" className="hover:opacity-80">Partidos</a>
             <a href="/reglamento" className="hover:opacity-80">Reglamento</a>
             <a href="/premios" className="hover:opacity-80">Premios</a>
+            
             {username ? (
               <div className="relative">
                 <button
@@ -101,21 +107,6 @@ export function Header() {
                       >
                         Mi Panel <UserCog className='w-5'/>
                       </button>
-
-                      {userRole === 'admin' && (
-                        <>
-                          <span className="w-full h-[1px] bg-gray-300 my-2"></span>
-                          <button
-                            onClick={() => {
-                              navigate('/panel-admin');
-                              closeMenu();
-                            }}
-                            className="w-full flex justify-between text-left hover:bg-gray-200 px-2 py-1 rounded-xl"
-                          >
-                            Admin <MonitorCog className='w-5' />
-                          </button>
-                        </> 
-                      )}
                       <span className="w-full h-[1px] bg-gray-300 my-2"></span>
                       <button
                         onClick={() => {

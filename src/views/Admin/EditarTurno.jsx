@@ -211,7 +211,9 @@ function EditarTurno() {
                 </div>
                 <div>
                   <Label className="text-sm md:text-lg  font-bold mb-1 block">Fecha de Reserva:</Label>
-                  <div className="p-1 text-sm md:text-base bg-white rounded-[8px] border">{turnoData.fecha_reserva}</div>
+                  <div className="p-1 text-sm md:text-base bg-white rounded-[8px] border">
+                    {format(parseISO(turnoData.fecha_reserva), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
+                  </div>
                 </div>
                 <div>
                   <Label className="text-sm md:text-lg  font-bold mb-1 block">Tipo de Turno:</Label>

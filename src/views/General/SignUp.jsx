@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Eye, EyeOff } from 'lucide-react';
 
 function SignUp() {
     const [formData, setFormData] = useState({
@@ -16,6 +17,8 @@ function SignUp() {
         password_confirmation: ''
     });
     const [loading, setLoading] = useState(false); // Estado de carga
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -76,6 +79,14 @@ function SignUp() {
         }
     };
 
+    const toggleShowPassword = () => {
+        setShowPassword(!showPassword);
+    };
+
+    const toggleShowConfirmPassword = () => {
+        setShowConfirmPassword(!showConfirmPassword);
+    };
+
     return (
         <div className="min-h-screen w-full relative font-inter">
             <ToastContainer position="top-right" />
@@ -88,58 +99,75 @@ function SignUp() {
                         
                         <form onSubmit={handleSubmit} className="space-y-3">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ">
-                            <input
-                                type="text"
-                                name="name"
-                                placeholder="Nombre Completo"
-                                value={formData.name}
-                                onChange={handleChange}
-                                className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
-                            />
-                            <input
-                                type="email"
-                                name="email"
-                                placeholder="Correo electrónico"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
-                            />
-                            <input
-                                type="tel"
-                                name="telefono"
-                                placeholder="Teléfono"
-                                value={formData.telefono}
-                                onChange={handleChange}
-                                className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
-                            />
-                            <input
-                                type="text"
-                                name="dni"
-                                placeholder="DNI"
-                                value={formData.dni}
-                                onChange={handleChange}
-                                className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
-                            />
+                                <input
+                                    type="text"
+                                    name="name"
+                                    placeholder="Nombre Completo"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Correo electrónico"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                />
+                                <input
+                                    type="tel"
+                                    name="telefono"
+                                    placeholder="Teléfono"
+                                    value={formData.telefono}
+                                    onChange={handleChange}
+                                    className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                />
+                                <input
+                                    type="text"
+                                    name="dni"
+                                    placeholder="DNI"
+                                    value={formData.dni}
+                                    onChange={handleChange}
+                                    className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                />
                             </div>
-                             <p className="text-xs text-gray-500">La contraseña debe tener al menos 8 caracteres</p>
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ">
-                            <input
-                                type="password"
-                                name="password"
-                                placeholder="Contraseña"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
-                            />
-                            
-                            <input
-                                type="password"
-                                name="password_confirmation"
-                                placeholder="Confirmar Contraseña"
-                                value={formData.password_confirmation}
-                                onChange={handleChange}
-                                className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
-                            />
+                            <p className="text-xs text-gray-500">La contraseña debe tener al menos 8 caracteres</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ">
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        name="password"
+                                        placeholder="Contraseña"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={toggleShowPassword}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                    >
+                                        {showPassword ? <EyeOff className='h-5 w-5'/> : <Eye className='h-5 w-5'/>}
+                                    </button>
+                                </div>
+                                <div className="relative">
+                                    <input
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        name="password_confirmation"
+                                        placeholder="Confirmar Contraseña"
+                                        value={formData.password_confirmation}
+                                        onChange={handleChange}
+                                        className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={toggleShowConfirmPassword}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                    >
+                                        {showConfirmPassword ? <EyeOff className='h-5 w-5'/> : <Eye className='h-5 w-5'/>}
+                                    </button>
+                                </div>
                             </div>
                             <button type="submit" className="w-full bg-naranja text-base font-medium rounded-xl p-2 hover:bg-naranja/90 text-white" disabled={loading}>
                                 {loading ? 'Registrando Usuario...' : 'Registrarme'}

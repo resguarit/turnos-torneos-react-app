@@ -6,6 +6,7 @@ import { login } from '@/services/authService';
 import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -18,6 +19,7 @@ const Login = () => {
         identifier: false,
         password: false
     });
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -64,6 +66,10 @@ const Login = () => {
         window.location.href = 'http://127.0.0.1:8000/api/auth/google/redirect';
     };
 
+    const toggleShowPassword = () => {
+        setShowPassword(!showPassword);
+    };
+
     return (
         <div className="min-h-screen w-full relative font-inter">
             <video className="absolute top-0 left-0 w-full h-full object-cover z-10" src={video} autoPlay loop muted></video>
@@ -87,9 +93,9 @@ const Login = () => {
                                     required
                                 />
                             </div>
-                            <div>
+                            <div className="relative">
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     name="password"
                                     placeholder="Contraseña"
                                     value={formData.password}
@@ -99,6 +105,13 @@ const Login = () => {
                                     }`}
                                     required
                                 />
+                                <button
+                                    type="button"
+                                    onClick={toggleShowPassword}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                >
+                                    {showPassword ? <EyeOff className='h-5 w-5'/> : <Eye className='h-5 w-5'/>}
+                                </button>
                             </div>
                             {error && (
                                 <p className="text-red-500 text-sm mt-1">{error}</p>

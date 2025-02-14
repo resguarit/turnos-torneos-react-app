@@ -2,8 +2,37 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { FaTrophy, FaMedal, FaFutbol, FaHandPaper } from "react-icons/fa";
 import rngBlack from "@/assets/rngBlack.mp4";
+import Confetti from 'react-confetti';
+import { useState, useEffect } from 'react';
 
 export default function Premios() {
+  const [windowDimension, setWindowDimension] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
+  const [showConfetti, setShowConfetti] = useState(true);
+
+  useEffect(() => {
+    const detectSize = () => {
+      setWindowDimension({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    window.addEventListener('resize', detectSize);
+
+    // Stop confetti after 8 seconds
+    const timer = setTimeout(() => {
+      setShowConfetti(false);
+    }, 8000);
+
+    return () => {
+      window.removeEventListener('resize', detectSize);
+      clearTimeout(timer);
+    };
+  }, []);
+
   const prizes = [
     {
       title: "Campeón",
@@ -35,6 +64,16 @@ export default function Premios() {
 
   return (
     <div className="relative min-h-screen flex flex-col font-inter">
+      {showConfetti && (
+        <Confetti
+          width={windowDimension.width}
+          height={windowDimension.height}
+          numberOfPieces={200}
+          recycle={true}
+          colors={['#FF6B00', '#FFD700', '#FF69B4', '#4CAF50', '#2196F3']}
+        />
+      )}
+      
       {/* Video de fondo */}
       <video
         className="absolute top-0 left-0 w-full h-full object-cover z-0"

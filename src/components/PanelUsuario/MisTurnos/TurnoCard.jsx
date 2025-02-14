@@ -68,7 +68,7 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
                 <Calendar className="w-4 h-4" />
                 <p className="text-xs md:text-sm font-semibold">Fecha y Hora del Turno</p>
               </div>
-              <p className="text-xs md:text-sm">{fechaFormateada}</p>
+              <p className="text-xs md:text-sm capitalize">{fechaFormateada}</p>
               <p className="text-xs md:text-sm">{turno.horario.hora_inicio} - {turno.horario.hora_fin}</p>
             </div>
             <div>

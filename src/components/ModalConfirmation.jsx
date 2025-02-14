@@ -13,7 +13,7 @@ function ModalConfirmation({ onConfirm, onCancel, title, subtitle, botonText1, b
                 <div className="flex justify-evenly">
                     <button
                         onClick={onCancel}
-                        className="py-1 px-3 bg-white text-naranja border border-naranja text-sm rounded-[10px]  lg:text-base"
+                        className="py-1 px-3 bg-white text-gray-800 border border-gray-800 text-sm rounded-[10px]  lg:text-base"
                     >
                         {botonText1}
                     </button>

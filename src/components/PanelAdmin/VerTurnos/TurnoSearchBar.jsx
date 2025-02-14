@@ -1,7 +1,7 @@
 import React from 'react';
-import { Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search } from 'lucide-react';
 
-const SearchBar = ({ searchType, setSearchType, searchTerm, setSearchTerm, handleFilterToggle, handleSearch, isFilterOpen }) => {
+const SearchBar = ({ searchType, setSearchType, searchTerm, setSearchTerm, handleFilterToggle, handleSearch, isFilterOpen, clearFilters }) => {
   return (
     <div className="w-full flex gap-4">
       <div className="relative w-40">
@@ -34,9 +34,15 @@ const SearchBar = ({ searchType, setSearchType, searchTerm, setSearchTerm, handl
       </button>
       <button
         onClick={() => handleSearch(searchType, searchTerm)}
-        className="h-7 px-3 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-[4px] shadow transition-colors duration-200 transform hover:scale-105"
+        className="h-7  px-3 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-[4px] shadow transition-colors duration-200 transform hover:scale-105"
       >
         Buscar
+      </button>
+      <button
+        onClick={clearFilters}
+        className="h-7 px-3 flex items-center justify-center w-40 text-sm bg-red-600 hover:bg-red-700 text-white rounded-[4px] shadow transition-colors duration-200 transform hover:scale-105"
+      >
+        Borrar Filtros
       </button>
     </div>
   );

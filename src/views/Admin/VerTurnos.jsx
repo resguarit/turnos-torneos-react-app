@@ -230,6 +230,18 @@ function VerTurnos() {
     }
   };
 
+  const clearFilters = () => {
+    setSelectedDate(null);
+    setStartDate(null);
+    setEndDate(null);
+    setSearchType('name');
+    setSearchTerm('');
+    setSelectedCourt('');
+    setSelectedStatus([]);
+    setViewOption('day');
+    fetchTurnos();
+  };
+
   return (
     <>
       <div className="min-h-screen flex flex-col font-inter">
@@ -265,6 +277,7 @@ function VerTurnos() {
                 handleFilterToggle={handleFilterToggle}
                 handleSearch={handleSearch}
                 isFilterOpen={isFilterOpen}
+                clearFilters={clearFilters} // Pass the clearFilters function
               />
               {isFilterOpen && (
                 <FilterControls

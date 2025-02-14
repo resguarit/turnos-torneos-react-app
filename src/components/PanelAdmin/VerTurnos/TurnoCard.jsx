@@ -8,7 +8,7 @@ const TurnoCard = ({ booking, handleDeleteSubmit }) => {
   return (
     <div
       key={booking.id}
-      className="bg-white rounded-lg shadow-sm p-6 space-y-4"
+      className="bg-white rounded-lg shadow-sm p-4 space-y-4"
       style={{ borderRadius: '8px' }}
     >
       <div className="flex justify-between items-start">

@@ -16,7 +16,7 @@ const CourtSelector = ({ loadingCancha, courts, selectedCourt, setSelectedCourt 
             <Button
               key={court.id}
               variant={selectedCourt === court ? "default" : "outline"}
-              className={`h-auto w-[80%] lg:w-auto flex rounded-[8px] flex-col items-start p-2 md:p-4 ${
+              className={`h-auto w-[80%] border border-gray-400 lg:w-auto flex rounded-[8px] flex-col items-start p-2 md:p-4 ${
                 selectedCourt === court ? "bg-naranja hover:bg-naranja/90 text-white" : ""
               }`}
               onClick={() => setSelectedCourt(court)}

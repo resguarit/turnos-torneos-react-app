@@ -9,7 +9,7 @@ import api from '@/lib/axiosConfig';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { MapPin, Calendar, Clock, CreditCard } from 'lucide-react';
+import { MapPin, Calendar, Clock, CreditCard, Eye, EyeOff } from 'lucide-react';
 import Loading from '@/components/LoadingSinHF';
 
 export default function ConfirmarTurno() {
@@ -28,6 +28,8 @@ export default function ConfirmarTurno() {
     cancha: null
   });
   const [loadingDetails, setLoadingDetails] = useState(true); // Estado de carga para los detalles de la reserva
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -151,6 +153,14 @@ export default function ConfirmarTurno() {
   
   const señaPercentage = reservationDetails.cancha ? (reservationDetails.cancha.seña / reservationDetails.cancha.precio_por_hora) * 100 : 0;
 
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleShowConfirmPassword = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
   return (
     <div className="min-h-screen flex flex-col justify-start bg-gray-100 font-inter">
       <Header />
@@ -213,26 +223,40 @@ export default function ConfirmarTurno() {
                   />
                 </div>
 
-                <div className="">
+                <div className="relative">
                   <Label htmlFor="password" className="text-sm font-semibold">Contraseña</Label>
                   <input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className={`w-full text-black text-lg border-2 border-gray-300 rounded-[8px] ${errors.password ? 'border-red-500' : ''}`}
                   />
+                  <button
+                    type="button"
+                    onClick={toggleShowPassword}
+                    className="absolute right-3 top-10 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? <EyeOff className='h-5 w-5'/> : <Eye className='h-5 w-5'/>}
+                  </button>
                 </div>
 
-                <div className="">
+                <div className="relative">
                   <Label htmlFor="password_confirmation" className="text-sm font-semibold">Confirmar Contraseña</Label>
                   <input
                     id="password_confirmation"
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     value={formData.password_confirmation}
                     onChange={(e) => setFormData({ ...formData, password_confirmation: e.target.value })}
                     className={`w-full text-black text-lg border-2 border-gray-300 rounded-[8px] ${errors.password_confirmation ? 'border-red-500' : ''}`}
                   />
+                  <button
+                    type="button"
+                    onClick={toggleShowConfirmPassword}
+                    className="absolute right-3 top-10 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showConfirmPassword ? <EyeOff className='h-5 w-5'/> : <Eye className='h-5 w-5'/>}
+                  </button>
                 </div>
 
                 {errors.form && (

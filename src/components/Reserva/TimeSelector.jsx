@@ -20,7 +20,7 @@ const TimeSelector = ({ loadingHorario, availability, selectedTime, setSelectedT
             <Button
               key={slot.id}
               variant={selectedTime === slot.id ? "default" : "outline"}
-              className={selectedTime === slot.id ? "bg-naranja hover:bg-naranja/90 rounded-[8px] text-white" : " rounded-[8px]"}
+              className={selectedTime === slot.id ? "bg-naranja hover:bg-naranja/90 rounded-[8px] text-white border border-gray-400" : "border border-gray-400 rounded-[8px]"}
               onClick={() => {
                 setSelectedTime(slot.id); 
                 setSelectedTimeName(slot.time);

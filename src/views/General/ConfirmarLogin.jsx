@@ -10,8 +10,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Clock, Calendar, MapPin, CreditCard } from 'lucide-react';
-import  Loading  from '@/components/LoadingSinHF';
+import { Clock, Calendar, MapPin, CreditCard, Eye, EyeOff } from 'lucide-react';
+import Loading from '@/components/LoadingSinHF';
 
 export default function ConfirmarLogin() {
   const [formData, setFormData] = useState({
@@ -27,6 +27,7 @@ export default function ConfirmarLogin() {
     cancha: null
   });
   const [loadingDetails, setLoadingDetails] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   
   // Obtener parámetros de la URL
   const queryParams = new URLSearchParams(location.search);
@@ -196,14 +197,22 @@ export default function ConfirmarLogin() {
 
                 <div className="space-y-1 flex flex-col">
                   <Label htmlFor="password" className="text-base font-semibold">Contraseña</Label>
-                  <input
-                    id="password"
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className={`w-full text-black text-lg border-2 border-gray-300 rounded-xl ${errors.password ? 'border-red-500' : ''}`}
-                  />
+                  <div className="relative">
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className={`w-full text-black text-lg border-2 border-gray-300 rounded-xl ${errors.password ? 'border-red-500' : ''}`}
+                    />
+                    <div
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5 text-gray-500" /> : <Eye className="w-5 h-5 text-gray-500" />}
+                    </div>
+                  </div>
                   {errors.password && (
                     <p className="text-sm text-red-500">{errors.password}</p>
                   )}

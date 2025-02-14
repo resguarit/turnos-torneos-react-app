@@ -28,7 +28,7 @@ const DateSelector = ({ currentWeekStart, weekDays, today, selectedDate, setSele
             <Button
               key={day.toISOString()}
               variant={selectedDate?.toDateString() === day.toDateString() ? "default" : "outline"}
-              className={`flex flex-col items-center rounded-[8px] p-2 h-auto ${
+              className={`flex flex-col border border-gray-400 items-center rounded-[8px] p-2 h-auto ${
                 selectedDate?.toDateString() === day.toDateString()
                   ? "bg-naranja hover:bg-naranja/90 text-white"
                   : isPastDate 

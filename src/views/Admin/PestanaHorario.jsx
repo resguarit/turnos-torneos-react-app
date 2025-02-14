@@ -27,6 +27,7 @@ const PestanaHorario = () => {
 
   const daysOfWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
   const timeOptions = [
+    "00:00",
     "01:00",
     "02:00",
     "03:00",
@@ -50,7 +51,7 @@ const PestanaHorario = () => {
     "21:00",
     "22:00",
     "23:00",
-    "00:00", // Cambiar 24:00 por 00:00
+    "00:00", 
   ]
 
   // Cargar horarios al montar el componente
@@ -282,13 +283,16 @@ const PestanaHorario = () => {
       const response = await api.post("/configurar-horarios", data);
       setHasChanges(false)
       setSuccessMessage(response.data.message || 'Horarios configurados correctamente');
-      if (response.data.status === 200) {
+      if (response.data.status === 201) {
         // Recargar horarios
         await fetchActiveScheduleExtremes();
         // Recargar franjas horarias deshabilitadas
         await fetchDisabledRanges();
         // Recargar extremos activos
         await fetchActiveScheduleExtremes();
+        if (isCollapsibleOpen) {
+          await fetchDisabledRanges();
+        }
       }
     } catch (error) {
       setErrorMessage(error.response?.data?.message || 'Error al cargar configurar los horarios');

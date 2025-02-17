@@ -10,10 +10,9 @@ const DateSelector = ({ viewOption, selectedDate, startDate, endDate, isOpen, to
       <>
         <button
           onClick={toggleCalendar}
-          className="px-4 py-2 bg-white rounded-lg text-sm lg:text-lg font-medium text-black"
-          style={{ borderRadius: '8px' }}
+          className="w-full rounded-[4px] justify-center flex p-1 mt-1 bg-white  text-xs  font-medium text-black border border-gray-300 hover:bg-gray-50 transition-colors duration-200"
         >
-          {selectedDate ? format(selectedDate, 'PPP', { locale: es }) : <CalendarDays className='w-48' />}
+          {selectedDate ? format(selectedDate, 'PPP', { locale: es }) : <CalendarDays className="w-5 h-5" />}
         </button>
         {isOpen && (
           <div className="absolute mt-2 z-10 bg-white shadow-lg rounded-lg">
@@ -25,10 +24,9 @@ const DateSelector = ({ viewOption, selectedDate, startDate, endDate, isOpen, to
       <>
         <button
           onClick={toggleCalendar}
-          className="px-4 py-2 bg-white rounded-lg text-sm lg:text-lg font-medium text-black"
-          style={{ borderRadius: '8px' }}
+          className="w-full rounded-[4px] justify-center flex p-1 mt-1 bg-white text-xs  font-medium text-black border border-gray-300 hover:bg-gray-50 transition-colors duration-200"
         >
-          {startDate && endDate ? `${format(startDate, 'PPP', { locale: es })} - ${format(endDate, 'PPP', { locale: es })}` : 'Seleccionar Intervalo'}
+          {startDate && endDate ? `${format(startDate, 'PPP', { locale: es })} - ${format(endDate, 'PPP', { locale: es })}` : <CalendarDays className="w-5 h-5" />}
         </button>
         {isOpen && (
           <div className="absolute mt-2 z-10 bg-white shadow-lg rounded-lg">

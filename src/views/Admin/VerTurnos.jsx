@@ -230,13 +230,46 @@ function VerTurnos() {
     }
   };
 
+  const clearFilters = () => {
+    setSelectedDate(null);
+    setStartDate(null);
+    setEndDate(null);
+    setSearchType('name');
+    setSearchTerm('');
+    setSelectedCourt('');
+    setSelectedStatus([]);
+    setViewOption('day');
+    fetchTurnos();
+  };
+
   return (
     <>
       <div className="min-h-screen flex flex-col font-inter">
-        <main className="flex-1 p-6 bg-gray-100">
+        <main className="flex-1 mt-4 bg-gray-100">
           <div className="mb-8">
             <div className="space-y-4">
+              <div className='flex w-full gap-4'>
+              <div className="flex flex-col items-center w-fit justify-center">
+                <div className="flex gap-2">
+                <Button onClick={() => setViewOption('day')} variant={viewOption === 'day' ? 'default' : 'outline'} className={` h-7  rounded-[4px] text-sm  hover:bg-naranja  hover:text-white ${viewOption === 'day' ? 'bg-naranja text-white' : 'bg-white text-naranja border border-gray-300'}`} >Día</Button>
+                <Button onClick={() => setViewOption('range')} variant={viewOption === 'range' ? 'default' : 'outline'} className={` h-7  rounded-[4px] text-sm  hover:bg-naranja hover:text-white ${viewOption === 'range' ? 'bg-naranja text-white' : 'bg-white text-naranja border border-gray-300'}`} >Intervalo</Button>
+                </div>
+                <div className='w-full'>
+                <DateSelector
+                className="w-full"
+                  viewOption={viewOption}
+                  selectedDate={selectedDate}
+                  startDate={startDate}
+                  endDate={endDate}
+                  isOpen={isOpen}
+                  toggleCalendar={toggleCalendar}
+                  handleDateChange={handleDateChange}
+                  handleRangeChange={handleRangeChange}
+                />
+                </div>
+              </div>
               <SearchBar
+              className="w-full"
                 searchType={searchType}
                 setSearchType={setSearchType}
                 searchTerm={searchTerm}
@@ -244,6 +277,7 @@ function VerTurnos() {
                 handleFilterToggle={handleFilterToggle}
                 handleSearch={handleSearch}
                 isFilterOpen={isFilterOpen}
+                clearFilters={clearFilters} // Pass the clearFilters function
               />
               {isFilterOpen && (
                 <FilterControls
@@ -255,20 +289,7 @@ function VerTurnos() {
                   handleStatusChange={handleStatusChange}
                 />
               )}
-              <div className="flex flex-col gap-4 items-start lg:flex-row lg:items-center lg:gap-2">
-                <span className="text-sm font-semibold lg:text-xl">Selecciona el Día o Intervalo:</span>
-                <Button onClick={() => setViewOption('day')} variant={viewOption === 'day' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-lg rounded-[8px] hover:bg-naranja  hover:text-white ${viewOption === 'day' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Día</Button>
-                <Button onClick={() => setViewOption('range')} variant={viewOption === 'range' ? 'default' : 'outline'} className={`px-4 py-2 lg:text-lg rounded-[8px] hover:bg-naranja hover:text-white ${viewOption === 'range' ? 'bg-naranja text-white' : 'bg-white text-naranja border-0'}`} style={{ borderRadius: '8px' }}>Intervalo</Button>
-                <DateSelector
-                  viewOption={viewOption}
-                  selectedDate={selectedDate}
-                  startDate={startDate}
-                  endDate={endDate}
-                  isOpen={isOpen}
-                  toggleCalendar={toggleCalendar}
-                  handleDateChange={handleDateChange}
-                  handleRangeChange={handleRangeChange}
-                />
+              
               </div>
               {loading && (<LoadingSinHF/>)}
               {!loading && (

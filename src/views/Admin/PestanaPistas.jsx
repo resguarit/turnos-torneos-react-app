@@ -31,8 +31,8 @@ const PestanaPistas = () => {
       setLoading(false);
     } catch (error) {
       if (error.name !== 'AbortError' && error.name !== 'CanceledError') {
-        console.error('Error fetching pistas:', error);
-        toast.error('Error al cargar las pistas');
+        console.error('Error fetching canchas:', error);
+        toast.error('Error al cargar las canchas');
         setLoading(false);
       }
     }
@@ -63,11 +63,11 @@ const PestanaPistas = () => {
           activa: true,
         });
         setAgregando(false);
-        toast.success('Pista añadida correctamente');
+        toast.success('Cancha añadida correctamente');
       }
     } catch (error) {
       console.error('Error adding cancha:', error);
-      toast.error('Error al añadir la pista');
+      toast.error('Error al añadir la cancha');
     } finally {
       setIsSaving(false); // Finalizar estado de guardado
     }
@@ -92,11 +92,11 @@ const PestanaPistas = () => {
         });
         setEditando(null);
         setAgregando(false);
-        toast.success('Pista editada correctamente');
+        toast.success('Cancha editada correctamente');
       }
     } catch (error) {
       console.error('Error editing cancha:', error);
-      toast.error('Error al editar la pista');
+      toast.error('Error al editar la cancha');
     } finally {
       setIsSaving(false); // Finalizar estado de guardado
     }
@@ -108,11 +108,11 @@ const PestanaPistas = () => {
       if (response.status === 200) {
         setPistas(pistas.filter(pista => pista.id !== pistaToDelete.id));
         setPistaToDelete(null);
-        toast.success('Pista eliminada correctamente');
+        toast.success('Cancha eliminada correctamente');
       }
     } catch (error) {
       console.error('Error deleting cancha:', error);
-      toast.error('Error al eliminar la pista');
+      toast.error('Error al eliminar la cancha');
     }
   };
 

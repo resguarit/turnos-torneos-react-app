@@ -1,6 +1,6 @@
 import { Facebook, Instagram, PhoneIcon as WhatsApp } from 'lucide-react'
 
-export function Footer() {
+export function Footer() {  // Change to named export
   return (
     <footer className="bg-footer py-3 px-6 lg:py-4">
       <div className="max-w-7xl mx-auto flex justify-center gap-6">
@@ -95,5 +95,5 @@ export function Footer() {
     </a>
       </div>
     </footer>
-  )
+  );
 }

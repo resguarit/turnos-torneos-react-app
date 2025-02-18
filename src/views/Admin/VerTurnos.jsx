@@ -248,11 +248,15 @@ function VerTurnos() {
         <main className="flex-1 mt-4 bg-gray-100">
           <div className="mb-8">
             <div className="space-y-4">
-              <div className='flex w-full gap-4'>
-              <div className="flex flex-col items-center w-fit justify-center">
-                <div className="flex gap-2">
-                <Button onClick={() => setViewOption('day')} variant={viewOption === 'day' ? 'default' : 'outline'} className={` h-7  rounded-[4px] text-sm  hover:bg-naranja  hover:text-white ${viewOption === 'day' ? 'bg-naranja text-white' : 'bg-white text-naranja border border-gray-300'}`} >Día</Button>
-                <Button onClick={() => setViewOption('range')} variant={viewOption === 'range' ? 'default' : 'outline'} className={` h-7  rounded-[4px] text-sm  hover:bg-naranja hover:text-white ${viewOption === 'range' ? 'bg-naranja text-white' : 'bg-white text-naranja border border-gray-300'}`} >Intervalo</Button>
+              <div className='flex w-full gap-4 flex-col sm:flex-row items-center sm:items-start '>
+              <div className="flex sm:flex-col items-center w-full sm:w-fit justify-center flex-row gap-2">
+                <div className="flex gap-2 ">
+                <button onClick={() => setViewOption('day')}  className={`p-1 px-2 sm:text-base text-sm rounded-[6px] transition-colors ${viewOption === 'day' ? 'bg-naranja text-white' : 'bg-white text-naranja'} hover:bg-naranja hover:text-white`}
+                > Día 
+                </button>
+                <button onClick={() => setViewOption('range')}  className={`p-1 px-2 sm:text-base text-sm rounded-[6px] transition-colors ${viewOption === 'range' ? 'bg-naranja text-white' : 'bg-white text-naranja'} hover:bg-naranja hover:text-white`}
+                  >Intervalo
+                </button>
                 </div>
                 <div className='w-full'>
                 <DateSelector

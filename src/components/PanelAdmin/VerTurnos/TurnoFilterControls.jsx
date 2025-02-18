@@ -1,8 +1,8 @@
 import React from 'react';
 
 const FilterControls = ({ selectedCourt, setSelectedCourt, selectedStatus, setSelectedStatus, courts, handleStatusChange }) => (
-  <div className="absolute top-60 right-4 mt-4 p-4 px-10 bg-white rounded-[6px] shadow-lg">
-    <div className="flex flex-col lg:flex-row gap-4">
+  <div className="fixed sm:absolute sm:top-60 sm:right-20 md:right-4 sm:mt-12 md:mt-4 p-4 px-10 bg-white rounded-[6px] shadow-lg">
+    <div className="flex flex-col md:flex-row gap-4">
       <div className="flex-1">
         <label className="block text-sm font-bold pb-4 text-gray-700">Seleccionar Cancha</label>
         <select

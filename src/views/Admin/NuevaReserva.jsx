@@ -196,8 +196,8 @@ export default function NuevaReserva() {
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
       <Volver />
-      <main className="flex-1 p-1 md:p-6 bg-gray-100">
-        <div className="max-w-4xl mx-auto p-6">
+      <main className="flex-1 p-6 bg-gray-100">
+        <div className="max-w-4xl mx-auto ">
           <Card className="rounded-2xl bg-white">
             <CardContent className="md:p-6 py-4 ">
               <h2 className="text-2xl font-bold md:mb-6 mb-3 md:text-start text-center">Reserva tu cancha</h2>

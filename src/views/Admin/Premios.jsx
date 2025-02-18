@@ -100,8 +100,7 @@ export default function Premios() {
               {prizes.map((prize, index) => (
                 <div
                   key={index}
-                  style={{ borderRadius: "12px" }}
-                  className="bg-white p-5 shadow-sm hover:shadow-md transition-shadow"
+                  className="bg-white rounded-[12px] p-5 shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex flex-col items-center text-center">
                     <prize.icon className="h-12 w-12 mb-2 text-naranja" />

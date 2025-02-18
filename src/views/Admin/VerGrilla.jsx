@@ -188,34 +188,33 @@ export default function VerGrilla() {
     <div className="min-h-screen flex flex-col font-inter">
       <main className="flex-1 p-6 bg-gray-100">
         <div className="mb-6">
-          <div className="flex items-center justify-between gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-4 mb-4 ">
             <div className="flex gap-2 items-center">
-            <button onClick={handlePrevDay} className="p-2 hover:bg-gray-100 rounded ">
-              <ChevronLeft className="w-5 h-5" />
+            <button onClick={handlePrevDay} className="p-1 hover:bg-gray-100 rounded ">
+              <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={toggleCalendar}
-              className="px-4 py-2 bg-white rounded-lg text-sm lg:text-xl font-medium text-black"
-              style={{ borderRadius: '8px' }}
+              className="px-4 py-2 bg-white rounded-[6px] text-xs sm:text-sm  font-medium text-black"
             >
               {currentDate ? format(currentDate, 'PPP', { locale: es }) : <CalendarDays className='w-48' />}
             </button>
-            <button onClick={handleNextDay} className="p-2 hover:bg-gray-100 rounded">
-              <ChevronRight className="w-5 h-5" />
+            <button onClick={handleNextDay} className="p-1 hover:bg-gray-100 rounded">
+              <ChevronRight className="w-4 h-4" />
             </button>
             </div>
             <div className="flex gap-4">
               <button
                 onClick={exportToPDF}
-                style={{ borderRadius: '8px' }}
-                className=" p-3 bg-blue-500 text-white  hover:bg-blue-600 lg:text-xl "
+                
+                className=" p-2 bg-blue-500 text-white text-xs sm:text-sm rounded-[6px]  hover:bg-blue-600  "
               >
                 Exportar a PDF
               </button>
               <button
                 onClick={exportToExcel}
-                style={{ borderRadius: '8px' }}
-                className="p-3 bg-green-500 text-white lg:text-xl hover:bg-green-600"
+                
+                className="p-2 bg-green-600 text-white text-xs sm:text-sm rounded-[6px] hover:bg-green-600"
               >
                 Exportar a Excel
               </button>
@@ -223,22 +222,22 @@ export default function VerGrilla() {
           </div>
 
           {isOpen && (
-            <div className="absolute z-10 bg-white shadow-lg rounded-lg">
+            <div className="absolute z-10 bg-white shadow-lg rounded-lg ">
               <DayPicker selected={currentDate} onDayClick={handleDateChange} />
             </div>
           )}
 
-          <div className="flex gap-8 mb-4 lg:text-xl">
+          <div className="flex gap-2 sm:gap-2 md:gap-8 mb-4  text-xs sm:text-base">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-3 bg-blue-500 rounded"></div>
+              <div className="w-4 h-3 bg-blue-500 rounded "></div>
               <span>Turnos fijos</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-3 bg-green-500 rounded"></div>
+              <div className="w-4 h-3 bg-green-600 rounded "></div>
               <span>Turnos únicos</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-3 bg-orange-500 rounded"></div>
+              <div className="w-4 h-3 bg-orange-500 rounded "></div>
               <span>Torneos</span>
             </div>
           </div>
@@ -247,9 +246,9 @@ export default function VerGrilla() {
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="border p-2"></th>
+                  <th className="border p-2 "></th>
                   {timeSlots.map((time) => (
-                    <th key={time} className="border p-2 min-w-[60px] lg:text-xl">
+                    <th key={time} className="border p-2 sm:text-base text-sm">
                       {time}
                     </th>
                   ))}
@@ -258,25 +257,25 @@ export default function VerGrilla() {
               <tbody>
                 {courts.map((court, courtIndex) => (
                   <tr key={court.nro}>
-                    <td className="border p-2 font-medium lg:text-xl">{`Cancha ${court.nro} - ${court.tipo.toUpperCase()}`}</td>
+                    <td className="border p-1 font-medium sm:text-base text-sm">{`Cancha ${court.nro} - ${court.tipo.toUpperCase()}`}</td>
                     {timeSlots.map((time) => {
                       const key = `${time}-${court.nro}`;
                       const reservation = grid[time]?.[court.nro]?.turno;
                       return (
-                        <td key={key} className="border max-w-20 p-2 h-12">
+                        <td key={key} className="border max-w-14 p-2 h-12">
                           {reservation ? (
                             <div 
                             onClick={handleNavigationTurno(reservation.id)}
-                            className=" w-full h-full rounded p-2 hover:cursor-pointer" style={{ backgroundColor: reservation.tipo === "fijo" ? "#1E90FF" : reservation.tipo === "unico" ? "#32CD32" : "#FFA500" }}>
-                              <p className="text-xs lg:text-base font-semibold flex items-center">
+                            className=" w-full h-full rounded p-2 hover:cursor-pointer text-white" style={{ backgroundColor: reservation.tipo === "fijo" ? "#1E90FF" : reservation.tipo === "unico" ? "#16a34a" : "#FFA500" }}>
+                              <p className="text-xs lg:text-base font-semibold md:flex items-center hidden ">
                                 <User className="w-4 h-4 mr-1" />
                                 {reservation.usuario.nombre}
                               </p>
-                              <p className="text-xs lg:text-base flex items-center">
+                              <p className="text-xs lg:text-sm md:flex items-center hidden">
                                 <Phone className="w-4 h-4 mr-1" />
                                 {reservation.usuario.telefono}
                               </p>
-                              <p className="text-xs lg:text-base flex items-center">
+                              <p className="text-xs lg:text-sm md:flex items-center hidden">
                                 <AlertCircle className="w-4 h-4 mr-1" />
                                 {reservation.estado}
                               </p>

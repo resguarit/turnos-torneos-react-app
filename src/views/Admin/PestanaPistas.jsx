@@ -229,7 +229,7 @@ const PestanaPistas = () => {
                 <li key={pista.id} className="hover:bg-gray-50 transition-colors duration-150 w-full">
                   <div className="p-6 flex justify-between items-center space-x-8 sm:space-x-3 ">
                     <div className="flex  items-center space-x-8 ">
-                      <div className="bg-orange-500 text-center rounded-[8px] p-2">
+                      <div className="bg-naranja text-center rounded-[8px] p-2">
                         <span className="text-sm sm:text-base  font-semibold text-white">{`Cancha ${pista.nro} - ${pista.tipo_cancha}`}</span>
                       </div>
                       <span className=" text-sm sm:text-base font-bold text-gray-700">Precio por Hora: <span className="font-normal">${pista.precio_por_hora}</span></span>

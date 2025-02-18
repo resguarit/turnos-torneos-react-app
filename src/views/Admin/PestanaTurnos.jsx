@@ -1,29 +1,41 @@
 import React, { useState } from 'react';
 import VerTurnos from './VerTurnos';
 import VerGrilla from './VerGrilla';
-import { Button } from '@/components/ui/button';
 
 const PestanaTurnos = () => {
-  const [activeView, setActiveView] = useState('turnos'); // 'turnos' or 'grilla'
+  const [activeView, setActiveView] = useState('turnos');
 
   return (
-    <div className="">
-      <div className="flex gap-4 justify-end mt-4">
-        <Button
-          onClick={() => setActiveView('turnos')}
-          variant={activeView === 'turnos' ? 'default' : 'outline'}
-          className={`px-4 py-2 rounded-[8px] ${activeView === 'turnos' ? 'bg-naranja hover:bg-naranja/90 text-white' : 'bg-white text-gray-700 border-gay-300'}`}
-        >
-          Ver Turnos
-        </Button>
-        <Button
-          onClick={() => setActiveView('grilla')}
-          variant={activeView === 'grilla' ? 'default' : 'outline'}
-          className={`px-4 py-2 rounded-[8px] ${activeView === 'grilla' ? 'bg-naranja hover:bg-naranja/90 text-white' : 'bg-white text-gray-700 border-gray-300'}`}
-        >
-          Ver Grilla
-        </Button>
+    <div className="w-full">
+      <div className="flex justify-center mb-2 mt-6">
+        <div className="border-b border-gray-200">
+          <nav className="flex -mb-px" aria-label="Tabs">
+            <button
+              onClick={() => setActiveView('turnos')}
+              className={`py-2 px-8 border-b-2 font-medium text-sm whitespace-nowrap
+                ${activeView === 'turnos'
+                  ? 'border-naranja text-naranja'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }
+              `}
+            >
+              Ver Turnos
+            </button>
+            <button
+              onClick={() => setActiveView('grilla')}
+              className={`py-2 px-8 border-b-2 font-medium text-sm whitespace-nowrap
+                ${activeView === 'grilla'
+                  ? 'border-naranja text-naranja'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }
+              `}
+            >
+              Ver Grilla
+            </button>
+          </nav>
+        </div>
       </div>
+      
       {activeView === 'turnos' ? <VerTurnos /> : <VerGrilla />}
     </div>
   );

@@ -70,9 +70,10 @@ export function Header() {
                 Administrador 
               </a>
             )}
-            <a href="/torneos-admi" className="hover:opacity-80">Torneos</a>
+            {/* se agrega cuando este termianda la seccion de torneos */}
+            {/* <a href="/torneos-admi" className="hover:opacity-80">Torneos</a> */}
             <a href="/nueva-reserva" className="hover:opacity-80">Reservas</a>
-            <a href="/partidos" className="hover:opacity-80">Partidos</a>
+            {/* <a href="/partidos" className="hover:opacity-80">Partidos</a> */}
             <a href="/reglamento" className="hover:opacity-80">Reglamento</a>
             <a href="/premios" className="hover:opacity-80">Premios</a>
             

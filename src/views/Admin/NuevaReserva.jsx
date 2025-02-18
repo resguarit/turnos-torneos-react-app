@@ -3,7 +3,7 @@ import { addDays, format, startOfWeek } from "date-fns";
 import { es } from "date-fns/locale";
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Volver from "@/components/Reserva/Volver";
 import Footer from "@/components/Reserva/Footer";
@@ -14,6 +14,7 @@ import ReservationSummary from "@/components/Reserva/ReservationSummary";
 import ReservationModal from "@/components/Reserva/ReservationModal";
 import { Header } from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function NuevaReserva() {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -163,8 +164,14 @@ export default function NuevaReserva() {
         navigate('/bloqueo-reserva');
       }
     } catch (error) {
-      console.error('Error completo:', error);
-      toast.error(error.response?.data?.message || 'Error al crear el bloqueo temporal');
+      if (error.response && error.response.status === 409) {
+        toast.error('Otra persona está reservando este turno');
+      } else {
+        console.error('Error completo:', error);
+        toast.error(error.response?.data?.message || 'Error al crear el bloqueo temporal');
+      }
+      setShowModal(false);
+      navigate('/');
     } finally {
       setConfirmLoading(false);
     }
@@ -196,8 +203,8 @@ export default function NuevaReserva() {
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
       <Volver />
-      <main className="flex-1 p-6 bg-gray-100">
-        <div className="max-w-4xl mx-auto ">
+      <main className="flex-1 p-1 md:p-6 bg-gray-100">
+        <div className="max-w-4xl mx-auto p-6">
           <Card className="rounded-2xl bg-white">
             <CardContent className="md:p-6 py-4 ">
               <h2 className="text-2xl font-bold md:mb-6 mb-3 md:text-start text-center">Reserva tu cancha</h2>
@@ -252,6 +259,7 @@ export default function NuevaReserva() {
         </div>
       </main>
       <Footer />
+      <ToastContainer position="top-right" />
       {showModal && (
         <ReservationModal
           showModal={showModal}

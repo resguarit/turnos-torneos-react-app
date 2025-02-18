@@ -25,6 +25,7 @@ const PestanaHorario = () => {
   const [successMessage, setSuccessMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false); // Estado de carga
+  const [switchLoading, setSwitchLoading] = useState({}); // Estado de carga específico para cada switch
 
   const daysOfWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
   const timeOptions = [
@@ -150,14 +151,14 @@ const PestanaHorario = () => {
   };
 
   const toggleHorario = async (id) => {
-    setLoading(true); // Iniciar estado de carga
+    setSwitchLoading(prev => ({ ...prev, [id]: true })); // Iniciar estado de carga específico para el switch
     try {
       const currentSchedule = schedules.find(s => s.id === id);
       const newEnabled = !currentSchedule.enabled;
 
       // Si está intentando habilitar y no tiene horarios seleccionados, no permitir
       if (newEnabled && (!currentSchedule.start || !currentSchedule.end)) {
-        setLoading(false); // Finalizar estado de carga
+        setSwitchLoading(prev => ({ ...prev, [id]: false })); // Finalizar estado de carga específico para el switch
         return; // No permitir habilitar si no hay horarios seleccionados
       }
 
@@ -204,7 +205,7 @@ const PestanaHorario = () => {
       setErrorMessage(error.response?.data?.message || `Error al ${newEnabled ? 'habilitar' : 'deshabilitar'} franja horaria`);
       console.log(error);
     } finally {
-      setLoading(false); // Finalizar estado de carga
+      setSwitchLoading(prev => ({ ...prev, [id]: false })); // Finalizar estado de carga específico para el switch
     }
   };
 
@@ -386,13 +387,13 @@ const PestanaHorario = () => {
                   <Switch
                     checked={schedule.enabled}
                     onCheckedChange={() => toggleHorario(schedule.id)}
-                    disabled={!schedule.start || !schedule.end}
+                    disabled={!schedule.start || !schedule.end || switchLoading[schedule.id]}
                     className={`${
                       schedule.enabled && schedule.start && schedule.end 
                         ? "!bg-green-500" 
                         : "!bg-red-500"
                     } relative inline-flex h-5 sm:h-7 sm:w-12 items-center rounded-full ${
-                      (!schedule.start || !schedule.end) ? "opacity-50 cursor-not-allowed" : ""
+                      (!schedule.start || !schedule.end || switchLoading[schedule.id]) ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
                     <span

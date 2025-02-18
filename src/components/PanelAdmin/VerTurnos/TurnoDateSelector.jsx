@@ -24,7 +24,7 @@ const DateSelector = ({ viewOption, selectedDate, startDate, endDate, isOpen, to
       <>
         <button
           onClick={toggleCalendar}
-          className="w-full rounded-[4px] justify-center flex p-1 mt-1 bg-white text-xs  font-medium text-black border border-gray-300 hover:bg-gray-50 transition-colors duration-200"
+          className="w-full rounded-[4px] justify-center flex p-1 bg-white text-xs  font-medium text-black h-7 sm:h-8 hover:bg-gray-50 transition-colors duration-200"
         >
           {startDate && endDate ? `${format(startDate, 'PPP', { locale: es })} - ${format(endDate, 'PPP', { locale: es })}` : <CalendarDays className="w-5 h-5" />}
         </button>

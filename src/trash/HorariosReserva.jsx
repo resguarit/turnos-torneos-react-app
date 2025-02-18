@@ -78,7 +78,7 @@ export default function HorariosReserva() {
                 <button
                   onClick={() => handleReserve(slot.id)}
                   disabled={slot.status === "ocupado"}
-                  className="text-sm lg:text-xl w-fit p-1 lg:p-2 bg-naranja items-center hover:bg-[#FF5533]/90 text-white"
+                  className="text-sm lg:text-xl w-fit p-1 lg:p-2 bg-naranja items-center hover:bg-naranja/90 text-white"
                   style={{ borderRadius: "4px" }}
                 >
                   Reservar

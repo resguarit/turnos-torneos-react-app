@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoutes";
 import { ROLES } from "@/constants/roles";
+import { BASE_URL } from '@/constants/config';
 import App from "../App";
 import TorneosA from "../views/Admin/TorneosA";
 import ZonasA from "../views/Admin/ZonasA";
@@ -31,18 +32,18 @@ const AppRoutes = () => {
   return (
       <Routes>
         {/* Rutas públicas */}
-        <Route path="/" element={<App />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
+        <Route path={`${BASE_URL}/`} element={<App />} />
+        <Route path={`${BASE_URL}/login`} element={<Login />} />
+        <Route path={`${BASE_URL}/signup`} element={<SignUp />} />
         <Route path="*" element={<Error />} />
-        <Route path="/confirmar-turno" element={<ConfirmarTurno />} />
-        <Route path="/confirmar-login" element={<ConfirmarLogin />} />
-        <Route path="/nueva-reserva" element={<NuevaReserva />} />
-        <Route path="/bloqueo-reserva" element={<ContadorBloqueo />} />
+        <Route path={`${BASE_URL}/confirmar-turno`} element={<ConfirmarTurno />} />
+        <Route path={`${BASE_URL}/confirmar-login`} element={<ConfirmarLogin />} />
+        <Route path={`${BASE_URL}/nueva-reserva`} element={<NuevaReserva />} />
+        <Route path={`${BASE_URL}/bloqueo-reserva`} element={<ContadorBloqueo />} />
 
         {/* Rutas protegidas para administradores */}
         <Route
-          path="/torneos-admi"
+          path={`${BASE_URL}/torneos-admi`}
           element={
             <ProtectedRoute requiredRole={ROLES.ADMIN}>
               <TorneosA />
@@ -50,7 +51,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/zonas-admi"
+          path={`${BASE_URL}/zonas-admi`}
           element={
             <ProtectedRoute requiredRole={ROLES.ADMIN}>
               <ZonasA />
@@ -58,7 +59,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/alta-zona"
+          path={`${BASE_URL}/alta-zona`}
           element={
             <ProtectedRoute requiredRole={ROLES.ADMIN}>
               <AltaZona />
@@ -66,7 +67,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/ver-turnos"
+          path={`${BASE_URL}/ver-turnos`}
           element={
             <ProtectedRoute requiredRole={ROLES.ADMIN}>
               <VerTurnos />
@@ -74,7 +75,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/grilla-turnos"
+          path={`${BASE_URL}/grilla-turnos`}
           element={
             <ProtectedRoute requiredRole={ROLES.ADMIN}>
               <VerGrilla />
@@ -82,7 +83,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/editar-turno/:id"
+          path={`${BASE_URL}/editar-turno/:id`}
           element={
             <ProtectedRoute requiredRole={ROLES.ADMIN}>
               <EditarTurno />
@@ -90,7 +91,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/turno-fijo"
+          path={`${BASE_URL}/turno-fijo`}
           element={
             <ProtectedRoute requiredRole={ROLES.ADMIN}>
               <TurnoFijo />
@@ -98,7 +99,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/panel-admin"
+          path={`${BASE_URL}/panel-admin`}
           element={
             <ProtectedRoute requiredRole={ROLES.ADMIN}>
               <NuevoPanelAdmin />
@@ -108,7 +109,7 @@ const AppRoutes = () => {
 
         {/* Rutas protegidas para usuarios y administradores */}
         <Route
-          path="/user-profile"
+          path={`${BASE_URL}/user-profile`}
           element={
             <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
               <UserProfile />
@@ -116,7 +117,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/partidos"
+          path={`${BASE_URL}/partidos`}
           element={
             <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
               <Partidos />
@@ -124,7 +125,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/ver-partidos"
+          path={`${BASE_URL}/ver-partidos`}
           element={
             <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
               <VerPartidos />
@@ -132,7 +133,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/cargar-partido"
+          path={`${BASE_URL}/cargar-partido`}
           element={
             <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
               <CargaPartido />
@@ -140,7 +141,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/reglamento"
+          path={`${BASE_URL}/reglamento`}
           element={
             <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
               <Reglamento />
@@ -148,7 +149,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/premios"
+          path={`${BASE_URL}/premios`}
           element={
             <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
               <Premios />
@@ -156,7 +157,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/editar-perfil"
+          path={`${BASE_URL}/editar-perfil`}
           element={
             <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
               <EditProfile />

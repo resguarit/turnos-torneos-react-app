@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { UserCog, MonitorIcon as MonitorCog, LogOut, Pencil } from "lucide-react"
 import ModalConfirmation from "./ModalConfirmation"
+import { BASE_URL } from '@/constants/config'
 
 const MenuMovil = ({ setMenuOpen }) => {
   const [isOpen, setIsOpen] = useState(false)
@@ -96,13 +97,13 @@ const MenuMovil = ({ setMenuOpen }) => {
 
           <div className="flex flex-col items-start px-8 py-8 space-y-6 text-white">
             {[
-              { label: "Inicio", path: "/" },
+              { label: "Inicio", path: `${BASE_URL}/` },
               /* { label: "Torneos", path: "/torneos-admi" }, */
-              { label: "Reservas", path: "/nueva-reserva" },
+              { label: "Reservas", path: `${BASE_URL}/nueva-reserva` },
               /* { label: "Partidos", path: "/partidos" }, */
-              { label: "Reglamento", path: "/reglamento" },
-              { label: "Premios", path: "/premios" },
-              ...(userRole === 'admin' ? [{ label: "Administrador", path: "/panel-admin" }] : []),
+              { label: "Reglamento", path: `${BASE_URL}/reglamento` },
+              { label: "Premios", path: `${BASE_URL}/premios` },
+              ...(userRole === 'admin' ? [{ label: "Administrador", path: `${BASE_URL}/panel-admin` }] : []),
             ].map((item) => (
               <div
                 key={item.path}

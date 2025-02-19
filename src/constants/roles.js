@@ -6,18 +6,18 @@ export const ROLES = {
   
 export const ROUTES = {
     PUBLIC: [
-      '/calendario-admi',
-      '/horariosReserva',
-      '/canchas-reserva'
+      `${BASE_URL}/calendario-admi`,
+      `${BASE_URL}/horariosReserva`,
+      `${BASE_URL}/canchas-reserva`
     ],
     USER: [
-      '/perfil',
-      '/mis-turnos',
-      '/user-profile'
+      `${BASE_URL}/perfil`,
+      `${BASE_URL}/mis-turnos`,
+      `${BASE_URL}/user-profile`
     ],
     ADMIN: [
-      '/ver-turnos',
-      '/grilla-turnos',
-      '/editar-turno'
+      `${BASE_URL}/ver-turnos`,
+      `${BASE_URL}/grilla-turnos`,
+      `${BASE_URL}/editar-turno`
     ]
   };

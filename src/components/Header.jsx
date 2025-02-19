@@ -131,7 +131,7 @@ export function Header() {
         </div>
         <MenuMovil />
       </nav>
-      {showModal && <ModalConfirmation onConfirm={handleConfirmSubmit} onCancel={closeConfirmModal} title="Cerrar Sesión" subtitle={"¿Desea cerrar la sesión?"} botonText1={"Cancelar"} botonText2={"Cerrar Sesión"} />}
+      {showModal && <ModalConfirmation onConfirm={handleConfirmSubmit} onCancel={closeConfirmModal} title="¿Desea cerrar la sesión?"  botonText1={"Cancelar"} botonText2={"Cerrar Sesión"} />}
     </header>
   );
 }

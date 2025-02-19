@@ -15,7 +15,7 @@ const DateSelector = ({ viewOption, selectedDate, startDate, endDate, isOpen, to
           {selectedDate ? format(selectedDate, 'PPP', { locale: es }) : <CalendarDays className="w-5 h-5" />}
         </button>
         {isOpen && (
-          <div className="absolute mt-2 z-50 bg-white shadow-lg rounded-[8px] sm:text-base text-sm right-0 sm:-right-[187px] ">
+          <div className="absolute mt-2 z-30 bg-white shadow-lg rounded-[8px] sm:text-base text-sm right-0 sm:-right-[187px] ">
             <DayPicker selected={selectedDate} onDayClick={handleDateChange} />
           </div>
         )}
@@ -29,7 +29,7 @@ const DateSelector = ({ viewOption, selectedDate, startDate, endDate, isOpen, to
           {startDate && endDate ? `${format(startDate, 'PPP', { locale: es })} - ${format(endDate, 'PPP', { locale: es })}` : <CalendarDays className="w-5 h-5" />}
         </button>
         {isOpen && (
-          <div className="absolute mt-2 z-50 bg-white shadow-lg rounded-[8px] sm:text-base text-sm right-0 sm:-right-[187px]">
+          <div className="absolute mt-2 z-30 bg-white shadow-lg rounded-[8px] sm:text-base text-sm right-0 sm:-right-[187px]">
             <DayPicker
               mode="range"
               selected={{ from: startDate, to: endDate }}

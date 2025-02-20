@@ -22,20 +22,26 @@ export function Liga({ matches, date, onEditMatch }) {
           >
             {/* Equipo 1 */}
             <div className="flex items-center gap-2 justify-center md:justify-start w-full">
-              <div
-                className="w-6 h-6 rounded-full"
-                style={{ backgroundColor: match.team1.color }}
-              />
-              <span className="text-sm lg:text-lg">{match.team1.name}</span>
+              {match.team1 && (
+                <>
+                  <div
+                    className="w-6 h-6 rounded-full"
+                  />
+                  <span className="text-sm lg:text-lg">{match.team1.name}</span>
+                </>
+              )}
             </div>
             <span className="text-sm font-medium lg:text-lg">vs</span>
             {/* Equipo 2 */}
             <div className="flex items-center gap-2 justify-center md:justify-end w-full">
-              <span className="text-sm lg:text-lg">{match.team2.name}</span>
-              <div
-                className="w-6 h-6 rounded-full"
-                style={{ backgroundColor: match.team2.color }}
-              />
+              {match.team2 && (
+                <>
+                  <span className="text-sm lg:text-lg">{match.team2.name}</span>
+                  <div
+                    className="w-6 h-6 rounded-full"
+                  />
+                </>
+              )}
             </div>
             {/* Hora */}
             <span className="text-sm text-gray-500 lg:ml-60">{match.time}</span>

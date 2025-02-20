@@ -71,9 +71,9 @@ export function Header() {
               </Link>
             )}
             {/* se agrega cuando este termianda la seccion de torneos */}
-            {/* <Link to="/torneos-admi" className="hover:opacity-80">Torneos</Link> */}
-            <Link to="/nueva-reserva" className="hover:opacity-80">Reservas</Link>
-            {/* <Link to="/partidos" className="hover:opacity-80">Partidos</Link> */}
+            <Link to="/torneos-admi" className="hover:opacity-80">Torneos</Link>
+            <Link to="/nueva-reserva" className="hover:opacity-80">Reservar</Link>
+            <Link to="/partidos" className="hover:opacity-80">Partidos</Link>
             <Link to="/reglamento" className="hover:opacity-80">Reglamento</Link>
             <Link to="/premios" className="hover:opacity-80">Premios</Link>
             

@@ -1,5 +1,5 @@
 import video from '../../assets/rng.mp4';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
@@ -87,10 +87,43 @@ function SignUp() {
         setShowConfirmPassword(!showConfirmPassword);
     };
 
+    useEffect(() => {
+        const videoElement = document.querySelector("video");
+    
+        if (videoElement) {
+          videoElement.addEventListener("contextmenu", (e) => e.preventDefault());
+          videoElement.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          });
+    
+          // Prevenir la interacción en iOS
+          videoElement.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          });
+        }
+      }, []);
+
     return (
         <div className="min-h-screen w-full relative font-inter">
             <ToastContainer position="top-right" />
-            <video className="absolute top-0 left-0 w-full h-full object-cover z-10" src={video} autoPlay loop muted></video>
+            
+            <div className="absolute inset-0">
+                <video
+                    className="pointer-events-none select-none absolute inset-0 w-full h-full object-cover "
+                    src={video}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                ></video>
+                {/* Div para bloquear interacción en iPhone */}
+                <div className="absolute inset-0 bg-transparent pointer-events-auto">
+                </div>
+            </div>
+            
             <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50 z-20"></div>
             <div className="relative z-30 flex justify-center items-center min-h-screen text-center px-4">
                 <div className="w-full max-w-md bg-white rounded-xl p-5 space-y-6">

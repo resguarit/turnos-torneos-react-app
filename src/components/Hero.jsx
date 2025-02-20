@@ -13,6 +13,12 @@ function Hero() {
         e.preventDefault();
         e.stopPropagation();
       });
+
+      // Prevenir la interacción en iOS
+      videoElement.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
     }
   }, []);
 
@@ -22,12 +28,13 @@ function Hero() {
         {/* Contenedor del video con un div transparente encima para bloquear toques */}
         <div className="absolute inset-0">
           <video
-            className="pointer-events-none select-none absolute inset-0 w-full h-full object-cover"
+            className="pointer-events-none select-none absolute inset-0 w-full h-full object-cover "
             src={video}
             autoPlay
             loop
             muted
             playsInline
+            preload="auto"
           ></video>
           {/* Div para bloquear interacción en iPhone */}
           <div className="absolute inset-0 bg-transparent pointer-events-auto"></div>

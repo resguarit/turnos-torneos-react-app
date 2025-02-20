@@ -39,8 +39,15 @@ const AppRoutes = () => {
         <Route path="/confirmar-login" element={<ConfirmarLogin />} />
         <Route path="/nueva-reserva" element={<NuevaReserva />} />
         <Route path="/bloqueo-reserva" element={<ContadorBloqueo />} />
+        <Route path="/torneos-admi" element={<TorneosA />} />
+        <Route path="/zonas-admi" element={<ZonasA />} />
+        <Route path="/alta-zona" element={<AltaZona />} />
+        <Route path="/partidos" element={<Partidos />} />
+        <Route path="/cargar-partido" element={<CargaPartido />} />
+        <Route path="/reglamento" element={<Reglamento />} />
+        <Route path="/premios" element={<Premios />} />
 
-        {/* Rutas protegidas para administradores */}
+        {/* Rutas protegidas para administradores 
         <Route
           path="/torneos-admi"
           element={
@@ -65,6 +72,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        */}
         <Route
           path="/ver-turnos"
           element={
@@ -115,6 +123,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        {/* 
         <Route
           path="/partidos"
           element={
@@ -123,6 +132,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        */}
         <Route
           path="/ver-partidos"
           element={
@@ -131,6 +141,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        {/*
         <Route
           path="/cargar-partido"
           element={
@@ -139,6 +150,8 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        
+
         <Route
           path="/reglamento"
           element={
@@ -147,6 +160,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        
         <Route
           path="/premios"
           element={
@@ -155,6 +169,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        */}
         <Route
           path="/editar-perfil"
           element={

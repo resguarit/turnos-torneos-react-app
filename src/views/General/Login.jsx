@@ -1,5 +1,5 @@
 import video from '../../assets/rng.mp4';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from 'react-router-dom';
 import { login } from '@/services/authService';
@@ -7,6 +7,8 @@ import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Eye, EyeOff } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft } from 'lucide-react';
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -70,11 +72,44 @@ const Login = () => {
         setShowPassword(!showPassword);
     };
 
+    useEffect(() => {
+        const videoElement = document.querySelector("video");
+    
+        if (videoElement) {
+          videoElement.addEventListener("contextmenu", (e) => e.preventDefault());
+          videoElement.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          });
+    
+          // Prevenir la interacción en iOS
+          videoElement.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          });
+        }
+      }, []);
+
     return (
         <div className="min-h-screen w-full relative font-inter">
-            <video className="absolute top-0 left-0 w-full h-full object-cover z-10" src={video} autoPlay loop muted></video>
+            <div className="absolute inset-0">
+                <video
+                    className="pointer-events-none select-none absolute inset-0 w-full h-full object-cover "
+                    src={video}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                ></video>
+            {/* Div para bloquear interacción en iPhone */}
+                <div className="absolute inset-0 bg-transparent pointer-events-auto">  
+                </div>
+            </div>
+
             <ToastContainer position="top-right" />
             <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50 z-20"></div>
+            
             <div className="relative z-30 flex justify-center items-center min-h-screen text-center px-4">
                 <div className="w-full max-w-md bg-white rounded-xl p-8 space-y-6">
                     <div className="space-y-4">
@@ -124,14 +159,14 @@ const Login = () => {
                             <div className="absolute inset-0 flex items-center">
                                 <div className="w-full border-t"></div>
                             </div>
-                            <div className="relative flex justify-center text-sm">
+                            {/* <div className="relative flex justify-center text-sm">
                                 <span className="px-2 text-sm bg-white text-gray-500">O continúa con</span>
-                            </div>
+                            </div> */}
                         </div>
-                        <button onClick={handleGoogleLogin} className="w-full rounded-xl text-base p-2 border-2 items-center flex justify-center gap-4">
+                        {/* <button onClick={handleGoogleLogin} className="w-full rounded-xl text-base p-2 border-2 items-center flex justify-center gap-4">
                             <FcGoogle className='h-6 w-6' />
                             Google
-                        </button>
+                        </button> */}
                     </div>
                     <div className="text-center pt-4 mt-6 border-t text-sm">
                         <p>¿No tienes una cuenta? 

@@ -43,7 +43,7 @@ const UnifiedDateSelector = ({ onDateSelect, reset }) => {
     if (!selectedRange || !selectedRange.from) {
       return (
         <div className="flex items-center justify-between w-full px-2">
-          <span className="text-gray-500">Seleccione una fecha</span>
+          <span className="text-gray-500 ">Seleccione una fecha</span>
           <CalendarDays className="w-5 h-5 text-gray-400" />
         </div>
       );

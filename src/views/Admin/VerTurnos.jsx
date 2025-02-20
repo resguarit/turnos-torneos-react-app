@@ -11,6 +11,7 @@ import FilterControls from '@/components/PanelAdmin/VerTurnos/TurnoFilterControl
 import TurnoList from '@/components/PanelAdmin/VerTurnos/TurnoList';
 import SearchBar from '@/components/PanelAdmin/VerTurnos/TurnoSearchBar';
 import { Button } from '@/components/ui/button';
+import CrearTurnoFijoModal from '@/components/PanelAdmin/VerTurnos/CrearTurnoFijoModal';
 
 function VerTurnos() {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ function VerTurnos() {
   const [loading, setLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [dateReset, setDateReset] = useState(false);
+  const [showTurnoFijoModal, setShowTurnoFijoModal] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -259,12 +261,24 @@ function VerTurnos() {
     }
   };
 
+  const handleTurnoFijoSuccess = () => {
+    fetchTurnos();
+  };
+
   return (
     <>
       <div className="min-h-screen flex flex-col font-inter">
         <main className="flex-1 mt-4 bg-gray-100">
           <div className="mb-8">
             <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={() => setShowTurnoFijoModal(true)}
+                  className="p-2 text-sm rounded-[6px] bg-naranja hover:bg-naranja/90 text-white"
+                >
+                  + Crear Turno Fijo
+                </button>
+              </div>
               <div className='flex w-full gap-4 flex-col sm:flex-row items-center sm:items-start'>
                 <UnifiedDateSelector onDateSelect={handleUnifiedDateSelect} reset={dateReset} />
                 <SearchBar
@@ -299,6 +313,12 @@ function VerTurnos() {
             </div>
           </div>
           {showModal && <ModalConfirmation onConfirm={confirmDeleteSubmit} onCancel={closeDeleteModal} title="Cancelar Turno" subtitle={"Desea Cancelar el turno?"} botonText1={"Volver"} botonText2={"Eliminar"} />}
+          <CrearTurnoFijoModal
+            isOpen={showTurnoFijoModal}
+            onClose={() => setShowTurnoFijoModal(false)}
+            courts={courts}
+            onSuccess={handleTurnoFijoSuccess}
+          />
         </main>
       </div>
     </>

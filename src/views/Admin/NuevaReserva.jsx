@@ -14,6 +14,7 @@ import ReservationSummary from "@/components/Reserva/ReservationSummary";
 import ReservationModal from "@/components/Reserva/ReservationModal";
 import { Header } from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
+import LoadingSinHF from "@/components/LoadingSinHF";
 
 export default function NuevaReserva() {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -30,6 +31,8 @@ export default function NuevaReserva() {
   const [user, setUser] = useState(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [inactiveDays, setInactiveDays] = useState([]);
+  const [loadingInactive, setLoadingInactive] = useState(false);
 
   const navigate = useNavigate();
   const carouselRef = useRef(null);
@@ -54,6 +57,21 @@ export default function NuevaReserva() {
       }
     };
     fetchUserDetails();
+  }, []);
+
+  useEffect(() => {
+    const fetchInactiveDays = async () => {
+      try {
+        setLoadingInactive(true);
+        const response = await api.get('/disponibilidad/dias');
+        setInactiveDays(response.data.inactiveDays);
+      } catch (error) {
+        console.error('Error fetching inactive days:', error);
+      } finally {
+        setLoadingInactive(false);
+      }
+    };
+    fetchInactiveDays();
   }, []);
 
   const fetchAvailability = async (date) => {
@@ -202,6 +220,7 @@ export default function NuevaReserva() {
             <CardContent className="md:p-6 py-4 ">
               <h2 className="text-2xl font-bold md:mb-6 mb-3 md:text-start text-center">Reserva tu cancha</h2>
 
+              {loadingInactive ? <LoadingSinHF/> : (
               <Carousel className="w-full" ref={carouselRef}>
                 <CarouselContent>
                   <CarouselItem>
@@ -214,6 +233,7 @@ export default function NuevaReserva() {
                       handlePrevWeek={handlePrevWeek}
                       handleNextWeek={handleNextWeek}
                       horariosRef={horariosRef}
+                      inactiveDays={inactiveDays}
                     />
                   </CarouselItem>
 
@@ -240,6 +260,7 @@ export default function NuevaReserva() {
                 <CarouselPrevious onClick={handlePrev} />
                 <CarouselNext onClick={handleNext} disabled={isNextDisabled()} />
               </Carousel>
+              )}
 
               <ReservationSummary
                 selectedDate={selectedDate}

@@ -4,7 +4,7 @@ import { es } from 'date-fns/locale';
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 
-const DateSelector = ({ currentWeekStart, weekDays, today, selectedDate, setSelectedDate, handlePrevWeek, handleNextWeek, horariosRef }) => {
+const DateSelector = ({ currentWeekStart, weekDays, today, selectedDate, setSelectedDate, handlePrevWeek, handleNextWeek, horariosRef, inactiveDays }) => {
   return (
     <div className="md:p-4 p-3">
       <h3 className="text-base md:text-lg font-semibold mb-4 flex items-center gap-2 md:justify-start justify-center">
@@ -23,6 +23,7 @@ const DateSelector = ({ currentWeekStart, weekDays, today, selectedDate, setSele
       <div className="flex flex-wrap gap-2 justify-center sm:grid sm:grid-cols-7 ">
         {weekDays.map((day) => {
           const isPastDate = day < today;
+          const isInactiveDay = inactiveDays.includes(day.getDay());
           
           return (
             <Button
@@ -31,22 +32,22 @@ const DateSelector = ({ currentWeekStart, weekDays, today, selectedDate, setSele
               className={`flex flex-col border capitalize border-gray-400 items-center rounded-[8px] p-2 h-auto ${
                 selectedDate?.toDateString() === day.toDateString()
                   ? "bg-naranja hover:bg-naranja/90 text-white"
-                  : isPastDate 
+                  : isPastDate || isInactiveDay
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed hover:bg-gray-100"
                   : ""
               }`}
               onClick={() => {
-                if (!isPastDate) {
+                if (!isPastDate && !isInactiveDay) {
                   setSelectedDate(day);
                   horariosRef.current.scrollIntoView({ behavior: "smooth" });
                 }
               }}
-              disabled={isPastDate}
+              disabled={isPastDate || isInactiveDay}
             >
-              <span className={`text-xs ${isPastDate ? 'text-gray-400' : ''}`}>
+              <span className={`text-xs ${isPastDate || isInactiveDay ? 'text-gray-400' : ''}`}>
                 {format(day, "EEE", { locale: es })}
               </span>
-              <span className={`text-lg ${isPastDate ? 'text-gray-400' : ''}`}>
+              <span className={`text-lg ${isPastDate || isInactiveDay ? 'text-gray-400' : ''}`}>
                 {format(day, "d")}
               </span>
             </Button>

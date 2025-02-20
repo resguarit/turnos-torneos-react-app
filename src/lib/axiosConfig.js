@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Crear una instancia de Axios
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api', // Cambia esto a la URL de tu API
+  baseURL: 'https://rockandgolback-production.up.railway.app/api', // Cambia esto a la URL de tu API
 });
 
 // Interceptor para agregar el token a todas las solicitudes

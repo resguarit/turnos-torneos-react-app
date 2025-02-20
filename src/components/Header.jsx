@@ -1,7 +1,7 @@
 import Logo from '../assets/logo.png';
 import MenuMovil from './MenuMovil';
 import { CircleUserRound } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { UserCog, MonitorCog } from 'lucide-react';
 import { LogOut } from 'lucide-react';
@@ -59,23 +59,23 @@ export function Header() {
   return (
     <header className="bg-naranja  max-w-full text-white px-6 py-4">
       <nav className=" mx-auto flex items-center justify-between">
-        <a href="/" >
+        <Link to="/" >
           <img src={Logo} alt="Logo" className="h-7 lg:h-8 xl:h-9" />
-        </a>
+        </Link>
         <div className="hidden md:flex items-center">
           <div className="flex gap-8 lg:gap-12  font-inter text-sm xl:text-lg">
-            <a href="/" className="hover:opacity-80">Inicio</a>
+            <Link to="/" className="hover:opacity-80">Inicio</Link>
             {userRole === 'admin' && (
-              <a href="/panel-admin" className="hover:opacity-80 flex items-center gap-1">
+              <Link to="/panel-admin" className="hover:opacity-80 flex items-center gap-1">
                 Administrador 
-              </a>
+              </Link>
             )}
             {/* se agrega cuando este termianda la seccion de torneos */}
-            {/* <a href="/torneos-admi" className="hover:opacity-80">Torneos</a> */}
-            <a href="/nueva-reserva" className="hover:opacity-80">Reservas</a>
-            {/* <a href="/partidos" className="hover:opacity-80">Partidos</a> */}
-            <a href="/reglamento" className="hover:opacity-80">Reglamento</a>
-            <a href="/premios" className="hover:opacity-80">Premios</a>
+            {/* <Link to="/torneos-admi" className="hover:opacity-80">Torneos</Link> */}
+            <Link to="/nueva-reserva" className="hover:opacity-80">Reservas</Link>
+            {/* <Link to="/partidos" className="hover:opacity-80">Partidos</Link> */}
+            <Link to="/reglamento" className="hover:opacity-80">Reglamento</Link>
+            <Link to="/premios" className="hover:opacity-80">Premios</Link>
             
             {username ? (
               <div className="relative">
@@ -123,9 +123,9 @@ export function Header() {
                 )}
               </div>
             ) : (
-              <a href="/login" className="hover:opacity-80 flex flex-row items-center gap-2">
+              <Link to="/login" className="hover:opacity-80 flex flex-row items-center gap-2">
                 Iniciar Sesión <CircleUserRound className="h-7 w-7" />
-              </a>
+              </Link>
             )}
           </div>
         </div>

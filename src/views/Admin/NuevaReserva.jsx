@@ -6,7 +6,7 @@ import api from '@/lib/axiosConfig';
 import { toast } from "react-toastify";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Volver from "@/components/Reserva/Volver";
-import Footer from "@/components/Reserva/Footer";
+import {Footer} from "../../components/Footer";
 import DateSelector from "@/components/Reserva/DateSelector";
 import TimeSelector from "@/components/Reserva/TimeSelector";
 import CourtSelector from "@/components/Reserva/CourtSelector";
@@ -214,7 +214,7 @@ export default function NuevaReserva() {
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
       <Volver />
-      <main className="flex-1 p-6 bg-gray-100">
+      <main className="flex-grow p-6 bg-gray-100">
         <div className="max-w-4xl mx-auto ">
           <Card className="rounded-2xl bg-white">
             <CardContent className="md:p-6 py-4 ">

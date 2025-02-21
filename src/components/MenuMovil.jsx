@@ -202,30 +202,29 @@ const MenuMovil = ({ setMenuOpen }) => {
 
               
               
-            <div
-              className="flex w-full items-center justify-between border-b border-green pb-4"
-            >
-            <button
-                  onClick={() => {
-                    handleModal()
-                  }}
+            {/* Botón Cerrar Sesión - Solo visible si hay un usuario logueado */}
+            {username && (
+              <div className="flex w-full items-center justify-between border-b border-green pb-4">
+                <button
+                  onClick={handleModal}
                   className="text-lg font-medium justify-between text-left flex-grow hover:text-white transition-colors flex items-center gap-2"
                 >
                   <span className="flex items-center">
                     Cerrar Sesión
                   </span>
                   <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                className="h-5 w-5 text-white"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-              </svg>
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="h-5 w-5 text-white"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                  </svg>
                 </button>
-                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -233,8 +232,7 @@ const MenuMovil = ({ setMenuOpen }) => {
         <ModalConfirmation
           onConfirm={handleConfirmSubmit}
           onCancel={closeConfirmModal}
-          title="Cerrar Sesión"
-          subtitle={"¿Desea cerrar la sesión?"}
+          title="¿Desea cerrar la sesión?"
           botonText1={"Cancelar"}
           botonText2={"Cerrar Sesión"}
         />

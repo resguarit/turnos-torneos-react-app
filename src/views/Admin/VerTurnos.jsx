@@ -6,11 +6,12 @@ import 'react-toastify/dist/ReactToastify.css';
 import LoadingSinHF from '@/components/LoadingSinHF';
 import ModalConfirmation from '@/components/ModalConfirmation';
 import PageHeader from '@/components/PanelAdmin/VerTurnos/TurnoHeader';
-import DateSelector from '@/components/PanelAdmin/VerTurnos/TurnoDateSelector';
+import UnifiedDateSelector from '@/components/PanelAdmin/VerTurnos/UnifiedDateSelector';
 import FilterControls from '@/components/PanelAdmin/VerTurnos/TurnoFilterControls';
 import TurnoList from '@/components/PanelAdmin/VerTurnos/TurnoList';
 import SearchBar from '@/components/PanelAdmin/VerTurnos/TurnoSearchBar';
 import { Button } from '@/components/ui/button';
+import CrearTurnoFijoModal from '@/components/PanelAdmin/VerTurnos/CrearTurnoFijoModal';
 
 function VerTurnos() {
   const navigate = useNavigate();
@@ -30,6 +31,8 @@ function VerTurnos() {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [dateReset, setDateReset] = useState(false);
+  const [showTurnoFijoModal, setShowTurnoFijoModal] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -231,6 +234,7 @@ function VerTurnos() {
   };
 
   const clearFilters = () => {
+    setDateReset(true);
     setSelectedDate(null);
     setStartDate(null);
     setEndDate(null);
@@ -240,6 +244,25 @@ function VerTurnos() {
     setSelectedStatus([]);
     setViewOption('day');
     fetchTurnos();
+    setTimeout(() => setDateReset(false), 100); // Reset the flag
+  };
+
+  const handleUnifiedDateSelect = ({ type, date, startDate, endDate }) => {
+    if (type === 'single') {
+      setSelectedDate(date);
+      setStartDate(null);
+      setEndDate(null);
+      setViewOption('day');
+    } else {
+      setSelectedDate(null);
+      setStartDate(startDate);
+      setEndDate(endDate);
+      setViewOption('range');
+    }
+  };
+
+  const handleTurnoFijoSuccess = () => {
+    fetchTurnos();
   };
 
   return (
@@ -248,52 +271,37 @@ function VerTurnos() {
         <main className="flex-1 mt-4 bg-gray-100">
           <div className="mb-8">
             <div className="space-y-4">
-              <div className='flex w-full gap-4 flex-col sm:flex-row items-center sm:items-start '>
-              <div className="flex sm:flex-col items-center w-full sm:w-fit justify-center flex-row gap-2">
-                <div className="flex gap-2 ">
-                <button onClick={() => setViewOption('day')}  className={`p-1 px-2 sm:text-base text-sm rounded-[6px] transition-colors ${viewOption === 'day' ? 'bg-naranja text-white' : 'bg-white text-naranja'} hover:bg-naranja hover:text-white`}
-                > Día 
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={() => setShowTurnoFijoModal(true)}
+                  className="p-2 text-sm rounded-[6px] bg-naranja hover:bg-naranja/90 text-white"
+                >
+                  + Crear Turno Fijo
                 </button>
-                <button onClick={() => setViewOption('range')}  className={`p-1 px-2 sm:text-base text-sm rounded-[6px] transition-colors ${viewOption === 'range' ? 'bg-naranja text-white' : 'bg-white text-naranja'} hover:bg-naranja hover:text-white`}
-                  >Intervalo
-                </button>
-                </div>
-                <div className='w-full'>
-                <DateSelector
-                className="w-full"
-                  viewOption={viewOption}
-                  selectedDate={selectedDate}
-                  startDate={startDate}
-                  endDate={endDate}
-                  isOpen={isOpen}
-                  toggleCalendar={toggleCalendar}
-                  handleDateChange={handleDateChange}
-                  handleRangeChange={handleRangeChange}
-                />
-                </div>
               </div>
-              <SearchBar
-              className="w-full"
-                searchType={searchType}
-                setSearchType={setSearchType}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                handleFilterToggle={handleFilterToggle}
-                handleSearch={handleSearch}
-                isFilterOpen={isFilterOpen}
-                clearFilters={clearFilters} // Pass the clearFilters function
-              />
-              {isFilterOpen && (
-                <FilterControls
-                  selectedCourt={selectedCourt}
-                  setSelectedCourt={setSelectedCourt}
-                  selectedStatus={selectedStatus}
-                  setSelectedStatus={setSelectedStatus}
-                  courts={courts}
-                  handleStatusChange={handleStatusChange}
+              <div className='flex w-full gap-4 flex-col sm:flex-row items-center sm:items-start'>
+                <UnifiedDateSelector onDateSelect={handleUnifiedDateSelect} reset={dateReset} />
+                <SearchBar
+                  className="w-full"
+                  searchType={searchType}
+                  setSearchType={setSearchType}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  handleFilterToggle={handleFilterToggle}
+                  handleSearch={handleSearch}
+                  isFilterOpen={isFilterOpen}
+                  clearFilters={clearFilters} // Pass the clearFilters function
                 />
-              )}
-              
+                {isFilterOpen && (
+                  <FilterControls
+                    selectedCourt={selectedCourt}
+                    setSelectedCourt={setSelectedCourt}
+                    selectedStatus={selectedStatus}
+                    setSelectedStatus={setSelectedStatus}
+                    courts={courts}
+                    handleStatusChange={handleStatusChange}
+                  />
+                )}
               </div>
               {loading && (<LoadingSinHF/>)}
               {!loading && (
@@ -305,6 +313,12 @@ function VerTurnos() {
             </div>
           </div>
           {showModal && <ModalConfirmation onConfirm={confirmDeleteSubmit} onCancel={closeDeleteModal} title="Cancelar Turno" subtitle={"Desea Cancelar el turno?"} botonText1={"Volver"} botonText2={"Eliminar"} />}
+          <CrearTurnoFijoModal
+            isOpen={showTurnoFijoModal}
+            onClose={() => setShowTurnoFijoModal(false)}
+            courts={courts}
+            onSuccess={handleTurnoFijoSuccess}
+          />
         </main>
       </div>
     </>

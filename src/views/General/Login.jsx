@@ -7,6 +7,8 @@ import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Eye, EyeOff } from 'lucide-react';
+import Volver from '@/components/Reserva/Volver';
+import { ChevronLeft } from 'lucide-react';
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -75,70 +77,77 @@ const Login = () => {
             <video className="absolute top-0 left-0 w-full h-full object-cover z-10" src={video} autoPlay loop muted></video>
             <ToastContainer position="top-right" />
             <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50 z-20"></div>
-            <div className="relative z-30 flex justify-center items-center min-h-screen text-center px-4">
-                <div className="w-full max-w-md bg-white rounded-xl p-8 space-y-6">
-                    <div className="space-y-4">
-                        <h2 className="text-2xl font-bold text-center lg:text-3xl">Iniciar Sesión</h2>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <input
-                                    type="text"
-                                    name="identifier"
-                                    placeholder="Email o DNI"
-                                    value={formData.identifier}
-                                    onChange={handleChange}
-                                    className={`w-full rounded-xl text-sm p-2 border-2 ${
-                                        inputErrors.identifier ? 'border-red-500' : 'border-gray-200'
-                                    }`}
-                                    required
-                                />
-                            </div>
-                            <div className="relative">
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    name="password"
-                                    placeholder="Contraseña"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    className={`w-full rounded-xl text-sm p-2 border-2 ${
-                                        inputErrors.password ? 'border-red-500' : 'border-gray-200'
-                                    }`}
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    onClick={toggleShowPassword}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                                >
-                                    {showPassword ? <EyeOff className='h-5 w-5'/> : <Eye className='h-5 w-5'/>}
+            <div className="relative z-30 min-h-screen">
+                {/* Add Volver button here */}
+                <div className="absolute top-4 left-4">
+                    <button onClick={() => navigate('/')} className="hover:bg-naranja rounded-2xl text-white p-2 text-sm flex items-center"><ChevronLeft className="w-5"/> Volver Al Inicio</button>
+                </div>
+                
+                <div className="flex justify-center items-center min-h-screen text-center px-4">
+                    <div className="w-full max-w-md bg-white rounded-xl p-8 space-y-6">
+                        <div className="space-y-4">
+                            <h2 className="text-2xl font-bold text-center lg:text-3xl">Iniciar Sesión</h2>
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div>
+                                    <input
+                                        type="text"
+                                        name="identifier"
+                                        placeholder="Email o DNI"
+                                        value={formData.identifier}
+                                        onChange={handleChange}
+                                        className={`w-full rounded-xl text-sm p-2 border-2 ${
+                                            inputErrors.identifier ? 'border-red-500' : 'border-gray-200'
+                                        }`}
+                                        required
+                                    />
+                                </div>
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        name="password"
+                                        placeholder="Contraseña"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        className={`w-full rounded-xl text-sm p-2 border-2 ${
+                                            inputErrors.password ? 'border-red-500' : 'border-gray-200'
+                                        }`}
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={toggleShowPassword}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                    >
+                                        {showPassword ? <EyeOff className='h-5 w-5'/> : <Eye className='h-5 w-5'/>}
+                                    </button>
+                                </div>
+                                {error && (
+                                    <p className="text-red-500 text-sm mt-1">{error}</p>
+                                )}
+                                <button type="submit" className="w-full bg-naranja text-lg font-medium rounded-xl p-2 hover:bg-naranja/90 text-white" disabled={loading}>
+                                    {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                                 </button>
+                            </form>
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t"></div>
+                                </div>
+                                <div className="relative flex justify-center text-sm">
+                                    <span className="px-2 text-sm bg-white text-gray-500">O continúa con</span>
+                                </div>
                             </div>
-                            {error && (
-                                <p className="text-red-500 text-sm mt-1">{error}</p>
-                            )}
-                            <button type="submit" className="w-full bg-naranja text-lg font-medium rounded-xl p-2 hover:bg-naranja/90 text-white" disabled={loading}>
-                                {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                            <button onClick={handleGoogleLogin} className="w-full rounded-xl text-base p-2 border-2 items-center flex justify-center gap-4">
+                                <FcGoogle className='h-6 w-6' />
+                                Google
                             </button>
-                        </form>
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t"></div>
-                            </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-2 text-sm bg-white text-gray-500">O continúa con</span>
-                            </div>
                         </div>
-                        <button onClick={handleGoogleLogin} className="w-full rounded-xl text-base p-2 border-2 items-center flex justify-center gap-4">
-                            <FcGoogle className='h-6 w-6' />
-                            Google
-                        </button>
-                    </div>
-                    <div className="text-center pt-4 mt-6 border-t text-sm">
-                        <p>¿No tienes una cuenta? 
-                            <Link to="/signup" className="text-naranja hover:underline ml-1">
-                                Regístrate
-                            </Link>
-                        </p>
+                        <div className="text-center pt-4 mt-6 border-t text-sm">
+                            <p>¿No tienes una cuenta? 
+                                <Link to="/signup" className="text-naranja hover:underline ml-1">
+                                    Regístrate
+                                </Link>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>

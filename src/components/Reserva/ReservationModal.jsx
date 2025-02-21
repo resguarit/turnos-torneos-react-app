@@ -30,7 +30,7 @@ const ReservationModal = ({ showModal, confirmLoading, onConfirm, onCancel, sele
                 <Calendar className="w-5 h-5 text-gray-500" />
                 <div className="w-full">
                   <p className="text-sm text-gray-500">Fecha y Hora</p>
-                  <div className="flex full justify-between items-center">
+                  <div className="flex full flex-col md:flex-row md:justify-between gap-1 md:gap-0 md:items-center">
                     <p className="font-medium text-xs md:text-sm capitalize">
                       {isValid(parsedDate) ? format(parsedDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es }) : 'Fecha inválida'}
                     </p>

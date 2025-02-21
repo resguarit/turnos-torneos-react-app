@@ -6,6 +6,7 @@ import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Eye, EyeOff } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 
 function SignUp() {
     const [formData, setFormData] = useState({
@@ -93,6 +94,9 @@ function SignUp() {
             <video className="absolute top-0 left-0 w-full h-full object-cover z-10" src={video} autoPlay loop muted></video>
             <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50 z-20"></div>
             <div className="relative z-30 flex justify-center items-center min-h-screen text-center px-4">
+            <div className="absolute top-4 left-4">
+                    <button onClick={() => navigate('/')} className="hover:bg-naranja rounded-2xl text-white p-2 text-sm flex items-center"><ChevronLeft className="w-5"/> Volver Al Inicio</button>
+                </div>
                 <div className="w-full max-w-md bg-white rounded-xl p-5 space-y-6">
                     <div className="space-y-4">
                         <h2 className="text-2xl font-bold text-center lg:text-3xl">Registrarse</h2>

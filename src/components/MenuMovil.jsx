@@ -2,7 +2,6 @@ import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { UserCog, MonitorIcon as MonitorCog, LogOut, Pencil } from "lucide-react"
 import ModalConfirmation from "./ModalConfirmation"
-import { BASE_URL } from '@/constants/config'
 
 const MenuMovil = ({ setMenuOpen }) => {
   const [isOpen, setIsOpen] = useState(false)

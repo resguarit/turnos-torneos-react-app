@@ -146,7 +146,7 @@ export default function NuevaReserva() {
         monto_seña: selectedCourt.seña
       }));
       setShowModal(false);
-      navigate(`${BASE_URL}/confirmar-turno?time=${selectedTime}&date=${format(selectedDate, 'yyyy-MM-dd')}&court=${selectedCourt.id}`);
+      navigate(`/confirmar-turno?time=${selectedTime}&date=${format(selectedDate, 'yyyy-MM-dd')}&court=${selectedCourt.id}`);
       return;
     }
   
@@ -178,7 +178,7 @@ export default function NuevaReserva() {
         }));
   
         setShowModal(false);
-        navigate(`${BASE_URL}/bloqueo-reserva`);
+        navigate(`/bloqueo-reserva`);
       }
     } catch (error) {
       if (error.response && error.response.status === 409) {
@@ -188,7 +188,7 @@ export default function NuevaReserva() {
         toast.error(error.response?.data?.message || 'Error al crear el bloqueo temporal');
       }
       setShowModal(false);
-      navigate(`${BASE_URL}/nueva-reserva`);
+      navigate(`/nueva-reserva`);
     } finally {
       setConfirmLoading(false);
     }

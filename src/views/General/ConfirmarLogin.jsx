@@ -15,7 +15,7 @@ import Loading from '@/components/LoadingSinHF';
 
 export default function ConfirmarLogin() {
   const [formData, setFormData] = useState({
-    dni: '', // Cambiado de email a dni
+    identifier: '', // This will hold either email or DNI
     password: ''
   });
   const navigate = useNavigate();
@@ -37,7 +37,7 @@ export default function ConfirmarLogin() {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.dni) newErrors.dni = 'El DNI es requerido';
+    if (!formData.identifier) newErrors.identifier = 'El DNI o Email es requerido';
     if (!formData.password) newErrors.password = 'La contraseña es requerida';
     if (Object.keys(newErrors).length > 0) {
       Object.values(newErrors).forEach(error => toast.error(error));
@@ -58,12 +58,14 @@ export default function ConfirmarLogin() {
     if (validateForm()) {
       setLoading(true);
       try {
-        // Iniciar sesión
-        const loginResponse = await api.post('/login', {
-          dni: formData.dni,
-          password: formData.password
-        });
-  
+        // Determinar si el identificador es un email o DNI
+        const isEmail = formData.identifier.includes('@');
+        const loginData = isEmail 
+          ? { email: formData.identifier, password: formData.password }
+          : { dni: formData.identifier, password: formData.password };
+
+        const loginResponse = await api.post('/login', loginData);
+
         if (loginResponse.data.token) {
           // Guardar datos del usuario
           localStorage.setItem('user_id', loginResponse.data.user_id);
@@ -72,33 +74,53 @@ export default function ConfirmarLogin() {
           localStorage.setItem('user_role', loginResponse.data.rol);
           
           api.defaults.headers.common['Authorization'] = `Bearer ${loginResponse.data.token}`;
-  
-          // Obtener datos de reserva del localStorage
-          const reservaTemp = JSON.parse(localStorage.getItem('reservaTemp'));
-          
-          // Crear bloqueo temporal
-          const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
-            fecha: reservaTemp.fecha,
-            horario_id: reservaTemp.horario_id,
-            cancha_id: reservaTemp.cancha_id
-          });
-  
-          if (bloqueoResponse.status === 201) {
-            localStorage.setItem('bloqueoTemp', JSON.stringify({
-              id: bloqueoResponse.data.bloqueo.id,
-              fecha: bloqueoResponse.data.bloqueo.fecha,
-              horario_id: bloqueoResponse.data.bloqueo.horario_id,
-              cancha_id: bloqueoResponse.data.bloqueo.cancha_id,
-              expira_en: bloqueoResponse.data.bloqueo.expira_en
-            }));
-  
-            navigate('/bloqueo-reserva'); // Changed from '/bloqueo-reserva' to '/contador-bloqueo'
+
+          try {
+            // Obtener datos de reserva del localStorage
+            const reservaTemp = JSON.parse(localStorage.getItem('reservaTemp'));
+            if (!reservaTemp) {
+              toast.error('No se encontraron datos de la reserva');
+              setLoading(false);
+              navigate('/nueva-reserva');
+              return;
+            }
+            
+            // Crear bloqueo temporal
+            const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
+              fecha: reservaTemp.fecha,
+              horario_id: reservaTemp.horario_id,
+              cancha_id: reservaTemp.cancha_id
+            });
+
+            if (bloqueoResponse.status === 201) {
+              localStorage.setItem('bloqueoTemp', JSON.stringify({
+                id: bloqueoResponse.data.bloqueo.id,
+                fecha: bloqueoResponse.data.bloqueo.fecha,
+                horario_id: bloqueoResponse.data.bloqueo.horario_id,
+                cancha_id: bloqueoResponse.data.bloqueo.cancha_id,
+                expira_en: bloqueoResponse.data.bloqueo.expira_en
+              }));
+              
+              setLoading(false);
+              navigate('/bloqueo-reserva');
+            }
+          } catch (bloqueoError) {
+            console.error('Error al crear bloqueo:', bloqueoError);
+            toast.error('Error al crear el bloqueo temporal');
+            setLoading(false);
+            navigate('/nueva-reserva');
+            return;
           }
         }
       } catch (error) {
         console.error('Error completo:', error);
-        toast.error(error.response?.data?.message || 'Error al iniciar sesión');
-      } finally {
+        if (error.response?.status === 422) {
+          toast.error('Por favor ingrese un DNI o email válido');
+        } else if (error.response?.status === 401) {
+          toast.error('Credenciales incorrectas');
+        } else {
+          toast.error(error.response?.data?.message || 'Error al iniciar sesión');
+        }
         setLoading(false);
       }
     }
@@ -181,17 +203,17 @@ export default function ConfirmarLogin() {
             <form onSubmit={handleSubmit} className="space-y-8 h-full  flex flex-col">
               <div className="space-y-4">
                 <div className="space-y-1 flex flex-col">
-                  <Label htmlFor="dni" className="text-base font-semibold">DNI</Label>
+                  <Label htmlFor="identifier" className="text-base font-semibold">DNI o Email</Label>
                   <input
-                    id="dni"
+                    id="identifier"
                     type="text"
-                    name="dni"
-                    value={formData.dni}
+                    name="identifier"
+                    value={formData.identifier}
                     onChange={handleChange}
-                    className={`w-full text-black text-lg border-2 border-gray-300  rounded-xl ${errors.dni ? 'border-red-500' : ''}`}
+                    className={`w-full text-black text-lg border-2 border-gray-300 rounded-xl ${errors.identifier ? 'border-red-500' : ''}`}
                   />
-                  {errors.dni && (
-                    <p className="text-sm text-red-500">{errors.dni}</p>
+                  {errors.identifier && (
+                    <p className="text-sm text-red-500">{errors.identifier}</p>
                   )}
                 </div>
 

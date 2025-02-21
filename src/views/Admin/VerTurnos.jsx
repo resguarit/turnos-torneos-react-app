@@ -313,12 +313,13 @@ function VerTurnos() {
             </div>
           </div>
           {showModal && <ModalConfirmation onConfirm={confirmDeleteSubmit} onCancel={closeDeleteModal} title="Cancelar Turno" subtitle={"Desea Cancelar el turno?"} botonText1={"Volver"} botonText2={"Eliminar"} />}
+          {showTurnoFijoModal && (
           <CrearTurnoFijoModal
             isOpen={showTurnoFijoModal}
             onClose={() => setShowTurnoFijoModal(false)}
             courts={courts}
             onSuccess={handleTurnoFijoSuccess}
-          />
+          />)}
         </main>
       </div>
     </>

@@ -9,6 +9,7 @@ import SolicitudCambioTurnoDialog from "./SolicitudCambioTurnoDialog";
 import api from "@/lib/axiosConfig";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { TurnoEstado } from '@/constants/estadoTurno';
 
 const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton }) => {
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -24,18 +25,24 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
   const handleCancelTurno = async () => {
     setIsCancelling(true);
     try {
-      await api.put(`/turnos/cancelar/${turno.id}`);
-      toast.success('Turno cancelado exitosamente');
-      setShowCancelModal(false);
-      setTimeout(() => {
+      // Update to use PATCH and send the new status
+      const response = await api.patch(`/turnos/${turno.id}`, {
+        estado: TurnoEstado.CANCELADO
+      });
+
+      if (response.status === 200) {
+        toast.success('Turno cancelado exitosamente');
+        setShowCancelModal(false);
+        
+        // Call the callback to refresh the list
         if (onTurnoCanceled) {
           onTurnoCanceled();
         }
-        setIsCancelling(false);
-      }, 1000);
+      }
     } catch (error) {
       console.error('Error al cancelar el turno:', error);
-      toast.error('Error al cancelar el turno');
+      toast.error(error.response?.data?.message || 'Error al cancelar el turno');
+    } finally {
       setIsCancelling(false);
     }
   };
@@ -92,11 +99,11 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
             </div>
             <div>
               <div className="flex items-center gap-2">
-                {turno.estado === "Cancelado" ? (
+                {turno.estado === TurnoEstado.CANCELADO ? (
                   <XCircle className="w-4 h-4 text-red-500" />
-                ) : turno.estado === "Pendiente" ? (
+                ) : turno.estado === TurnoEstado.PENDIENTE ? (
                   <MinusCircle className="w-4 h-4 text-yellow-500" />
-                ) : turno.estado === "Señado" ? (
+                ) : turno.estado === TurnoEstado.SEÑADO ? (
                   <CheckCircle className="w-4 h-4 text-blue-500" />
                 ) : (
                   <CheckCircle className="w-4 h-4 text-green-500" />
@@ -134,7 +141,7 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
           </div>
 
           <div className="flex flex-col-reverse lg:flex-row justify-between gap-2">
-            {turno.estado !== "Cancelado" && showCancelButton && (
+            {turno.estado !== TurnoEstado.CANCELADO && showCancelButton && (
               <Button
                 onClick={() => setShowCancelModal(true)}
                 className="mt-4 w-full lg:w-1/2 bg-red-500 text-white hover:bg-red-600"
@@ -142,7 +149,7 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
                 Cancelar Turno
               </Button>
             )}
-            {showModifyButton && turno.estado !== "Cancelado" && (
+            {showModifyButton && turno.estado !== TurnoEstado.CANCELADO && (
               <Button
                 onClick={() => setShowChangeModal(true)}
                 className="mt-4 min-w-fit w-full lg:w-1/2 py-2 bg-green-500 text-white hover:bg-green-600"

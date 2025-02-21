@@ -10,7 +10,22 @@ import 'react-toastify/dist/ReactToastify.css';
 export default function ContadorBloqueo() {
   const [timeLeft, setTimeLeft] = useState(60); // 1 minuto en segundos (según backend)
   const [loading, setLoading] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const navigate = useNavigate();
+
+  // Función para cancelar el bloqueo
+  const cancelarBloqueo = async () => {
+    const bloqueoData = JSON.parse(localStorage.getItem('bloqueoTemp'));
+    if (bloqueoData?.id) {
+      try {
+        await api.delete(`/turnos/cancelarbloqueo/${bloqueoData.id}`);
+        localStorage.removeItem('bloqueoTemp');
+        localStorage.removeItem('reservaTemp');
+      } catch (error) {
+        console.error('Error al cancelar el bloqueo:', error);
+      }
+    }
+  };
 
   useEffect(() => {
     // Verificar si existen datos del bloqueo
@@ -31,9 +46,23 @@ export default function ContadorBloqueo() {
       });
     }, 1000);
 
+    // Manejador para cuando el usuario sale de la página
+    const handleBeforeUnload = async (e) => {
+      e.preventDefault();
+      await cancelarBloqueo();
+    };
+
+    // Manejador para cuando el componente se desmonta
+    const handleUnmount = async () => {
+      await cancelarBloqueo();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
       clearInterval(timer);
-
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      handleUnmount();
     };
   }, [navigate]);
 
@@ -98,6 +127,25 @@ export default function ContadorBloqueo() {
     }
   };
 
+  const handleCancelarClick = async () => {
+    setIsCancelling(true);
+    try {
+      const bloqueoData = JSON.parse(localStorage.getItem('bloqueoTemp'));
+      if (bloqueoData?.id) {
+        await api.delete(`/turnos/cancelarbloqueo/${bloqueoData.id}`);
+        toast.success('Reserva cancelada exitosamente');
+        localStorage.removeItem('bloqueoTemp');
+        localStorage.removeItem('reservaTemp');
+        navigate('/nueva-reserva');
+      }
+    } catch (error) {
+      console.error('Error al cancelar la reserva:', error);
+      toast.error('Error al cancelar la reserva');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
   // Convertir segundos a formato mm:ss
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -115,13 +163,22 @@ export default function ContadorBloqueo() {
           <p className="text-gray-600 mt-4">
             Tu reserva se cancelará automáticamente si no realizas el pago antes de que termine el contador
           </p>
-          <Button 
-            onClick={handlePagarClick}
-            disabled={loading || timeLeft === 0}
-            className="bg-naranja hover:bg-naranja/90 text-white px-8 py-3 rounded-xl text-lg mt-8"
-          >
-            {loading ? 'Procesando...' : 'Pagar'}
-          </Button>
+          <div className="flex flex-row-reverse md:flex-row gap-4 justify-center mt-8">
+            <Button 
+              onClick={handleCancelarClick}
+              disabled={loading || isCancelling || timeLeft === 0}
+              className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-xl text-lg order-2 md:order-1"
+            >
+              {isCancelling ? 'Cancelando...' : 'Cancelar Reserva'}
+            </Button>
+            <Button 
+              onClick={handlePagarClick}
+              disabled={loading || isCancelling || timeLeft === 0}
+              className="bg-naranja hover:bg-naranja/90 text-white px-8 py-3 rounded-xl text-lg order-1 md:order-2"
+            >
+              {loading ? 'Procesando...' : 'Pagar'}
+            </Button>
+          </div>
         </div>
       </main>
       <Footer />

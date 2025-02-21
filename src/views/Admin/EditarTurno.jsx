@@ -18,6 +18,7 @@ import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { TurnoEstado } from '@/constants/estadoTurno';
 
 function EditarTurno() {
   const { id } = useParams();
@@ -343,10 +344,10 @@ function EditarTurno() {
                       <SelectValue placeholder="Seleccionar estado" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border shadow-lg text-sm md:text-base">
-                      <SelectItem value="Pendiente" className="hover:bg-gray-100 text-sm md:text-base">Pendiente</SelectItem>
-                      <SelectItem value="Señado" className="hover:bg-gray-100 text-sm md:text-base">Señado</SelectItem>
-                      <SelectItem value="Pagado" className="hover:bg-gray-100 text-sm md:text-base">Pagado</SelectItem>
-                      <SelectItem value="Cancelado" className="hover:bg-gray-100 text-sm md:text-base">Cancelado</SelectItem>
+                      <SelectItem value={TurnoEstado.PENDIENTE} className="hover:bg-gray-100 text-sm md:text-base">Pendiente</SelectItem>
+                      <SelectItem value={TurnoEstado.SEÑADO} className="hover:bg-gray-100 text-sm md:text-base">Señado</SelectItem>
+                      <SelectItem value={TurnoEstado.PAGADO} className="hover:bg-gray-100 text-sm md:text-base">Pagado</SelectItem>
+                      <SelectItem value={TurnoEstado.CANCELADO} className="hover:bg-gray-100 text-sm md:text-base">Cancelado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

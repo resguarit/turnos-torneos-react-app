@@ -66,6 +66,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        */}
         <Route
           path={`${BASE_URL}/ver-turnos`}
           element={
@@ -116,6 +117,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        {/* 
         <Route
           path={`${BASE_URL}/partidos`}
           element={
@@ -124,6 +126,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        */}
         <Route
           path={`${BASE_URL}/ver-partidos`}
           element={
@@ -132,6 +135,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        {/*
         <Route
           path={`${BASE_URL}/cargar-partido`}
           element={
@@ -140,6 +144,8 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        
+
         <Route
           path={`${BASE_URL}/reglamento`}
           element={
@@ -148,6 +154,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        
         <Route
           path={`${BASE_URL}/premios`}
           element={
@@ -156,6 +163,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        */}
         <Route
           path={`${BASE_URL}/editar-perfil`}
           element={

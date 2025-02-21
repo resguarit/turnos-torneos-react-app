@@ -31,6 +31,22 @@ export default function Premios() {
       window.removeEventListener('resize', detectSize);
       clearTimeout(timer);
     };
+
+    const videoElement = document.querySelector("video");
+
+    if (videoElement) {
+      videoElement.addEventListener("contextmenu", (e) => e.preventDefault());
+      videoElement.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+
+      // Prevenir la interacción en iOS
+      videoElement.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    }
   }, []);
 
   const prizes = [
@@ -75,13 +91,20 @@ export default function Premios() {
       )}
       
       {/* Video de fondo */}
-      <video
-        className="absolute top-0 left-0 w-full h-full object-cover z-0"
-        src={rngBlack}
-        autoPlay
-        loop
-        muted
-      ></video>
+      <div className="absolute inset-0">
+          <video
+              className="pointer-events-none select-none absolute inset-0 w-full h-full object-cover "
+              src={rngBlack}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+          ></video>
+      {/* Div para bloquear interacción en iPhone */}
+          <div className="absolute inset-0 bg-transparent pointer-events-auto">  
+          </div>
+      </div>
 
       {/* Superposición oscura */}
       <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50 z-10"></div>

@@ -34,6 +34,7 @@ const ReservationModal = ({ showModal, confirmLoading, onConfirm, onCancel, sele
                     <p className="font-medium text-xs md:text-sm capitalize">
                       {isValid(parsedDate) ? format(parsedDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es }) : 'Fecha inválida'}
                     </p>
+                    {console.log(selectedTimeName)}
                     <p className="font-medium text-xs md:text-sm"> {selectedTimeName}</p>
                   </div>
                 </div>

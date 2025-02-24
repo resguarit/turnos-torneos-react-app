@@ -4,13 +4,14 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
+import { toast } from 'react-toastify';
 
 const CreateFixedReservation = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    usuario_id: '', // ID del usuario seleccionado por DNI
+    usuario_id: '', 
     usuario_nombre: '',
-    fecha_turno: '',
+    fecha_inicio: '', 
     cancha_id: '',
     horario_id: '',
     estado: 'Pendiente',
@@ -53,10 +54,10 @@ const CreateFixedReservation = () => {
   }, [searchTerm, users]);
 
   useEffect(() => {
-    if (formData.fecha_turno) {
+    if (formData.fecha_inicio) { 
       const fetchHorarios = async () => {
         try {
-          const response = await api.get(`/disponibilidad/fecha?fecha=${formData.fecha_turno}`);
+          const response = await api.get(`/disponibilidad/turnos-fijos?fecha=${formData.fecha_inicio}`);
           setHorarios(response.data.horarios);
         } catch (error) {
           console.error('Error al cargar horarios:', error);
@@ -66,13 +67,13 @@ const CreateFixedReservation = () => {
 
       fetchHorarios();
     }
-  }, [formData.fecha_turno]);
+  }, [formData.fecha_inicio]);
 
   useEffect(() => {
-    if (formData.fecha_turno && formData.horario_id) {
+    if (formData.fecha_inicio && formData.horario_id) { 
       const fetchCanchas = async () => {
         try {
-          const response = await api.get(`/disponibilidad/cancha?fecha=${formData.fecha_turno}&horario_id=${formData.horario_id}`);
+          const response = await api.get(`/disponibilidad/cancha?fecha=${formData.fecha_inicio}&horario_id=${formData.horario_id}`);
           setCanchas(response.data.canchas);
         } catch (error) {
           console.error('Error al cargar canchas:', error);
@@ -82,7 +83,7 @@ const CreateFixedReservation = () => {
 
       fetchCanchas();
     }
-  }, [formData.fecha_turno, formData.horario_id]);
+  }, [formData.fecha_inicio, formData.horario_id]);
 
   const handleUserSelect = (user) => {
     setFormData(prev => ({
@@ -95,19 +96,34 @@ const CreateFixedReservation = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    
+    if (!formData.usuario_id) {
+      toast.error('No se ha seleccionado un usuario válido');
+      return;
+    }
 
+    setLoading(true);
     try {
-      if (!formData.usuario_id) {
-        throw new Error('Por favor, seleccione un usuario válido');
+      const disponibilidadResponse = await api.get(
+        `/disponibilidad/turnos-fijos?fecha=${formData.fecha_inicio}&horario_id=${formData.horario_id}&cancha_id=${formData.cancha_id}`
+      );
+
+      const canchaDisponible = disponibilidadResponse.data.disponible;
+
+      if (!canchaDisponible) {
+        toast.error('La cancha no está disponible para turnos fijos en ese horario');
+        setLoading(false);
+        return;
       }
+
       const response = await api.post('/turnos/turnofijo', formData);
       if (response.status === 201) {
+        toast.success('Turnos fijos creados correctamente');
         navigate('/ver-turnos');
       }
     } catch (error) {
-      console.error('Error al crear turno fijo:', error);
-      setError(error.response?.data?.message || 'Error al crear turno fijo');
+      console.error('Error details:', error.response?.data);
+      toast.error(error.response?.data?.message || 'Error al crear los turnos fijos');
     } finally {
       setLoading(false);
     }
@@ -165,8 +181,8 @@ const CreateFixedReservation = () => {
                 <input
                   type="date"
                   className="w-full border rounded p-2"
-                  value={formData.fecha_turno}
-                  onChange={(e) => setFormData({ ...formData, fecha_turno: e.target.value })}
+                  value={formData.fecha_inicio}
+                  onChange={(e) => setFormData({ ...formData, fecha_inicio: e.target.value })}
                 />
               </div>
 
@@ -176,7 +192,7 @@ const CreateFixedReservation = () => {
                   className="w-full border rounded p-2"
                   value={formData.horario_id}
                   onChange={(e) => setFormData({ ...formData, horario_id: e.target.value })}
-                  disabled={!formData.fecha_turno}
+                  disabled={!formData.fecha_inicio}
                 >
                   <option value="">Seleccionar horario</option>
                   {horarios.map(horario => (

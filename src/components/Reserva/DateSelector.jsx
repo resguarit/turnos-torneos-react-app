@@ -1,12 +1,26 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { format, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 
 const DateSelector = ({ currentWeekStart, weekDays, today, selectedDate, setSelectedDate, handlePrevWeek, handleNextWeek, horariosRef, inactiveDays }) => {
+  const calendarRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
-    <div className="md:p-4 p-3">
+    <div ref={calendarRef} className="md:p-4 p-3">
       <h3 className="text-base md:text-lg font-semibold mb-4 flex items-center gap-2 md:justify-start justify-center">
         <CalendarDays className="w-4 h-4 md:w-5 md:h-5" />
         Selecciona una fecha

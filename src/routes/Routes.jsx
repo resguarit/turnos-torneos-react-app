@@ -58,6 +58,14 @@ const AppRoutes = () => {
           }
         />
         <Route
+        path="/turno-fijo"
+        element={
+          <ProtectedRoute requiredRole={ROLES.ADMIN}>
+            <TurnoFijo />
+          </ProtectedRoute>
+        }
+      />
+        <Route
           path={`/alta-zona`}
           element={
             <ProtectedRoute requiredRole={ROLES.ADMIN}>

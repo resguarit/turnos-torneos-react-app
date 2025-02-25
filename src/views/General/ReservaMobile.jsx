@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Calendar, Clock, MapPin, ChevronRight, Check, CreditCard, ArrowRight } from 'lucide-react';
 import api from '@/lib/axiosConfig';
 import { toast } from 'react-toastify';
-import { format, addDays, startOfToday } from 'date-fns';
+import { format, addDays, startOfToday, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
-import ReservationModal from '@/components/Reserva/ReservationModal'; // Importa el modal
+import ReservationModal from '@/components/Reserva/ReservationModal';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { ChevronDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // Importa useNavigate
 
 const ReservaMobile = () => {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -18,8 +20,13 @@ const ReservaMobile = () => {
   const [availability, setAvailability] = useState([]);
   const [loadingHorario, setLoadingHorario] = useState(false);
   const [courts, setCourts] = useState([]);
+  const [user, setUser] = useState(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
   const [loadingCancha, setLoadingCancha] = useState(false);
-  const [isOpen, setIsOpen] = useState(false); // Estado para controlar la visibilidad del modal
+  const [isOpen, setIsOpen] = useState(false);
+  const [expandedCourt, setExpandedCourt] = useState(null);
+
+  const navigate = useNavigate(); // Inicializa useNavigate
 
   // Generar fechas para el próximo mes
   const generateCalendarDates = () => {
@@ -38,6 +45,22 @@ const ReservaMobile = () => {
       });
     return nextMonth;
   };
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      const userId = localStorage.getItem('user_id');
+      if (userId) {
+        try {
+          const response = await api.get(`/usuarios/${userId}`);
+          const userData = response.data.user;
+          setUser(userData);
+        } catch (error) {
+          console.error('Error fetching user details:', error);
+        }
+      }
+    };
+    fetchUserDetails();
+  }, []);
 
   // Estado para las fechas del calendario
   const [calendarDates] = useState(generateCalendarDates());
@@ -131,127 +154,199 @@ const ReservaMobile = () => {
   // Obtener el nombre del tiempo seleccionado
   const selectedTimeName = availability.find(time => time.id === selectedTime)?.time || '';
 
+  const confirmSubmit = async () => {
+    const token = localStorage.getItem('token');
+    
+    if (!selectedDate?.dateObj || !isValid(selectedDate?.dateObj)) {
+      console.error('Invalid selectedDate:', selectedDate);
+      toast.error('Por favor, selecciona una fecha válida.');
+      return;
+    }
+
+    if (!token) {
+      localStorage.setItem('reservaTemp', JSON.stringify({
+        fecha: format(selectedDate.dateObj, 'yyyy-MM-dd'),
+        horario_id: selectedTime,
+        cancha_id: selectedCourt.id,
+        monto_total: selectedCourt.precio_por_hora,
+        monto_seña: selectedCourt.seña
+      }));
+      setIsOpen(false);
+      navigate(`/confirmar-turno?time=${selectedTime}&date=${format(selectedDate.dateObj, 'yyyy-MM-dd')}&court=${selectedCourt.id}`);
+      return;
+    }
+  
+    setConfirmLoading(true);
+    try {
+      const formattedDate = format(selectedDate.dateObj, 'yyyy-MM-dd');
+      
+      const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
+        fecha: formattedDate,
+        horario_id: selectedTime,
+        cancha_id: selectedCourt.id
+      });
+  
+      if (bloqueoResponse.status === 201) {
+        localStorage.setItem('bloqueoTemp', JSON.stringify({
+          id: bloqueoResponse.data.bloqueo.id,
+          fecha: bloqueoResponse.data.bloqueo.fecha,
+          horario_id: bloqueoResponse.data.bloqueo.horario_id,
+          cancha_id: bloqueoResponse.data.bloqueo.cancha_id,
+          expira_en: bloqueoResponse.data.bloqueo.expira_en
+        }));
+        
+        localStorage.setItem('reservaTemp', JSON.stringify({
+          fecha: formattedDate,
+          horario_id: selectedTime,
+          cancha_id: selectedCourt.id,
+          monto_total: selectedCourt.precio_por_hora,
+          monto_seña: selectedCourt.seña
+        }));
+  
+        setIsOpen(false);
+        navigate(`/bloqueo-reserva`);
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 409) {
+        toast.error('Otra persona está reservando este turno');
+      } else {
+        console.error('Error completo:', error);
+        toast.error(error.response?.data?.message || 'Error al crear el bloqueo temporal');
+      }
+      setIsOpen(false);
+      navigate(`/nueva-reserva`);
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
+
   return (
     <div className="flex min-h-screen bg-gray-100 flex-col">
       <Header />
       <main className="flex-grow p-6 bg-gray-100">
-      <div className="bg-white p-4 flex items-center justify-between shadow-sm">
-        <button className="flex items-center text-naranja">
-          <ChevronLeft size={20} />
-          <span className="ml-1">Volver</span>
-        </button>
-        <h1 className="text-lg font-bold">Reserva tu cancha</h1>
-        <div className="w-6"></div>
-      </div>
-
-      {/* Selector de Fechas */}
-      <div className="bg-white p-4 mb-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center">
-            <Calendar size={18} className="text-naranja mr-2" />
-            <h2 className="font-medium">Fecha</h2>
-          </div>
-        </div>
-        
-        <div className="flex overflow-x-auto py-2 -mx-2 scrollbar-hide">
-          {calendarDates.map((date, index) => (
-            <div 
-              key={index}
-              onClick={() => handleDateSelect(date)}
-              className={`flex-shrink-0 w-16 mx-2 rounded-xl p-2 flex flex-col items-center cursor-pointer ${
-                selectedDate?.full === date.full 
-                  ? 'bg-naranja text-white' 
-                  : 'bg-gray-100'
-              }`}
-            >
-              <span className="text-xs capitalize">{date.day}</span>
-              <span className="text-xl font-bold">{date.date}</span>
-              <span className="text-xs capitalize">{date.month}</span>
+        {/* Selector de Fechas */}
+        <div className="bg-white p-4 mb-4 shadow-sm rounded-[8px]">
+          <h1 className="text-xl text-center font-semibold mb-4">Reserva tu cancha</h1>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center">
+              <Calendar size={18} className="text-naranja mr-2" />
+              <h2 className="font-medium">Fecha</h2>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Selector de Horarios */}
-      {selectedDate && (
-        <div className="bg-white p-4 mb-4">
-          <div className="flex items-center mb-3">
-            <Clock size={18} className="text-naranja mr-2" />
-            <h2 className="font-medium">Horario</h2>
           </div>
           
           <div className="flex overflow-x-auto py-2 -mx-2 scrollbar-hide">
-            {availability.map((horario, index) => (
-              <button
+            {calendarDates.map((date, index) => (
+              <div 
                 key={index}
-                onClick={() => handleTimeSelect(horario.id)}
-                className={`flex-shrink-0 mx-2 rounded-[6px] p-2 px-4 ${
-                  selectedTime === horario.id
-                    ? 'bg-naranja text-white'
-                    : 'bg-gray-100 text-gray-700'
+                onClick={() => handleDateSelect(date)}
+                className={`flex-shrink-0 w-12 mx-1 rounded-xl p-2 flex flex-col items-center cursor-pointer ${
+                  selectedDate?.full === date.full 
+                    ? 'bg-naranja text-white' 
+                    : 'bg-gray-100'
                 }`}
               >
-                {horario.time}
-              </button>
+                <span className="text-sm capitalize">{date.day}</span>
+                <span className="text-lg font-bold">{date.date}</span>
+                <span className="text-xs capitalize">{date.month}</span>
+              </div>
             ))}
           </div>
         </div>
-      )}
 
-      {/* Selector de Canchas */}
-      {selectedTime && (
-        <div className="bg-white p-4 mb-4">
-          <div className="flex items-center mb-3">
-            <MapPin size={18} className="text-naranja mr-2" />
-            <h2 className="font-medium">Cancha</h2>
+        {/* Selector de Horarios */}
+        {selectedDate && (
+          <div className="bg-white p-4 mb-4 shadow-sm rounded-[8px] ">
+            <div className="flex items-center mb-3">
+              <Clock size={18} className="text-naranja mr-2" />
+              <h2 className="font-medium">Horario</h2>
+            </div>
+            
+            <div className="flex overflow-x-auto py-2 -mx-2 scrollbar-hide">
+              {availability.map((horario, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleTimeSelect(horario.id)}
+                  className={`flex-shrink-0 text-sm mx-1 rounded-[6px] p-1 px-2 ${
+                    selectedTime === horario.id
+                      ? 'bg-naranja text-white'
+                      : 'bg-gray-100 text-gray-700'
+                  }`}
+                >
+                  {horario.time}
+                </button>
+              ))}
+            </div>
           </div>
-          
-          <div className="flex overflow-x-auto py-2 -mx-2 scrollbar-hide">
-            {courts.map((court, index) => (
-              <button
-                key={index}
-                onClick={() => setSelectedCourt(court)}
-                className={`flex-shrink-0 mx-2 rounded-[6px] p-2 px-4 ${
-                  selectedCourt === court
-                    ? 'bg-naranja text-white'
-                    : 'bg-gray-100 text-gray-700'
-                }`}
-              >
-                {court.nro} - {court.tipo}
-              </button>
-            ))}
+        )}
+
+        {/* Selector de Canchas */}
+        {selectedTime && (
+          <div className="bg-white p-4 mb-4 shadow-sm rounded-[8px]">
+            <div className="flex items-center mb-3">
+              <MapPin size={18} className="text-naranja mr-2" />
+              <h2 className="font-medium">Cancha</h2>
+            </div>
+
+            <div className="flex flex-col  ">
+              {courts.map((court, index) => (
+                <div key={index}>
+                  <button
+                    onClick={() => {
+                      setSelectedCourt(court);
+                      setExpandedCourt(expandedCourt === court.id ? null : court.id);
+                    }}
+                    className={`flex-shrink-0 mb-2 text-start items-center justify-between flex rounded-[6px] p-2 px-3 w-full ${
+                      selectedCourt === court ? 'bg-naranja text-white' : 'bg-gray-100 text-gray-700'
+                    }`}
+                  ><div className='flex flex-col text-sm'>
+                    Cancha {court.nro} - {court.tipo} 
+                    <span className='text-xs'>{court.descripcion}</span>
+                    </div>
+                    <ChevronDown size={18} />
+                  </button>
+                  {expandedCourt === court.id && (
+                    <div className="mb-2 p-4 bg-gray-100 rounded-[6px]">
+                      <p className="text-sm text-gray-800">Precio: <span className="text-naranja">${court.precio_por_hora}</span></p>
+                      <p className="text-sm text-gray-800">Seña: <span className="text-naranja">${court.seña}</span></p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Resumen y Confirmación */}
-      {selectedCourt && (
-        <div className="p-4">
-          <button 
-            onClick={handleConfirm}
-            className="w-full bg-naranja text-white font-medium py-3 rounded-[8px] flex items-center justify-center"
-          >
-            Confirmar Reserva
-            <ArrowRight size={18} className="ml-2" />
-          </button>
-        </div>
-      )}
+        {/* Resumen y Confirmación */}
+        {selectedCourt && (
+          <div className="p-4">
+            <button 
+              onClick={handleConfirm}
+              className="w-full bg-naranja text-white  py-2 rounded-[8px] flex items-center justify-center"
+            >
+              Confirmar Reserva
+              <ArrowRight size={18} className="ml-2" />
+            </button>
+          </div>
+        )}
 
-      
-      {isOpen && (
-      <ReservationModal
-        showModal={isOpen}
-        onCancel={handleCancel}
-        selectedDate={formattedDate}
-        selectedTimeName={selectedTimeName}
-        selectedCourt={selectedCourt}
-      />
-   
-      )
-}
-</main>
-<Footer />
-</div>
+        
+        {isOpen && (
+        
+          <ReservationModal
+            showModal={isOpen}
+            onConfirm={confirmSubmit}
+            onCancel={handleCancel}
+            selectedDate={formattedDate}
+            selectedTimeName={selectedTimeName}
+            selectedCourt={selectedCourt}
+            user={user}
+            confirmLoading={confirmLoading}
+          />
+        )}
+      </main>
+      <Footer />
+    </div>
   );
 };
 

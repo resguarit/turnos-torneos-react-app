@@ -88,7 +88,12 @@ export default function ContadorBloqueo() {
   const handlePagarClick = async () => {
     setLoading(true);
     try {
-      const reservaData = JSON.parse(localStorage.getItem('reservaTemp'));
+      const reservaDataString = localStorage.getItem('reservaTemp');
+      if (!reservaDataString) {
+        toast.error('No se encontraron datos de la reserva.');
+        return;
+      }
+      const reservaData = JSON.parse(reservaDataString);
       const bloqueoData = JSON.parse(localStorage.getItem('bloqueoTemp'));
       
       console.log('Datos de la reserva:', reservaData); // Debug log

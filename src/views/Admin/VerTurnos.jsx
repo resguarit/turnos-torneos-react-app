@@ -273,7 +273,7 @@ function VerTurnos() {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <button
-                  onClick={() => navigate('/turno-fijo')}
+                  onClick={() => navigate('/nuevo-turno-admi')}
                   className="p-2 text-sm rounded-[6px] bg-naranja hover:bg-naranja/90 text-white"
                 >
                   Crear Turno 

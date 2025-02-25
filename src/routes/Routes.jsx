@@ -25,6 +25,7 @@ import NuevaReserva from "@/views/Admin/NuevaReserva";
 import TurnoFijo from "@/views/Admin/TurnoFijo";
 import NuevoPanelAdmin from "@/views/Admin/NuevoPanelAdmin";
 import ContadorBloqueo from "@/views/General/ContadorBloqueo";
+import NuevoTurnoAdmi from "@/views/Admin/NuevoTurnoAdmi";
 
 
 const AppRoutes = () => {
@@ -58,14 +59,6 @@ const AppRoutes = () => {
           }
         />
         <Route
-        path="/turno-fijo"
-        element={
-          <ProtectedRoute requiredRole={ROLES.ADMIN}>
-            <TurnoFijo />
-          </ProtectedRoute>
-        }
-      />
-        <Route
           path={`/alta-zona`}
           element={
             <ProtectedRoute requiredRole={ROLES.ADMIN}>
@@ -98,18 +91,18 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path={`/turno-fijo`}
-          element={
-            <ProtectedRoute requiredRole={ROLES.ADMIN}>
-              <TurnoFijo />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path={`/panel-admin`}
           element={
             <ProtectedRoute requiredRole={ROLES.ADMIN}>
               <NuevoPanelAdmin />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={`/nuevo-turno-admi`}
+          element={
+            <ProtectedRoute requiredRole={ROLES.ADMIN}>
+              <NuevoTurnoAdmi />
             </ProtectedRoute>
           }
         />

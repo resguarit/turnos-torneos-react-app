@@ -17,7 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import LoadingSinHF from "@/components/LoadingSinHF";
 
 export default function NuevaReserva() {
-  const [selectedDate, setSelectedDate] = useState(null);
+  /* const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [selectedCourt, setSelectedCourt] = useState(null);
   const [selectedTimeName, setSelectedTimeName] = useState(null);
@@ -294,5 +294,5 @@ export default function NuevaReserva() {
       )}
       {error && <p className="text-red-500 mt-4">{error}</p>}
     </div>
-  );
+  ); */
 }

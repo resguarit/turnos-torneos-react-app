@@ -14,7 +14,7 @@ export default function ContadorBloqueo() {
   const navigate = useNavigate();
 
   // Función para cancelar el bloqueo
-  const cancelarBloqueo = async () => {
+  /* const cancelarBloqueo = async () => {
     const bloqueoData = JSON.parse(localStorage.getItem('bloqueoTemp'));
     if (bloqueoData?.id) {
       try {
@@ -25,13 +25,13 @@ export default function ContadorBloqueo() {
         console.error('Error al cancelar el bloqueo:', error);
       }
     }
-  };
+  }; */
 
   useEffect(() => {
     // Verificar si existen datos del bloqueo
     const bloqueoData = localStorage.getItem('bloqueoTemp');
     if (!bloqueoData) {
-      navigate('/nueva-reserva');
+      navigate('/reserva-mobile');
       return;
     }
 
@@ -77,7 +77,7 @@ export default function ContadorBloqueo() {
         toast.error('El tiempo para realizar el pago ha expirado');
         localStorage.removeItem('bloqueoTemp');
         localStorage.removeItem('reservaTemp');
-        setTimeout(() => navigate('/nueva-reserva'), 2000);
+        setTimeout(() => navigate('/reserva-mobile'), 2000);
       } catch (error) {
         console.error('Error al cancelar el bloqueo:', error);
         toast.error('Error al cancelar el bloqueo temporal');
@@ -88,7 +88,12 @@ export default function ContadorBloqueo() {
   const handlePagarClick = async () => {
     setLoading(true);
     try {
-      const reservaData = JSON.parse(localStorage.getItem('reservaTemp'));
+      const reservaDataString = localStorage.getItem('reservaTemp');
+      if (!reservaDataString) {
+        toast.error('No se encontraron datos de la reserva.');
+        return;
+      }
+      const reservaData = JSON.parse(reservaDataString);
       const bloqueoData = JSON.parse(localStorage.getItem('bloqueoTemp'));
       
       console.log('Datos de la reserva:', reservaData); // Debug log
@@ -136,7 +141,7 @@ export default function ContadorBloqueo() {
         toast.success('Reserva cancelada exitosamente');
         localStorage.removeItem('bloqueoTemp');
         localStorage.removeItem('reservaTemp');
-        navigate('/nueva-reserva');
+        navigate('/reserva-mobile');
       }
     } catch (error) {
       console.error('Error al cancelar la reserva:', error);

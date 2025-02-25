@@ -25,6 +25,7 @@ import NuevaReserva from "@/views/Admin/NuevaReserva";
 import TurnoFijo from "@/views/Admin/TurnoFijo";
 import NuevoPanelAdmin from "@/views/Admin/NuevoPanelAdmin";
 import ContadorBloqueo from "@/views/General/ContadorBloqueo";
+import ReservaMobile from "@/views/General/ReservaMobile";
 import NuevoTurnoAdmi from "@/views/Admin/NuevoTurnoAdmi";
 
 
@@ -116,6 +117,14 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path={`/reserva-mobile`}
+          element={
+            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
+              <ReservaMobile />
+            </ProtectedRoute>
+          }
+        /> 
         {/* 
         <Route
           path={`/partidos`}

@@ -9,6 +9,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; // Importa useNavigate
+import LoadingSinHF from '@/components/LoadingSinHF';
 
 const ReservaMobile = () => {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -226,100 +227,121 @@ const ReservaMobile = () => {
       <Header />
       <main className="flex-grow p-6 bg-gray-100">
         {/* Selector de Fechas */}
-        <div className="bg-white p-4 mb-4 shadow-sm rounded-[8px]">
-          <h1 className="text-xl text-center font-semibold mb-4">Reserva tu cancha</h1>
-          <div className="flex items-center justify-between mb-3">
+        <div className="bg-white md:mx-40 lg:mx-60 p-4 mb-4 shadow-sm rounded-[8px]">
+          <h1 className="text-xl md:text-2xl text-center font-semibold mb-4">Reserva tu cancha</h1>
+          <div className="flex flex-col items-start justify-start mb-3">
             <div className="flex items-center">
               <Calendar size={18} className="text-naranja mr-2" />
               <h2 className="font-medium">Fecha</h2>
             </div>
+            <p className='text-xs md:text-sm text-gray-400 mt-1'>Seleccione la fecha en la que desea sacar un turno</p>
+
           </div>
           
           <div className="flex overflow-x-auto py-2 -mx-2 scrollbar-hide">
-            {calendarDates.map((date, index) => (
-              <div 
-                key={index}
-                onClick={() => handleDateSelect(date)}
-                className={`flex-shrink-0 w-12 mx-1 rounded-xl p-2 flex flex-col items-center cursor-pointer ${
-                  selectedDate?.full === date.full 
-                    ? 'bg-naranja text-white' 
-                    : 'bg-gray-100'
-                }`}
-              >
-                <span className="text-sm capitalize">{date.day}</span>
-                <span className="text-lg font-bold">{date.date}</span>
-                <span className="text-xs capitalize">{date.month}</span>
-              </div>
-            ))}
+            {calendarDates.map((date, index) => {
+              const today = startOfToday();
+              const isToday = format(date.dateObj, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd');
+              return (
+                <div 
+                  key={index}
+                  onClick={() => handleDateSelect(date)}
+                  className={`flex-shrink-0 w-12 mx-1 rounded-xl p-2 flex flex-col items-center cursor-pointer ${
+                    selectedDate?.full === date.full 
+                      ? 'bg-naranja text-white' 
+                      : 'bg-gray-100'
+                  }`}
+                >
+                  <span className="text-sm uppercase">{isToday ? 'HOY' : date.day}</span>
+                  <span className="text-lg font-bold">{date.date}</span>
+                  <span className="text-xs capitalize">{date.month}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
         {/* Selector de Horarios */}
         {selectedDate && (
-          <div className="bg-white p-4 mb-4 shadow-sm rounded-[8px] ">
-            <div className="flex items-center mb-3">
+          <div className="bg-white p-4 md:mx-40 lg:mx-60 mb-4 shadow-sm rounded-[8px] ">
+            <div className="flex items-center mb-1">
               <Clock size={18} className="text-naranja mr-2" />
               <h2 className="font-medium">Horario</h2>
             </div>
-            
-            <div className="flex overflow-x-auto py-2 -mx-2 scrollbar-hide">
-              {availability.map((horario, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleTimeSelect(horario.id)}
-                  className={`flex-shrink-0 text-sm mx-1 rounded-[6px] p-1 px-2 ${
-                    selectedTime === horario.id
-                      ? 'bg-naranja text-white'
-                      : 'bg-gray-100 text-gray-700'
-                  }`}
-                >
-                  {horario.time}
-                </button>
-              ))}
-            </div>
+            <p className='text-xs md:text-sm text-gray-400 mb-3'>Seleccione el horario disponible en el que desea sacar un turno</p>
+
+            {loadingHorario ? (
+              <LoadingSinHF />
+            ) : (
+              availability.length === 0 ? (
+                <p className="text-center text-gray-500">No hay horarios disponibles</p>
+              ) : (
+                <div className="flex overflow-x-auto py-2 -mx-2 scrollbar-hide">
+                  {availability.map((horario, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleTimeSelect(horario.id)}
+                      className={`flex-shrink-0 text-sm md:text-base mx-1 rounded-[6px] p-1 px-2 ${
+                        selectedTime === horario.id
+                          ? 'bg-naranja text-white'
+                          : 'bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      {horario.time}
+                    </button>
+                  ))}
+                </div>
+              )
+            )}
           </div>
         )}
 
         {/* Selector de Canchas */}
         {selectedTime && (
-          <div className="bg-white p-4 mb-4 shadow-sm rounded-[8px]">
-            <div className="flex items-center mb-3">
+          <div className="bg-white md:mx-40 lg:mx-60 p-4 mb-4 shadow-sm rounded-[8px]">
+            <div className="flex items-center mb-1">
               <MapPin size={18} className="text-naranja mr-2" />
               <h2 className="font-medium">Cancha</h2>
             </div>
+            <p className='text-xs md:text-sm text-gray-400 mb-3'>Seleccione la cancha disponible en la que desea sacar un turno</p>
 
-            <div className="flex flex-col  ">
-              {courts.map((court, index) => (
-                <div key={index}>
-                  <button
-                    onClick={() => {
-                      setSelectedCourt(court);
-                      setExpandedCourt(expandedCourt === court.id ? null : court.id);
-                    }}
-                    className={`flex-shrink-0 mb-2 text-start items-center justify-between flex rounded-[6px] p-2 px-3 w-full ${
-                      selectedCourt === court ? 'bg-naranja text-white' : 'bg-gray-100 text-gray-700'
-                    }`}
-                  ><div className='flex flex-col text-sm'>
-                    Cancha {court.nro} - {court.tipo} 
-                    <span className='text-xs'>{court.descripcion}</span>
-                    </div>
-                    <ChevronDown size={18} />
-                  </button>
-                  {expandedCourt === court.id && (
-                    <div className="mb-2 p-4 bg-gray-100 rounded-[6px]">
-                      <p className="text-sm text-gray-800">Precio: <span className="text-naranja">${court.precio_por_hora}</span></p>
-                      <p className="text-sm text-gray-800">Seña: <span className="text-naranja">${court.seña}</span></p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            {loadingCancha ? (
+              <LoadingSinHF />
+            ) : (
+              <div className="flex flex-col">
+                {courts.map((court, index) => (
+                  <div key={index}>
+                    <button
+                      onClick={() => {
+                        setSelectedCourt(court);
+                        setExpandedCourt(expandedCourt === court.id ? null : court.id);
+                      }}
+                      className={`flex-shrink-0 mb-2 text-start items-center justify-between flex rounded-[6px] p-2 px-3 w-full ${
+                        selectedCourt === court ? 'bg-naranja text-white' : 'bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      <div className='flex flex-col text-sm md:text-base'>
+                        Cancha {court.nro} - {court.tipo}
+                        <span className='text-xs md:text-sm'>{court.descripcion}</span>
+                      </div>
+                      <ChevronDown size={18} />
+                    </button>
+                    {expandedCourt === court.id && (
+                      <div className="mb-2 p-4 bg-gray-100 rounded-[6px]">
+                        <p className="text-sm md:text-base text-gray-800">Precio: <span className="text-naranja">${court.precio_por_hora}</span></p>
+                        <p className="text-sm md:text-base text-gray-800">Seña: <span className="text-naranja">${court.seña}</span></p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
         {/* Resumen y Confirmación */}
         {selectedCourt && (
-          <div className="p-4">
+          <div className="p-4 md:mx-40 lg:mx-60">
             <button 
               onClick={handleConfirm}
               className="w-full bg-naranja text-white  py-2 rounded-[8px] flex items-center justify-center"

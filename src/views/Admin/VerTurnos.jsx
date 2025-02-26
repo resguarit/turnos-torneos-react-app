@@ -300,6 +300,7 @@ function VerTurnos() {
                     setSelectedStatus={setSelectedStatus}
                     courts={courts}
                     handleStatusChange={handleStatusChange}
+                    onClose={() => setIsFilterOpen(false)} // Pass the onClose function
                   />
                 )}
               </div>

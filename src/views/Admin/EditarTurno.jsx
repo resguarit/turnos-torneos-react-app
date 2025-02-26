@@ -4,12 +4,9 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import BackButton from '@/components/BackButton';
 import api from '@/lib/axiosConfig';
-import Loading from '@/components/Loading';
 import { Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DayPicker } from 'react-day-picker';
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -19,6 +16,7 @@ import { es } from 'date-fns/locale';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { TurnoEstado } from '@/constants/estadoTurno';
+import  BtnLoading  from '@/components/BtnLoading';
 
 function EditarTurno() {
   const { id } = useParams();
@@ -178,7 +176,15 @@ function EditarTurno() {
     });
   };
 
-  if (loading) return <div><Loading /></div>;
+  if (loading) return  <div className="min-h-screen flex flex-col">
+  <Header />
+  <main className="flex-grow bg-gray-100 p-6">
+  <div className='w-full flex justify-center items-center h-full'>
+  <BtnLoading />
+  </div>;
+  </main>
+  <Footer />
+  </div>;;
 
   return (
     <div className="min-h-screen flex flex-col font-inter">

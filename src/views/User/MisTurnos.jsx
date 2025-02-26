@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import api from '@/lib/axiosConfig';
-import LoadingSinHF from '@/components/LoadingSinHF';
 import ListaMisTurnos from '@/components/PanelUsuario/MisTurnos/ListaMisTurnos';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

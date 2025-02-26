@@ -27,167 +27,39 @@ import NuevoPanelAdmin from "@/views/Admin/NuevoPanelAdmin";
 import ContadorBloqueo from "@/views/General/ContadorBloqueo";
 import ReservaMobile from "@/views/General/ReservaMobile";
 
-
 const AppRoutes = () => {
   return (
-      <Routes>
-        {/* Rutas públicas */}
-        <Route path={`/`} element={<App />} />
-        <Route path={`/login`} element={<Login />} />
-        <Route path={`/signup`} element={<SignUp />} />
-        <Route path="*" element={<Error />} />
-        <Route path={`/confirmar-turno`} element={<ConfirmarTurno />} />
-        <Route path={`/confirmar-login`} element={<ConfirmarLogin />} />
-        <Route path={`/nueva-reserva`} element={<NuevaReserva />} />
-        <Route path={`/bloqueo-reserva`} element={<ContadorBloqueo />} />
+    <Routes>
+      {/* Rutas públicas */}
+      <Route path={`/`} element={<App />} />
+      <Route path={`/login`} element={<Login />} />
+      <Route path={`/signup`} element={<SignUp />} />
+      <Route path="*" element={<Error />} />
+      <Route path={`/confirmar-turno`} element={<ConfirmarTurno />} />
+      <Route path={`/confirmar-login`} element={<ConfirmarLogin />} />
+      <Route path={`/nueva-reserva`} element={<NuevaReserva />} />
+      <Route path={`/bloqueo-reserva`} element={<ContadorBloqueo />} />
 
-        {/* Rutas protegidas para administradores */}
-        <Route
-          path={`/torneos-admi`}
-          element={
-            <ProtectedRoute requiredRole={ROLES.ADMIN}>
-              <TorneosA />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path={`/zonas-admi`}
-          element={
-            <ProtectedRoute requiredRole={ROLES.ADMIN}>
-              <ZonasA />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-        path="/turno-fijo"
-        element={
-          <ProtectedRoute requiredRole={ROLES.ADMIN}>
-            <TurnoFijo />
-          </ProtectedRoute>
-        }
-      />
-        <Route
-          path={`/alta-zona`}
-          element={
-            <ProtectedRoute requiredRole={ROLES.ADMIN}>
-              <AltaZona />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path={`/ver-turnos`}
-          element={
-            <ProtectedRoute requiredRole={ROLES.ADMIN}>
-              <VerTurnos />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path={`/grilla-turnos`}
-          element={
-            <ProtectedRoute requiredRole={ROLES.ADMIN}>
-              <VerGrilla />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path={`/editar-turno/:id`}
-          element={
-            <ProtectedRoute requiredRole={ROLES.ADMIN}>
-              <EditarTurno />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path={`/turno-fijo`}
-          element={
-            <ProtectedRoute requiredRole={ROLES.ADMIN}>
-              <TurnoFijo />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path={`/panel-admin`}
-          element={
-            <ProtectedRoute requiredRole={ROLES.ADMIN}>
-              <NuevoPanelAdmin />
-            </ProtectedRoute>
-          }
-        />
+      {/* Rutas protegidas para administradores */}
+      <Route path={`/torneos-admi`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><TorneosA /></ProtectedRoute>} />
+      <Route path={`/zonas-admi`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><ZonasA /></ProtectedRoute>} />
+      <Route path={`/turno-fijo`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><TurnoFijo /></ProtectedRoute>} />
+      <Route path={`/alta-zona`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaZona /></ProtectedRoute>} />
+      <Route path={`/ver-turnos`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><VerTurnos /></ProtectedRoute>} />
+      <Route path={`/grilla-turnos`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><VerGrilla /></ProtectedRoute>} />
+      <Route path={`/editar-turno/:id`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><EditarTurno /></ProtectedRoute>} />
+      <Route path={`/panel-admin`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><NuevoPanelAdmin /></ProtectedRoute>} />
 
-        {/* Rutas protegidas para usuarios y administradores */}
-        <Route
-          path={`/user-profile`}
-          element={
-            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
-              <UserProfile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path={`/reserva-mobile`}
-          element={
-            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
-              <ReservaMobile />
-            </ProtectedRoute>
-          }
-        /> 
-        {/* 
-        <Route
-          path={`/partidos`}
-          element={
-            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
-              <Partidos />
-            </ProtectedRoute>
-          }
-        />
-        */}
-        <Route
-          path={`/ver-partidos`}
-          element={
-            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
-              <VerPartidos />
-            </ProtectedRoute>
-          }
-        />
-        {/*
-        <Route
-          path={`/cargar-partido`}
-          element={
-            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
-              <CargaPartido />
-            </ProtectedRoute>
-          }
-        />
-        
-
-        <Route
-          path={`/reglamento`}
-          element={
-            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
-              <Reglamento />
-            </ProtectedRoute>
-          }
-        />
-        
-        <Route
-          path={`/premios`}
-          element={
-            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
-              <Premios />
-            </ProtectedRoute>
-          }
-        />
-        */}
-        <Route
-          path={`/editar-perfil`}
-          element={
-            <ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}>
-              <EditProfile />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+      {/* Rutas protegidas para usuarios y administradores */}
+      <Route path={`/user-profile`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><UserProfile /></ProtectedRoute>} />
+      <Route path={`/reserva-mobile`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><ReservaMobile /></ProtectedRoute>} />
+      <Route path={`/partidos`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Partidos /></ProtectedRoute>} />
+      <Route path={`/ver-partidos`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><VerPartidos /></ProtectedRoute>} />
+      <Route path={`/cargar-partido`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><CargaPartido /></ProtectedRoute>} />
+      <Route path={`/reglamento`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Reglamento /></ProtectedRoute>} />
+      <Route path={`/premios`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Premios /></ProtectedRoute>} />
+      <Route path={`/editar-perfil`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><EditProfile /></ProtectedRoute>} />
+    </Routes>
   );
 };
 

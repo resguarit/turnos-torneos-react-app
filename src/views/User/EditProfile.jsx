@@ -10,7 +10,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
-import Loading from '@/components/Loading';
+import BtnLoading from '@/components/BtnLoading';
 
 export default function EditProfile() {
   const navigate = useNavigate();
@@ -150,7 +150,15 @@ export default function EditProfile() {
   };
 
   if(loading){
-    return <Loading />
+    return <div className="min-h-screen flex flex-col">
+    <Header />
+    <main className="flex-grow bg-gray-100 p-6">
+    <div className='w-full flex justify-center items-center'>
+    <BtnLoading />
+    </div>;
+    </main>
+    <Footer />
+    </div>;
   }
 
   return (

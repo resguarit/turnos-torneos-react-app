@@ -10,6 +10,7 @@ import { Footer } from '@/components/Footer';
 import { ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; // Importa useNavigate
 import LoadingSinHF from '@/components/LoadingSinHF';
+import BtnLoading from '@/components/BtnLoading';
 
 const ReservaMobile = () => {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -246,15 +247,15 @@ const ReservaMobile = () => {
                 <div 
                   key={index}
                   onClick={() => handleDateSelect(date)}
-                  className={`flex-shrink-0 w-12 mx-1 rounded-xl p-2 flex flex-col items-center cursor-pointer ${
+                  className={`flex-shrink-0 w-12 md:w-16 mx-1  rounded-xl p-2 flex flex-col items-center cursor-pointer ${
                     selectedDate?.full === date.full 
                       ? 'bg-naranja text-white' 
                       : 'bg-gray-100'
                   }`}
                 >
-                  <span className="text-sm uppercase">{isToday ? 'HOY' : date.day}</span>
-                  <span className="text-lg font-bold">{date.date}</span>
-                  <span className="text-xs capitalize">{date.month}</span>
+                  <span className="text-sm md:text-base uppercase">{isToday ? 'HOY' : date.day}</span>
+                  <span className="text-lg md:text-xl font-bold">{date.date}</span>
+                  <span className="text-xs md:text-sm capitalize">{date.month}</span>
                 </div>
               );
             })}
@@ -271,7 +272,9 @@ const ReservaMobile = () => {
             <p className='text-xs md:text-sm text-gray-400 mb-3'>Seleccione el horario disponible en el que desea sacar un turno</p>
 
             {loadingHorario ? (
-              <LoadingSinHF />
+              <div className='w-full flex justify-center'>
+              <BtnLoading />
+              </div>
             ) : (
               availability.length === 0 ? (
                 <p className="text-center text-gray-500">No hay horarios disponibles</p>
@@ -306,7 +309,9 @@ const ReservaMobile = () => {
             <p className='text-xs md:text-sm text-gray-400 mb-3'>Seleccione la cancha disponible en la que desea sacar un turno</p>
 
             {loadingCancha ? (
-              <LoadingSinHF />
+              <div className='w-full flex justify-center'>
+              <BtnLoading />
+              </div>
             ) : (
               <div className="flex flex-col">
                 {courts.map((court, index) => (

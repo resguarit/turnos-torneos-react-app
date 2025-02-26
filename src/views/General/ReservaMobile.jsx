@@ -8,8 +8,7 @@ import ReservationModal from '@/components/Reserva/ReservationModal';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ChevronDown } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // Importa useNavigate
-import LoadingSinHF from '@/components/LoadingSinHF';
+import { useNavigate } from 'react-router-dom'; 
 import BtnLoading from '@/components/BtnLoading';
 
 const ReservaMobile = () => {

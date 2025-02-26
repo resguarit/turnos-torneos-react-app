@@ -4,6 +4,7 @@ import LoadingSinHF from '@/components/LoadingSinHF';
 import ListaMisTurnos from '@/components/PanelUsuario/MisTurnos/ListaMisTurnos';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import BtnLoading from '@/components/BtnLoading';
 
 export default function MisTurnos() {
   const [turnosPrueba, setTurnosPrueba] = useState([]);
@@ -41,7 +42,9 @@ export default function MisTurnos() {
   };
 
   if (loading) {
-    return <LoadingSinHF />;
+    return <div className='w-full flex justify-center '>
+    <BtnLoading />
+    </div>;
   }
 
   return (

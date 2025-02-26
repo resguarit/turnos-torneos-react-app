@@ -11,7 +11,7 @@ function NuevoTurnoAdmi() {
   const [formData, setFormData] = useState({
     usuario_id: '', 
     usuario_nombre: '',
-    fecha: '', // Cambiado de fecha_inicio a fecha
+    fecha_turno: '', // Cambiado de fecha a fecha_turno
     cancha_id: '',
     horario_id: '',
     estado: 'Pendiente',
@@ -22,6 +22,8 @@ function NuevoTurnoAdmi() {
   const [error, setError] = useState(null);
   const [horarios, setHorarios] = useState([]);
   const [canchas, setCanchas] = useState([]);
+  const [fetchingHorarios, setFetchingHorarios] = useState(false);
+  const [fetchingCanchas, setFetchingCanchas] = useState(false);
   const navigate = useNavigate();
   const [isTurnoFijo, setIsTurnoFijo] = useState(false);
 
@@ -55,15 +57,13 @@ function NuevoTurnoAdmi() {
   }, [searchTerm, users]);
 
   useEffect(() => {
-    if (formData.fecha) {
+    if (formData.fecha_turno) {
       const fetchHorarios = async () => {
         try {
+          setFetchingHorarios(true);
           const endpoint = isTurnoFijo ? '/disponibilidad/turnos-fijos' : '/disponibilidad/fecha';
-          const response = await api.get(endpoint, {
-            params: {
-              fecha: formData.fecha, // Cambiado de fecha_inicio a fecha
-            }
-          });
+          const params = isTurnoFijo ? { fecha_inicio: formData.fecha_turno } : { fecha: formData.fecha_turno };
+          const response = await api.get(endpoint, { params });
 
           // Debug logs
           console.log('Response horarios:', response.data);
@@ -82,6 +82,8 @@ function NuevoTurnoAdmi() {
           console.error('Error al cargar horarios:', error);
           setHorarios([]);
           setError(error.response?.data?.message || 'Error al cargar horarios');
+        } finally {
+          setFetchingHorarios(false);
         }
       };
 
@@ -89,15 +91,16 @@ function NuevoTurnoAdmi() {
     } else {
       setHorarios([]);
     }
-  }, [formData.fecha, isTurnoFijo]);
+  }, [formData.fecha_turno, isTurnoFijo]);
 
   useEffect(() => {
-    if (formData.fecha && formData.horario_id) { 
+    if (formData.fecha_turno && formData.horario_id && !isTurnoFijo) { 
       const fetchCanchas = async () => {
         try {
+          setFetchingCanchas(true);
           const response = await api.get(`/disponibilidad/cancha`, {
             params: {
-              fecha: formData.fecha,
+              fecha: formData.fecha_turno, // Cambiado de fecha a fecha_turno
               horario_id: formData.horario_id
             }
           });
@@ -105,12 +108,14 @@ function NuevoTurnoAdmi() {
         } catch (error) {
           console.error('Error al cargar canchas:', error);
           setError('Error al cargar canchas');
+        } finally {
+          setFetchingCanchas(false);
         }
       };
 
       fetchCanchas();
     }
-  }, [formData.fecha, formData.horario_id]);
+  }, [formData.fecha_turno, formData.horario_id, isTurnoFijo]);
 
   const handleUserSelect = (user) => {
     setFormData(prev => ({
@@ -125,7 +130,7 @@ function NuevoTurnoAdmi() {
     setError(null); // Limpiar errores
     setFormData({ 
       ...formData, 
-      fecha: e.target.value, // Cambiado de fecha_inicio a fecha
+      fecha_turno: e.target.value, // Cambiado de fecha a fecha_turno
       horario_id: '', // Reset horario
       cancha_id: '' // Reset cancha
     });
@@ -135,7 +140,7 @@ function NuevoTurnoAdmi() {
     setIsTurnoFijo(!isTurnoFijo);
     setFormData({
       ...formData,
-      fecha: '', // Cambiado de fecha_inicio a fecha
+      fecha_turno: '', // Cambiado de fecha a fecha_turno
       horario_id: '',
       cancha_id: ''
     });
@@ -153,15 +158,11 @@ function NuevoTurnoAdmi() {
 
     setLoading(true);
     try {
-      // Verificar disponibilidad
+
       const disponibilidadEndpoint = isTurnoFijo ? '/disponibilidad/turnos-fijos' : '/disponibilidad/fecha';
-      const disponibilidadResponse = await api.get(disponibilidadEndpoint, {
-        params: {
-          fecha: formData.fecha, // Cambiado de fecha_inicio a fecha
-          horario_id: formData.horario_id,
-          cancha_id: formData.cancha_id
-        }
-      });
+      const params = isTurnoFijo ? { fecha_inicio: formData.fecha_turno } : { fecha: formData.fecha_turno };
+      const disponibilidadResponse = await api.get(disponibilidadEndpoint, { params });
+
 
       const canchaDisponible = disponibilidadResponse.data.horarios.some(
         horario => horario.id === parseInt(formData.horario_id) && horario.disponible
@@ -175,8 +176,8 @@ function NuevoTurnoAdmi() {
 
       // Crear el objeto con los datos del turno
       const turnoData = {
-        user_id: parseInt(formData.usuario_id),
-        fecha: formData.fecha, // Cambiado de fecha_inicio a fecha
+        usuario_id: parseInt(formData.usuario_id), // Cambiado de user_id a usuario_id
+        fecha_turno: formData.fecha_turno, // Cambiado de fecha a fecha_turno
         horario_id: parseInt(formData.horario_id),
         cancha_id: parseInt(formData.cancha_id),
         estado: formData.estado
@@ -186,7 +187,7 @@ function NuevoTurnoAdmi() {
       const response = await api.post(storeEndpoint, turnoData);
       if (response.status === 201) {
         toast.success(`Turno ${isTurnoFijo ? 'fijo' : 'único'} creado correctamente`);
-        navigate('/ver-turnos');
+        navigate('/panel-admin?tab=turnos');
       }
     } catch (error) {
       console.error('Error details:', error.response?.data);
@@ -262,36 +263,42 @@ function NuevoTurnoAdmi() {
                 <input
                   type="date"
                   className="w-full border rounded p-2"
-                  value={formData.fecha}
+                  value={formData.fecha_turno} // Cambiado de fecha a fecha_turno
                   onChange={handleFechaChange}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium">Horario</label>
-                <select
-                  className={`w-full border rounded p-2 ${
-                    formData.fecha && horarios.length === 0 
-                      ? 'border-red-500 bg-red-50 cursor-not-allowed' 
-                      : 'border-gray-300'
-                  }`}
-                  value={formData.horario_id}
-                  onChange={(e) => setFormData({ ...formData, horario_id: e.target.value, cancha_id: '' })} // Reset cancha on horario change
-                  disabled={!formData.fecha || horarios.length === 0}
-                >
-                  <option value="">
-                    {formData.fecha && horarios.length === 0 
-                      ? 'No hay horarios disponibles' 
-                      : 'Seleccionar horario'
-                    }
-                  </option>
-                  {horarios.map(horario => (
-                    <option key={horario.id} value={horario.id}>
-                      {`${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`}
+                {fetchingHorarios ? (
+                  <div className="w-full border rounded p-2 border-gray-300 bg-gray-50 cursor-not-allowed text-gray-500">
+                    Horarios cargando...
+                  </div>
+                ) : (
+                  <select
+                    className={`w-full border rounded p-2 ${
+                      formData.fecha_turno && horarios.length === 0 && !fetchingHorarios
+                        ? 'border-red-500 bg-red-50 cursor-not-allowed' 
+                        : 'border-gray-300'
+                    }`}
+                    value={formData.horario_id}
+                    onChange={(e) => setFormData({ ...formData, horario_id: e.target.value, cancha_id: '' })} // Reset cancha on horario change
+                    disabled={!formData.fecha_turno || horarios.length === 0 || fetchingHorarios || fetchingCanchas}
+                  >
+                    <option value="">
+                      {formData.fecha_turno && horarios.length === 0 
+                        ? 'No hay horarios disponibles' 
+                        : 'Seleccionar horario'
+                      }
                     </option>
-                  ))}
-                </select>
-                {formData.fecha && horarios.length === 0 && (
+                    {horarios.map(horario => (
+                      <option key={horario.id} value={horario.id}>
+                        {`${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {formData.fecha_turno && horarios.length === 0 && !fetchingHorarios && (
                   <p className="text-red-500 text-sm mt-1">
                     No hay horarios disponibles para esta fecha
                   </p>
@@ -300,31 +307,38 @@ function NuevoTurnoAdmi() {
 
               <div>
                 <label className="block text-sm font-medium">Cancha</label>
-                <select
-                  className={`w-full border rounded p-2 ${
-                    (formData.horario_id && canchas.length === 0) || (formData.fecha && horarios.length === 0 )
-                      ? 'border-red-500 bg-red-50 cursor-not-allowed'
-                      : 'border-gray-300'
-                  }`}
-                  value={formData.cancha_id}
-                  onChange={(e) => setFormData({ ...formData, cancha_id: e.target.value })}
-                  disabled={!formData.horario_id || canchas.length === 0}
-                >
-                  <option value="">
-                    {formData.horario_id && canchas.length === 0
-                      ? 'No hay canchas disponibles'
-                      : 'Seleccionar cancha'
-                    }
-                  </option>
-                  {canchas.map(cancha => (
-                    <option
-                      key={cancha.id}
-                      value={cancha.id}
-                      style={{ color: !cancha.disponible ? 'red' : 'inherit' }}
-                    >{`Cancha ${cancha.nro} - ${cancha.tipo}`}</option>
-                  ))}
-                </select>
-                {formData.horario_id && canchas.length === 0 && (
+                {fetchingCanchas ? (
+                  <div className="w-full border rounded p-2 border-gray-300 bg-gray-50 cursor-not-allowed text-gray-500">
+                    Canchas cargando...
+                  </div>
+                ) : (
+                  <select
+                    className={`w-full border rounded p-2 ${
+                      !isTurnoFijo && formData.horario_id && canchas.length === 0 && !fetchingCanchas
+                        ? 'border-red-500 bg-red-50 cursor-not-allowed'
+                        : 'border-gray-300'
+                    } ${isTurnoFijo ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    value={formData.cancha_id}
+                    onChange={(e) => setFormData({ ...formData, cancha_id: e.target.value })}
+                    disabled={!formData.horario_id || canchas.length === 0 || fetchingHorarios || fetchingCanchas || isTurnoFijo}
+                  >
+                    <option value="">
+                      {isTurnoFijo
+                        ? 'Las canchas se seleccionarán automáticamente'
+                        : formData.horario_id && canchas.length === 0 && !fetchingCanchas
+                        ? 'No hay canchas disponibles'
+                        : 'Seleccionar cancha'
+                      }
+                    </option>
+                    {!isTurnoFijo && canchas.filter(cancha => cancha.disponible).map(cancha => (
+                      <option
+                        key={cancha.id}
+                        value={cancha.id}
+                      >{`Cancha ${cancha.nro} - ${cancha.tipo}`}</option>
+                    ))}
+                  </select>
+                )}
+                {!isTurnoFijo && formData.horario_id && canchas.length === 0 && !fetchingCanchas && (
                   <p className="text-red-500 text-sm mt-1">
                     No hay canchas disponibles para este horario
                   </p>

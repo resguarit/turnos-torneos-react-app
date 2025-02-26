@@ -98,7 +98,7 @@ const MenuMovil = ({ setMenuOpen }) => {
             {[
               { label: "Inicio", path: "/" },
               { label: "Torneos", path: "/torneos-admi" },
-              { label: "Reservas", path: "/nueva-reserva" },
+              { label: "Reservas", path: "/reserva-mobile" },
               { label: "Partidos", path: "/partidos" },
               { label: "Reglamento", path: "/reglamento" },
               { label: "Premios", path: "/premios" },

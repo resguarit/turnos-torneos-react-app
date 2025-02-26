@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '@/lib/axiosConfig';
 import TarjetaMetrica from './TarjetaMetrica';
-import LoadingSinHF from '@/components/LoadingSinHF';
 import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts';
+import BtnLoading from '@/components/BtnLoading';
 
 const PestanaDashboard = () => {
   const [metricas, setMetricas] = useState([]);
@@ -72,7 +72,11 @@ const PestanaDashboard = () => {
   }, []);
 
   if (loading) {
-    return <LoadingSinHF />;
+    return (
+    <div className='flex justify-center items-center h-[50vh]'>
+    <BtnLoading />
+    </div>
+  )
   }
 
   return (

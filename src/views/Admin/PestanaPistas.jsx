@@ -3,8 +3,8 @@ import { Edit2, Plus, Trash2 } from 'lucide-react';
 import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import LoadingSinHF from '@/components/LoadingSinHF';
 import ModalConfirmation from '@/components/ModalConfirmation';
+import BtnLoading from '@/components/BtnLoading';
 
 const PestanaPistas = () => {
   const [pistas, setPistas] = useState([]);
@@ -147,7 +147,9 @@ const PestanaPistas = () => {
       </div>
 
       {loading ? (
-        <LoadingSinHF />
+        <div className='flex justify-center items-center h-[50vh]'>
+        <BtnLoading />
+        </div>
       ) : (
         <>
           {agregando && (

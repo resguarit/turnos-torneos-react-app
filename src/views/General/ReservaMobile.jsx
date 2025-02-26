@@ -189,13 +189,6 @@ const ReservaMobile = () => {
       });
   
       if (bloqueoResponse.status === 201) {
-        localStorage.setItem('bloqueoTemp', JSON.stringify({
-          id: bloqueoResponse.data.bloqueo.id,
-          fecha: bloqueoResponse.data.bloqueo.fecha,
-          horario_id: bloqueoResponse.data.bloqueo.horario_id,
-          cancha_id: bloqueoResponse.data.bloqueo.cancha_id,
-          expira_en: bloqueoResponse.data.bloqueo.expira_en
-        }));
         
         localStorage.setItem('reservaTemp', JSON.stringify({
           fecha: formattedDate,

@@ -1,14 +1,15 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MapPin, Calendar, Clock, User, CreditCard } from "lucide-react";
-import { format, parse, isValid } from 'date-fns';
+import { format, parse, isValid, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 const ReservationModal = ({ showModal, confirmLoading, onConfirm, onCancel, selectedDate, selectedTimeName, selectedCourt, user }) => {
   const señaPercentage = selectedCourt ? (selectedCourt.seña / selectedCourt.precio_por_hora) * 100 : 0;
 
-  // Parse the date from "dd/MM/yyyy" format
+  // Parse the date from "dd/MM/yyyy" format and adjust for timezone
   const parsedDate = parse(selectedDate, "dd/MM/yyyy", new Date());
+  const adjustedDate = addDays(parsedDate, 1); // Adjust the date by adding one day
 
   return (
     <Dialog open={showModal} onClose={onCancel}>
@@ -32,9 +33,8 @@ const ReservationModal = ({ showModal, confirmLoading, onConfirm, onCancel, sele
                   <p className="text-sm text-gray-500">Fecha y Hora</p>
                   <div className="flex full flex-col md:flex-row md:justify-between gap-1 md:gap-0 md:items-center">
                     <p className="font-medium text-xs md:text-sm capitalize">
-                      {isValid(parsedDate) ? format(parsedDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es }) : 'Fecha inválida'}
+                      {isValid(adjustedDate) ? format(adjustedDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es }) : 'Fecha inválida'}
                     </p>
-                    {console.log(selectedTimeName)}
                     <p className="font-medium text-xs md:text-sm"> {selectedTimeName}</p>
                   </div>
                 </div>

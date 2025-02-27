@@ -22,12 +22,11 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
   const señaPorcentaje = turno.cancha ? (turno.monto_seña / turno.monto_total) * 100 : 0;
   const navigate = useNavigate();
 
-  const handleCancelTurno = async () => {
+  const handleCancelTurno = async (cancelReason) => {
     setIsCancelling(true);
     try {
-      // Update to use PATCH and send the new status
-      const response = await api.patch(`/turnos/${turno.id}`, {
-        estado: TurnoEstado.CANCELADO
+      const response = await api.put(`/turnos/cancelar/${turno.id}`, {
+        motivo: cancelReason // Add cancel reason
       });
 
       if (response.status === 200) {
@@ -114,6 +113,18 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
             </div>
           </div>
 
+          {turno.motivo_cancelacion && (
+            <>
+              <hr className="my-2" />
+              <div className="flex items-left pb-2">
+                <div className="flex items-center gap-2">
+                  <p className="text-xs md:text-sm font-semibold">Motivo de Cancelación</p>
+                </div>
+              </div>
+              <p className="text-xs md:text-sm">{turno.motivo_cancelacion}</p>
+            </>
+          )}
+
           <hr className="my-2" />
           <div className="flex items-left pb-2">
             <div className="flex items-center gap-2">
@@ -157,6 +168,7 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
                 Solicitar Cambio del Turno  
               </Button>
             )}
+            
           </div>
         </CardContent>
         <CancelacionTurnoDialog

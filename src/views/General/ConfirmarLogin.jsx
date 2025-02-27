@@ -199,7 +199,7 @@ export default function ConfirmarLogin() {
         <p className="text-base text-gray-600 mb-8">
           Inicie sesión para confirmar su reserva.
         </p>
-        <Card className="max-w-5xl mx-auto border-0">
+        <Card className="max-w-7xl mx-auto border-0">
           <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <form onSubmit={handleSubmit} className="space-y-8 h-full  flex flex-col">

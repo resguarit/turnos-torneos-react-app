@@ -11,6 +11,8 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { MapPin, Calendar, Clock, CreditCard, Eye, EyeOff } from 'lucide-react';
 import Loading from '@/components/BtnLoading';
+import { format, parseISO, isValid } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 export default function ConfirmarTurno() {
   const [formData, setFormData] = useState({
@@ -291,8 +293,10 @@ export default function ConfirmarTurno() {
                           <div className="w-full">
                             <p className="text-sm text-gray-500">Fecha y Hora</p>
                             <div className="flex full justify-between items-center">
-                              <p className="font-medium text-xs md:text-sm">{selectedDate}</p>
-                              <p className="font-medium text-xs md:text-sm">{reservationDetails.horario.hora_inicio} - {reservationDetails.horario.hora_fin} </p>
+                            <p className="font-medium text-xs md:text-sm">
+                              {isValid(parseISO(selectedDate)) ? format(parseISO(selectedDate), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es }) : 'Fecha inválida'}
+                            </p>                              
+                            <p className="font-medium text-xs md:text-sm">{reservationDetails.horario.hora_inicio} - {reservationDetails.horario.hora_fin} </p>
                             </div>
                           </div>
                         </div>

@@ -11,6 +11,7 @@ import { ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; // Importa useNavigate
 import LoadingSinHF from '@/components/LoadingSinHF';
 import BtnLoading from '@/components/BtnLoading';
+import { toast, ToastContainer } from 'react-toastify';
 
 const ReservaMobile = () => {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -202,6 +203,10 @@ const ReservaMobile = () => {
         navigate(`/bloqueo-reserva`);
       }
     } catch (error) {
+      setConfirmLoading(false);
+      setIsOpen(false);
+
+
       if (error.response && error.response.status === 409) {
         toast.error('Otra persona está reservando este turno');
       } else {
@@ -209,7 +214,6 @@ const ReservaMobile = () => {
         toast.error(error.response?.data?.message || 'Error al crear el bloqueo temporal');
       }
       setIsOpen(false);
-      navigate(`/nueva-reserva`);
     } finally {
       setConfirmLoading(false);
     }
@@ -352,7 +356,7 @@ const ReservaMobile = () => {
 
         
         {isOpen && (
-        
+          
           <ReservationModal
             showModal={isOpen}
             onConfirm={confirmSubmit}
@@ -366,6 +370,7 @@ const ReservaMobile = () => {
         )}
       </main>
       <Footer />
+      <ToastContainer position="top-right" />
     </div>
   );
 };

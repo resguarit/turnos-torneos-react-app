@@ -62,11 +62,11 @@ export default function VerGrilla() {
     };
   }, [currentDate]);
 
-  useTimeout(() => {
+  /* useTimeout(() => {
     if (loading) {
       navigate('/error');
     }
-  }, 20000);
+  }, 20000); */
 
   if (loading) {
     return <LoadingSinHF />;

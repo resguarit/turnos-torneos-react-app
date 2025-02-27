@@ -8,7 +8,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function ContadorBloqueo() {
-  const [timeLeft, setTimeLeft] = useState(60); // 1 minuto en segundos (según backend)
+  const [timeLeft, setTimeLeft] = useState(180); // 1 minuto en segundos (según backend)
   const [loading, setLoading] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ export default function ContadorBloqueo() {
 
   useEffect(() => {
     // Verificar si existen datos del bloqueo
-    const bloqueoData = localStorage.getItem('bloqueoTemp');
+    const bloqueoData = localStorage.getItem('reservaTemp');
     if (!bloqueoData) {
       navigate('/reserva-mobile');
       return;
@@ -67,21 +67,12 @@ export default function ContadorBloqueo() {
   }, [navigate]);
 
   const handleTimeOut = async () => {
-    const bloqueoData = JSON.parse(localStorage.getItem('bloqueoTemp'));
-    console.log('Datos del bloqueo al expirar:', bloqueoData); // Debug log
+    const bloqueoData = JSON.parse(localStorage.getItem('reservaTemp'));
 
-    if (bloqueoData?.id) {
-      try {
-        // Usar el ID correcto del bloqueo temporal
-        await api.delete(`/turnos/cancelarbloqueo/${bloqueoData.id}`);
+    if (bloqueoData) {
         toast.error('El tiempo para realizar el pago ha expirado');
-        localStorage.removeItem('bloqueoTemp');
         localStorage.removeItem('reservaTemp');
         setTimeout(() => navigate('/reserva-mobile'), 2000);
-      } catch (error) {
-        console.error('Error al cancelar el bloqueo:', error);
-        toast.error('Error al cancelar el bloqueo temporal');
-      }
     }
   };
 
@@ -94,10 +85,8 @@ export default function ContadorBloqueo() {
         return;
       }
       const reservaData = JSON.parse(reservaDataString);
-      const bloqueoData = JSON.parse(localStorage.getItem('bloqueoTemp'));
       
       console.log('Datos de la reserva:', reservaData); // Debug log
-      console.log('Datos del bloqueo:', bloqueoData); // Debug log
 
       // Crear la reserva
       const response = await api.post('/turnos/turnounico', {
@@ -110,17 +99,7 @@ export default function ContadorBloqueo() {
       });
 
       if (response.status === 201) {
-        // Cancelar el bloqueo temporal después de crear la reserva exitosamente
-        if (bloqueoData?.id) {
-          try {
-            await api.delete(`/turnos/cancelarbloqueo/${bloqueoData.id}`);
-          } catch (cancelError) {
-            console.error('Error al cancelar el bloqueo:', cancelError);
-          }
-        }
-
         toast.success('Reserva creada exitosamente');
-        localStorage.removeItem('bloqueoTemp');
         localStorage.removeItem('reservaTemp');
         setTimeout(() => navigate('/user-profile'), 2000);
       }
@@ -135,9 +114,13 @@ export default function ContadorBloqueo() {
   const handleCancelarClick = async () => {
     setIsCancelling(true);
     try {
-      const bloqueoData = JSON.parse(localStorage.getItem('bloqueoTemp'));
-      if (bloqueoData?.id) {
-        await api.delete(`/turnos/cancelarbloqueo/${bloqueoData.id}`);
+      const bloqueoData = JSON.parse(localStorage.getItem('reservaTemp'));
+      if (bloqueoData) {
+        const cancelarBloqueo = await api.post('/turnos/cancelarbloqueo', {
+          fecha: bloqueoData.fecha,
+          horario_id: bloqueoData.horario_id,
+          cancha_id: bloqueoData.cancha_id
+        });
         toast.success('Reserva cancelada exitosamente');
         localStorage.removeItem('bloqueoTemp');
         localStorage.removeItem('reservaTemp');
@@ -145,7 +128,7 @@ export default function ContadorBloqueo() {
       }
     } catch (error) {
       console.error('Error al cancelar la reserva:', error);
-      toast.error('Error al cancelar la reserva');
+      toast.error(cancelarBloqueo.response?.data?.message || 'Error al cancelar la reserva');
     } finally {
       setIsCancelling(false);
     }

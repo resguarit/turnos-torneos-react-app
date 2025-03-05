@@ -3,7 +3,7 @@ import { Plus, Edit2, Trash2, Mail, Phone, Eraser, UserCircle, Calendar, CreditC
 import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import LoadingSinHF from '@/components/LoadingSinHF';
+import BtnLoading from '@/components/BtnLoading';
 
 const PestanaUsuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -257,7 +257,9 @@ const PestanaUsuarios = () => {
 
 
       {/* Loading */}
-      {loading && <LoadingSinHF />}
+      {loading && <div className='flex justify-center items-center h-[50vh]'>
+    <BtnLoading />
+    </div>}
 
       {/* Formulario de Creación/Edición */}
       {!loading && agregando && (

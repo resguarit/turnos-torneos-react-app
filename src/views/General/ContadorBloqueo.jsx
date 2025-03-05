@@ -8,7 +8,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function ContadorBloqueo() {
-  const [timeLeft, setTimeLeft] = useState(60); // 1 minuto en segundos (según backend)
+  const [timeLeft, setTimeLeft] = useState(180); // 1 minuto en segundos (según backend)
   const [loading, setLoading] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const navigate = useNavigate();
@@ -68,23 +68,11 @@ export default function ContadorBloqueo() {
 
   const handleTimeOut = async () => {
     const bloqueoData = JSON.parse(localStorage.getItem('reservaTemp'));
-    console.log('Datos del bloqueo al expirar:', bloqueoData); // Debug log
 
     if (bloqueoData) {
-      try {
-        // Usar el ID correcto del bloqueo temporal
-        const cancelarBloqueo = await api.post('/turnos/cancelarbloqueo', {
-          fecha: bloqueoData.fecha,
-          horario_id: bloqueoData.horario_id,
-          cancha_id: bloqueoData.cancha_id
-        });
         toast.error('El tiempo para realizar el pago ha expirado');
         localStorage.removeItem('reservaTemp');
         setTimeout(() => navigate('/reserva-mobile'), 2000);
-      } catch (error) {
-        console.error('Error al cancelar el bloqueo:', error);
-        toast.error('Error al cancelar el bloqueo temporal');
-      }
     }
   };
 

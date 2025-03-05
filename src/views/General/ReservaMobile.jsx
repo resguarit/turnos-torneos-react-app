@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Calendar, Clock, MapPin, ChevronRight, Check, CreditCard, ArrowRight } from 'lucide-react';
 import api from '@/lib/axiosConfig';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { format, addDays, startOfToday, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ReservationModal from '@/components/Reserva/ReservationModal';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ChevronDown } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // Importa useNavigate
-import LoadingSinHF from '@/components/LoadingSinHF';
+import { useNavigate } from 'react-router-dom'; 
 import BtnLoading from '@/components/BtnLoading';
 
 const ReservaMobile = () => {
@@ -202,6 +201,10 @@ const ReservaMobile = () => {
         navigate(`/bloqueo-reserva`);
       }
     } catch (error) {
+      setConfirmLoading(false);
+      setIsOpen(false);
+
+
       if (error.response && error.response.status === 409) {
         toast.error('Otra persona está reservando este turno');
       } else {
@@ -209,7 +212,6 @@ const ReservaMobile = () => {
         toast.error(error.response?.data?.message || 'Error al crear el bloqueo temporal');
       }
       setIsOpen(false);
-      navigate(`/nueva-reserva`);
     } finally {
       setConfirmLoading(false);
     }
@@ -352,7 +354,7 @@ const ReservaMobile = () => {
 
         
         {isOpen && (
-        
+          
           <ReservationModal
             showModal={isOpen}
             onConfirm={confirmSubmit}
@@ -366,6 +368,7 @@ const ReservaMobile = () => {
         )}
       </main>
       <Footer />
+      <ToastContainer position="top-right" />
     </div>
   );
 };

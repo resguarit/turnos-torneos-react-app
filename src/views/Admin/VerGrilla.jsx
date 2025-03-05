@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
 import useTimeout from '@/components/useTimeout';
 import * as XLSX from 'xlsx';
-import LoadingSinHF from '@/components/LoadingSinHF';
+import BtnLoading from '@/components/BtnLoading';
 
 export default function VerGrilla() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -62,14 +62,16 @@ export default function VerGrilla() {
     };
   }, [currentDate]);
 
-  useTimeout(() => {
+  /* useTimeout(() => {
     if (loading) {
       navigate('/error');
     }
-  }, 20000);
+  }, 20000); */
 
   if (loading) {
-    return <LoadingSinHF />;
+    return (<div className='flex justify-center items-center h-[50vh]'>
+    <BtnLoading />
+    </div>)
   }
 
   const handlePrevDay = () => {

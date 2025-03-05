@@ -3,7 +3,6 @@ import api from '@/lib/axiosConfig';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import LoadingSinHF from '@/components/LoadingSinHF';
 import ModalConfirmation from '@/components/ModalConfirmation';
 import PageHeader from '@/components/PanelAdmin/VerTurnos/TurnoHeader';
 import UnifiedDateSelector from '@/components/PanelAdmin/VerTurnos/UnifiedDateSelector';
@@ -12,6 +11,7 @@ import TurnoList from '@/components/PanelAdmin/VerTurnos/TurnoList';
 import SearchBar from '@/components/PanelAdmin/VerTurnos/TurnoSearchBar';
 import { Button } from '@/components/ui/button';
 import CrearTurnoFijoModal from '@/components/PanelAdmin/VerTurnos/CrearTurnoFijoModal';
+import BtnLoading from '@/components/BtnLoading';
 
 function VerTurnos() {
   const navigate = useNavigate();
@@ -312,19 +312,20 @@ function VerTurnos() {
                   clearFilters={clearFilters} // Pass the clearFilters function
                 />
                 {isFilterOpen && (
-                  <div ref={filterRef}>
-                    <FilterControls
-                      selectedCourt={selectedCourt}
-                      setSelectedCourt={setSelectedCourt}
-                      selectedStatus={selectedStatus}
-                      setSelectedStatus={setSelectedStatus}
-                      courts={courts}
-                      handleStatusChange={handleStatusChange}
-                    />
-                  </div>
+                  <FilterControls
+                    selectedCourt={selectedCourt}
+                    setSelectedCourt={setSelectedCourt}
+                    selectedStatus={selectedStatus}
+                    setSelectedStatus={setSelectedStatus}
+                    courts={courts}
+                    handleStatusChange={handleStatusChange}
+                    onClose={() => setIsFilterOpen(false)} // Pass the onClose function
+                  />
                 )}
               </div>
-              {loading && (<LoadingSinHF/>)}
+              {loading && (<div className='flex justify-center items-center h-[50vh]'>
+    <BtnLoading />
+    </div>)}
               {!loading && (
               <TurnoList
                 filteredBookings={filteredBookings}

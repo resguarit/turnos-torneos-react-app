@@ -3,8 +3,8 @@ import { Edit2, Plus, Trash2 } from 'lucide-react';
 import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import LoadingSinHF from '@/components/LoadingSinHF';
 import ModalConfirmation from '@/components/ModalConfirmation';
+import BtnLoading from '@/components/BtnLoading';
 
 const PestanaPistas = () => {
   const [pistas, setPistas] = useState([]);
@@ -16,6 +16,7 @@ const PestanaPistas = () => {
     tipo_cancha: '',
     precio_por_hora: '',
     seña: '',
+    descripcion: '', // Agregar campo de descripción
     activa: true,
   });
   const [loading, setLoading] = useState(true);
@@ -60,6 +61,7 @@ const PestanaPistas = () => {
           tipo_cancha: '',
           precio_por_hora: '',
           seña: '',
+          descripcion: '', // Resetear campo de descripción
           activa: true,
         });
         setAgregando(false);
@@ -88,6 +90,7 @@ const PestanaPistas = () => {
           tipo_cancha: '',
           precio_por_hora: '',
           seña: '',
+          descripcion: '', // Resetear campo de descripción
           activa: true,
         });
         setEditando(null);
@@ -135,6 +138,7 @@ const PestanaPistas = () => {
               tipo_cancha: '',
               precio_por_hora: '',
               seña: '',
+              descripcion: '', // Resetear campo de descripción
               activa: true,
             });
           }}
@@ -147,7 +151,9 @@ const PestanaPistas = () => {
       </div>
 
       {loading ? (
-        <LoadingSinHF />
+        <div className='flex justify-center items-center h-[50vh]'>
+        <BtnLoading />
+        </div>
       ) : (
         <>
           {agregando && (
@@ -193,6 +199,16 @@ const PestanaPistas = () => {
                     required
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                  <input
+                    type="text"
+                    value={newPista.descripcion}
+                    onChange={(e) => setNewPista({ ...newPista, descripcion: e.target.value })}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    required
+                  />
+                </div>
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -234,6 +250,7 @@ const PestanaPistas = () => {
                       </div>
                       <span className=" text-sm sm:text-base font-bold text-gray-700">Precio por Hora: <span className="font-normal">${pista.precio_por_hora}</span></span>
                       <span className=" text-sm sm:text-base font-bold text-gray-700">Seña: <span className="font-normal">${pista.seña}</span></span>
+                      <span className=" text-sm sm:text-base font-bold text-gray-700">Descripción: <span className="font-normal">{pista.descripcion}</span></span>
                       <span className=" text-sm sm:text-base font-bold text-gray-700">Activa: <span className="font-normal">{pista.activa ? 'Sí' : 'No'}</span></span>
                     </div>
 

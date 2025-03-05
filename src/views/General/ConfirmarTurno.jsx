@@ -10,7 +10,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { MapPin, Calendar, Clock, CreditCard, Eye, EyeOff } from 'lucide-react';
-import Loading from '@/components/LoadingSinHF';
+import Loading from '@/components/BtnLoading';
+import { format, parseISO, isValid } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 export default function ConfirmarTurno() {
   const [formData, setFormData] = useState({
@@ -271,7 +273,7 @@ export default function ConfirmarTurno() {
               <div className="bg-white p-4 rounded-[10px] shadow-lg flex flex-col justify-between md:ml-20">
                 <h2 className="text-lg font-bold mb-2">Detalles de la Reserva</h2>
                 {loadingDetails ? (
-                  <div className="flex justify-center items-center">
+                  <div className="flex justify-center items-center h-full">
                     <Loading />
                   </div>
                 ) : (
@@ -287,8 +289,10 @@ export default function ConfirmarTurno() {
                           <div className="w-full">
                             <p className="text-sm text-gray-500">Fecha y Hora</p>
                             <div className="flex full justify-between items-center">
-                              <p className="font-medium text-xs md:text-sm">{selectedDate}</p>
-                              <p className="font-medium text-xs md:text-sm">{reservationDetails.horario.hora_inicio} - {reservationDetails.horario.hora_fin} </p>
+                            <p className="font-medium text-xs md:text-sm">
+                              {isValid(parseISO(selectedDate)) ? format(parseISO(selectedDate), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es }) : 'Fecha inválida'}
+                            </p>                              
+                            <p className="font-medium text-xs md:text-sm">{reservationDetails.horario.hora_inicio} - {reservationDetails.horario.hora_fin} </p>
                             </div>
                           </div>
                         </div>

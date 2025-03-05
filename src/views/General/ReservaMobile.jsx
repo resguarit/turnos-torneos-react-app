@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Calendar, Clock, MapPin, ChevronRight, Check, CreditCard, ArrowRight } from 'lucide-react';
 import api from '@/lib/axiosConfig';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { format, addDays, startOfToday, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ReservationModal from '@/components/Reserva/ReservationModal';
@@ -10,7 +10,6 @@ import { Footer } from '@/components/Footer';
 import { ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; 
 import BtnLoading from '@/components/BtnLoading';
-import { toast, ToastContainer } from 'react-toastify';
 
 const ReservaMobile = () => {
   const [selectedDate, setSelectedDate] = useState(null);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react'; // Add useRef import
 import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -45,6 +45,7 @@ function EditarTurno() {
     estado: ''
   });
   const [isOpen, setIsOpen] = useState(false);
+  const calendarRef = useRef(null); // Add ref for calendar container
 
   useEffect(() => {
     const fetchTurno = async () => {
@@ -176,6 +177,45 @@ function EditarTurno() {
     });
   };
 
+  // Add click outside listener
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Check if the click target is within a select or combobox element
+      const isSelectElement = (element) => {
+        if (!element) return false;
+        const role = element.getAttribute('role');
+        return role === 'combobox' || role === 'listbox' || role === 'option';
+      };
+
+      // Check the clicked element and its parents for select roles
+      let targetElement = event.target;
+      let isSelect = false;
+      while (targetElement) {
+        if (isSelectElement(targetElement)) {
+          isSelect = true;
+          break;
+        }
+        targetElement = targetElement.parentElement;
+      }
+
+      // Check if click is outside calendar and not on a select
+      if (calendarRef.current && 
+          !calendarRef.current.contains(event.target) && 
+          !isSelect && 
+          isOpen) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
   if (loading) return  <div className="min-h-screen flex flex-col">
   <Header />
   <main className="flex-grow bg-gray-100 p-6">
@@ -234,7 +274,7 @@ function EditarTurno() {
               <div className="space-y-4">
                 <div>
                   <Label className="text-sm md:text-lg font-semibold mb-1 block">Fecha del Turno</Label>
-                  <div className="relative">
+                  <div className="relative" ref={calendarRef}>
                     <button
                       type="button"
                       onClick={toggleCalendar}

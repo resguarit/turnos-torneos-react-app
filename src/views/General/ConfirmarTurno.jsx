@@ -128,6 +128,11 @@ export default function ConfirmarTurno() {
               // Redireccionar al contador
               navigate('/bloqueo-reserva');
             }
+
+            if (bloqueoResponse.status === 400 || bloqueoResponse.status === 401 || bloqueoResponse.status === 403 || bloqueoResponse.status === 404 || bloqueoResponse.status === 500) {
+              toast.error(bloqueoResponse.data.message || 'Error en la creación del turno');
+              navigate('/reserva-mobile');
+            }
           }
         }
       } catch (error) {

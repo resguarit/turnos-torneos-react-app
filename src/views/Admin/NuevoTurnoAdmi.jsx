@@ -357,6 +357,15 @@ function NuevoTurnoAdmi() {
                   <option value="Pagado">Pagado</option>
                 </select>
               </div>
+
+              <div className="flex flex-col justify-center">
+                {formData.cancha_id && (
+                  <div className="border rounded p-2 border-gray-300 bg-gray-50 text-gray-600">
+                    <p>Precio por Hora: ${canchas.find(cancha => cancha.id === parseInt(formData.cancha_id))?.precio_por_hora}</p>
+                    <p>Seña: ${canchas.find(cancha => cancha.id === parseInt(formData.cancha_id))?.seña}</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             <button

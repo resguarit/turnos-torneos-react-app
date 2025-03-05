@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import api from '@/lib/axiosConfig';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
@@ -33,6 +33,7 @@ function VerTurnos() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [dateReset, setDateReset] = useState(false);
   const [showTurnoFijoModal, setShowTurnoFijoModal] = useState(false);
+  const filterRef = useRef(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -265,6 +266,24 @@ function VerTurnos() {
     fetchTurnos();
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setIsFilterOpen(false);
+      }
+    };
+
+    if (isFilterOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isFilterOpen]);
+
   return (
     <>
       <div className="min-h-screen flex flex-col font-inter">
@@ -293,14 +312,16 @@ function VerTurnos() {
                   clearFilters={clearFilters} // Pass the clearFilters function
                 />
                 {isFilterOpen && (
-                  <FilterControls
-                    selectedCourt={selectedCourt}
-                    setSelectedCourt={setSelectedCourt}
-                    selectedStatus={selectedStatus}
-                    setSelectedStatus={setSelectedStatus}
-                    courts={courts}
-                    handleStatusChange={handleStatusChange}
-                  />
+                  <div ref={filterRef}>
+                    <FilterControls
+                      selectedCourt={selectedCourt}
+                      setSelectedCourt={setSelectedCourt}
+                      selectedStatus={selectedStatus}
+                      setSelectedStatus={setSelectedStatus}
+                      courts={courts}
+                      handleStatusChange={handleStatusChange}
+                    />
+                  </div>
                 )}
               </div>
               {loading && (<LoadingSinHF/>)}

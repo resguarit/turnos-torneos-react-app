@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoutes";
 import { ROLES } from "@/constants/roles";
 import App from "../App";
-import TorneosA from "../views/Admin/TorneosA";
+import Torneos from "@/views/Admin/Torneos/Torneos";
 import ZonasA from "../views/Admin/ZonasA";
 import AltaZona from "@/views/Admin/AltaZona";
 import VerTurnos from "@/views/Admin/VerTurnos";
@@ -42,7 +42,7 @@ const AppRoutes = () => {
       <Route path={`/bloqueo-reserva`} element={<ContadorBloqueo />} />
 
       {/* Rutas protegidas para administradores */}
-      <Route path={`/torneos-admi`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><TorneosA /></ProtectedRoute>} />
+      <Route path={`/torneos-admi`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><Torneos /></ProtectedRoute>} />
       <Route path={`/zonas-admi`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><ZonasA /></ProtectedRoute>} />
       <Route path={`/alta-zona`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaZona /></ProtectedRoute>} />
       <Route path={`/ver-turnos`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><VerTurnos /></ProtectedRoute>} />

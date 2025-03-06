@@ -1,9 +1,9 @@
 import Logo from '../assets/logo.png';
 import MenuMovil from './MenuMovil';
 import { CircleUserRound } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { UserCog } from 'lucide-react';
+import { UserCog, MonitorCog } from 'lucide-react';
 import { LogOut } from 'lucide-react';
 import ModalConfirmation from './ModalConfirmation';
 import { Pencil } from 'lucide-react';
@@ -12,7 +12,8 @@ export function Header() {
   const navigate = useNavigate();
   const [username, setUserName] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [showModal, setShowModal] = useState(false);	
+  const [showModal, setShowModal] = useState(false);
+  const userRole = localStorage.getItem('user_role');	
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -56,19 +57,26 @@ export function Header() {
   };
 
   return (
-    <header className="bg-naranja max-w-full text-white px-6 py-4">
+    <header className="bg-naranja  max-w-full text-white px-6 py-4">
       <nav className=" mx-auto flex items-center justify-between">
-        <a href="/" >
+        <Link to="/" >
           <img src={Logo} alt="Logo" className="h-7 lg:h-8 xl:h-9" />
-        </a>
-        <div className="hidden md:block">
+        </Link>
+        <div className="hidden md:flex items-center">
           <div className="flex gap-8 lg:gap-12  font-inter text-sm xl:text-lg">
-            <a href="/" className="hover:opacity-80">Inicio</a>
-            <a href="/torneos-admi" className="hover:opacity-80">Torneos</a>
-            <a href="/calendario-admi" className="hover:opacity-80">Reservas</a>
-            <a href="/partidos" className="hover:opacity-80">Partidos</a>
-            <a href="/reglamento" className="hover:opacity-80">Reglamento</a>
-            <a href="/premios" className="hover:opacity-80">Premios</a>
+            <Link to="/" className="hover:opacity-80">Inicio</Link>
+            {userRole === 'admin' && (
+              <Link to="/panel-admin" className="hover:opacity-80 flex items-center gap-1">
+                Administrador 
+              </Link>
+            )}
+            {/* se agrega cuando este termianda la seccion de torneos */}
+            <Link to="/torneos-admi" className="hover:opacity-80">Torneos</Link>
+            <Link to="/reserva-mobile" className="hover:opacity-80">Reservar</Link>
+            <Link to="/partidos" className="hover:opacity-80">Partidos</Link>
+            <Link to="/reglamento" className="hover:opacity-80">Reglamento</Link>
+            <Link to="/premios" className="hover:opacity-80">Premios</Link>
+            
             {username ? (
               <div className="relative">
                 <button
@@ -76,7 +84,7 @@ export function Header() {
                   className="flex items-center gap-2 hover:opacity-80"
                 >
                   <span>{username}</span>
-                  <CircleUserRound className="h-7 w-7" />
+                  <CircleUserRound className="h-5 w-5" />
                 </button>
                 {isOpen && (
                   <div className="absolute font-inter text-base right-0 mt-2 w-48 bg-white text-zinc-800 rounded-xl shadow-lg z-50">
@@ -86,7 +94,7 @@ export function Header() {
                           navigate('/editar-perfil');
                           closeMenu();
                         }}
-                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2  rounded-xl"
+                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2 py-1  rounded-xl"
                       >
                         Editar Perfil <Pencil className='w-5'/>
                       </button>
@@ -96,7 +104,7 @@ export function Header() {
                           navigate('/user-profile');
                           closeMenu();
                         }}
-                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2  rounded-xl"
+                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2 py-1 rounded-xl"
                       >
                         Mi Panel <UserCog className='w-5'/>
                       </button>
@@ -106,7 +114,7 @@ export function Header() {
                           handleModal();
                           closeMenu();
                         }}
-                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2  rounded-xl"
+                        className="w-full flex justify-between text-left hover:bg-gray-200 px-2 py-1 rounded-xl"
                       >
                         Cerrar Sesión <LogOut className='w-5'/>
                       </button>
@@ -115,15 +123,15 @@ export function Header() {
                 )}
               </div>
             ) : (
-              <a href="/login" className="hover:opacity-80 flex flex-row items-center gap-2">
+              <Link to="/login" className="hover:opacity-80 flex flex-row items-center gap-2">
                 Iniciar Sesión <CircleUserRound className="h-7 w-7" />
-              </a>
+              </Link>
             )}
           </div>
         </div>
         <MenuMovil />
       </nav>
-      {showModal && <ModalConfirmation onConfirm={handleConfirmSubmit} onCancel={closeConfirmModal} title="Cerrar Sesión" subtitle={"Desea cerrar la sesión?"} botonText1={"Cancelar"} botonText2={"Cerrar Sesión"} />}
+      {showModal && <ModalConfirmation onConfirm={handleConfirmSubmit} onCancel={closeConfirmModal} title="¿Desea cerrar la sesión?"  botonText1={"Cancelar"} botonText2={"Cerrar Sesión"} />}
     </header>
   );
 }

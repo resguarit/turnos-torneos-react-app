@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,16 +10,26 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Clock, Calendar, MapPin, CreditCard, Eye, EyeOff } from 'lucide-react';
+import Loading from '@/components/BtnLoading';
+import { format, parseISO, isValid } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 export default function ConfirmarLogin() {
   const [formData, setFormData] = useState({
-    dni: '', // Cambiado de email a dni
+    identifier: '', // This will hold either email or DNI
     password: ''
   });
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false); // Estado de carga
   const navigate = useNavigate();
   const location = useLocation();
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false); // Estado de carga
+  const [reservationDetails, setReservationDetails] = useState({
+    horario: null,
+    cancha: null
+  });
+  const [loadingDetails, setLoadingDetails] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   
   // Obtener parámetros de la URL
   const queryParams = new URLSearchParams(location.search);
@@ -29,7 +39,7 @@ export default function ConfirmarLogin() {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.dni) newErrors.dni = 'El DNI es requerido';
+    if (!formData.identifier) newErrors.identifier = 'El DNI o Email es requerido';
     if (!formData.password) newErrors.password = 'La contraseña es requerida';
     if (Object.keys(newErrors).length > 0) {
       Object.values(newErrors).forEach(error => toast.error(error));
@@ -48,44 +58,64 @@ export default function ConfirmarLogin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      setLoading(true); // Iniciar estado de carga
+      setLoading(true);
       try {
-        // Iniciar sesión
-        const loginResponse = await api.post('/login', {
-          email: formData.email,
-          password: formData.password
-        });
+        // Determinar si el identificador es un email o DNI
+        const isEmail = formData.identifier.includes('@');
+        const loginData = isEmail 
+          ? { email: formData.identifier, password: formData.password }
+          : { dni: formData.identifier, password: formData.password };
+
+        const loginResponse = await api.post('/login', loginData);
 
         if (loginResponse.data.token) {
-          // Guardar datos del usuario y token
+          // Guardar datos del usuario
           localStorage.setItem('user_id', loginResponse.data.user_id);
           localStorage.setItem('username', loginResponse.data.username);
           localStorage.setItem('token', loginResponse.data.token);
+          localStorage.setItem('user_role', loginResponse.data.rol);
           
-          // Configurar token en headers
           api.defaults.headers.common['Authorization'] = `Bearer ${loginResponse.data.token}`;
 
-          // Crear reserva con token
-          const formattedDate = new Date(selectedDate).toISOString().split('T')[0];
-          const reservationResponse = await api.post('/turnos/turnounico', {
-            fecha_turno: formattedDate,
-            cancha_id: selectedCourt,
-            horario_id: selectedTime,
-            usuario_id: loginResponse.data.user_id,
-            estado: 'Pendiente'
-          });
+          try {
+            // Obtener datos de reserva del localStorage
+            const reservaTemp = JSON.parse(localStorage.getItem('reservaTemp'));
+            if (!reservaTemp) {
+              toast.error('No se encontraron datos de la reserva');
+              setLoading(false);
+              navigate('/nueva-reserva');
+              return;
+            }
+            
+            // Crear bloqueo temporal
+            const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
+              fecha: reservaTemp.fecha,
+              horario_id: reservaTemp.horario_id,
+              cancha_id: reservaTemp.cancha_id
+            });
 
-          if (reservationResponse.status === 201) {
-            toast.success('Turno confirmado exitosamente');
-            setTimeout(() => {
-              navigate('/user-profile');
-            }, 2000); // Esperar 2 segundos antes de redirigir
+            if (bloqueoResponse.status === 201) {
+              setLoading(false);
+              navigate('/bloqueo-reserva');
+            }
+          } catch (bloqueoError) {
+            console.error('Error al crear bloqueo:', bloqueoError);
+            toast.error('Error al crear el bloqueo temporal');
+            setLoading(false);
+            navigate('/nueva-reserva');
+            return;
           }
         }
       } catch (error) {
-        toast.error(error.response?.data?.message || 'Error al procesar la solicitud');
-      } finally {
-        setLoading(false); // Finalizar estado de carga
+        console.error('Error completo:', error);
+        if (error.response?.status === 422) {
+          toast.error('Por favor ingrese un DNI o email válido');
+        } else if (error.response?.status === 401) {
+          toast.error('Credenciales incorrectas');
+        } else {
+          toast.error(error.response?.data?.message || 'Error al iniciar sesión');
+        }
+        setLoading(false);
       }
     }
   };
@@ -94,43 +124,111 @@ export default function ConfirmarLogin() {
     navigate(`/confirmar-turno?time=${selectedTime}&date=${selectedDate}&court=${selectedCourt}`);
   };
 
+  // Obtener detalles del horario y la cancha
+  useEffect(() => {
+    const fetchDetails = async () => {
+      try {
+        // Obtener detalles del horario
+        const horarioResponse = await api.get(`/horarios/${selectedTime}`);
+        // Obtener detalles de la cancha
+        const canchaResponse = await api.get(`/canchas/${selectedCourt}`);
+        
+        setReservationDetails({
+          horario: horarioResponse.data.horario,
+          cancha: canchaResponse.data.cancha
+        });
+      } catch (error) {
+        console.error('Error fetching details:', error);
+      } finally {
+        setLoadingDetails(false); // Finalizar estado de carga para los detalles de la reserva
+      }
+    };
+
+    if (selectedTime && selectedCourt) {
+      fetchDetails();
+    }
+  }, [selectedTime, selectedCourt]);
+
+  const señaPercentage = reservationDetails.cancha ? (reservationDetails.cancha.seña / reservationDetails.cancha.precio_por_hora) * 100 : 0;
+
+  useEffect(() => {
+    // Recuperar datos del localStorage
+    const reservaTemp = localStorage.getItem('reservaTemp');
+    if (!reservaTemp) {
+      navigate('/nueva-reserva');
+      return;
+    }
+  
+    const fetchDetails = async () => {
+      try {
+        const reservaData = JSON.parse(reservaTemp);
+        
+        // Obtener detalles del horario
+        const horarioResponse = await api.get(`/horarios/${reservaData.horario_id}`);
+        // Obtener detalles de la cancha
+        const canchaResponse = await api.get(`/canchas/${reservaData.cancha_id}`);
+        
+        setReservationDetails({
+          horario: horarioResponse.data.horario,
+          cancha: canchaResponse.data.cancha
+        });
+      } catch (error) {
+        console.error('Error fetching details:', error);
+        toast.error('Error al cargar los detalles de la reserva');
+      } finally {
+        setLoadingDetails(false);
+      }
+    };
+  
+    fetchDetails();
+  }, [navigate]);
+  
   return (
     <div className="min-h-screen flex flex-col justify-start bg-gray-100 font-inter">
       <Header />
       <main className="max-w-7xl lg:max-w-full p-6 grow">
-        <h1 className="text-4xl font-semibold mb-2">Iniciar Sesión y Confirmar Turno</h1>
-        <p className="text-xl text-gray-600 mb-8">
+        <h1 className="text-2xl font-semibold mb-2">Iniciar Sesión y Confirmar Turno</h1>
+        <p className="text-base text-gray-600 mb-8">
           Inicie sesión para confirmar su reserva.
         </p>
-        <Card className="max-w-5xl mx-auto border-0">
+        <Card className="max-w-7xl mx-auto border-0">
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit} className="space-y-8 h-full  flex flex-col">
               <div className="space-y-4">
                 <div className="space-y-1 flex flex-col">
-                  <Label htmlFor="dni" className="text-xl">DNI</Label>
+                  <Label htmlFor="identifier" className="text-base font-semibold">DNI o Email</Label>
                   <input
-                    id="dni"
+                    id="identifier"
                     type="text"
-                    name="dni"
-                    value={formData.dni}
+                    name="identifier"
+                    value={formData.identifier}
                     onChange={handleChange}
-                    className={`w-full text-black text-lg border-2 border-gray-300 p-2 rounded-xl ${errors.dni ? 'border-red-500' : ''}`}
+                    className={`w-full text-black text-lg border-2 border-gray-300 rounded-xl ${errors.identifier ? 'border-red-500' : ''}`}
                   />
-                  {errors.dni && (
-                    <p className="text-sm text-red-500">{errors.dni}</p>
+                  {errors.identifier && (
+                    <p className="text-sm text-red-500">{errors.identifier}</p>
                   )}
                 </div>
 
                 <div className="space-y-1 flex flex-col">
-                  <Label htmlFor="password" className="text-xl">Contraseña</Label>
-                  <input
-                    id="password"
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className={`w-full text-black text-lg border-2 border-gray-300 p-2 rounded-xl ${errors.password ? 'border-red-500' : ''}`}
-                  />
+                  <Label htmlFor="password" className="text-base font-semibold">Contraseña</Label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className={`w-full text-black text-lg border-2 border-gray-300 rounded-xl ${errors.password ? 'border-red-500' : ''}`}
+                    />
+                    <div
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5 text-gray-500" /> : <Eye className="w-5 h-5 text-gray-500" />}
+                    </div>
+                  </div>
                   {errors.password && (
                     <p className="text-sm text-red-500">{errors.password}</p>
                   )}
@@ -143,29 +241,89 @@ export default function ConfirmarLogin() {
                 </div>
               )}
 
-              <button type="submit" className="w-full bg-naranja p-2 text-xl text-white rounded-[10px] hover:bg-white hover:text-naranja border border-naranja" disabled={loading}>
+              <button type="submit" className="w-full bg-naranja p-2 text-sm text-white rounded-[10px] hover:bg-white hover:text-naranja border border-naranja" disabled={loading}>
                 {loading ? 'Iniciando Sesión y Confirmando Turno...' : 'Iniciar Sesión y Confirmar Turno'}
               </button>
             </form>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+            <div className="bg-white p-4 rounded-[10px] shadow-lg flex flex-col justify-between md:ml-20">
+                <h2 className="text-lg font-bold mb-2">Detalles de la Reserva</h2>
+                {loadingDetails ? (
+                  <div className="flex justify-center items-center h-full">
+                    <Loading />
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-center text-sm text-muted-foreground space-y-3 md:space-y-6 mb-4 ">
+                      <MapPin className="w-4 h-4 mr-1" />
+                      Rock & Gol 520 esq. 20
+                    </div>
+                    <div className="space-y-4 md:space-y-6 mb-4">
+                      <div className="space-y-4">
+                        <div className="flex items-center space-x-3">
+                          <Calendar className="w-5 h-5 text-gray-500" />
+                          <div className="w-full">
+                            <p className="text-sm text-gray-500">Fecha y Hora</p>
+                            <div className="flex full justify-between items-center">
+                              <p className="font-medium text-xs md:text-sm">
+                                {isValid(parseISO(selectedDate)) ? format(parseISO(selectedDate), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es }) : 'Fecha inválida'}
+                              </p>
+                              <p className="font-medium text-xs md:text-sm">{reservationDetails.horario.hora_inicio} - {reservationDetails.horario.hora_fin} </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <Clock className="w-5 h-5 text-gray-500" />
+                          <div className="w-full">
+                            <p className="text-sm text-gray-500">Duración y Cancha</p>
+                            <div className="flex w-full justify-between items-center">
+                              <p className="font-medium text-xs md:text-sm">60 min </p>
+                              <p className="font-medium text-xs md:text-sm">Cancha {reservationDetails.cancha.nro} - {reservationDetails.cancha.tipo_cancha} </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="pt-3 md:pt-4 border-t">
+                      <div className="flex items-center space-x-3">
+                        <CreditCard className="w-5 h-5 text-gray-500" />
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-500">Resumen de pago</p>
+                          <div className="space-y-1">
+                            <div className="flex justify-between">
+                              <p className="text-xs md:text-sm">Total</p>
+                              <p className="font-medium text-xs md:text-sm">${reservationDetails.cancha.precio_por_hora} </p>
+                            </div>
+                            {console.log(reservationDetails)}
+                            <div className="flex justify-between text-naranja">
+                              <p className="text-xs md:text-sm">Seña ({señaPercentage.toFixed(0)}%)</p>
+                              <p className="font-medium text-xs md:text-sm">${reservationDetails.cancha.seña}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
-              <div className="relative flex justify-center text-lg uppercase">
+          </div>
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-4 pb-0">
+          <div className="relative">
+              <div className="relative flex justify-center text-xs uppercase">
                 <span className="px-2 text-muted-foreground">
                   O si no tienes una cuenta
                 </span>
               </div>
             </div>
             <button 
-              className="w-1/2 bg-white border border-naranja text-naranja text-xl p-2 rounded-[10px] hover:bg-naranja hover:text-white"
+              className="w-1/2 bg-white border border-naranja text-naranja text-sm p-2 rounded-[10px] hover:bg-naranja hover:text-white"
               onClick={navigateToSignUp}
               disabled={loading}
             >
               Registrarse
             </button>
-          </CardContent>
+          </CardFooter>
         </Card>
       </main>
       <Footer />

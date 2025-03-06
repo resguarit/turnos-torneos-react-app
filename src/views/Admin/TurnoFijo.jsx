@@ -4,13 +4,14 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
+import { toast } from 'react-toastify';
 
 const CreateFixedReservation = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    usuario_id: '', // ID del usuario seleccionado por DNI
+    usuario_id: '', 
     usuario_nombre: '',
-    fecha_turno: '',
+    fecha_inicio: '', 
     cancha_id: '',
     horario_id: '',
     estado: 'Pendiente',
@@ -53,26 +54,46 @@ const CreateFixedReservation = () => {
   }, [searchTerm, users]);
 
   useEffect(() => {
-    if (formData.fecha_turno) {
+    if (formData.fecha_inicio) {
       const fetchHorarios = async () => {
         try {
-          const response = await api.get(`/disponibilidad/fecha?fecha=${formData.fecha_turno}`);
-          setHorarios(response.data.horarios);
+          const response = await api.get(`/disponibilidad/turnos-fijos`, {
+            params: {
+              fecha_inicio: formData.fecha_inicio,
+            }
+          });
+
+          // Debug logs
+          console.log('Response horarios:', response.data);
+          
+          // Make sure we're using the correct data structure
+          if (response.data.horarios && Array.isArray(response.data.horarios)) {
+            const horariosDisponibles = response.data.horarios.filter(
+              horario => horario.disponible
+            );
+            setHorarios(horariosDisponibles);
+          } else {
+            setHorarios([]);
+            setError('No se encontraron horarios disponibles');
+          }
         } catch (error) {
           console.error('Error al cargar horarios:', error);
-          setError('Error al cargar horarios');
+          setHorarios([]);
+          setError(error.response?.data?.message || 'Error al cargar horarios');
         }
       };
 
       fetchHorarios();
+    } else {
+      setHorarios([]);
     }
-  }, [formData.fecha_turno]);
+  }, [formData.fecha_inicio]);
 
   useEffect(() => {
-    if (formData.fecha_turno && formData.horario_id) {
+    if (formData.fecha_inicio && formData.horario_id) { 
       const fetchCanchas = async () => {
         try {
-          const response = await api.get(`/disponibilidad/cancha?fecha=${formData.fecha_turno}&horario_id=${formData.horario_id}`);
+          const response = await api.get(`/disponibilidad/cancha?fecha=${formData.fecha_inicio}&horario_id=${formData.horario_id}`);
           setCanchas(response.data.canchas);
         } catch (error) {
           console.error('Error al cargar canchas:', error);
@@ -82,7 +103,7 @@ const CreateFixedReservation = () => {
 
       fetchCanchas();
     }
-  }, [formData.fecha_turno, formData.horario_id]);
+  }, [formData.fecha_inicio, formData.horario_id]);
 
   const handleUserSelect = (user) => {
     setFormData(prev => ({
@@ -93,21 +114,64 @@ const CreateFixedReservation = () => {
     setSearchTerm(user.dni);
   };
 
+  const handleFechaChange = (e) => {
+    setError(null); // Limpiar errores
+    setFormData({ 
+      ...formData, 
+      fecha_inicio: e.target.value,
+      horario_id: '', // Reset horario
+      cancha_id: '' // Reset cancha
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    
+    if (!formData.usuario_id) {
+      toast.error('No se ha seleccionado un usuario válido');
+      return;
+    }
 
+    setLoading(true);
     try {
-      if (!formData.usuario_id) {
-        throw new Error('Por favor, seleccione un usuario válido');
+      // Verificar disponibilidad
+      const disponibilidadResponse = await api.get('/disponibilidad/turnos-fijos', {
+        params: {
+          fecha_inicio: formData.fecha_inicio,
+          horario_id: formData.horario_id,
+          cancha_id: formData.cancha_id
+        }
+      });
+
+      const canchaDisponible = disponibilidadResponse.data.horarios.some(
+        horario => horario.id === parseInt(formData.horario_id) && horario.disponible
+      );
+
+      if (!canchaDisponible) {
+        toast.error('La cancha no está disponible para turnos fijos en ese horario');
+        setLoading(false);
+        return;
       }
-      const response = await api.post('/turnos/turnofijo', formData);
+
+      // Crear el objeto con los datos del turno fijo
+      const turnoFijoData = {
+        user_id: parseInt(formData.usuario_id), // Cambiado de usuario_id a user_id
+        fecha_inicio: formData.fecha_inicio,
+        horario_id: parseInt(formData.horario_id),
+        cancha_id: parseInt(formData.cancha_id),
+        estado: formData.estado
+      };
+
+      console.log('Datos a enviar:', turnoFijoData); // Para debug
+
+      const response = await api.post('/turnos/turnofijo', turnoFijoData);
       if (response.status === 201) {
+        toast.success('Turnos fijos creados correctamente');
         navigate('/ver-turnos');
       }
     } catch (error) {
-      console.error('Error al crear turno fijo:', error);
-      setError(error.response?.data?.message || 'Error al crear turno fijo');
+      console.error('Error details:', error.response?.data);
+      toast.error(error.response?.data?.message || 'Error al crear los turnos fijos');
     } finally {
       setLoading(false);
     }
@@ -146,8 +210,10 @@ const CreateFixedReservation = () => {
                         className="p-2 hover:bg-gray-100 cursor-pointer"
                         onClick={() => handleUserSelect(user)}
                       >
-                        <div>{user.nombre}</div>
-                        <div className="text-sm text-gray-500">ID: {user.id} | DNI: {user.dni} | Tel: {user.telefono}</div>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{user.name}</span>
+                          <span className="text-sm text-gray-600">DNI: {user.dni}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -165,43 +231,73 @@ const CreateFixedReservation = () => {
                 <input
                   type="date"
                   className="w-full border rounded p-2"
-                  value={formData.fecha_turno}
-                  onChange={(e) => setFormData({ ...formData, fecha_turno: e.target.value })}
+                  value={formData.fecha_inicio}
+                  onChange={handleFechaChange}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium">Horario</label>
                 <select
-                  className="w-full border rounded p-2"
+                  className={`w-full border rounded p-2 ${
+                    formData.fecha_inicio && horarios.length === 0 
+                      ? 'border-red-500 bg-red-50 cursor-not-allowed' 
+                      : 'border-gray-300'
+                  }`}
                   value={formData.horario_id}
-                  onChange={(e) => setFormData({ ...formData, horario_id: e.target.value })}
-                  disabled={!formData.fecha_turno}
+                  onChange={(e) => setFormData({ ...formData, horario_id: e.target.value, cancha_id: '' })} // Reset cancha on horario change
+                  disabled={!formData.fecha_inicio || horarios.length === 0}
                 >
-                  <option value="">Seleccionar horario</option>
+                  <option value="">
+                    {formData.fecha_inicio && horarios.length === 0 
+                      ? 'No hay horarios disponibles' 
+                      : 'Seleccionar horario'
+                    }
+                  </option>
                   {horarios.map(horario => (
                     <option key={horario.id} value={horario.id}>
                       {`${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`}
                     </option>
                   ))}
                 </select>
+                {formData.fecha_inicio && horarios.length === 0 && (
+                  <p className="text-red-500 text-sm mt-1">
+                    No hay horarios disponibles para esta fecha
+                  </p>
+                )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium">Cancha</label>
                 <select
-                  className="w-full border rounded p-2"
+                  className={`w-full border rounded p-2 ${
+                    (formData.horario_id && canchas.length === 0) || (formData.fecha_inicio && horarios.length === 0 )
+                      ? 'border-red-500 bg-red-50 cursor-not-allowed'
+                      : 'border-gray-300'
+                  }`}
                   value={formData.cancha_id}
                   onChange={(e) => setFormData({ ...formData, cancha_id: e.target.value })}
-                  disabled={!formData.horario_id}
+                  disabled={!formData.horario_id || canchas.length === 0}
                 >
-                  <option value="">Seleccionar cancha</option>
+                  <option value="">
+                    {formData.horario_id && canchas.length === 0
+                      ? 'No hay canchas disponibles'
+                      : 'Seleccionar cancha'
+                    }
+                  </option>
                   {canchas.map(cancha => (
-                    <option key={cancha.id} value={cancha.id}>
-                      {`Cancha ${cancha.nro} - ${cancha.tipo}`}
-                    </option>
+                    <option
+                      key={cancha.id}
+                      value={cancha.id}
+                      style={{ color: !cancha.disponible ? 'red' : 'inherit' }}
+                    >{`Cancha ${cancha.nro} - ${cancha.tipo}`}</option>
                   ))}
                 </select>
+                {formData.horario_id && canchas.length === 0 && (
+                  <p className="text-red-500 text-sm mt-1">
+                    No hay canchas disponibles para este horario
+                  </p>
+                )}
               </div>
 
               <div>

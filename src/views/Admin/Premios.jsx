@@ -2,8 +2,53 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { FaTrophy, FaMedal, FaFutbol, FaHandPaper } from "react-icons/fa";
 import rngBlack from "@/assets/rngBlack.mp4";
+import Confetti from 'react-confetti';
+import { useState, useEffect } from 'react';
 
 export default function Premios() {
+  const [windowDimension, setWindowDimension] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
+  const [showConfetti, setShowConfetti] = useState(true);
+
+  useEffect(() => {
+    const detectSize = () => {
+      setWindowDimension({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    window.addEventListener('resize', detectSize);
+
+    // Stop confetti after 8 seconds
+    const timer = setTimeout(() => {
+      setShowConfetti(false);
+    }, 8000);
+
+    return () => {
+      window.removeEventListener('resize', detectSize);
+      clearTimeout(timer);
+    };
+
+    const videoElement = document.querySelector("video");
+
+    if (videoElement) {
+      videoElement.addEventListener("contextmenu", (e) => e.preventDefault());
+      videoElement.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+
+      // Prevenir la interacción en iOS
+      videoElement.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    }
+  }, []);
+
   const prizes = [
     {
       title: "Campeón",
@@ -35,14 +80,31 @@ export default function Premios() {
 
   return (
     <div className="relative min-h-screen flex flex-col font-inter">
+      {showConfetti && (
+        <Confetti
+          width={windowDimension.width}
+          height={windowDimension.height}
+          numberOfPieces={200}
+          recycle={true}
+          colors={['#FF6B00', '#FFD700', '#FF69B4', '#4CAF50', '#2196F3']}
+        />
+      )}
+      
       {/* Video de fondo */}
-      <video
-        className="absolute top-0 left-0 w-full h-full object-cover z-0"
-        src={rngBlack}
-        autoPlay
-        loop
-        muted
-      ></video>
+      <div className="absolute inset-0">
+          <video
+              className="pointer-events-none select-none absolute inset-0 w-full h-full object-cover "
+              src={rngBlack}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+          ></video>
+      {/* Div para bloquear interacción en iPhone */}
+          <div className="absolute inset-0 bg-transparent pointer-events-auto">  
+          </div>
+      </div>
 
       {/* Superposición oscura */}
       <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50 z-10"></div>
@@ -51,32 +113,31 @@ export default function Premios() {
       <div className="relative z-20 min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 p-6">
-        <h1 className="relative text-3xl font-bold text-white lg:text-4xl">
+        <h1 className="relative text-2xl font-bold text-white lg:text-3xl mb-2">
               Premios
             </h1>
-          <div className="max-w-6xl h-[72vh] items-center flex flex-col justify-center lg:max-w-full mx-auto">
+          <div className="max-w-6xl items-center flex flex-col justify-center lg:max-w-full mx-auto">
             
 
-            <div className="lg:mx-60 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className=" grid grid-cols-1 md:grid-cols-2 gap-6">
               {prizes.map((prize, index) => (
                 <div
                   key={index}
-                  style={{ borderRadius: "12px" }}
-                  className="bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
+                  className="bg-white rounded-[12px] p-5 shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex flex-col items-center text-center">
-                    <prize.icon className="h-12 w-12 mb-4 text-naranja" />
-                    <h3 className="text-xl font-semibold mb-2 lg:text-3xl">
+                    <prize.icon className="h-12 w-12 mb-2 text-naranja" />
+                    <h3 className="text-base font-semibold mb-1 lg:text-xl">
                       {prize.title}
                     </h3>
-                    <p className="text-sm text-gray-600 mb-1 lg:text-xl">
+                    <p className="text-sm text-gray-600 mb-1 lg:text-base">
                       {prize.subtitle}
                     </p>
-                    <p className="text-sm text-gray-600 lg:text-xl">
+                    <p className="text-sm text-gray-600 lg:text-base">
                       {prize.description}
                     </p>
                     {prize.subtext && (
-                      <p className="text-sm text-gray-600 lg:text-xl">
+                      <p className="text-sm text-gray-600 lg:text-base">
                         {prize.subtext}
                       </p>
                     )}

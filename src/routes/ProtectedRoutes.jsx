@@ -13,12 +13,12 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
   // Check for admin routes
   if (requiredRole === ROLES.ADMIN && userRole !== ROLES.ADMIN) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={`/`} replace />;
   }
 
   // Check for user routes
   if (requiredRole === ROLES.USER && userRole === ROLES.PUBLIC) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={`/login`} replace />;
   }
 
   return children;

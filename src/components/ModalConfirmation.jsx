@@ -3,31 +3,34 @@ import { X } from "lucide-react";
 
 function ModalConfirmation({ onConfirm, onCancel, title, subtitle, botonText1, botonText2 }){
     return(
-            <div className="z-50 fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center font-inter">
-              <div className="bg-white text-black z-20 p-4 rounded-xl shadow-lg w-11/12 md:w-2/3 lg:w-1/3">
-                <div className="flex justify-between">
-                  <h2 className="text-lg font-bold mb-4 md:text-2xl">{title}</h2>
-                  <X onClick={onCancel} className="cursor-pointer" />
+        <div className="z-50 fixed inset-0 bg-black/50 flex items-center justify-center font-inter">
+            <div className="bg-white text-black z-20 rounded-2xl shadow-lg max-w-[250px] lg:max-w-[400px] w-11/12">
+                <div className="md:p-6 p-3 space-y-2 md:space-y-4">
+                    <div className="flex justify-between items-center mb-2">
+                        <h2 className="text-lg lg:text-xl font-medium">{title}</h2>
+                        <X 
+                            onClick={onCancel} 
+                            className="cursor-pointer h-5 w-5 text-gray-500 hover:text-gray-700" 
+                        />
+                    </div>
+                    <div className="space-y-3 pt-2">
+                        <button
+                            onClick={onConfirm}
+                            className="text-sm md:text-base w-full bg-naranja hover:bg-naranja/90 text-white rounded-[10px] py-2"
+                        >
+                            {botonText2}
+                        </button>
+                        <button
+                            onClick={onCancel}
+                            className="text-sm md:text-base w-full rounded-[10px] py-2 border border-black"
+                        >
+                            {botonText1}
+                        </button>
+                    </div>
                 </div>
-                <p className="mb-6 text-base md:text-lg">{subtitle}</p>
-                <div className="flex justify-evenly">
-                    <button
-                        onClick={onCancel}
-                        className="py-1 px-3 bg-white text-naranja border border-naranja text-sm  lg:text-lg"
-                        style={{ borderRadius: "8px" }}
-                    >
-                        {botonText1}
-                    </button>
-                    <button
-                        onClick={onConfirm}
-                        className="py-1 px-3 bg-naranja  text-white text-sm lg:text-lg"
-                        style={{ borderRadius: "8px" }}
-                    >
-                        {botonText2}
-                    </button>
-                </div>
-              </div>
             </div>
+        </div>
     )
 }
+
 export default ModalConfirmation;

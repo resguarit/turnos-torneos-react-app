@@ -24,7 +24,6 @@ const ReservaMobile = () => {
   const [user, setUser] = useState(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [loadingCancha, setLoadingCancha] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const [expandedCourt, setExpandedCourt] = useState(null);
 
   const navigate = useNavigate(); // Inicializa useNavigate
@@ -138,24 +137,6 @@ const ReservaMobile = () => {
 
   // Handler para confirmar la reserva
   const handleConfirm = () => {
-    setIsOpen(true); // Abre el modal
-  };
-
-  // Handler para cerrar el modal
-  const handleCancel = () => {
-    setIsOpen(false); // Cierra el modal
-  };
-
-  // Obtener slot completo seleccionado
-  const selectedSlot = courts.find(court => court === selectedCourt);
-
-  // Formatear la fecha al formato "dd/MM/yyyy"
-  const formattedDate = selectedDate ? format(new Date(selectedDate.full), "dd/MM/yyyy") : '';
-
-  // Obtener el nombre del tiempo seleccionado
-  const selectedTimeName = availability.find(time => time.id === selectedTime)?.time || '';
-
-  const confirmSubmit = async () => {
     const token = localStorage.getItem('token');
     
     if (!selectedDate?.dateObj || !isValid(selectedDate?.dateObj)) {
@@ -172,7 +153,6 @@ const ReservaMobile = () => {
         monto_total: selectedCourt.precio_por_hora,
         monto_seña: selectedCourt.seña
       }));
-      setIsOpen(false);
       navigate(`/confirmar-turno?time=${selectedTime}&date=${format(selectedDate.dateObj, 'yyyy-MM-dd')}&court=${selectedCourt.id}`);
       return;
     }
@@ -181,42 +161,50 @@ const ReservaMobile = () => {
     try {
       const formattedDate = format(selectedDate.dateObj, 'yyyy-MM-dd');
       
-      const bloqueoResponse = await api.post('/turnos/bloqueotemporal', {
+      api.post('/turnos/bloqueotemporal', {
         fecha: formattedDate,
         horario_id: selectedTime,
         cancha_id: selectedCourt.id
+      })
+      .then(response => {
+        if (response.status === 201) {
+          localStorage.setItem('reservaTemp', JSON.stringify({
+            fecha: formattedDate,
+            horario_id: selectedTime,
+            cancha_id: selectedCourt.id,
+            monto_total: selectedCourt.precio_por_hora,
+            monto_seña: selectedCourt.seña
+          }));
+          
+          navigate(`/bloqueo-reserva`);
+        }
+      })
+      .catch(error => {
+        if (error.response && error.response.status === 409) {
+          toast.error('Otra persona está reservando este turno');
+        } else {
+          console.error('Error completo:', error);
+          toast.error(error.response?.data?.message || 'Error al crear el bloqueo temporal');
+        }
+      })
+      .finally(() => {
+        setConfirmLoading(false);
       });
-  
-      if (bloqueoResponse.status === 201) {
-        
-        localStorage.setItem('reservaTemp', JSON.stringify({
-          fecha: formattedDate,
-          horario_id: selectedTime,
-          cancha_id: selectedCourt.id,
-          monto_total: selectedCourt.precio_por_hora,
-          monto_seña: selectedCourt.seña
-        }));
-  
-        setIsOpen(false);
-        navigate(`/bloqueo-reserva`);
-      }
     } catch (error) {
       setConfirmLoading(false);
-      setIsOpen(false);
-
-
-      if (error.response && error.response.status === 409) {
-        toast.error('Otra persona está reservando este turno');
-      } else {
-        console.error('Error completo:', error);
-        toast.error(error.response?.data?.message || 'Error al crear el bloqueo temporal');
-      }
-      setIsOpen(false);
-    } finally {
-      setConfirmLoading(false);
+      console.error('Error inesperado:', error);
+      toast.error('Error inesperado al procesar la reserva');
     }
   };
 
+  // Obtener slot completo seleccionado
+  const selectedSlot = courts.find(court => court === selectedCourt);
+
+  // Formatear la fecha al formato "dd/MM/yyyy"
+  const formattedDate = selectedDate ? format(new Date(selectedDate.full), "dd/MM/yyyy") : '';
+
+  // Obtener el nombre del tiempo seleccionado
+  const selectedTimeName = availability.find(time => time.id === selectedTime)?.time || '';
 
   return (
     <div className="flex min-h-screen bg-gray-100 flex-col">
@@ -344,28 +332,15 @@ const ReservaMobile = () => {
           <div className="p-4 md:mx-40 lg:mx-60">
             <button 
               onClick={handleConfirm}
-              className="w-full bg-naranja text-white  py-2 rounded-[8px] flex items-center justify-center"
+              disabled={confirmLoading}
+              className="w-full bg-naranja text-white py-2 rounded-[8px] flex items-center justify-center"
             >
-              Confirmar Reserva
+              {confirmLoading ? 'Cargando...' : 'Continuar Reserva'}
               <ArrowRight size={18} className="ml-2" />
             </button>
           </div>
         )}
-
         
-        {isOpen && (
-          
-          <ReservationModal
-            showModal={isOpen}
-            onConfirm={confirmSubmit}
-            onCancel={handleCancel}
-            selectedDate={formattedDate}
-            selectedTimeName={selectedTimeName}
-            selectedCourt={selectedCourt}
-            user={user}
-            confirmLoading={confirmLoading}
-          />
-        )}
       </main>
       <Footer />
       <ToastContainer position="top-right" />

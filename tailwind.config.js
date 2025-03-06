@@ -31,7 +31,7 @@ export default {
       },
   		colors: {
         footer: '#2E2626',
-        naranja: "#FF5115",
+        naranja: "#000000",
 		verde: '#32AE41',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

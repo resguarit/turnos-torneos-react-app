@@ -138,7 +138,29 @@ export default function ConfirmarTurno() {
           }
         }
       } catch (error) {
-        toast.error(error.response?.data?.message || 'Error en el proceso de registro');
+        console.error('Error completo:', error);
+        
+        // Manejar errores de validación (422)
+        if (error.response?.status === 422) {
+          const validationErrors = error.response.data.errors;
+          // Crear un nuevo objeto de errores VACÍO en lugar de copiar los errores existentes
+          const newErrors = {};
+          
+          // Actualizar los errores para cada campo
+          if (validationErrors.dni) {
+            newErrors.dni = validationErrors.dni[0];
+            toast.error(`DNI: ${validationErrors.dni[0]}`);
+          }
+          
+          if (validationErrors.email) {
+            newErrors.email = validationErrors.email[0];
+            toast.error(`Email: ${validationErrors.email[0]}`);
+          }
+          
+          setErrors(newErrors);
+        } else {
+          toast.error(error.response?.data?.message || 'Error en el proceso de registro');
+        }
       } finally {
         setLoading(false);
       }
@@ -219,6 +241,9 @@ export default function ConfirmarTurno() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className={`w-full text-black text-lg border-2 border-gray-300 rounded-[8px] ${errors.email ? 'border-red-500' : ''}`}
                   />
+                  {errors.email && (
+                    <p className="text-sm text-red-500">{errors.email}</p>
+                  )}
                 </div>
 
                 <div className="relative">

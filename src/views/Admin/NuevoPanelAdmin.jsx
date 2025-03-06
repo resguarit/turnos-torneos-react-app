@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays } from 'lucide-react';
+import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays, FileText } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import PestanaDashboard from './PestanaDashboard';
@@ -8,6 +8,7 @@ import PestanaHorario from './PestanaHorario';
 import PestanaPistas from './PestanaPistas';
 import PestanaUsuarios from './PestanaUsuarios';
 import PestanaTurnos from './PestanaTurnos';
+import PestanaAuditoria from './PestanaAuditoria';
 
 const NuevoPanelAdmin = () => {
   const navigate = useNavigate();
@@ -32,6 +33,8 @@ const NuevoPanelAdmin = () => {
         return <PestanaUsuarios />;
       case 'turnos':
         return <PestanaTurnos />;
+      case 'auditoria':
+        return <PestanaAuditoria />;
       default:
         return null;
     }
@@ -87,6 +90,15 @@ const NuevoPanelAdmin = () => {
             >
               <CalendarDays className="inline-block mr-2" size={18} />
               Turnos
+            </button>
+            <button
+              onClick={() => setActiveTab("auditoria")}
+              className={`px-3 items-center flex py-1 sm:py-2 rounded-[4px] text-sm sm:text-base  ${
+                activeTab === "auditoria" ? "bg-naranja text-white" : "bg-gray-200 text-black"
+              }`}
+            >
+              <FileText className="inline-block mr-2" size={18} />
+              Auditoría
             </button>
           </div>
           {renderContenidoPestana()}

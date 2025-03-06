@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom'; // Añadir useLocation
 import { Button } from '@/components/ui/button';
 import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
@@ -24,6 +24,7 @@ export default function ContadorBloqueo() {
   const [timerExpired, setTimerExpired] = useState(false); // Nuevo estado para controlar cuando expira el timer
   
   const navigate = useNavigate();
+  const location = useLocation(); // Obtener la ubicación actual
   
   // Función auxiliar para limpiar localStorage
   const cleanupStorage = () => {
@@ -118,23 +119,29 @@ export default function ContadorBloqueo() {
     if (!reservaData) {
       toast.error('No se encontraron datos de la reserva');
       cleanupStorage();
-      navigate('/reserva-mobile');
+      
+      // Solo navegamos si estamos en la página del contador
+      if (location.pathname === '/bloqueo-reserva') {
+        navigate('/reserva-mobile');
+      }
       return;
     }
 
     // Marcamos que el timer ha expirado
     setTimerExpired(true);
     
-    // Mostramos el mensaje de error
+    // Mostramos el mensaje de error - esto aparecerá como toast en cualquier página
     toast.error('El tiempo para realizar el pago ha expirado');
     
     // NO hacemos el POST a cancelarbloqueo, ya que expira automáticamente en el backend
     
-    // Limpiamos localStorage
+    // Limpiamos localStorage - esto ocurre independientemente de la página
     cleanupStorage();
     
-    // Redireccionamos después de un breve retraso para permitir que se muestre el toast
-    setTimeout(() => navigate('/reserva-mobile'), 2000);
+    // Redireccionamos SOLO si estamos en la página del contador
+    if (location.pathname === '/bloqueo-reserva') {
+      setTimeout(() => navigate('/reserva-mobile'), 2000);
+    }
   };
 
   const handlePagarClick = async () => {

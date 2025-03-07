@@ -60,27 +60,31 @@ export default function Zonas() {
               + Nueva Zona
             </button>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {zonas.map((zona) => (
-              <Card className="bg-white rounded-[8px] shadow-md" key={zona.id} >
-                <CardHeader className="w-full p-4 bg-gray-200 rounded-t-[8px]">
-                  <div className="flex justify-between items-center">
-                    <h2 className="text-2xl font-medium">{zona.nombre} {zona.año}</h2>
-                    <span className="text-gray-500 lg:text-lg"> <Star /></span>
-                  </div>
-                  <p className="text-sm text-gray-500">{zona.formato}</p>
-                </CardHeader>
-                <CardContent className="p-4 ">
-                  <p className="w-full flex gap-2 items-center "><Users size={18}/> Equipos: {zona.equipos.length}</p>
-                  {/* ------- mostrar la siguiente fecha cuando esten hechas las fechas --------- */}
-                  <div className="flex mt-4 gap-3 text-sm justify-center">
-                    <button className="flex-1 border text-center border-gray-300 p-1 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Ver Detalles</button>
-                    <button className="flex-1 border p-1 border-gray-300 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Editar</button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {zonas.length === 0 ? (
+            <p className="text-center text-gray-500">No hay zonas disponibles.</p>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {zonas.map((zona) => (
+                <Card className="bg-white rounded-[8px] shadow-md" key={zona.id} >
+                  <CardHeader className="w-full p-4 bg-gray-200 rounded-t-[8px]">
+                    <div className="flex justify-between items-center">
+                      <h2 className="text-2xl font-medium">{zona.nombre} {zona.año}</h2>
+                      <span className="text-gray-500 lg:text-lg"> <Star /></span>
+                    </div>
+                    <p className="text-sm text-gray-500">{zona.formato}</p>
+                  </CardHeader>
+                  <CardContent className="p-4 ">
+                    <p className="w-full flex gap-2 items-center "><Users size={18}/> Equipos: {zona.equipos.length}</p>
+{/* ------- mostrar la siguiente fecha cuando esten hechas las fechas --------- */}
+                    <div className="flex mt-4 gap-3 text-sm justify-center">
+                      <button onClick={() => navigate(`/detalle-zona/${zona.id}`)} className="flex-1 border text-center border-gray-300 p-1 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Ver Detalles</button>
+                      <button className="flex-1 border p-1 border-gray-300 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Editar</button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </main>
       <Footer />

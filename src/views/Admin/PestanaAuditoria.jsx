@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import api from '@/lib/axiosConfig';
 import { toast } from 'react-toastify';
 import { Calendar, Clock, User, FileText, Activity, AlertCircle, Eye, MoreHorizontal } from 'lucide-react';
-import LoadingSinHF from '@/components/LoadingSinHF';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import BtnLoading from '@/components/BtnLoading';
 
 // Definimos componentes de tabla básicos si no están disponibles
 const Table = ({ children, className, ...props }) => (
@@ -306,7 +306,7 @@ const PestanaAuditoria = () => {
       
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <LoadingSinHF />
+          <BtnLoading/>
         </div>
       ) : (
         <>

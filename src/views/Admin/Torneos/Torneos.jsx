@@ -1,59 +1,60 @@
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { X, Trophy, List } from 'lucide-react';
+import { Trophy, List } from 'lucide-react';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 
 export default function Torneos() {
-  const [showModal, setShowModal] = useState(false);
   const [torneos, setTorneos] = useState([]);
   const [zonasCount, setZonasCount] = useState({});
   const [loadingTorneos, setLoadingTorneos] = useState(false);
   const [loadingZonas, setLoadingZonas] = useState(false);
+  const [deportes, setDeportes] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchTournaments = async () => {
+    const fetchData = async () => {
       try {
         setLoadingTorneos(true);
-        
-        const response = await api.get('/torneos');
-        setTorneos(response.data);
+        setLoadingZonas(true);
 
-        // Fetch zones count for each tournament
-        const zonasPromises = response.data.map(async (torneo) => {
-          const zonasResponse = await api.get(`/torneos/${torneo.id}/zonas`);
-          return { torneoId: torneo.id, count: zonasResponse.data.length };
-        });
+        const [torneosResponse, deportesResponse, zonasResponse] = await Promise.all([
+          api.get('/torneos'),
+          api.get('/deportes'),
+          api.get('/zonas')
+        ]);
 
-        const zonasCounts = await Promise.all(zonasPromises);
-        const zonasCountMap = zonasCounts.reduce((acc, { torneoId, count }) => {
-          acc[torneoId] = count;
+        setTorneos(torneosResponse.data);
+        setDeportes(deportesResponse.data);
+
+        // Contar la cantidad de zonas por torneo
+        const zonasCountMap = zonasResponse.data.reduce((acc, zona) => {
+          acc[zona.torneo_id] = (acc[zona.torneo_id] || 0) + 1;
           return acc;
         }, {});
 
         setZonasCount(zonasCountMap);
       } catch (error) {
-        console.error('Error fetching tournaments:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoadingTorneos(false);
         setLoadingZonas(false);
       }
     };
 
-    fetchTournaments();
+    fetchData();
   }, []);
 
   const handleNuevoTorneo = (e) => {
     e.preventDefault();
-    setShowModal(true); // Mostrar modal de confirmación
+    navigate('/alta-torneo'); // Navegar a la pantalla de creación de torneos
   };
 
-  const confirmSubmit = async () => {
-    setShowModal(false); // Cierra el modal
-    // Lógica para reservar la cancha
+  const handleVerZonas = (torneoId) => {
+    navigate(`/zonas-admi/${torneoId}`); // Navegar a la pantalla de zonas con el ID del torneo
   };
 
   if (loadingTorneos || loadingZonas) {
@@ -69,37 +70,6 @@ export default function Torneos() {
       </div>
     );
   }
-
-  const Modal = ({ onConfirm, onCancel }) => (
-    <div className="z-50 fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center ">
-      <div className="bg-white text-black z-20 p-4 rounded-xl shadow-lg w-11/12 lg:w-1/2">
-        <div className="flex justify-between">
-          <h2 className="text-2xl font-sans font-medium mb-1">Crear Nuevo Torneo</h2>
-          <X onClick={onCancel} className="cursor-pointer" />
-        </div>
-        <p className="mb-4 text-sm text-gray-500">Complete los datos para crear un nuevo torneo</p>
-        <div className='flex flex-col space-y-8'>
-          <div>
-            <label className="font-medium font-sans text-lg">Nombre del Torneo:</label>
-            <input className='bg-gray-200 w-full p-1 rounded-xl' ></input>
-          </div>
-          <div>
-            <label className="font-medium font-sans text-lg">Año del Torneo:</label>
-            <input className='bg-gray-200 w-full p-1 rounded-xl' ></input>
-          </div>
-          <div className="flex justify-end">
-            <button
-              onClick={onConfirm}
-              className="p-2 px-4  bg-naranja text-white"
-              style={{ borderRadius: '6px' }}
-            >
-              Crear
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <div className="min-h-screen flex flex-col font-inter">
@@ -117,7 +87,7 @@ export default function Torneos() {
               <Card className="bg-white rounded-[8px] shadow-md" key={torneo.id} >
                 <CardHeader className="w-full p-4 bg-gray-200 rounded-t-[8px]">
                   <div className="flex justify-between items-center">
-                    <h2 className="text-2xl font-medium">{torneo.nombre}</h2>
+                    <h2 className="text-2xl font-medium">{torneo.nombre} {torneo.año}</h2>
                     <span className="text-gray-500 lg:text-lg"> <Trophy /></span>
                   </div>
                   <p className="text-sm text-gray-500">{torneo.deporte.nombre} {torneo.deporte.jugadores_por_equipo}</p>
@@ -125,15 +95,14 @@ export default function Torneos() {
                 <CardContent className="p-4 ">
                   <p className="w-full flex gap-2 items-center "><List size={24} className="text-gray-600" /> {zonasCount[torneo.id] || 0} zonas</p>
                   <div className="flex mt-4 gap-3 text-sm justify-center">
-                    <Link to="/zonas-admi" className="flex-1 border text-center border-gray-300  p-1 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Ver Zonas</Link>
-                    <button className="flex-1 border  p-1 border-gray-300 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Editar</button>
+                    <button onClick={() => handleVerZonas(torneo.id)} className="flex-1 border text-center border-gray-300 p-1 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Ver Zonas</button>
+                    <button className="flex-1 border p-1 border-gray-300 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Editar</button>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         </div>
-        {showModal && <Modal onConfirm={confirmSubmit} onCancel={() => setShowModal(false)} />}
       </main>
       <Footer />
     </div>

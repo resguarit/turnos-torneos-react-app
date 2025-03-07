@@ -48,14 +48,16 @@ export default function Zonas() {
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
-      <div className="w-full flex mb-2">
-      <button onClick={() => navigate('/torneos-admi')} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center"><ChevronLeft className="w-5"/> Atrás</button>
+        <div className="w-full flex mb-2">
+          <button onClick={() => navigate('/torneos-admi')} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
+            <ChevronLeft className="w-5" /> Atrás
+          </button>
         </div>
         <div className="max-w-7xl lg:max-w-full mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl lg:text-2xl font-bold">Zonas del Torneo</h1>
-            <button  className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white">
-             + Nueva Zona
+            <button onClick={() => navigate(`/alta-zona/${torneoId}`)} className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white">
+              + Nueva Zona
             </button>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -72,7 +74,7 @@ export default function Zonas() {
                   <p className="w-full flex gap-2 items-center "><Users size={18}/> Equipos: {zona.equipos.length}</p>
                   {/* ------- mostrar la siguiente fecha cuando esten hechas las fechas --------- */}
                   <div className="flex mt-4 gap-3 text-sm justify-center">
-                    <button onClick={() => handleVerZonas(torneo.id)} className="flex-1 border text-center border-gray-300 p-1 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Ver Detalles</button>
+                    <button className="flex-1 border text-center border-gray-300 p-1 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Ver Detalles</button>
                     <button className="flex-1 border p-1 border-gray-300 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Editar</button>
                   </div>
                 </CardContent>

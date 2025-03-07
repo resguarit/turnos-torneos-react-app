@@ -5,7 +5,7 @@ import { ROLES } from "@/constants/roles";
 import App from "../App";
 import Torneos from "@/views/Admin/Torneos/Torneos";
 import Zonas from "@/views/Admin/Torneos/Zonas";
-import AltaZona from "@/views/Admin/AltaZona";
+import AltaZona from "@/views/Admin/Torneos/AltaZona";
 import VerTurnos from "@/views/Admin/VerTurnos";
 import Partidos from "@/views/Admin/Partidos";
 import VerPartidos from "@/views/Admin/VerPartidos";
@@ -45,7 +45,7 @@ const AppRoutes = () => {
       {/* Rutas protegidas para administradores */}
       <Route path={`/torneos-admi`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><Torneos /></ProtectedRoute>} />
       <Route path={`/zonas-admi/:torneoId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><Zonas /></ProtectedRoute>} />
-      <Route path={`/alta-zona`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaZona /></ProtectedRoute>} />
+      <Route path={`/alta-zona/:torneoId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaZona /></ProtectedRoute>} />
       <Route path={`/ver-turnos`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><VerTurnos /></ProtectedRoute>} />
       <Route path={`/grilla-turnos`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><VerGrilla /></ProtectedRoute>} />
       <Route path={`/editar-turno/:id`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><EditarTurno /></ProtectedRoute>} />

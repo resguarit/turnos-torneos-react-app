@@ -43,7 +43,7 @@ export default function AltaEquipo() {
   };
 
   const handleAddJugador = () => {
-    setJugadores([...jugadores, { ...jugadorFormData, id: Date.now() }]);
+    setJugadores([...jugadores, { ...jugadorFormData, id: Date.now(), editando: true }]);
     setJugadorFormData({
       nombre: '',
       apellido: '',
@@ -76,11 +76,6 @@ export default function AltaEquipo() {
       return;
     }
 
-    if (jugadores.length === 0) {
-      alert('Debe agregar al menos un jugador');
-      return;
-    }
-
     // Verificar que no haya jugadores en modo edición
     if (jugadores.some((j) => j.editando)) {
       alert('Debe confirmar todos los jugadores antes de guardar');
@@ -92,11 +87,13 @@ export default function AltaEquipo() {
       const response = await api.post('/equipos', { nombre: formData.nombre, zona_id: zonaId });
       if (response.status === 201) {
         const equipoId = response.data.equipo.id;
-        await Promise.all(
-          jugadores.map((jugador) =>
-            api.post('/jugadores', { ...jugador, equipo_id: equipoId })
-          )
-        );
+        if (jugadores.length > 0) {
+          await Promise.all(
+            jugadores.map((jugador) =>
+              api.post('/jugadores', { ...jugador, equipo_id: equipoId })
+            )
+          );
+        }
         setLoading(false);
         alert('Equipo guardado correctamente');
         navigate(`/detalle-zona/${zonaId}`);
@@ -117,11 +114,11 @@ export default function AltaEquipo() {
           </button>
         </div>
         <Card className="bg-white w-[70%] rounded-[8px] shadow-md mb-6">
-          <CardHeader className="w-full p-4 bg-gray-200 rounded-t-[8px]">
-            <CardTitle className="flex items-center gap-2">
+          <CardHeader className="w-full p-4 rounded-t-[8px]">
+            <h2 className="flex items-center gap-2 text-2xl  font-medium ">
               <Users className="h-5 w-5" />
               Información del Equipo
-            </CardTitle>
+            </h2>
           </CardHeader>
           <CardContent className="p-6">
             <div className="space-y-4">
@@ -151,8 +148,8 @@ export default function AltaEquipo() {
                   </button>
                 </div>
 
-                <div className="overflow-x-auto" ref={tablaRef}>
-                  <table className="w-full border-collapse">
+                <div className="overflow-x-auto " ref={tablaRef}>
+                  <table className="w-full border-collapse rounded-[8px]">
                     <thead>
                       <tr className="bg-gray-100">
                         <th className="border border-gray-300 p-2 text-left text-sm">Nombre</th>
@@ -286,7 +283,7 @@ export default function AltaEquipo() {
               <button
                 onClick={handleGuardarEquipo}
                 className="flex items-center gap-2 bg-black hover:bg-black/80 p-3 text-sm font-inter rounded-[6px] text-white"
-                disabled={!formData.nombre || jugadores.length === 0 || jugadores.some((j) => j.editando)}
+                disabled={!formData.nombre || jugadores.some((j) => j.editando)}
               >
                 <Save className="h-4 w-4" />
                 Guardar Equipo

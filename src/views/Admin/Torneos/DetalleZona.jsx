@@ -87,11 +87,11 @@ export default function DetalleZona() {
                        {zona.equipos &&
                          zona.equipos.map((equipo) => (
                            <tr key={equipo.id} className="border-b items-center rounded-[6px] border-gray-200 last:border-0">
-                             <td className="p-4 flex items-center">
-                               <div className="w-6 bg-primary mr-3 items-center justify-center"></div>
+                             <td className=" p-3 flex items-center">
+                               <div className="w-6 bg-primary items-center justify-center"></div>
                                <span className="font-medium">{equipo.nombre}</span>
                              </td>
-                             <td className="p-4 text-right">
+                             <td className="text-right p-3">
                                <button
                                  onClick={() => navigate(`/jugadores/${equipo.id}`)}
                                  className="mr-2 bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-[6px] text-sm"

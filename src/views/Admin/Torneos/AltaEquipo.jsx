@@ -116,7 +116,7 @@ export default function AltaEquipo() {
             <ChevronLeft className="w-5" /> Atrás
           </button>
         </div>
-        <Card className="bg-white rounded-[8px] shadow-md mb-6">
+        <Card className="bg-white w-[70%] rounded-[8px] shadow-md mb-6">
           <CardHeader className="w-full p-4 bg-gray-200 rounded-t-[8px]">
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
@@ -125,23 +125,23 @@ export default function AltaEquipo() {
           </CardHeader>
           <CardContent className="p-6">
             <div className="space-y-4">
-              <div>
-                <Label htmlFor="nombreEquipo" className="text-sm font-medium">
+              <div className="flex flex-col">
+                <Label htmlFor="nombreEquipo" className="text-[17px] font-semibold">
                   Nombre del Equipo
                 </Label>
-                <Input
+                <input
                   id="nombreEquipo"
                   value={formData.nombre}
                   onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                   placeholder="Ingrese el nombre del equipo"
-                  className="mt-1"
+                  className="mt-1 border border-gray-300 p-1 rounded-[6px] w-full"
                   required
                 />
               </div>
 
               <div className="pt-4">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-medium">Jugadores</h3>
+                  <h3 className="text-[17px] font-semibold">Jugadores</h3>
                   <button
                     onClick={handleAddJugador}
                     className="flex items-center gap-1 bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white"
@@ -155,12 +155,12 @@ export default function AltaEquipo() {
                   <table className="w-full border-collapse">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-4 py-2 text-left text-sm">Nombre</th>
-                        <th className="border border-gray-300 px-4 py-2 text-left text-sm">Apellido</th>
-                        <th className="border border-gray-300 px-4 py-2 text-left text-sm">DNI</th>
-                        <th className="border border-gray-300 px-4 py-2 text-left text-sm">Teléfono</th>
-                        <th className="border border-gray-300 px-4 py-2 text-left text-sm">Fecha de Nacimiento</th>
-                        <th className="border border-gray-300 px-4 py-2 text-center text-sm">Acciones</th>
+                        <th className="border border-gray-300 p-2 text-left text-sm">Nombre</th>
+                        <th className="border border-gray-300 p-2 text-left text-sm">Apellido</th>
+                        <th className="border border-gray-300 p-2 text-left text-sm">DNI</th>
+                        <th className="border border-gray-300 p-2 text-left text-sm">Teléfono</th>
+                        <th className="border border-gray-300 p-2 text-left text-sm">Fecha de Nacimiento</th>
+                        <th className="border border-gray-300 p-2 text-center text-sm">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -175,11 +175,11 @@ export default function AltaEquipo() {
                           <tr key={jugador.id} className={jugador.editando ? 'bg-blue-50' : ''}>
                             <td className="border border-gray-300 px-4 py-2">
                               {jugador.editando ? (
-                                <Input
+                                <input
                                   value={jugador.nombre}
                                   onChange={(e) => handleInputChange(e, jugador.id, 'nombre')}
                                   placeholder="Nombre"
-                                  className="p-1 text-sm"
+                                  className="p-1 text-sm border border-black w-full rounded-[6px]"
                                 />
                               ) : (
                                 jugador.nombre
@@ -187,11 +187,11 @@ export default function AltaEquipo() {
                             </td>
                             <td className="border border-gray-300 px-4 py-2">
                               {jugador.editando ? (
-                                <Input
+                                <input
                                   value={jugador.apellido}
                                   onChange={(e) => handleInputChange(e, jugador.id, 'apellido')}
                                   placeholder="Apellido"
-                                  className="p-1 text-sm"
+                                  className="p-1 text-sm border border-black w-full rounded-[6px]"
                                 />
                               ) : (
                                 jugador.apellido
@@ -199,11 +199,11 @@ export default function AltaEquipo() {
                             </td>
                             <td className="border border-gray-300 px-4 py-2">
                               {jugador.editando ? (
-                                <Input
+                                <input
                                   value={jugador.dni}
                                   onChange={(e) => handleInputChange(e, jugador.id, 'dni')}
                                   placeholder="DNI"
-                                  className="p-1 text-sm"
+                                  className="p-1 text-sm border border-black w-full rounded-[6px]"
                                 />
                               ) : (
                                 jugador.dni
@@ -211,11 +211,11 @@ export default function AltaEquipo() {
                             </td>
                             <td className="border border-gray-300 px-4 py-2">
                               {jugador.editando ? (
-                                <Input
+                                <input
                                   value={jugador.telefono}
                                   onChange={(e) => handleInputChange(e, jugador.id, 'telefono')}
                                   placeholder="Teléfono"
-                                  className="p-1 text-sm"
+                                  className="p-1 text-sm border border-black w-full rounded-[6px]"
                                 />
                               ) : (
                                 jugador.telefono
@@ -223,18 +223,18 @@ export default function AltaEquipo() {
                             </td>
                             <td className="border border-gray-300 px-4 py-2">
                               {jugador.editando ? (
-                                <Input
+                                <input
                                   type="date"
                                   value={jugador.fecha_nacimiento}
                                   onChange={(e) => handleInputChange(e, jugador.id, 'fecha_nacimiento')}
                                   placeholder="Fecha de Nacimiento"
-                                  className="p-1 text-sm"
+                                  className="p-1 text-sm border border-black w-full rounded-[6px]"
                                 />
                               ) : (
                                 jugador.fecha_nacimiento
                               )}
                             </td>
-                            <td className="border border-gray-300 px-4 py-2 text-center">
+                            <td className="border flex justify-center border-gray-300 px-4 py-2 text-center">
                               {jugador.editando ? (
                                 <button
                                   onClick={() => handleConfirmarJugador(jugador.id)}

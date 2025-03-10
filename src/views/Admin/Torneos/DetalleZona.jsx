@@ -78,23 +78,34 @@ export default function DetalleZona() {
             <p className="text-sm text-gray-500">{zona.formato}</p>
             <div className="mt-4">
               <h3 className="text-xl font-medium mb-2">Equipos</h3>
-              {zona.equipos.length === 0 ? (
+              {zona.equipos && zona.equipos.length === 0 ? (
                 <p className="text-center text-gray-500">No hay equipos en esta zona.</p>
               ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {zona.equipos.map((equipo) => (
-                    <Card className="bg-white rounded-[8px] shadow-md" key={equipo.id}>
-                      <CardHeader className="w-full p-4 bg-gray-200 rounded-t-[8px]">
-                        <div className="flex justify-between items-center">
-                          <h2 className="text-xl font-medium">{equipo.nombre}</h2>
-                          <span className="text-gray-500 lg:text-lg"> <Users /></span>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="p-4">
-                        <p className="text-sm text-gray-500">Jugadores: {equipo.jugadores.length}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
+                <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow">
+                     <table className="w-full">
+                     <tbody>
+                       {zona.equipos &&
+                         zona.equipos.map((equipo) => (
+                           <tr key={equipo.id} className="border-b items-center border-gray-200 last:border-0">
+                             <td className="p-4 flex items-center">
+                               <div className="w-6 h-6 rounded-full bg-primary mr-3 items-center justify-center"></div>
+                               <span className="font-medium">{equipo.nombre}</span>
+                             </td>
+                             <td className="p-4 text-right">
+                               <button
+                                 onClick={() => navigate(`/equipos/${equipo.id}/jugadores`)}
+                                 className="mr-2 bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-[6px] text-sm"
+                               >
+                                 Ver jugadores
+                               </button>
+                               <button className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-[6px] text-sm">
+                                 Eliminar
+                               </button>
+                             </td>
+                           </tr>
+                         ))}
+                     </tbody>
+                   </table>
                 </div>
               )}
             </div>

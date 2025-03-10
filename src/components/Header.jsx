@@ -1,4 +1,4 @@
-import Logo from "../assets/logo.png"
+import Resguarit from "@/assets/logoresguarit.png"
 import MenuMovil from "./MenuMovil"
 import { CircleUserRound } from "lucide-react"
 import { useNavigate, Link, useLocation } from "react-router-dom"
@@ -83,10 +83,10 @@ export function Header() {
   }
 
   return (
-    <header className="bg-naranja max-w-full text-white px-6 py-4">
+    <header className="bg-naranja max-w-full text-white px-6 py-2">
       <nav className="mx-auto flex items-center justify-between">
         <Link to="/">
-          <img src={Logo || "/placeholder.svg"} alt="Logo" className="h-7 lg:h-8 xl:h-9" />
+          <img src={Resguarit || "/placeholder.svg"} alt="Logo" className="h-10 lg:h-12 xl:h-14" />
         </Link>
 
         {/* Botón de reserva activa para desktop y tablet */}

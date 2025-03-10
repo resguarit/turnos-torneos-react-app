@@ -1,4 +1,4 @@
-import video from '../../assets/rng.mp4';
+import rngBlack from '../../assets/rngBlack.mp4';
 import React, { useState, useEffect } from 'react';
 import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from 'react-router-dom';
@@ -95,7 +95,7 @@ const Login = () => {
             <div className="absolute inset-0">
                 <video
                     className="pointer-events-none select-none absolute inset-0 w-full h-full object-cover "
-                    src={video}
+                    src={rngBlack}
                     autoPlay
                     loop
                     muted

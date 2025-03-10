@@ -177,7 +177,7 @@ export function Header() {
                 )}
               </div>
             ) : (
-              <Link to="/login" className="hover:opacity-80 flex flex-row items-center gap-2">
+              <Link to="/login" className="hover:opacity-80 flex flex-row gap-2">
                 Iniciar Sesión <CircleUserRound className="h-7 w-7" />
               </Link>
             )}

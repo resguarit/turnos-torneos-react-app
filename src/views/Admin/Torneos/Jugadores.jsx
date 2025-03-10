@@ -3,10 +3,9 @@ import { Footer } from '@/components/footer';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Users, ChevronLeft, PlusCircle, Trash2, Check } from 'lucide-react';
+import { ChevronLeft, PlusCircle, Trash2, Check } from 'lucide-react';
+import BtnLoading from '@/components/BtnLoading';
 
 export default function Jugadores() {
   const { equipoId } = useParams();
@@ -37,26 +36,39 @@ export default function Jugadores() {
     fetchJugadores();
   }, [equipoId]);
 
-  const handleAddJugador = async (e) => {
-    e.preventDefault();
+  const handleAddJugador = () => {
+    setJugadores([...jugadores, { ...jugadorFormData, id: Date.now(), editando: true }]);
+    setJugadorFormData({
+      nombre: '',
+      apellido: '',
+      dni: '',
+      telefono: '',
+      fecha_nacimiento: '',
+    });
+  };
+
+  const handleInputChange = (e, id, campo) => {
+    const valor = e.target.value;
+    setJugadores(jugadores.map((jugador) => (jugador.id === id ? { ...jugador, [campo]: valor } : jugador)));
+  };
+
+  const handleConfirmarJugador = async (id) => {
+    const jugador = jugadores.find((jugador) => jugador.id === id);
     try {
       setLoading(true);
-      const response = await api.post('/jugadores', { ...jugadorFormData, equipo_id: equipoId });
+      const response = await api.post('/jugadores', { ...jugador, equipo_id: equipoId });
       if (response.status === 201) {
-        setJugadores([...jugadores, response.data.jugador]);
-        setJugadorFormData({
-          nombre: '',
-          apellido: '',
-          dni: '',
-          telefono: '',
-          fecha_nacimiento: '',
-        });
+        setJugadores(jugadores.map((jugador) => (jugador.id === id ? { ...response.data.jugador, editando: false } : jugador)));
       }
     } catch (error) {
       console.error('Error adding player:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditarJugador = (id) => {
+    setJugadores(jugadores.map((jugador) => (jugador.id === id ? { ...jugador, editando: true } : jugador)));
   };
 
   const handleEliminarJugador = async (id) => {
@@ -71,136 +83,166 @@ export default function Jugadores() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col font-inter">
+        <Header />
+        <main className="flex-1 p-6 bg-gray-100">
+          <div className="flex justify-center items-center h-full">
+            <BtnLoading />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
-      <main className="flex-1 p-6 bg-gray-100">
+      <main className="flex-1 grow p-6 bg-gray-100">
         <div className="w-full flex mb-2">
           <button onClick={() => navigate(-1)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
             <ChevronLeft className="w-5" /> Atrás
           </button>
         </div>
-        <div className="max-w-7xl lg:max-w-full mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl lg:text-2xl font-bold">Jugadores del Equipo</h1>
+        <div className="px-40 justify-center">
+          <div className="flex justify-end items-center mb-6">
             <button
-              onClick={() => navigate(`/alta-jugador/${equipoId}`)}
+              onClick={handleAddJugador}
               className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white"
             >
               + Agregar Jugador
             </button>
           </div>
-          <Card className="bg-white rounded-[8px] shadow-md mb-6">
-            <CardHeader className="w-full p-4 bg-gray-200 rounded-t-[8px]">
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Información del Jugador
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <form className="space-y-4" onSubmit={handleAddJugador}>
-                <div>
-                  <Label htmlFor="nombreJugador" className="text-sm font-medium">
-                    Nombre
-                  </Label>
-                  <Input
-                    id="nombreJugador"
-                    value={jugadorFormData.nombre}
-                    onChange={(e) => setJugadorFormData({ ...jugadorFormData, nombre: e.target.value })}
-                    placeholder="Ingrese el nombre del jugador"
-                    className="mt-1"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="apellidoJugador" className="text-sm font-medium">
-                    Apellido
-                  </Label>
-                  <Input
-                    id="apellidoJugador"
-                    value={jugadorFormData.apellido}
-                    onChange={(e) => setJugadorFormData({ ...jugadorFormData, apellido: e.target.value })}
-                    placeholder="Ingrese el apellido del jugador"
-                    className="mt-1"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="dniJugador" className="text-sm font-medium">
-                    DNI
-                  </Label>
-                  <Input
-                    id="dniJugador"
-                    value={jugadorFormData.dni}
-                    onChange={(e) => setJugadorFormData({ ...jugadorFormData, dni: e.target.value })}
-                    placeholder="Ingrese el DNI del jugador"
-                    className="mt-1"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="telefonoJugador" className="text-sm font-medium">
-                    Teléfono
-                  </Label>
-                  <Input
-                    id="telefonoJugador"
-                    value={jugadorFormData.telefono}
-                    onChange={(e) => setJugadorFormData({ ...jugadorFormData, telefono: e.target.value })}
-                    placeholder="Ingrese el teléfono del jugador"
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="fechaNacimientoJugador" className="text-sm font-medium">
-                    Fecha de Nacimiento
-                  </Label>
-                  <Input
-                    type="date"
-                    id="fechaNacimientoJugador"
-                    value={jugadorFormData.fecha_nacimiento}
-                    onChange={(e) => setJugadorFormData({ ...jugadorFormData, fecha_nacimiento: e.target.value })}
-                    className="mt-1"
-                    required
-                  />
-                </div>
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    className="flex items-center gap-2 bg-black hover:bg-black/80 p-3 text-sm font-inter rounded-[6px] text-white"
-                    disabled={loading}
-                  >
-                    <PlusCircle className="h-4 w-4" />
-                    Agregar Jugador
-                  </button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-          <div className="bg-white rounded-[8px] shadow-md p-4">
+          <div className="bg-white w-full rounded-[8px] shadow-md p-4">
             <h2 className="text-2xl font-medium mb-4">Lista de Jugadores</h2>
-            {jugadores.length === 0 ? (
-              <p className="text-center text-gray-500">No hay jugadores en este equipo.</p>
-            ) : (
-              <ul className="space-y-4">
-                {jugadores.map((jugador) => (
-                  <li key={jugador.id} className="flex justify-between items-center border-b border-gray-200 pb-4">
-                    <div>
-                      <p className="text-lg font-medium">{jugador.nombre} {jugador.apellido}</p>
-                      <p className="text-sm text-gray-500">DNI: {jugador.dni}</p>
-                      <p className="text-sm text-gray-500">Teléfono: {jugador.telefono}</p>
-                      <p className="text-sm text-gray-500">Fecha de Nacimiento: {jugador.fecha_nacimiento}</p>
-                    </div>
-                    <button
-                      onClick={() => handleEliminarJugador(jugador.id)}
-                      className="p-1 text-red-600 hover:text-red-800"
-                      title="Eliminar"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <table className="min-w-full bg-white">
+              <thead>
+                <tr>
+                  <th className="py-2 text-left text-sm">Nombre</th>
+                  <th className="py-2 text-left text-sm">Apellido</th>
+                  <th className="py-2 text-left text-sm">DNI</th>
+                  <th className="py-2 text-left text-sm">Teléfono</th>
+                  <th className="py-2 text-left text-sm">Fecha de Nacimiento</th>
+                  <th className="py-2 text-center text-sm">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {jugadores.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="text-center text-gray-500 py-4">
+                      No hay jugadores en este equipo.
+                    </td>
+                  </tr>
+                ) : (
+                  jugadores.map((jugador) => (
+                    <tr key={jugador.id} className="border-b">
+                      <td className="py-2">
+                        {jugador.editando ? (
+                          <input
+                            value={jugador.nombre}
+                            onChange={(e) => handleInputChange(e, jugador.id, 'nombre')}
+                            placeholder="Nombre"
+                            className="p-1 text-sm border border-black w-full rounded-[6px]"
+                          />
+                        ) : (
+                          jugador.nombre
+                        )}
+                      </td>
+                      <td className="py-2">
+                        {jugador.editando ? (
+                          <input
+                            value={jugador.apellido}
+                            onChange={(e) => handleInputChange(e, jugador.id, 'apellido')}
+                            placeholder="Apellido"
+                            className="p-1 text-sm border border-black w-full rounded-[6px]"
+                          />
+                        ) : (
+                          jugador.apellido
+                        )}
+                      </td>
+                      <td className="py-2">
+                        {jugador.editando ? (
+                          <input
+                            value={jugador.dni}
+                            onChange={(e) => handleInputChange(e, jugador.id, 'dni')}
+                            placeholder="DNI"
+                            className="p-1 text-sm border border-black w-full rounded-[6px]"
+                          />
+                        ) : (
+                          jugador.dni
+                        )}
+                      </td>
+                      <td className="py-2">
+                        {jugador.editando ? (
+                          <input
+                            value={jugador.telefono}
+                            onChange={(e) => handleInputChange(e, jugador.id, 'telefono')}
+                            placeholder="Teléfono"
+                            className="p-1 text-sm border border-black w-full rounded-[6px]"
+                          />
+                        ) : (
+                          jugador.telefono
+                        )}
+                      </td>
+                      <td className="py-2">
+                        {jugador.editando ? (
+                          <input
+                            type="date"
+                            value={jugador.fecha_nacimiento}
+                            onChange={(e) => handleInputChange(e, jugador.id, 'fecha_nacimiento')}
+                            placeholder="Fecha de Nacimiento"
+                            className="p-1 text-sm border border-black w-full rounded-[6px]"
+                          />
+                        ) : (
+                          jugador.fecha_nacimiento
+                        )}
+                      </td>
+                      <td className="py-2 text-center">
+                        {jugador.editando ? (
+                          <button
+                            onClick={() => handleConfirmarJugador(jugador.id)}
+                            className="p-1 text-green-600 hover:text-green-800 mr-2"
+                            title="Confirmar"
+                          >
+                            <Check className="h-5 w-5" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleEditarJugador(jugador.id)}
+                            className="p-1 text-blue-600 hover:text-blue-800 mr-2"
+                            title="Editar"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
+                            </svg>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleEliminarJugador(jugador.id)}
+                          className="p-1 text-red-600 hover:text-red-800"
+                          title="Eliminar"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </main>

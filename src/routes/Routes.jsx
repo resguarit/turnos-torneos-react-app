@@ -30,6 +30,7 @@ import NuevoTurnoAdmi from "@/views/Admin/NuevoTurnoAdmi";
 import AltaTorneo from "@/views/Admin/Torneos/AltaTorneo";
 import DetalleZona from "@/views/Admin/Torneos/DetalleZona";
 import AltaEquipo from "@/views/Admin/Torneos/AltaEquipo";
+import Jugadores from "@/views/Admin/Torneos/Jugadores";
 
 const AppRoutes = () => {
   return (
@@ -56,6 +57,7 @@ const AppRoutes = () => {
       <Route path={`/alta-torneo`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaTorneo /></ProtectedRoute>} />
       <Route path={`/detalle-zona/:zonaId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><DetalleZona /></ProtectedRoute>} />
       <Route path={`/alta-equipo/:zonaId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaEquipo /></ProtectedRoute>} />
+      <Route path={`/jugadores/:equipoId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><Jugadores /></ProtectedRoute>} />
 
       {/* Rutas protegidas para usuarios y administradores */}
       <Route path={`/user-profile`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><UserProfile /></ProtectedRoute>} />

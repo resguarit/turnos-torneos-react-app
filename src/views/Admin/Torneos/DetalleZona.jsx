@@ -81,19 +81,19 @@ export default function DetalleZona() {
               {zona.equipos && zona.equipos.length === 0 ? (
                 <p className="text-center text-gray-500">No hay equipos en esta zona.</p>
               ) : (
-                <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow">
+                <div className="overflow-hidden rounded-[6px] border border-gray-200 bg-white shadow">
                      <table className="w-full">
                      <tbody>
                        {zona.equipos &&
                          zona.equipos.map((equipo) => (
-                           <tr key={equipo.id} className="border-b items-center border-gray-200 last:border-0">
+                           <tr key={equipo.id} className="border-b items-center rounded-[6px] border-gray-200 last:border-0">
                              <td className="p-4 flex items-center">
-                               <div className="w-6 h-6 rounded-full bg-primary mr-3 items-center justify-center"></div>
+                               <div className="w-6 bg-primary mr-3 items-center justify-center"></div>
                                <span className="font-medium">{equipo.nombre}</span>
                              </td>
                              <td className="p-4 text-right">
                                <button
-                                 onClick={() => navigate(`/equipos/${equipo.id}/jugadores`)}
+                                 onClick={() => navigate(`/jugadores/${equipo.id}`)}
                                  className="mr-2 bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-[6px] text-sm"
                                >
                                  Ver jugadores

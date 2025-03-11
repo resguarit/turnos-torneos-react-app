@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import { Input } from '@/components/ui/input';
-import { ChevronLeft, PlusCircle, Trash2, Check } from 'lucide-react';
+import { ChevronLeft, PlusCircle, Trash2, Check, Edit3 } from 'lucide-react';
 import BtnLoading from '@/components/BtnLoading';
 
 export default function Jugadores() {
@@ -12,6 +12,7 @@ export default function Jugadores() {
   const [jugadores, setJugadores] = useState([]);
   const [loading, setLoading] = useState(false);
   const [jugadoresNuevos, setJugadoresNuevos] = useState([]);
+  const [jugadorEditando, setJugadorEditando] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,10 +40,15 @@ export default function Jugadores() {
     setJugadoresNuevos(jugadoresNuevos.map((jugador) => (jugador.id === id ? { ...jugador, [campo]: valor } : jugador)));
   };
 
+  const handleInputChange = (e, id, campo) => {
+    const valor = e.target.value;
+    setJugadores(jugadores.map((jugador) => (jugador.id === id ? { ...jugador, [campo]: valor } : jugador)));
+  };
+
   const handleGuardarJugadores = async () => {
     try {
       setLoading(true);
-      const response = await api.post('/jugadores/bulk', { jugadores: jugadoresNuevos, equipo_id: equipoId });
+      const response = await api.post(`/equipos/${equipoId}/jugadores/multiple`, { jugadores: jugadoresNuevos, equipo_id: equipoId });
       if (response.status === 201) {
         setJugadores([...jugadores, ...response.data.jugadores]);
         setJugadoresNuevos([]);
@@ -52,6 +58,26 @@ export default function Jugadores() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleActualizarJugador = async (id) => {
+    const jugador = jugadores.find((jugador) => jugador.id === id);
+    try {
+      setLoading(true);
+      const response = await api.put(`/jugadores/${id}`, { ...jugador, equipo_id: equipoId });
+      if (response.status === 200) {
+        setJugadores(jugadores.map((jugador) => (jugador.id === id ? { ...response.data.jugador, editando: false } : jugador)));
+        setJugadorEditando(null);
+      }
+    } catch (error) {
+      console.error('Error updating player:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditarJugador = (id) => {
+    setJugadorEditando(id);
   };
 
   const handleEliminarJugador = async (id) => {
@@ -91,12 +117,7 @@ export default function Jugadores() {
         </div>
         <div className="px-40 justify-center">
           <div className="flex justify-end items-center mb-6">
-            <button
-              onClick={handleAddFilaJugador}
-              className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white"
-            >
-              + Agregar Jugador
-            </button>
+           
           </div>
           <div className="bg-white w-full rounded-[8px] shadow-md p-4">
             <h2 className="text-2xl font-medium mb-4">Lista de Jugadores</h2>
@@ -122,12 +143,85 @@ export default function Jugadores() {
                   <>
                     {jugadores.map((jugador) => (
                       <tr key={jugador.id} className="border-b">
-                        <td className="py-2">{jugador.nombre}</td>
-                        <td className="py-2">{jugador.apellido}</td>
-                        <td className="py-2">{jugador.dni}</td>
-                        <td className="py-2">{jugador.telefono}</td>
-                        <td className="py-2">{jugador.fecha_nacimiento}</td>
+                        <td className="py-2">
+                          {jugadorEditando === jugador.id ? (
+                            <input
+                              value={jugador.nombre}
+                              onChange={(e) => handleInputChange(e, jugador.id, 'nombre')}
+                              placeholder="Nombre"
+                              className="p-1 text-sm border border-black w-full rounded-[6px]"
+                            />
+                          ) : (
+                            jugador.nombre
+                          )}
+                        </td>
+                        <td className="py-2">
+                          {jugadorEditando === jugador.id ? (
+                            <input
+                              value={jugador.apellido}
+                              onChange={(e) => handleInputChange(e, jugador.id, 'apellido')}
+                              placeholder="Apellido"
+                              className="p-1 text-sm border border-black w-full rounded-[6px]"
+                            />
+                          ) : (
+                            jugador.apellido
+                          )}
+                        </td>
+                        <td className="py-2">
+                          {jugadorEditando === jugador.id ? (
+                            <input
+                              value={jugador.dni}
+                              onChange={(e) => handleInputChange(e, jugador.id, 'dni')}
+                              placeholder="DNI"
+                              className="p-1 text-sm border border-black w-full rounded-[6px]"
+                            />
+                          ) : (
+                            jugador.dni
+                          )}
+                        </td>
+                        <td className="py-2">
+                          {jugadorEditando === jugador.id ? (
+                            <input
+                              value={jugador.telefono}
+                              onChange={(e) => handleInputChange(e, jugador.id, 'telefono')}
+                              placeholder="Teléfono"
+                              className="p-1 text-sm border border-black w-full rounded-[6px]"
+                            />
+                          ) : (
+                            jugador.telefono
+                          )}
+                        </td>
+                        <td className="py-2">
+                          {jugadorEditando === jugador.id ? (
+                            <input
+                              type="date"
+                              value={jugador.fecha_nacimiento}
+                              onChange={(e) => handleInputChange(e, jugador.id, 'fecha_nacimiento')}
+                              placeholder="Fecha de Nacimiento"
+                              className="p-1 text-sm border border-black w-full rounded-[6px]"
+                            />
+                          ) : (
+                            jugador.fecha_nacimiento
+                          )}
+                        </td>
                         <td className="py-2 text-center">
+                          {jugadorEditando === jugador.id ? (
+                            <button
+                              onClick={() => handleActualizarJugador(jugador.id)}
+                              className="p-1 text-green-600 hover:text-green-800 mr-2"
+                              title="Confirmar"
+                            >
+                              <Check className="h-5 w-5" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleEditarJugador(jugador.id)}
+                              className="p-1 text-blue-600 hover:text-blue-800 mr-2"
+                              title="Editar"
+                            >
+                              <Edit3 className="h-5 w-5" />
+                            </button>
+                          )}
                           <button
                             onClick={() => handleEliminarJugador(jugador.id)}
                             className="p-1 text-red-600 hover:text-red-800"
@@ -192,6 +286,16 @@ export default function Jugadores() {
                         </td>
                       </tr>
                     ))}
+                    <tr>
+                      <td colSpan="6" className="text-end py-2">
+                        <button
+                          onClick={handleAddFilaJugador}
+                          className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white"
+                        >
+                          + Agregar Jugador
+                        </button>
+                      </td>
+                    </tr>
                   </>
                 )}
               </tbody>

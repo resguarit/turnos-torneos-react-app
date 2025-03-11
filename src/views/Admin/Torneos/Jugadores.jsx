@@ -286,7 +286,10 @@ export default function Jugadores() {
                         </td>
                       </tr>
                     ))}
-                    <tr>
+                    
+                  </>
+                )}
+                <tr>
                       <td colSpan="6" className="text-end py-2">
                         <button
                           onClick={handleAddFilaJugador}
@@ -296,8 +299,6 @@ export default function Jugadores() {
                         </button>
                       </td>
                     </tr>
-                  </>
-                )}
               </tbody>
             </table>
             {jugadoresNuevos.length > 0 && (

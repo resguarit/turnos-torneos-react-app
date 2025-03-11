@@ -67,7 +67,7 @@ function Reglamento() {
         
         <div className="relative z-30 max-w-4xl lg:max-w-full mx-auto h-[65vh] items-center flex flex-col justify-center">
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6  ">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12  ">
             {downloadButtons.map((button, index) => (
               <a
                 key={index}

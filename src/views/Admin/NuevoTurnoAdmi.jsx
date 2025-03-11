@@ -5,6 +5,9 @@ import { Footer } from '@/components/footer';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import { toast } from 'react-toastify';
+import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
+
 
 function NuevoTurnoAdmi() {
   const [loading, setLoading] = useState(false);
@@ -198,8 +201,18 @@ function NuevoTurnoAdmi() {
   };
           
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
+    <div className="min-h-screen flex flex-col font-inter">
       <Header />
+      <div className="flex items-center px-4 py-2">
+        <Button 
+          onClick={() => navigate('/panel-admin?tab=turnos')} 
+          variant="ghost" 
+          className="flex items-center gap-2 hover:bg-naranja hover:text-white rounded-xl"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span>Volver a Turnos</span>
+        </Button>
+      </div>
       <main className="flex-1 flex items-center justify-center p-6">
         <div className="bg-white shadow rounded-lg p-6 w-full max-w-2xl">
         <div className="flex justify-between items-center mb-6">
@@ -370,7 +383,7 @@ function NuevoTurnoAdmi() {
 
             <button
               type="submit"
-              className="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600"
+              className="w-full bg-black text-white py-2 rounded hover:bg-black"
               disabled={loading || !formData.usuario_id}
             >
               {loading ? 'Cargando...' : 'Crear Turno'}

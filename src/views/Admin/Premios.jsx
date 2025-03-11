@@ -112,14 +112,13 @@ export default function Premios() {
       {/* Contenido principal */}
       <div className="relative z-20 min-h-screen flex flex-col">
         <Header />
-        <main className="flex-1 p-6">
-        <h1 className="relative text-2xl font-bold text-white lg:text-3xl mb-2">
-              Premios
-            </h1>
-          <div className="max-w-6xl items-center flex flex-col justify-center lg:max-w-full mx-auto">
-            
-
-            <div className=" grid grid-cols-1 md:grid-cols-2 gap-6">
+        <main className="relative grow max-w-full lg:mx-0 p-6">
+          <h1 className="z-40 relative text-2xl font-bold text-white lg:text-3xl mb-6">
+            Premios
+          </h1>
+          
+          <div className="flex items-center justify-center w-full h-[calc(100vh-200px)]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
               {prizes.map((prize, index) => (
                 <div
                   key={index}

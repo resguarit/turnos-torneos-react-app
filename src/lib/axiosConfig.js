@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  //baseURL: 'https://rockandgolback-production.up.railway.app/api',
-  baseURL: 'http://127.0.0.1:8000/api',
+  baseURL: 'https://rockandgolback-production.up.railway.app/api',
+  //baseURL: 'http://127.0.0.1:8000/api',
 });
 
 // Interceptor para agregar el token a todas las solicitudes

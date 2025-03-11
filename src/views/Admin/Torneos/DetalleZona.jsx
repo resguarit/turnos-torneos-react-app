@@ -29,6 +29,23 @@ export default function DetalleZona() {
     fetchZona();
   }, [zonaId]);
 
+  const handleEliminarEquipo = async (equipoId) => {
+    try {
+      setLoading(true);
+      const response = await api.delete(`/equipos/${equipoId}`);
+      if (response.status === 200) {
+        setZona({
+          ...zona,
+          equipos: zona.equipos.filter((equipo) => equipo.id !== equipoId),
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting team:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col font-inter">
@@ -62,7 +79,7 @@ export default function DetalleZona() {
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
         <div className="w-full flex mb-2">
-          <button onClick={() => navigate(-1)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
+          <button onClick={() => navigate(`/zonas-admi/${zona.torneo_id}`)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
             <ChevronLeft className="w-5" /> Atrás
           </button>
         </div>
@@ -82,30 +99,32 @@ export default function DetalleZona() {
                 <p className="text-center text-gray-500">No hay equipos en esta zona.</p>
               ) : (
                 <div className="overflow-hidden rounded-[6px] border border-gray-200 bg-white shadow">
-                     <table className="w-full">
-                     <tbody>
-                       {zona.equipos &&
-                         zona.equipos.map((equipo) => (
-                           <tr key={equipo.id} className="border-b items-center rounded-[6px] border-gray-200 last:border-0">
-                             <td className=" p-3 flex items-center">
-                               <div className="w-6 bg-primary items-center justify-center"></div>
-                               <span className="font-medium">{equipo.nombre}</span>
-                             </td>
-                             <td className="text-right p-3">
-                               <button
-                                 onClick={() => navigate(`/jugadores/${equipo.id}`)}
-                                 className="mr-2 bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-[6px] text-sm"
-                               >
-                                 Ver jugadores
-                               </button>
-                               <button className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-[6px] text-sm">
-                                 Eliminar
-                               </button>
-                             </td>
-                           </tr>
-                         ))}
-                     </tbody>
-                   </table>
+                  <table className="w-full">
+                    <tbody>
+                      {zona.equipos && zona.equipos.map((equipo) => (
+                        <tr key={equipo.id} className="border-b items-center rounded-[6px] border-gray-200 last:border-0">
+                          <td className="p-3 flex items-center">
+                            <div className="w-6 bg-primary items-center justify-center"></div>
+                            <span className="font-medium">{equipo.nombre}</span>
+                          </td>
+                          <td className="text-right p-3">
+                            <button
+                              onClick={() => navigate(`/jugadores/${equipo.id}`)}
+                              className="mr-2 bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-[6px] text-sm"
+                            >
+                              Ver jugadores
+                            </button>
+                            <button
+                              onClick={() => handleEliminarEquipo(equipo.id)}
+                              className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-[6px] text-sm"
+                            >
+                              Eliminar
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>

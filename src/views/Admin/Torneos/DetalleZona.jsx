@@ -7,11 +7,17 @@ import BtnLoading from '@/components/BtnLoading';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Users, ChevronLeft, Edit3, Trash2 } from 'lucide-react';
 import CarruselFechas from './CarruselFechas';
+import Grupos from './Grupos';
 
 export default function DetalleZona() {
   const { zonaId } = useParams();
   const [zona, setZona] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [fechas, setFechas] = useState([]);
+  const [grupos, setGrupos] = useState([]);
+  const [gruposCreados, setGruposCreados] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [numGrupos, setNumGrupos] = useState(1);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,6 +26,13 @@ export default function DetalleZona() {
         setLoading(true);
         const response = await api.get(`/zonas/${zonaId}`);
         setZona(response.data);
+        if (response.data.formato === 'Grupos') {
+          const gruposResponse = await api.get(`/zonas/${zonaId}/grupos`);
+          setGrupos(gruposResponse.data);
+          setGruposCreados(gruposResponse.data.length > 0);
+        }
+        const fechasResponse = await api.get(`/zonas/${zonaId}/fechas`);
+        setFechas(fechasResponse.data);
       } catch (error) {
         console.error('Error fetching zone details:', error);
       } finally {
@@ -29,6 +42,37 @@ export default function DetalleZona() {
 
     fetchZona();
   }, [zonaId]);
+
+  const handleSortearFechas = async () => {
+    try {
+      setLoading(true);
+      const requestData = zona.formato === 'Grupos' ? { num_grupos: numGrupos } : {};
+      const response = await api.post(`/zonas/${zonaId}/fechas`, requestData);
+      if (response.status === 201) {
+        setFechas(response.data.fechas);
+      }
+    } catch (error) {
+      console.error('Error creating dates:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCrearGrupos = async () => {
+    try {
+      setLoading(true);
+      const response = await api.post(`/zonas/${zonaId}/crear-grupos`, { num_grupos: numGrupos });
+      if (response.status === 201) {
+        setGrupos(response.data.grupos);
+        setGruposCreados(true);
+        setModalVisible(false);
+      }
+    } catch (error) {
+      console.error('Error creating groups:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEliminarEquipo = async (equipoId) => {
     try {
@@ -136,10 +180,65 @@ export default function DetalleZona() {
               )}
             </div>
           </div>
-          <CarruselFechas  zonaId={zonaId} equipos={zona.equipos} />
+          {zona.formato === 'Grupos' && (
+            <div className="mt-6">
+              <Grupos zonaId={zonaId} />
+            </div>
+          )}
+          <div className="mt-6">
+            {zona.formato === 'Grupos' && gruposCreados && (
+              <button
+                onClick={() => setModalVisible(true)}
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-[6px] text-sm"
+              >
+                Crear Grupos
+              </button>
+            )}
+            {gruposCreados && (
+              <button
+                onClick={handleSortearFechas}
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-[6px] text-sm mt-4"
+              >
+                Sortear Fechas
+              </button>
+            )}
+            <CarruselFechas zonaId={zonaId} equipos={zona.equipos} fechas={fechas} />
+          </div>
         </div>
       </main>
       <Footer />
+
+      {modalVisible && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-4">Crear Grupos</h2>
+            <label className="block mb-2">
+              Cantidad de Grupos:
+              <input
+                type="number"
+                min="1"
+                value={numGrupos}
+                onChange={(e) => setNumGrupos(e.target.value)}
+                className="border border-gray-300 rounded-md p-2 w-full"
+              />
+            </label>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setModalVisible(false)}
+                className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleCrearGrupos}
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md"
+              >
+                Crear
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

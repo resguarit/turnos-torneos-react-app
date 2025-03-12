@@ -136,7 +136,7 @@ export default function DetalleZona() {
               )}
             </div>
           </div>
-          <CarruselFechas zonaId={zonaId} equipos={zona.equipos} />
+          <CarruselFechas  zonaId={zonaId} equipos={zona.equipos} />
         </div>
       </main>
       <Footer />

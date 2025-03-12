@@ -52,7 +52,7 @@ export default function FechaCarousel({ zonaId, equipos }) {
     : ""
 
   return (
-    <div className="w-full max-w-md mx-auto bg-gray-100 rounded-lg overflow-hidden">
+    <div className="mt-10 w-full  mx-auto bg-gray-100 rounded-[8px] overflow-hidden">
       {/* Header with navigation */}
       <div className="flex items-center justify-between p-3 bg-white border-b">
         <button
@@ -80,7 +80,7 @@ export default function FechaCarousel({ zonaId, equipos }) {
       <div className="divide-y divide-gray-200">
         {currentFecha.partidos && currentFecha.partidos.length > 0 ? (
           currentFecha.partidos.map((partido) => (
-            <div key={partido.id} className="p-3 bg-gray-200 rounded-lg m-2">
+            <div key={partido.id} className="p-3 bg-gray-200 rounded-lg my-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2 flex-1">
                   <div

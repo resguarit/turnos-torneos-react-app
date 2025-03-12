@@ -6,6 +6,7 @@ import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Users, ChevronLeft, Edit3, Trash2 } from 'lucide-react';
+import CarruselFechas from './CarruselFechas';
 
 export default function DetalleZona() {
   const { zonaId } = useParams();
@@ -83,7 +84,7 @@ export default function DetalleZona() {
             <ChevronLeft className="w-5" /> Atrás
           </button>
         </div>
-        <div className="w-full px-40  ">
+        <div className="w-full px-40">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl lg:text-2xl font-bold">{zona.nombre} - {zona.año} <span className="text-sm text-gray-500 font-normal">({zona.formato})</span></h1>
             <button onClick={() => navigate(`/alta-equipo/${zonaId}`)} className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white">
@@ -107,24 +108,24 @@ export default function DetalleZona() {
                           </td>
                           <td className="text-right p-3 items-center flex-row justify-center">
                             <div className='flex items-center w-full justify-end space-x-8'>
-                            <button
-                              onClick={() => navigate(`/jugadores/${equipo.id}`)}
-                              className=" bg-green-500 hover:bg-blue-600 text-white py-1 px-3 rounded-[6px] text-sm"
-                            >
-                              Ver jugadores
-                            </button>
-                            <button
-                              onClick={() => navigate(`/editar-equipo/${equipo.id}`)}
-                              className=" items-center flex-row text-blue-500  py-1   text-sm"
-                            >
-                              <Edit3 className="w-5" />
-                            </button>
-                            <button
-                              onClick={() => handleEliminarEquipo(equipo.id)}
-                              className="text-red-500   py-1  rounded-[6px] text-sm"
-                            >
-                              <Trash2 className="w-5" />
-                            </button>
+                              <button
+                                onClick={() => navigate(`/jugadores/${equipo.id}`)}
+                                className=" bg-green-500 hover:bg-blue-600 text-white py-1 px-3 rounded-[6px] text-sm"
+                              >
+                                Ver jugadores
+                              </button>
+                              <button
+                                onClick={() => navigate(`/editar-equipo/${equipo.id}`)}
+                                className=" items-center flex-row text-blue-500  py-1   text-sm"
+                              >
+                                <Edit3 className="w-5" />
+                              </button>
+                              <button
+                                onClick={() => handleEliminarEquipo(equipo.id)}
+                                className="text-red-500   py-1  rounded-[6px] text-sm"
+                              >
+                                <Trash2 className="w-5" />
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -135,6 +136,7 @@ export default function DetalleZona() {
               )}
             </div>
           </div>
+          <CarruselFechas zonaId={zonaId} equipos={zona.equipos} />
         </div>
       </main>
       <Footer />

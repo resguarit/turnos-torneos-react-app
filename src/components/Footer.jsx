@@ -106,7 +106,7 @@ const anio = new Date().getFullYear();
 
         {/* Copyright and Credits - Right */}
         <div className="text-gray-400 text-[10px] sm:text-xs text-right">
-          <p>© {anio} Rock & Gol. Todos los derechos reservados.</p>
+          <p>© {anio} Resguar IT Turnos. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>

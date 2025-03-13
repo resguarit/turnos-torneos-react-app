@@ -101,9 +101,7 @@ const NuevoPanelAdmin = () => {
               Auditorías
             </button>
           </div>
-          <div className="mt-6 bg-white p-4 rounded-lg shadow">
             {renderContenidoPestana()}
-          </div>
         </div>
       </main>
       <Footer />

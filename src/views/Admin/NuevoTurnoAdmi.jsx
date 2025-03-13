@@ -76,7 +76,108 @@ function NuevoTurnoAdmi() {
     }
   }, [searchTerm, personas]);
 
-  // El resto de los useEffect para horarios y canchas sin cambios
+  // useEffect para cargar los horarios cuando cambia la fecha
+  useEffect(() => {
+    const fetchHorarios = async () => {
+      if (!formData.fecha_turno) return;
+      
+      setFetchingHorarios(true);
+      setHorarios([]);
+      setCanchas([]);
+      setFormData(prev => ({
+        ...prev,
+        horario_id: '',
+        cancha_id: ''
+      }));
+      
+      try {
+        const endpoint = isTurnoFijo ? '/disponibilidad/turnos-fijos' : '/disponibilidad/fecha';
+        const params = isTurnoFijo 
+          ? { fecha_inicio: formData.fecha_turno } 
+          : { fecha: formData.fecha_turno };
+        
+        const response = await api.get(endpoint, { params });
+        
+        if (response.data && response.data.horarios) {
+          // Filtrar solo horarios disponibles
+          const horariosDisponibles = response.data.horarios.filter(h => h.disponible);
+          setHorarios(horariosDisponibles);
+          
+          if (horariosDisponibles.length === 0) {
+            setError('No hay horarios disponibles para la fecha seleccionada');
+          } else {
+            setError(null);
+          }
+        } else {
+          setError('Error al cargar horarios disponibles');
+        }
+      } catch (error) {
+        console.error('Error al cargar horarios:', error);
+        setError('Error al cargar horarios disponibles');
+      } finally {
+        setFetchingHorarios(false);
+      }
+    };
+
+    if (formData.fecha_turno) {
+      fetchHorarios();
+    }
+  }, [formData.fecha_turno, isTurnoFijo]);
+
+  // useEffect para cargar canchas cuando cambia el horario
+  useEffect(() => {
+    const fetchCanchas = async () => {
+      if (!formData.fecha_turno || !formData.horario_id) return;
+      
+      // En caso de turno fijo, no necesitamos cargar canchas específicas
+      if (isTurnoFijo) return;
+      
+      setFetchingCanchas(true);
+      setCanchas([]);
+      setFormData(prev => ({
+        ...prev,
+        cancha_id: ''
+      }));
+      
+      try {
+        const response = await api.get('/disponibilidad/cancha', {
+          params: {
+            fecha: formData.fecha_turno,
+            horario_id: formData.horario_id
+          }
+        });
+        
+        if (response.data && response.data.canchas) {
+          setCanchas(response.data.canchas);
+        } else {
+          console.error('Estructura de respuesta inesperada:', response.data);
+        }
+      } catch (error) {
+        console.error('Error al cargar canchas:', error);
+        setError('Error al cargar canchas disponibles');
+      } finally {
+        setFetchingCanchas(false);
+      }
+    };
+
+    if (formData.horario_id) {
+      fetchCanchas();
+    }
+  }, [formData.horario_id, formData.fecha_turno, isTurnoFijo]);
+
+  // Función para verificar si el formulario es válido
+  const isFormValid = () => {
+    if (!formData.persona_id || !formData.fecha_turno || !formData.horario_id) {
+      return false;
+    }
+    
+    // Para turno fijo no necesitamos cancha_id
+    if (!isTurnoFijo && !formData.cancha_id) {
+      return false;
+    }
+    
+    return true;
+  };
 
   const handlePersonaSelect = (persona) => {
     setFormData(prev => ({
@@ -181,6 +282,11 @@ function NuevoTurnoAdmi() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!isFormValid()) {
+      toast.error('Por favor completa todos los campos requeridos');
+      return;
+    }
     
     if (!formData.persona_id) {  // Cambiado de usuario_id a persona_id
       toast.error('No se ha seleccionado una persona válida');
@@ -420,8 +526,12 @@ function NuevoTurnoAdmi() {
 
             <button
               type="submit"
-              className="w-full bg-black text-white py-2 rounded hover:bg-black"
-              disabled={loading || !formData.persona_id}
+              className={`w-full py-2 rounded ${
+                !isFormValid()
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-black hover:bg-black text-white'
+              }`}
+              disabled={loading || !isFormValid()}
             >
               {loading ? 'Cargando...' : 'Crear Turno'}
             </button>

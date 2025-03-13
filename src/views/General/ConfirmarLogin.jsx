@@ -83,7 +83,7 @@ export default function ConfirmarLogin() {
             if (!reservaTemp) {
               toast.error('No se encontraron datos de la reserva');
               setLoading(false);
-              navigate('/nueva-reserva');
+              navigate('/reserva-mobile');
               return;
             }
             
@@ -99,10 +99,14 @@ export default function ConfirmarLogin() {
               navigate('/bloqueo-reserva');
             }
           } catch (bloqueoError) {
-            console.error('Error al crear bloqueo:', bloqueoError);
-            toast.error('Error al crear el bloqueo temporal');
+            console.error('Error completo:', bloqueoError);
             setLoading(false);
-            navigate('/nueva-reserva');
+            
+            if (bloqueoError.response && bloqueoError.response.status === 409) {
+              toast.error('Otra persona está reservando este turno');
+            } else {
+              toast.error(bloqueoError.response?.data?.message || 'Error al crear el bloqueo temporal');
+            }
             return;
           }
         }

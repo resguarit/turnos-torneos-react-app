@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';;
 import { useNavigate, useLocation } from 'react-router-dom';
-import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays } from 'lucide-react';
+import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays, ActivityIcon } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import PestanaDashboard from './PestanaDashboard';
@@ -8,6 +8,7 @@ import PestanaHorario from './PestanaHorario';
 import PestanaPistas from './PestanaPistas';
 import PestanaUsuarios from './PestanaUsuarios';
 import PestanaTurnos from './PestanaTurnos';
+import PestanaAuditoria from './PestanaAuditoria'; // Importa el nuevo componente
 
 const NuevoPanelAdmin = () => {
   const navigate = useNavigate();
@@ -32,6 +33,8 @@ const NuevoPanelAdmin = () => {
         return <PestanaUsuarios />;
       case 'turnos':
         return <PestanaTurnos />;
+      case 'auditoria': // Nuevo caso para la pestaña de auditoría
+        return <PestanaAuditoria />;
       default:
         return null;
     }
@@ -88,8 +91,19 @@ const NuevoPanelAdmin = () => {
               <CalendarDays className="inline-block mr-2" size={18} />
               Turnos
             </button>
+            <button
+              onClick={() => setActiveTab("auditoria")}
+              className={`px-3 items-center flex py-1 sm:py-2 rounded-[4px] text-sm sm:text-base  ${
+                activeTab === "auditoria" ? "bg-naranja text-white" : "bg-gray-200 text-black"
+              }`}
+            >
+              <ActivityIcon className="inline-block mr-2" size={18} />
+              Auditorías
+            </button>
           </div>
-          {renderContenidoPestana()}
+          <div className="mt-6 bg-white p-4 rounded-lg shadow">
+            {renderContenidoPestana()}
+          </div>
         </div>
       </main>
       <Footer />

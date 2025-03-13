@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import Carrusel from "./Carrusel";
-import video from "../assets/rng.mp4";
 import { useEffect } from "react";
 import rngBlack from "../assets/rngBlack.mp4";
+import video from "../assets/rngBlack.mp4";
 
 function Hero() {
   useEffect(() => {

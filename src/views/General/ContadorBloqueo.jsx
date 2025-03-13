@@ -290,7 +290,7 @@ export default function ContadorBloqueo() {
                         <div className="flex-1">
                           <p className="text-sm text-gray-500">Reservado por</p>
                           <div className="flex justify-between">
-                            <p className="font-medium text-sm">{userDetails.name}</p>
+                            <p className="font-medium text-sm">{userDetails.persona?.name}</p>
                             <p className="text-gray-500 text-sm">DNI: {userDetails.dni}</p>
                           </div>
                         </div>

@@ -48,15 +48,17 @@ export default function EditProfile() {
         const userId = localStorage.getItem('user_id');
         const response = await api.get(`/usuarios/${userId}`);
         const user = response.data.user;
+        
+        // Adaptamos la estructura a la nueva respuesta
         setUserData({
-          name: user.name,
-          email: user.email,
-          telefono: user.telefono,
+          name: user.persona?.name || '',
+          email: user.email || '',
+          telefono: user.persona?.telefono || '',
         });
         setOriginalUserData({
-          name: user.name,
-          email: user.email,
-          telefono: user.telefono,
+          name: user.persona?.name || '',
+          email: user.email || '',
+          telefono: user.persona?.telefono || '',
         });
       } catch (error) {
         setError(error.message);
@@ -96,10 +98,16 @@ export default function EditProfile() {
     const updatedData = {};
 
     // Comparar los valores actuales con los originales y agregar solo los campos modificados y no vacíos
-    for (const key in userData) {
-      if (userData[key] !== originalUserData[key] && userData[key].trim() !== '') {
-        updatedData[key] = userData[key];
-      }
+    if (userData.name !== originalUserData.name && userData.name.trim() !== '') {
+      updatedData.name = userData.name; // Debería ser plano, no updatedData.persona.name
+    }
+    
+    if (userData.email !== originalUserData.email && userData.email.trim() !== '') {
+      updatedData.email = userData.email;
+    }
+    
+    if (userData.telefono !== originalUserData.telefono && userData.telefono.trim() !== '') {
+      updatedData.telefono = userData.telefono; // Debería ser plano, no updatedData.persona.telefono
     }
 
     // Validar contraseñas
@@ -216,6 +224,13 @@ export default function EditProfile() {
                   </div>
                 </div>
               </div>
+
+              {/* Error message display */}
+              {error && (
+                <div className="text-red-500 bg-red-100 border border-red-200 p-2 rounded-md">
+                  {error}
+                </div>
+              )}
 
               {/* Cambiar Contraseña */}
               <div className="space-y-4">

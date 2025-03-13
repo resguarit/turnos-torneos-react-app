@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import api from '@/lib/axiosConfig'
+import BtnLoading from "@/components/BtnLoading"
 
 export default function FechaCarousel({ zonaId, equipos }) {
   const [fechas, setFechas] = useState([]);
@@ -37,7 +38,7 @@ export default function FechaCarousel({ zonaId, equipos }) {
 
   // If no fechas data, show a message
   if (loading) {
-    return <div className="text-center p-4">Cargando fechas...</div>
+    return <div className="w-full justify-center flex"><BtnLoading /></div>
   }
 
   if (!fechas || fechas.length === 0) {

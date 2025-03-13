@@ -18,6 +18,7 @@ export default function DetalleZona() {
   const [gruposCreados, setGruposCreados] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [numGrupos, setNumGrupos] = useState(1);
+  const [fechasSorteadas, setFechasSorteadas] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,13 +27,15 @@ export default function DetalleZona() {
         setLoading(true);
         const response = await api.get(`/zonas/${zonaId}`);
         setZona(response.data);
-        if (response.data.formato === 'Grupos') {
+        if (response.data.formato === 'Grupos' ) {
           const gruposResponse = await api.get(`/zonas/${zonaId}/grupos`);
           setGrupos(gruposResponse.data);
           setGruposCreados(gruposResponse.data.length > 0);
         }
-        const fechasResponse = await api.get(`/zonas/${zonaId}/fechas`);
-        setFechas(fechasResponse.data);
+        if (response.data.equipos.length > 0 && response.data.fechas_sorteadas) {
+          const fechasResponse = await api.get(`/zonas/${zonaId}/fechas`);
+          setFechas(fechasResponse.data);
+        }
       } catch (error) {
         console.error('Error fetching zone details:', error);
       } finally {
@@ -50,6 +53,7 @@ export default function DetalleZona() {
       const response = await api.post(`/zonas/${zonaId}/fechas`, requestData);
       if (response.status === 201) {
         setFechas(response.data.fechas);
+        setFechasSorteadas(true);
       }
     } catch (error) {
       console.error('Error creating dates:', error);
@@ -83,6 +87,12 @@ export default function DetalleZona() {
           ...zona,
           equipos: zona.equipos.filter((equipo) => equipo.id !== equipoId),
         });
+        // Eliminar los grupos y actualizar el estado
+        for (const grupo of grupos) {
+          await api.delete(`/grupos/${grupo.id}`);
+        }
+        setGrupos([]);
+        setGruposCreados(false);
       }
     } catch (error) {
       console.error('Error deleting team:', error);
@@ -186,7 +196,7 @@ export default function DetalleZona() {
             </div>
           )}
           <div className="mt-6">
-            {zona.formato === 'Grupos' && gruposCreados && (
+            {zona.formato === 'Grupos' && !gruposCreados  && zona.equipos.length > 0 && (
               <button
                 onClick={() => setModalVisible(true)}
                 className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-[6px] text-sm"
@@ -194,15 +204,18 @@ export default function DetalleZona() {
                 Crear Grupos
               </button>
             )}
-            {gruposCreados && (
+            {((zona.formato === 'Grupos' && gruposCreados) || (zona.formato !== 'Grupos' && zona.equipos.length > 2)) && (
               <button
                 onClick={handleSortearFechas}
-                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-[6px] text-sm mt-4"
+                className={`py-2 px-4 rounded-[6px] text-sm mt-4 ${fechasSorteadas ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                disabled={fechasSorteadas}
               >
                 Sortear Fechas
               </button>
             )}
-            <CarruselFechas zonaId={zonaId} equipos={zona.equipos} fechas={fechas} />
+            {((zona.formato === 'Grupos' && gruposCreados) || (zona.formato !== 'Grupos' && zona.equipos.length > 1)) && (
+              <CarruselFechas zonaId={zonaId} equipos={zona.equipos} fechas={fechas} />
+            )}
           </div>
         </div>
       </main>

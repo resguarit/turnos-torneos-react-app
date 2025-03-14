@@ -39,6 +39,8 @@ function NuevoTurnoAdmi() {
     dni: '',
     telefono: ''
   });
+  // Agregar estado para errores de validación
+  const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
     const fetchPersonas = async () => {
@@ -205,6 +207,12 @@ function NuevoTurnoAdmi() {
 
   // Manejar cambios en el formulario de nueva persona
   const handleNewPersonaChange = (e) => {
+    // Limpiar el error del campo que se está editando
+    setValidationErrors({
+      ...validationErrors,
+      [e.target.name]: null
+    });
+    
     setNewPersona({
       ...newPersona,
       [e.target.name]: e.target.value
@@ -222,37 +230,52 @@ function NuevoTurnoAdmi() {
     
     try {
       setLoading(true);
+      // Limpiar errores de validación previos
+      setValidationErrors({});
+      
       const response = await api.post('/personas', newPersona);
       
-      // Verificar la estructura de respuesta correcta
-      let newPersonaData;
-      if (response.data && response.data.data) {
-        // Si devuelve { data: {...} }
-        newPersonaData = response.data.data;
-      } else if (response.data && response.data.persona) {
-        // Si devuelve { persona: {...} }
-        newPersonaData = response.data.persona;
-      } else if (response.data && !response.data.status) {
-        // Si devuelve directamente el objeto
-        newPersonaData = response.data;
-      } else {
-        console.error('Estructura de respuesta no reconocida:', response.data);
-        toast.error('Error al procesar la respuesta del servidor');
-        setLoading(false);
-        return;
+      // Verificar si la respuesta contiene errores de validación
+      if (response.data.status === 400 || (response.data.errors && response.data.message === "Error de validación")) {
+        // Manejar errores de validación dentro del bloque try
+        console.error('Error de validación:', response.data);
+        setValidationErrors(response.data.errors || {});
+        
+        if (response.data.message) {
+          toast.error(response.data.message);
+        }
+        
+        return; // Detener ejecución
       }
       
-      // Añadir la nueva persona a la lista
-      setPersonas([...personas, newPersonaData]);
-      
-      // Seleccionar automáticamente la persona creada
-      handlePersonaSelect(newPersonaData);
-      
-      toast.success('Persona creada correctamente');
-      closeModal();
+      // La respuesta exitosa siempre tiene la estructura { persona: {...} }
+      if (response.data && response.data.persona) {
+        // Añadir la nueva persona a la lista
+        setPersonas([...personas, response.data.persona]);
+        
+        // Seleccionar automáticamente la persona creada
+        handlePersonaSelect(response.data.persona);
+        
+        toast.success('Persona creada correctamente');
+        closeModal();
+      } else {
+        console.error('Estructura de respuesta inesperada:', response.data);
+        toast.error('Error al procesar la respuesta del servidor');
+      }
     } catch (error) {
       console.error('Error al crear persona:', error);
-      toast.error(error.response?.data?.message || 'Error al crear persona');
+      
+      // Manejar errores de validación (por si acaso entra en el catch)
+      if (error.response?.data?.errors) {
+        setValidationErrors(error.response.data.errors);
+        
+        // Mostrar un toast con el mensaje general de error
+        if (error.response.data.message) {
+          toast.error(error.response.data.message);
+        }
+      } else {
+        toast.error(error.response?.data?.message || 'Error al crear persona');
+      }
     } finally {
       setLoading(false);
     }
@@ -561,9 +584,14 @@ function NuevoTurnoAdmi() {
                   name="name"
                   value={newPersona.name}
                   onChange={handleNewPersonaChange}
-                  className="w-full border rounded p-2"
+                  className={`w-full border rounded p-2 ${
+                    validationErrors.name ? 'border-red-500 text-red-500' : ''
+                  }`}
                   required
                 />
+                {validationErrors.name && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.name[0]}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium">DNI</label>
@@ -572,9 +600,14 @@ function NuevoTurnoAdmi() {
                   name="dni"
                   value={newPersona.dni}
                   onChange={handleNewPersonaChange}
-                  className="w-full border rounded p-2"
+                  className={`w-full border rounded p-2 ${
+                    validationErrors.dni ? 'border-red-500 text-red-500' : ''
+                  }`}
                   required
                 />
+                {validationErrors.dni && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.dni[0]}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium">Teléfono</label>
@@ -583,9 +616,14 @@ function NuevoTurnoAdmi() {
                   name="telefono"
                   value={newPersona.telefono}
                   onChange={handleNewPersonaChange}
-                  className="w-full border rounded p-2"
+                  className={`w-full border rounded p-2 ${
+                    validationErrors.telefono ? 'border-red-500 text-red-500' : ''
+                  }`}
                   required
                 />
+                {validationErrors.telefono && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.telefono[0]}</p>
+                )}
               </div>
               <div className="flex justify-end space-x-2">
                 <button

@@ -7,6 +7,7 @@ import { es } from "date-fns/locale"
 import api from '@/lib/axiosConfig'
 import BtnLoading from "@/components/BtnLoading"
 import EditFechaModal from './EditFechaModal'
+import PostergarFechasModal from './PostergarFechasModal'
 
 export default function FechaCarousel({ zonaId, equipos }) {
   const [fechas, setFechas] = useState([]);
@@ -14,6 +15,7 @@ export default function FechaCarousel({ zonaId, equipos }) {
   const [loading, setLoading] = useState(true);
   const [modalEditVisible, setModalEditVisible] = useState(false);
   const [modalDeleteVisible, setModalDeleteVisible] = useState(false);
+  const [modalPostergarVisible, setModalPostergarVisible] = useState(false);
   const [selectedFecha, setSelectedFecha] = useState(null);
 
   useEffect(() => {
@@ -61,6 +63,36 @@ export default function FechaCarousel({ zonaId, equipos }) {
     }
   };
 
+  const handleDeleteAllFechas = async () => {
+    try {
+      setLoading(true);
+      const response = await api.delete(`/zonas/${zonaId}/fechas`);
+      if (response.status === 200) {
+        setFechas([]);
+      }
+    } catch (error) {
+      console.error('Error deleting all dates:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePostergarFechas = async (fechaId) => {
+    try {
+      setLoading(true);
+      const response = await api.post(`/fechas/${fechaId}/postergar`);
+      if (response.status === 200) {
+        const updatedFechas = await api.get(`/zonas/${zonaId}/fechas`);
+        setFechas(updatedFechas.data);
+        setModalPostergarVisible(false);
+      }
+    } catch (error) {
+      console.error('Error postponing dates:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const goToPrevious = () => {
     setCurrentFechaIndex((prev) => (prev > 0 ? prev - 1 : prev));
   }
@@ -84,8 +116,8 @@ export default function FechaCarousel({ zonaId, equipos }) {
     : ""
 
   return (
-    <div className="mt-10 w-full  mx-auto bg-gray-100 rounded-[8px] overflow-hidden">
-      <div className="flex items-center justify-between p-3 bg-white border-b">
+    <div className="mt-10 w-full  mx-auto bg-gray-100 overflow-hidden">
+      <div className="flex items-center justify-between p-3 bg-white border-b rounded-t-[8px]">
         <button
           onClick={goToPrevious}
           disabled={currentFechaIndex === 0}
@@ -143,26 +175,41 @@ export default function FechaCarousel({ zonaId, equipos }) {
         ) : (
           <div className="p-4 text-center text-gray-500">No hay partidos para esta fecha</div>
         )}
-        <div className="p-3 justify-center flex bg-white rounded-b-[8px] my-2 gap-6">
+        <div className="p-3 justify-center flex bg-white rounded-b-[8px] my-2 gap-4">
           <button
-            className="text-red-500"
+            className=""
             onClick={() => {
               setSelectedFecha(currentFecha);
               setModalDeleteVisible(true);
             }}
           >
-            <Trash2 size={20} />
+            <Trash2 size={18} />
           </button>
           <button
-            className="text-blue-500 ml-2"
+            className=" ml-2"
             onClick={() => {
               setSelectedFecha(currentFecha);
               setModalEditVisible(true);
             }}
           >
-            <Edit3 size={20} />
+            <Edit3 size={18} />
           </button>
         </div>
+      </div>
+
+      <div className="flex justify-between ">
+        <button
+          className="bg-red-500 hover:bg-red-600 text-sm text-white py-1 px-4 rounded-[6px]"
+          onClick={handleDeleteAllFechas}
+        >
+          Eliminar Todas las Fechas
+        </button>
+        <button
+          className="bg-blue-500 hover:bg-blue-600 text-sm text-white py-1 px-4 rounded-[6px]"
+          onClick={() => setModalPostergarVisible(true)}
+        >
+          Postergar Todas las Fechas
+        </button>
       </div>
 
       {modalEditVisible && (
@@ -195,6 +242,14 @@ export default function FechaCarousel({ zonaId, equipos }) {
             </div>
           </div>
         </div>
+      )}
+
+      {modalPostergarVisible && (
+        <PostergarFechasModal
+          fechas={fechas}
+          onSave={handlePostergarFechas}
+          onClose={() => setModalPostergarVisible(false)}
+        />
       )}
     </div>
   )

@@ -5,7 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Users, ChevronLeft, Edit3, Trash2 } from 'lucide-react';
+import { Users, ChevronLeft, Edit3, Trash2, Shuffle } from 'lucide-react';
 import CarruselFechas from './CarruselFechas';
 import Grupos from './Grupos';
 
@@ -212,10 +212,10 @@ export default function DetalleZona() {
             {((zona.formato === 'Grupos' && gruposCreados) || (zona.formato !== 'Grupos' && zona.equipos.length > 2)) && (
               <button
                 onClick={handleSortearFechas}
-                className={`py-2 px-4 rounded-[6px] text-sm mt-4 ${fechasSorteadas ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                className={`py-2 px-3 flex items-center gap-2 rounded-[6px] text-sm mt-4 ${fechasSorteadas ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
                 disabled={fechasSorteadas}
               >
-                Sortear Fechas
+                Sortear Fechas <Shuffle size={18}/>
               </button>
             )}
             {((zona.formato === 'Grupos' && gruposCreados) || (zona.formato !== 'Grupos' && zona.equipos.length > 1)) && (

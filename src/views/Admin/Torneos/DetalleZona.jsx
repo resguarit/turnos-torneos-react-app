@@ -20,14 +20,15 @@ export default function DetalleZona() {
   const [numGrupos, setNumGrupos] = useState(1);
   const [fechasSorteadas, setFechasSorteadas] = useState(false);
   const navigate = useNavigate();
-
+  
   useEffect(() => {
     const fetchZona = async () => {
       try {
         setLoading(true);
         const response = await api.get(`/zonas/${zonaId}`);
         setZona(response.data);
-        if (response.data.formato === 'Grupos' ) {
+        console.log(response.data);
+        if (response.data.formato === 'Grupos') {
           const gruposResponse = await api.get(`/zonas/${zonaId}/grupos`);
           setGrupos(gruposResponse.data);
           setGruposCreados(gruposResponse.data.length > 0);
@@ -35,6 +36,7 @@ export default function DetalleZona() {
         if (response.data.equipos.length > 0 && response.data.fechas_sorteadas) {
           const fechasResponse = await api.get(`/zonas/${zonaId}/fechas`);
           setFechas(fechasResponse.data);
+          setFechasSorteadas(true); // Establecer fechasSorteadas en true si ya hay fechas cargadas
         }
       } catch (error) {
         console.error('Error fetching zone details:', error);
@@ -89,7 +91,7 @@ export default function DetalleZona() {
         });
         // Eliminar los grupos y actualizar el estado
         for (const grupo of grupos) {
-          await api.delete(`/grupos/${grupo.id}`);
+          await api.delete(`/grupo/${grupo.id}`);
         }
         setGrupos([]);
         setGruposCreados(false);
@@ -146,7 +148,10 @@ export default function DetalleZona() {
             </button>
           </div>
           <div className="bg-white rounded-[8px] shadow-md p-4">
-            <h2 className="text-2xl font-medium">Equipos</h2>
+            <div className='w-full flex items-center justify-between'>
+              <h2 className="text-2xl font-medium">Equipos</h2>
+              <button className="bg-blue-500 text-center flex items-center text-white px-2 py-1 gap-2 rounded-[6px]">Editar <Edit3 size={18} /></button>
+            </div>
             <div className="mt-4">
               {zona.equipos && zona.equipos.length === 0 ? (
                 <p className="text-center text-gray-500">No hay equipos en esta zona.</p>
@@ -196,7 +201,7 @@ export default function DetalleZona() {
             </div>
           )}
           <div className="mt-6">
-            {zona.formato === 'Grupos' && !gruposCreados  && zona.equipos.length > 0 && (
+            {zona.formato === 'Grupos' && !gruposCreados && zona.equipos.length > 0 && (
               <button
                 onClick={() => setModalVisible(true)}
                 className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-[6px] text-sm"
@@ -221,6 +226,7 @@ export default function DetalleZona() {
       </main>
       <Footer />
 
+      
       {modalVisible && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg">

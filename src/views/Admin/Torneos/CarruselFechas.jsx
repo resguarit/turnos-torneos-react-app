@@ -1,16 +1,20 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Edit3, Trash2 } from "lucide-react"
 import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import api from '@/lib/axiosConfig'
 import BtnLoading from "@/components/BtnLoading"
+import EditFechaModal from './EditFechaModal'
 
 export default function FechaCarousel({ zonaId, equipos }) {
   const [fechas, setFechas] = useState([]);
   const [currentFechaIndex, setCurrentFechaIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [modalEditVisible, setModalEditVisible] = useState(false);
+  const [modalDeleteVisible, setModalDeleteVisible] = useState(false);
+  const [selectedFecha, setSelectedFecha] = useState(null);
 
   useEffect(() => {
     const fetchFechas = async () => {
@@ -27,7 +31,36 @@ export default function FechaCarousel({ zonaId, equipos }) {
     fetchFechas();
   }, [zonaId]);
 
-  // Handle navigation
+  const handleEditFecha = async (updatedFecha) => {
+    try {
+      setLoading(true);
+      const response = await api.put(`/fechas/${updatedFecha.id}`, updatedFecha);
+      if (response.status === 200) {
+        setFechas(fechas.map(fecha => fecha.id === updatedFecha.id ? updatedFecha : fecha));
+        setModalEditVisible(false);
+      }
+    } catch (error) {
+      console.error('Error updating date:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteFecha = async () => {
+    try {
+      setLoading(true);
+      const response = await api.delete(`/fechas/${selectedFecha.id}`);
+      if (response.status === 200) {
+        setFechas(fechas.filter(fecha => fecha.id !== selectedFecha.id));
+        setModalDeleteVisible(false);
+      }
+    } catch (error) {
+      console.error('Error deleting date:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const goToPrevious = () => {
     setCurrentFechaIndex((prev) => (prev > 0 ? prev - 1 : prev));
   }
@@ -36,7 +69,6 @@ export default function FechaCarousel({ zonaId, equipos }) {
     setCurrentFechaIndex((prev) => (prev < fechas.length - 1 ? prev + 1 : prev));
   }
 
-  // If no fechas data, show a message
   if (loading) {
     return <div className="w-full justify-center flex"><BtnLoading /></div>
   }
@@ -47,14 +79,12 @@ export default function FechaCarousel({ zonaId, equipos }) {
 
   const currentFecha = fechas[currentFechaIndex]
 
-  // Format the date for display
   const formattedDate = currentFecha.fecha_inicio
     ? format(parseISO(currentFecha.fecha_inicio), "dd/MM/yyyy", { locale: es })
     : ""
 
   return (
     <div className="mt-10 w-full  mx-auto bg-gray-100 rounded-[8px] overflow-hidden">
-      {/* Header with navigation */}
       <div className="flex items-center justify-between p-3 bg-white border-b">
         <button
           onClick={goToPrevious}
@@ -77,7 +107,6 @@ export default function FechaCarousel({ zonaId, equipos }) {
         </button>
       </div>
 
-      {/* Matches list */}
       <div className="divide-y divide-gray-200">
         {currentFecha.partidos && currentFecha.partidos.length > 0 ? (
           currentFecha.partidos.map((partido) => (
@@ -114,7 +143,59 @@ export default function FechaCarousel({ zonaId, equipos }) {
         ) : (
           <div className="p-4 text-center text-gray-500">No hay partidos para esta fecha</div>
         )}
+        <div className="p-3 justify-center flex bg-white rounded-b-[8px] my-2 gap-6">
+          <button
+            className="text-red-500"
+            onClick={() => {
+              setSelectedFecha(currentFecha);
+              setModalDeleteVisible(true);
+            }}
+          >
+            <Trash2 size={20} />
+          </button>
+          <button
+            className="text-blue-500 ml-2"
+            onClick={() => {
+              setSelectedFecha(currentFecha);
+              setModalEditVisible(true);
+            }}
+          >
+            <Edit3 size={20} />
+          </button>
+        </div>
       </div>
+
+      {modalEditVisible && (
+        <EditFechaModal
+          fecha={selectedFecha}
+          equipos={equipos}
+          onSave={handleEditFecha}
+          onClose={() => setModalEditVisible(false)}
+        />
+      )}
+
+      {modalDeleteVisible && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-4">Eliminar Fecha</h2>
+            <p>¿Estás seguro de que deseas eliminar esta fecha?</p>
+            <div className="flex justify-end space-x-4 mt-4">
+              <button
+                onClick={() => setModalDeleteVisible(false)}
+                className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteFecha}
+                className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

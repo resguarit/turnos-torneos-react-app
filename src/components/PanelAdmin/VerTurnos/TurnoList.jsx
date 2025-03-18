@@ -3,7 +3,7 @@ import TurnoCard from '@/components/PanelAdmin/VerTurnos/TurnoCard';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-const TurnoList = ({ filteredBookings, handleDeleteSubmit }) => (
+const TurnoList = ({ filteredBookings, handleDeleteSubmit, onPagoRegistrado }) => (
   <div className='w-full items-center justify-center'>
     {Object.keys(filteredBookings)
       .sort((a, b) => new Date(a) - new Date(b)) // Ordenar las fechas de menor a mayor
@@ -16,6 +16,7 @@ const TurnoList = ({ filteredBookings, handleDeleteSubmit }) => (
                 key={booking.id}
                 booking={booking}
                 handleDeleteSubmit={handleDeleteSubmit}
+                onPagoRegistrado={onPagoRegistrado}
               />
             ))}
           </div>

@@ -1,9 +1,17 @@
-import React from 'react';
-import { Trash2, PenSquare, Phone } from 'lucide-react';
+import React, { useState } from 'react';
+import { Trash2, PenSquare, Phone, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import RegistrarPagoTurnoDialog from './RegistrarPagoTurnoDialog';
 
-const TurnoCard = ({ booking, handleDeleteSubmit }) => {
+const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
   const navigate = useNavigate();
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  const handlePagoRegistrado = (data) => {
+    if (onPagoRegistrado) {
+      onPagoRegistrado(data);
+    }
+  };
 
   return (
     <div
@@ -60,7 +68,24 @@ const TurnoCard = ({ booking, handleDeleteSubmit }) => {
         >
           <Phone className="h-4 w-4" />
         </button>
+        {booking.estado !== 'Pagado' && booking.estado !== 'Cancelado' && (
+          <button
+            onClick={() => setShowPaymentModal(true)}
+            size="icon"
+            className="flex flex-row gap-2 items-center bg-emerald-500 hover:bg-emerald-600 text-white p-2 transition-colors duration-200"
+          >
+            <DollarSign className="h-4 w-4" /> Registrar Pago
+          </button>
+        )}
       </div>
+
+      {/* Modal para registrar pago */}
+      <RegistrarPagoTurnoDialog
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        turno={booking}
+        onPagoRegistrado={handlePagoRegistrado}
+      />
     </div>
   );
 };

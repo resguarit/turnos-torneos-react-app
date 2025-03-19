@@ -18,7 +18,7 @@ export default function EditFechaModal({ fecha, equipos, onSave, onClose }) {
     });
   };
 
-  const estados = ['Pendiente', 'En curso', 'Finalizada', 'Suspendida', 'Cancelada'];
+  const estados = ['Pendiente', 'En Curso', 'Finalizada', 'Suspendida', 'Cancelada'];
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">

@@ -1,13 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight, Edit3, Trash2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Edit3, Trash2, Clock } from "lucide-react"
 import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import api from '@/lib/axiosConfig'
 import BtnLoading from "@/components/BtnLoading"
 import EditFechaModal from './EditFechaModal'
 import PostergarFechasModal from './PostergarFechasModal'
+/* import AsignarHoraYCanchaModal from './AsignarHoraYCanchaModal' */
 
 export default function FechaCarousel({ zonaId, equipos }) {
   const [fechas, setFechas] = useState([]);
@@ -16,6 +17,7 @@ export default function FechaCarousel({ zonaId, equipos }) {
   const [modalEditVisible, setModalEditVisible] = useState(false);
   const [modalDeleteVisible, setModalDeleteVisible] = useState(false);
   const [modalPostergarVisible, setModalPostergarVisible] = useState(false);
+  const [modalAsignarVisible, setModalAsignarVisible] = useState(false);
   const [selectedFecha, setSelectedFecha] = useState(null);
 
   useEffect(() => {
@@ -93,6 +95,10 @@ export default function FechaCarousel({ zonaId, equipos }) {
     }
   };
 
+  const handleAsignarHoraYCancha = async () => {
+    setModalAsignarVisible(true);
+  };
+
   const goToPrevious = () => {
     setCurrentFechaIndex((prev) => (prev > 0 ? prev - 1 : prev));
   }
@@ -115,6 +121,7 @@ export default function FechaCarousel({ zonaId, equipos }) {
     ? format(parseISO(currentFecha.fecha_inicio), "dd/MM/yyyy", { locale: es })
     : ""
 
+
   return (
     <div className="mt-10 w-full  mx-auto bg-gray-100 overflow-hidden">
       <div className="flex items-center justify-between p-3 bg-white border-b rounded-t-[8px]">
@@ -125,11 +132,26 @@ export default function FechaCarousel({ zonaId, equipos }) {
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
-
+<div className="gap-2 flex items-center ">
         <h2 className="text-lg font-medium">
           {currentFecha.nombre} - {formattedDate}
         </h2>
-
+        <span
+          className={`text-xs p-1 rounded-xl ${
+            currentFecha.estado === 'Pendiente'
+              ? 'bg-yellow-300 text-yellow-700'
+              : currentFecha.estado === 'En Curso'
+              ? 'bg-blue-300 text-blue-700'
+              : currentFecha.estado === 'Finalizada'
+              ? 'bg-green-300 text-green-700'
+              : currentFecha.estado === 'Suspendida'
+              ? 'bg-gray-300 text-gray-700'
+              : 'bg-red-300 text-red-700'
+          }`}
+        >
+          {`${currentFecha.estado}`}
+        </span>
+        </div>
         <button
           onClick={goToNext}
           disabled={currentFechaIndex === fechas.length - 1}
@@ -166,18 +188,22 @@ export default function FechaCarousel({ zonaId, equipos }) {
                   />
                 </div>
 
-                <div className="ml-4 text-right min-w-[60px]">
-                  <span className="font-medium">18:00</span>
-                </div>
+                {/* <div className="ml-4 text-right min-w-[60px]">
+                  <button
+                    className="text-blue-500"
+                    onClick={handleAsignarHoraYCancha}
+                  >
+                    <Clock size={18} />
+                  </button>
+                </div> */}
               </div>
             </div>
           ))
         ) : (
           <div className="p-4 text-center text-gray-500">No hay partidos para esta fecha</div>
         )}
-        <div className="p-3 justify-center flex bg-white rounded-b-[8px] my-2 gap-4">
+        <div className="p-3 justify-center flex bg-white rounded-b-[8px] my-2 gap-5">
           <button
-            className=""
             onClick={() => {
               setSelectedFecha(currentFecha);
               setModalDeleteVisible(true);
@@ -186,7 +212,6 @@ export default function FechaCarousel({ zonaId, equipos }) {
             <Trash2 size={18} />
           </button>
           <button
-            className=" ml-2"
             onClick={() => {
               setSelectedFecha(currentFecha);
               setModalEditVisible(true);
@@ -251,6 +276,18 @@ export default function FechaCarousel({ zonaId, equipos }) {
           onClose={() => setModalPostergarVisible(false)}
         />
       )}
+
+     {/*  {modalAsignarVisible && (
+        <AsignarHoraYCanchaModal
+          fechaId={currentFecha.id}
+          fecha={currentFecha.fecha_inicio}
+          onSave={() => {
+            setModalAsignarVisible(false);
+            // Fetch updated data if needed
+          }}
+          onClose={() => setModalAsignarVisible(false)}
+        />
+      )} */}
     </div>
   )
 }

@@ -177,7 +177,7 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
           <div className="flex flex-col gap-2 mt-4">
             {/* Primera fila de botones */}
             <div className="flex flex-col lg:flex-row gap-2 w-full">
-              {turno.estado !== TurnoEstado.CANCELADO && showCancelButton && (
+              {turno.estado !== TurnoEstado.CANCELADO && turno.estado !== TurnoEstado.PAGADO && turno.estado !== TurnoEstado.SEÑADO && showCancelButton && (
                 <Button
                   onClick={() => setShowCancelModal(true)}
                   className="w-full bg-red-500 text-white hover:bg-red-600"
@@ -188,7 +188,7 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
               {showModifyButton && turno.estado !== TurnoEstado.CANCELADO && (
                 <Button
                   onClick={() => setShowChangeModal(true)}
-                  className="w-full bg-yellow-400 text-white hover:bg-yellow-500"
+                  className="w-full bg-cyan-400 text-white hover:bg-cyan-500"
                 >
                   Solicitar Cambio del Turno  
                 </Button>

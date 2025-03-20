@@ -17,7 +17,10 @@ const FilterControls = ({ selectedCourt, setSelectedCourt, selectedStatus, setSe
   }, [onClose]);
 
   return (
-    <div ref={filterRef} className="fixed sm:absolute sm:bottom-52 sm:right-20 md:right-4 sm:mt-12 md:mt-4 p-4 px-10 bg-white rounded-[6px] shadow-lg">
+    <div 
+      ref={filterRef} 
+      className="p-4 px-10 bg-white rounded-[6px] shadow-lg border border-gray-200"
+    >
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1">
           <label className="block text-sm font-bold pb-4 text-gray-700">Seleccionar Cancha</label>

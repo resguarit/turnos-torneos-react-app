@@ -303,7 +303,7 @@ function VerTurnos() {
                   Crear Turno 
                 </button>
               </div>
-              <div className='flex w-full gap-4 flex-col sm:flex-row items-center sm:items-start'>
+              <div className='flex w-full gap-4 flex-col sm:flex-row items-center sm:items-start relative'>
                 <UnifiedDateSelector onDateSelect={handleUnifiedDateSelect} reset={dateReset} />
                 <SearchBar
                   className="w-full"
@@ -314,18 +314,20 @@ function VerTurnos() {
                   handleFilterToggle={handleFilterToggle}
                   handleSearch={handleSearch}
                   isFilterOpen={isFilterOpen}
-                  clearFilters={clearFilters} // Pass the clearFilters function
+                  clearFilters={clearFilters}
                 />
                 {isFilterOpen && (
-                  <FilterControls
-                    selectedCourt={selectedCourt}
-                    setSelectedCourt={setSelectedCourt}
-                    selectedStatus={selectedStatus}
-                    setSelectedStatus={setSelectedStatus}
-                    courts={courts}
-                    handleStatusChange={handleStatusChange}
-                    onClose={() => setIsFilterOpen(false)} // Pass the onClose function
-                  />
+                  <div className="absolute right-0 top-12 sm:top-10 z-50">
+                    <FilterControls
+                      selectedCourt={selectedCourt}
+                      setSelectedCourt={setSelectedCourt}
+                      selectedStatus={selectedStatus}
+                      setSelectedStatus={setSelectedStatus}
+                      courts={courts}
+                      handleStatusChange={handleStatusChange}
+                      onClose={() => setIsFilterOpen(false)}
+                    />
+                  </div>
                 )}
               </div>
               {loading && (<div className='flex justify-center items-center h-[50vh]'>

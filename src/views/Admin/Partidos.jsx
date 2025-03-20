@@ -6,84 +6,34 @@ import { Header } from "@/components/Header"
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
 import { Search, X, Filter, ChevronDown } from "lucide-react"
+import api from '@/lib/axiosConfig'
 
-// Sample data for filters
-const torneos = ["DOMINGO", "SABADO", "SENIOR", "JUVENIL"]
-const zonas = ["Liga A", "Zona B", "Zona C", "Zona D"]
-const fechas = ["Fecha 1", "Fecha 2", "Fecha 3", "Fecha 4", "Fecha 5"]
-
-// Sample match data
-const allMatches = [
-  {
-    id: 1,
-    team1: "KIRICOCHO",
-    score1: 3,
-    team2: "LA 95 FC",
-    score2: 2,
-    time: "18:00",
-    field: 3,
-    tournament: "DOMINGO",
-    zone: "Liga A",
-    date: "Fecha 1",
-  },
-  {
-    id: 2,
-    team1: "CUCHARA FC",
-    score1: 0,
-    team2: "E.E.N",
-    score2: 1,
-    time: "20:00",
-    field: 2,
-    tournament: "SENIOR",
-    zone: "Zona C",
-    date: "Fecha 2",
-  },
-  {
-    id: 3,
-    team1: "ATLETICO",
-    score1: 3,
-    team2: "1800 FC",
-    score2: 2,
-    time: "19:00",
-    field: 5,
-    tournament: "SABADO",
-    zone: "Zona B",
-    date: "Fecha 1",
-  },
-  {
-    id: 4,
-    team1: "DEP. ALFILERES",
-    score1: 2,
-    team2: "CHICAGO",
-    score2: 2,
-    time: "17:30",
-    field: 1,
-    tournament: "DOMINGO",
-    zone: "Liga A",
-    date: "Fecha 3",
-  },
-  {
-    id: 5,
-    team1: "EL PELIGRO",
-    score1: 4,
-    team2: "COCOS FC",
-    score2: 0,
-    time: "21:00",
-    field: 4,
-    tournament: "JUVENIL",
-    zone: "Zona D",
-    date: "Fecha 2",
-  },
-]
+const ITEMS_PER_PAGE = 10;
 
 function Partidos() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [partidos, setPartidos] = useState([])
+  const [filteredPartidos, setFilteredPartidos] = useState([])
+  const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState("")
   const [activeFilters, setActiveFilters] = useState([])
-  const [filteredMatches, setFilteredMatches] = useState(allMatches)
   const [showTorneoDropdown, setShowTorneoDropdown] = useState(false)
   const [showZonaDropdown, setShowZonaDropdown] = useState(false)
   const [showFechaDropdown, setShowFechaDropdown] = useState(false)
+
+  useEffect(() => {
+    const fetchPartidos = async () => {
+      try {
+        const response = await api.get('/partidos')
+        setPartidos(response.data)
+        setFilteredPartidos(response.data)
+      } catch (error) {
+        console.error('Error fetching partidos:', error)
+      }
+    }
+
+    fetchPartidos()
+  }, [])
 
   // Handle navigation
   const handleVerMasClick = () => {
@@ -120,13 +70,13 @@ function Partidos() {
 
   // Apply filters and search
   useEffect(() => {
-    let results = allMatches
+    let results = partidos
 
     // Apply search term
     if (searchTerm) {
       const term = searchTerm.toLowerCase()
       results = results.filter(
-        (match) => match.team1.toLowerCase().includes(term) || match.team2.toLowerCase().includes(term),
+        (partido) => partido.equipos[0]?.nombre.toLowerCase().includes(term) || partido.equipos[1]?.nombre.toLowerCase().includes(term),
       )
     }
 
@@ -134,21 +84,37 @@ function Partidos() {
     activeFilters.forEach((filter) => {
       switch (filter.type) {
         case "tournament":
-          results = results.filter((match) => match.tournament === filter.value)
+          results = results.filter((partido) => partido.fecha.zona.torneo.nombre === filter.value)
           break
         case "zone":
-          results = results.filter((match) => match.zone === filter.value)
+          results = results.filter((partido) => partido.fecha.zona.nombre === filter.value)
           break
         case "date":
-          results = results.filter((match) => match.date === filter.value)
+          results = results.filter((partido) => partido.fecha.nombre === filter.value)
           break
         default:
           break
       }
     })
 
-    setFilteredMatches(results)
-  }, [searchTerm, activeFilters])
+    setFilteredPartidos(results)
+    setCurrentPage(1) // Reset to first page after filtering
+  }, [searchTerm, activeFilters, partidos])
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE
+  const currentItems = filteredPartidos.slice(indexOfFirstItem, indexOfLastItem)
+  const totalPages = Math.ceil(filteredPartidos.length / ITEMS_PER_PAGE)
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber)
+  }
+
+  // Get unique values for filters
+  const uniqueTorneos = [...new Set(partidos.map(partido => partido.fecha.zona.torneo.nombre))]
+  const uniqueZonas = [...new Set(partidos.map(partido => partido.fecha.zona.nombre))]
+  const uniqueFechas = [...new Set(partidos.map(partido => partido.fecha.nombre))]
 
   return (
     <div className="min-h-screen flex flex-col font-inter">
@@ -193,7 +159,7 @@ function Partidos() {
                 {showTorneoDropdown && (
                   <div className="absolute z-10 mt-1 w-48 bg-white rounded-md shadow-lg">
                     <ul className="py-1">
-                      {torneos.map((torneo) => (
+                      {uniqueTorneos.map((torneo) => (
                         <li
                           key={torneo}
                           className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
@@ -220,7 +186,7 @@ function Partidos() {
                 {showZonaDropdown && (
                   <div className="absolute z-10 mt-1 w-48 bg-white rounded-md shadow-lg">
                     <ul className="py-1">
-                      {zonas.map((zona) => (
+                      {uniqueZonas.map((zona) => (
                         <li
                           key={zona}
                           className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
@@ -247,7 +213,7 @@ function Partidos() {
                 {showFechaDropdown && (
                   <div className="absolute z-10 mt-1 w-48 bg-white rounded-md shadow-lg">
                     <ul className="py-1">
-                      {fechas.map((fecha) => (
+                      {uniqueFechas.map((fecha) => (
                         <li
                           key={fecha}
                           className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
@@ -289,15 +255,15 @@ function Partidos() {
           {/* Results Count */}
           <div className="mb-4">
             <h2 className="font-semibold text-sm lg:text-2xl">
-              {filteredMatches.length === 0
+              {filteredPartidos.length === 0
                 ? "No se encontraron partidos"
-                : `Partidos encontrados: ${filteredMatches.length}`}
+                : `Partidos encontrados: ${filteredPartidos.length}`}
             </h2>
           </div>
 
-          {/* Matches Table */}
-          {filteredMatches.length > 0 && (
-            <div className="bg-white shadow overflow-x-auto mb-4 lg:text-xl rounded-lg">
+          {/* Partidos Table */}
+          {currentItems.length > 0 && (
+            <div className="bg-white shadow overflow-x-auto mb-4 lg:text-lg rounded-lg">
               <table className="w-full">
                 <thead className="bg-naranja text-white">
                   <tr>
@@ -310,22 +276,20 @@ function Partidos() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredMatches.map((match) => (
-                    <tr key={match.id} className="border-b text-sm lg:text-lg">
+                  {currentItems.map((partido) => (
+                    <tr key={partido.id} className="border-b text-sm ">
                       <td className="px-4 py-2 text-center">
-                        <div className="flex flex-col items-center lg:flex-row lg:justify-around">
-                          <span>{match.team1}</span>
-                          <span>
-                            {match.score1} - {match.score2}
-                          </span>
-                          <span>{match.team2}</span>
+                        <div className="grid grid-cols-3 items-center w-full">
+                          <span className="text-left truncate">{partido.equipos[0]?.nombre}</span>
+                          <span className="text-center min-w-[50px]">{partido.marcador_local ?? '-'} - {partido.marcador_visitante ?? '-'}</span>
+                          <span className="text-right truncate">{partido.equipos[1]?.nombre}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-2 text-center">{match.time}</td>
-                      <td className="px-4 py-2 text-center">{match.field}</td>
-                      <td className="px-4 py-2 text-center">{match.tournament}</td>
-                      <td className="px-4 py-2 text-center">{match.zone}</td>
-                      <td className="px-4 py-2 text-center">{match.date}</td>
+                      <td className="px-4 py-2 text-center">{partido.horario ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : 'No Definido'}</td>
+                      <td className="px-4 py-2 text-center">{partido.cancha ? partido.cancha.nombre : 'No Definido'}</td>
+                      <td className="px-4 py-2 text-center">{partido.fecha.zona.torneo.nombre}</td>
+                      <td className="px-4 py-2 text-center">{partido.fecha.zona.nombre}</td>
+                      <td className="px-4 py-2 text-center">{partido.fecha.nombre}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -333,17 +297,25 @@ function Partidos() {
             </div>
           )}
 
-          <div className="flex flex-col items-start space-y-5">
-            <Button onClick={handleVerMasClick} variant="link" className="text-gray-600 lg:text-base">
-              Ver más →
-            </Button>
+          {/* Pagination */}
+          <div className="flex justify-center space-x-2 mt-4">
+            {Array.from({ length: totalPages }, (_, index) => (
+              <button
+                key={index + 1}
+                onClick={() => handlePageChange(index + 1)}
+                className={`px-4 py-2 rounded-md ${currentPage === index + 1 ? 'bg-naranja text-white' : 'bg-gray-200'}`}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
+
             <button
               onClick={handleCargarClick}
               className="bg-black text-white hover:bg-black/90 text-sm p-2 lg:text-lg rounded-lg"
             >
               Cargar Partido +
             </button>
-          </div>
         </div>
       </div>
       <Footer></Footer>

@@ -9,7 +9,7 @@ import AltaZona from "@/views/Admin/Torneos/AltaZona";
 import VerTurnos from "@/views/Admin/VerTurnos";
 import Partidos from "@/views/Admin/Partidos";
 import VerPartidos from "@/views/Admin/VerPartidos";
-import CargaPartido from "@/views/Admin/CargaPartido";
+import CargaPartido from "@/views/Admin/Torneos/CargaPartido";
 import Reglamento from "@/views/Admin/Reglamento";
 import Premios from "@/views/Admin/Premios";
 import VerGrilla from "@/views/Admin/VerGrilla";

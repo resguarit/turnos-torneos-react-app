@@ -30,8 +30,12 @@ export default function AltaTorneo() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.deporte_id) {
+      alert('Debe seleccionar un deporte');
+      return;
+    }
     try {
-        setLoading(true);
+      setLoading(true);
       const response = await api.post('/torneos', formData);
       if (response.status === 201) {
         // Redirigir a /torneos-admi después de crear el torneo
@@ -40,7 +44,8 @@ export default function AltaTorneo() {
       }
     } catch (error) {
       console.error('Error creating tournament:', error);
-    } 
+      setLoading(false);
+    }
   };
 
   const currentYear = new Date().getFullYear();
@@ -72,7 +77,7 @@ export default function AltaTorneo() {
                 value={formData.año}
                 onChange={(e) => setFormData({ ...formData, año: e.target.value })}
               >
-                {years.map((year) => (
+zzzz                {years.map((year) => (
                   <option key={year} value={year}>
                     {year}
                   </option>
@@ -82,10 +87,14 @@ export default function AltaTorneo() {
             <div>
               <label className="font-medium font-sans text-lg">Deporte:</label>
               <select
-                className='border-gray-300 border w-full p-1 rounded-xl'
+                className="border-gray-300 border w-full p-1 rounded-xl"
                 value={formData.deporte_id}
                 onChange={(e) => setFormData({ ...formData, deporte_id: e.target.value })}
+                required
               >
+                <option value="" disabled>
+                  Seleccione un deporte
+                </option>
                 {deportes.map((deporte) => (
                   <option key={deporte.id} value={deporte.id}>
                     {deporte.nombre} {deporte.jugadores_por_equipo}

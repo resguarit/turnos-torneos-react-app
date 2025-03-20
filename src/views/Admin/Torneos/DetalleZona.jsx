@@ -5,12 +5,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Users, ChevronLeft } from 'lucide-react';
+import { Users, ChevronLeft, Edit3, Trash2 } from 'lucide-react';
+import CarruselFechas from './CarruselFechas';
+import Grupos from './Grupos';
 
 export default function DetalleZona() {
   const { zonaId } = useParams();
   const [zona, setZona] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [fechas, setFechas] = useState([]);
+  const [grupos, setGrupos] = useState([]);
+  const [gruposCreados, setGruposCreados] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [numGrupos, setNumGrupos] = useState(1);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,6 +26,13 @@ export default function DetalleZona() {
         setLoading(true);
         const response = await api.get(`/zonas/${zonaId}`);
         setZona(response.data);
+        if (response.data.formato === 'Grupos') {
+          const gruposResponse = await api.get(`/zonas/${zonaId}/grupos`);
+          setGrupos(gruposResponse.data);
+          setGruposCreados(gruposResponse.data.length > 0);
+        }
+        const fechasResponse = await api.get(`/zonas/${zonaId}/fechas`);
+        setFechas(fechasResponse.data);
       } catch (error) {
         console.error('Error fetching zone details:', error);
       } finally {
@@ -28,6 +42,54 @@ export default function DetalleZona() {
 
     fetchZona();
   }, [zonaId]);
+
+  const handleSortearFechas = async () => {
+    try {
+      setLoading(true);
+      const requestData = zona.formato === 'Grupos' ? { num_grupos: numGrupos } : {};
+      const response = await api.post(`/zonas/${zonaId}/fechas`, requestData);
+      if (response.status === 201) {
+        setFechas(response.data.fechas);
+      }
+    } catch (error) {
+      console.error('Error creating dates:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCrearGrupos = async () => {
+    try {
+      setLoading(true);
+      const response = await api.post(`/zonas/${zonaId}/crear-grupos`, { num_grupos: numGrupos });
+      if (response.status === 201) {
+        setGrupos(response.data.grupos);
+        setGruposCreados(true);
+        setModalVisible(false);
+      }
+    } catch (error) {
+      console.error('Error creating groups:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEliminarEquipo = async (equipoId) => {
+    try {
+      setLoading(true);
+      const response = await api.delete(`/equipos/${equipoId}`);
+      if (response.status === 200) {
+        setZona({
+          ...zona,
+          equipos: zona.equipos.filter((equipo) => equipo.id !== equipoId),
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting team:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -62,46 +124,121 @@ export default function DetalleZona() {
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
         <div className="w-full flex mb-2">
-          <button onClick={() => navigate(-1)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
+          <button onClick={() => navigate(`/zonas-admi/${zona.torneo_id}`)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
             <ChevronLeft className="w-5" /> Atrás
           </button>
         </div>
-        <div className="max-w-7xl lg:max-w-full mx-auto">
+        <div className="w-full px-40">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl lg:text-2xl font-bold">Detalles de la Zona</h1>
+            <h1 className="text-2xl lg:text-2xl font-bold">{zona.nombre} - {zona.año} <span className="text-sm text-gray-500 font-normal">({zona.formato})</span></h1>
             <button onClick={() => navigate(`/alta-equipo/${zonaId}`)} className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white">
               + Cargar Equipo
             </button>
           </div>
           <div className="bg-white rounded-[8px] shadow-md p-4">
-            <h2 className="text-2xl font-medium">{zona.nombre} {zona.año}</h2>
-            <p className="text-sm text-gray-500">{zona.formato}</p>
+            <h2 className="text-2xl font-medium">Equipos</h2>
             <div className="mt-4">
-              <h3 className="text-xl font-medium mb-2">Equipos</h3>
-              {zona.equipos.length === 0 ? (
+              {zona.equipos && zona.equipos.length === 0 ? (
                 <p className="text-center text-gray-500">No hay equipos en esta zona.</p>
               ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {zona.equipos.map((equipo) => (
-                    <Card className="bg-white rounded-[8px] shadow-md" key={equipo.id}>
-                      <CardHeader className="w-full p-4 bg-gray-200 rounded-t-[8px]">
-                        <div className="flex justify-between items-center">
-                          <h2 className="text-xl font-medium">{equipo.nombre}</h2>
-                          <span className="text-gray-500 lg:text-lg"> <Users /></span>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="p-4">
-                        <p className="text-sm text-gray-500">Jugadores: {equipo.jugadores.length}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
+                <div className="overflow-hidden rounded-[6px] border border-gray-200 bg-white shadow">
+                  <table className="w-full">
+                    <tbody>
+                      {zona.equipos && zona.equipos.map((equipo) => (
+                        <tr key={equipo.id} className="border-b items-center rounded-[6px] border-gray-200 last:border-0">
+                          <td className="p-3 flex items-center">
+                            <div className="w-6 bg-primary items-center justify-center"></div>
+                            <span className="font-medium">{equipo.nombre}</span>
+                          </td>
+                          <td className="text-right p-3 items-center flex-row justify-center">
+                            <div className='flex items-center w-full justify-end space-x-8'>
+                              <button
+                                onClick={() => navigate(`/jugadores/${equipo.id}`)}
+                                className=" bg-green-500 hover:bg-blue-600 text-white py-1 px-3 rounded-[6px] text-sm"
+                              >
+                                Ver jugadores
+                              </button>
+                              <button
+                                onClick={() => navigate(`/editar-equipo/${equipo.id}`)}
+                                className=" items-center flex-row text-blue-500  py-1   text-sm"
+                              >
+                                <Edit3 className="w-5" />
+                              </button>
+                              <button
+                                onClick={() => handleEliminarEquipo(equipo.id)}
+                                className="text-red-500   py-1  rounded-[6px] text-sm"
+                              >
+                                <Trash2 className="w-5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
           </div>
+          {zona.formato === 'Grupos' && (
+            <div className="mt-6">
+              <Grupos zonaId={zonaId} />
+            </div>
+          )}
+          <div className="mt-6">
+            {zona.formato === 'Grupos' && gruposCreados && (
+              <button
+                onClick={() => setModalVisible(true)}
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-[6px] text-sm"
+              >
+                Crear Grupos
+              </button>
+            )}
+            {gruposCreados && (
+              <button
+                onClick={handleSortearFechas}
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-[6px] text-sm mt-4"
+              >
+                Sortear Fechas
+              </button>
+            )}
+            <CarruselFechas zonaId={zonaId} equipos={zona.equipos} fechas={fechas} />
+          </div>
         </div>
       </main>
       <Footer />
+
+      {modalVisible && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-4">Crear Grupos</h2>
+            <label className="block mb-2">
+              Cantidad de Grupos:
+              <input
+                type="number"
+                min="1"
+                value={numGrupos}
+                onChange={(e) => setNumGrupos(e.target.value)}
+                className="border border-gray-300 rounded-md p-2 w-full"
+              />
+            </label>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setModalVisible(false)}
+                className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleCrearGrupos}
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md"
+              >
+                Crear
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

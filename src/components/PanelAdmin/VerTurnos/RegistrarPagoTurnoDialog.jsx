@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, DollarSign, FilePlus, CreditCard } from "lucide-react";
+import { X, DollarSign, FilePlus, CreditCard, ChevronDown, ChevronUp } from "lucide-react";
 import api from '@/lib/axiosConfig';
 import { toast } from 'react-toastify';
 
@@ -8,6 +8,9 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
   const [loadingCuenta, setLoadingCuenta] = useState(false);
   const [cuentaCorriente, setCuentaCorriente] = useState(null);
   const [tipoPago, setTipoPago] = useState('seña');
+  const [transaccionesTurno, setTransaccionesTurno] = useState(null);
+  const [loadingTransacciones, setLoadingTransacciones] = useState(false);
+  const [mostrarHistorial, setMostrarHistorial] = useState(false);
   
   const [formData, setFormData] = useState({
     monto: '',
@@ -24,9 +27,9 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
   useEffect(() => {
     if (isOpen && turno) {
       buscarCuentaCorriente();
-      
-      // Inicializar con pago de seña
-      actualizarMontoPorTipo('seña');
+      buscarTransaccionesTurno();
+      // Si está señado, seleccionar pago total por defecto
+      actualizarMontoPorTipo(turno.estado === 'Señado' ? 'total' : 'seña');
     }
   }, [isOpen, turno]);
   
@@ -60,6 +63,33 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
     } finally {
       setLoadingCuenta(false);
     }
+  };
+  
+  const buscarTransaccionesTurno = async () => {
+    if (!turno?.id) return;
+    
+    setLoadingTransacciones(true);
+    try {
+      const response = await api.get(`/transacciones/turno/${turno.id}`);
+      if (response.data) {
+        setTransaccionesTurno(response.data);
+      }
+    } catch (error) {
+      console.error('Error al buscar las transacciones del turno:', error);
+      toast.error('Error al obtener el historial de pagos del turno');
+    } finally {
+      setLoadingTransacciones(false);
+    }
+  };
+  
+  const calcularSaldoRestante = () => {
+    if (!transaccionesTurno) return turno.monto_total;
+    
+    const totalPagado = transaccionesTurno.reduce((sum, trans) => {
+      return sum + (trans.tipo === 'devolucion' ? -trans.monto : trans.monto);
+    }, 0);
+    
+    return turno.monto_total - totalPagado;
   };
   
   const actualizarMontoPorTipo = (tipo) => {
@@ -127,6 +157,7 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
       // Crear transacción
       const transaccionData = {
         persona_id: turno.usuario.persona_id,
+        turno_id: turno.id,
         monto: parseFloat(formData.monto),
         tipo: 'turno',
         descripcion: formData.descripcion
@@ -251,6 +282,68 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
             </div>
           )}
 
+          {/* Nuevo: Saldo del turno simplificado */}
+          {loadingTransacciones ? (
+            <div className="mb-6 p-3 bg-gray-50 rounded-lg text-center">
+              <p className="text-sm">Cargando saldo...</p>
+            </div>
+          ) : transaccionesTurno ? (
+            <div className="mb-6">
+              {/* Saldo */}
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <p className="font-medium">Saldo restante del turno #${turno.id}:</p>
+                  <p className={`font-semibold ${transaccionesTurno.saldo >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    ${Math.abs(transaccionesTurno.saldo).toLocaleString('es-AR', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Botón para mostrar/ocultar historial */}
+              <button
+                type="button"
+                onClick={() => setMostrarHistorial(!mostrarHistorial)}
+                className="mt-2 w-full flex items-center justify-between px-3 py-2 text-sm text-gray-600 hover:text-gray-900 focus:outline-none"
+              >
+                <span>Ver historial de pagos</span>
+                {mostrarHistorial ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </button>
+
+              {/* Historial desplegable */}
+              {mostrarHistorial && transaccionesTurno.transacciones && transaccionesTurno.transacciones.length > 0 && (
+                <div className="mt-2 p-3 bg-gray-50 rounded-lg max-h-40 overflow-y-auto">
+                  {transaccionesTurno.transacciones.map((trans, index) => (
+                    <div 
+                      key={index} 
+                      className="text-sm py-2 flex justify-between items-center border-b last:border-0 border-gray-200"
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-medium">{trans.descripcion}</span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(trans.created_at).toLocaleDateString()} {new Date(trans.created_at).toLocaleTimeString()}
+                        </span>
+                      </div>
+                      <span className={trans.monto.startsWith('-') ? 'text-red-500' : 'text-green-500'}>
+                        ${Math.abs(parseFloat(trans.monto)).toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="mb-6 p-3 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-500">No se pudo cargar el saldo del turno</p>
+            </div>
+          )}
+
           {/* Formulario de pago */}
           <form onSubmit={handleSubmit}>
             {/* Tipo de pago */}
@@ -354,7 +447,11 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
               </button>
               <button
                 type="submit"
-                disabled={loading || turno.estado === 'Pagado'}
+                disabled={
+                  loading || 
+                  turno.estado === 'Pagado' || 
+                  (turno.estado === 'Señado' && tipoPago === 'seña')
+                }
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none disabled:bg-gray-400"
               >
                 {loading ? 'Procesando...' : 'Registrar Pago'}

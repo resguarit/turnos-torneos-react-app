@@ -3,7 +3,7 @@ import { Search } from 'lucide-react';
 
 const SearchBar = ({ searchType, setSearchType, searchTerm, setSearchTerm, handleFilterToggle, handleSearch, isFilterOpen, clearFilters }) => {
   return (
-    <div className="w-full flex gap-4 md:flex-row flex-col">
+    <div className="w-full flex gap-4 md:flex-row flex-col relative">
       <div className='flex w-full gap-4'>
       <div className="relative sm:w-40 w-1/3">
         <select

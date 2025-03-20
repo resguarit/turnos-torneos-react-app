@@ -244,6 +244,19 @@ const PestanaCuentasCorrientes = () => {
         </div>
       </div>
 
+      {/* Botón para añadir transacción en la pestaña de transacciones (MOVIDO AQUÍ ARRIBA) */}
+      {!loading && activeTab === 'transacciones' && (
+        <div className="mb-4 flex justify-end">
+          <button
+            onClick={() => handleOpenTransaccionModal()}
+            className="flex items-center px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
+          >
+            <PlusCircle className="mr-2 h-5 w-5" />
+            Nueva Transacción
+          </button>
+        </div>
+      )}
+
       {/* Loading */}
       {loading && (
         <div className='flex justify-center items-center h-[50vh]'>
@@ -400,19 +413,6 @@ const PestanaCuentasCorrientes = () => {
             className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50"
           >
             Siguiente
-          </button>
-        </div>
-      )}
-
-      {/* Botón para añadir transacción en la pestaña de transacciones */}
-      {!loading && activeTab === 'transacciones' && (
-        <div className="mb-4 flex justify-end">
-          <button
-            onClick={() => handleOpenTransaccionModal()}
-            className="flex items-center px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
-          >
-            <PlusCircle className="mr-2 h-5 w-5" />
-            Nueva Transacción
           </button>
         </div>
       )}

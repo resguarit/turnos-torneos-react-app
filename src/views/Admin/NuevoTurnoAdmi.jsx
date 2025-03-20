@@ -70,7 +70,7 @@ function NuevoTurnoAdmi() {
   useEffect(() => {
     if (searchTerm.trim()) {
       const filtered = personas.filter(persona =>
-        persona.dni && persona.dni.includes(searchTerm.trim())
+        persona.dni && persona.dni.includes(searchTerm.trim()) || persona.name && persona.name.includes(searchTerm.trim())
       );
       setFilteredPersonas(filtered);
     } else {

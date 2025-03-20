@@ -35,6 +35,12 @@ export default function AltaZona() {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 6 }, (_, i) => currentYear + i);
 
+  const formatos = [
+    { value: 'Liga', label: 'Liga' },
+    { value: 'Eliminatoria', label: 'Eliminacion Directa' },
+    { value: 'Grupos', label: 'Fase De Grupos' },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
@@ -54,6 +60,7 @@ export default function AltaZona() {
                 className='border-gray-300 border w-full px-2 rounded-xl'
                 value={formData.nombre}
                 onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                required
               />
             </div>
             <div>
@@ -62,10 +69,13 @@ export default function AltaZona() {
                 className='border-gray-300 border w-full p-1 rounded-xl'
                 value={formData.formato}
                 onChange={(e) => setFormData({ ...formData, formato: e.target.value })}
+                required
               >
-                <option value="Liga">Liga</option>
-                <option value="Eliminacion Directa">Eliminacion Directa</option>
-                <option value="Fase De Grupos">Fase De Grupos</option>
+                {formatos.map((formato) => (
+                  <option key={formato.value} value={formato.value}>
+                    {formato.label}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
@@ -74,6 +84,7 @@ export default function AltaZona() {
                 className='border-gray-300 border w-full p-1 rounded-xl'
                 value={formData.año}
                 onChange={(e) => setFormData({ ...formData, año: e.target.value })}
+                required
               >
                 {years.map((year) => (
                   <option key={year} value={year}>

@@ -12,6 +12,7 @@ import SearchBar from '@/components/PanelAdmin/VerTurnos/TurnoSearchBar';
 import { Button } from '@/components/ui/button';
 import CrearTurnoFijoModal from '@/components/PanelAdmin/VerTurnos/CrearTurnoFijoModal';
 import BtnLoading from '@/components/BtnLoading';
+import TurnoCard from '@/components/PanelAdmin/VerTurnos/TurnoCard';
 
 function VerTurnos() {
   const navigate = useNavigate();
@@ -266,6 +267,10 @@ function VerTurnos() {
     fetchTurnos();
   };
 
+  const handlePagoRegistrado = () => {
+    fetchTurnos();
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (filterRef.current && !filterRef.current.contains(event.target)) {
@@ -330,6 +335,7 @@ function VerTurnos() {
               <TurnoList
                 filteredBookings={filteredBookings}
                 handleDeleteSubmit={handleDeleteSubmit}
+                onPagoRegistrado={handlePagoRegistrado}
               />
               )}
             </div>

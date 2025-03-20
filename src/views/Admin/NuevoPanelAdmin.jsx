@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';;
 import { useNavigate, useLocation } from 'react-router-dom';
-import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays, ActivityIcon } from 'lucide-react';
+import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays, ActivityIcon, Users, DollarSign } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import PestanaDashboard from './PestanaDashboard';
@@ -8,7 +8,9 @@ import PestanaHorario from './PestanaHorario';
 import PestanaPistas from './PestanaPistas';
 import PestanaUsuarios from './PestanaUsuarios';
 import PestanaTurnos from './PestanaTurnos';
-import PestanaAuditoria from './PestanaAuditoria'; // Importa el nuevo componente
+import PestanaAuditoria from './PestanaAuditoria';
+import PestanaPersonas from './PestanaPersonas';
+import PestanaCuentasCorrientes from './PestanaCuentasCorrientes';
 
 const NuevoPanelAdmin = () => {
   const navigate = useNavigate();
@@ -35,6 +37,10 @@ const NuevoPanelAdmin = () => {
         return <PestanaTurnos />;
       case 'auditoria': // Nuevo caso para la pestaña de auditoría
         return <PestanaAuditoria />;
+      case 'personas':
+        return <PestanaPersonas />;
+      case 'cuentacorriente':
+        return <PestanaCuentasCorrientes />;
       default:
         return null;
     }
@@ -83,6 +89,24 @@ const NuevoPanelAdmin = () => {
               Usuarios
             </button>
             <button
+              onClick={() => setActiveTab("personas")}
+              className={`px-3 items-center flex py-1 sm:py-2 rounded-[4px] text-sm sm:text-base  ${
+                activeTab === "personas" ? "bg-naranja text-white" : "bg-gray-200 text-black"
+              }`}
+            >
+              <Users className="inline-block mr-2" size={18} />
+              Personas
+            </button>
+            <button
+              onClick={() => setActiveTab("cuentacorriente")}
+              className={`px-3 items-center flex py-1 sm:py-2 rounded-[4px] text-sm sm:text-base  ${
+                activeTab === "cuentacorriente" ? "bg-naranja text-white" : "bg-gray-200 text-black"
+              }`}
+            >
+              <DollarSign className="inline-block mr-2" size={18} />
+              Cuentas Corrientes
+            </button>
+            <button
               onClick={() => setActiveTab("turnos")}
               className={`px-3 items-center flex py-1 sm:py-2 rounded-[4px] text-sm sm:text-base  ${
                 activeTab === "turnos" ? "bg-naranja text-white" : "bg-gray-200 text-black"
@@ -91,6 +115,7 @@ const NuevoPanelAdmin = () => {
               <CalendarDays className="inline-block mr-2" size={18} />
               Turnos
             </button>
+            
             <button
               onClick={() => setActiveTab("auditoria")}
               className={`px-3 items-center flex py-1 sm:py-2 rounded-[4px] text-sm sm:text-base  ${
@@ -101,9 +126,7 @@ const NuevoPanelAdmin = () => {
               Auditorías
             </button>
           </div>
-          <div className="mt-6 bg-white p-4 rounded-lg shadow">
             {renderContenidoPestana()}
-          </div>
         </div>
       </main>
       <Footer />

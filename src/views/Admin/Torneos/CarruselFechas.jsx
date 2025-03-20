@@ -68,10 +68,10 @@ export default function FechaCarousel({ zonaId, equipos }) {
   const handleDeleteAllFechas = async () => {
     try {
       setLoading(true);
-      const response = await api.delete(`/zonas/${zonaId}/fechas`);
-      if (response.status === 200) {
-        setFechas([]);
+      for (const fecha of fechas) {
+        await api.delete(`/fechas/${fecha.id}`);
       }
+      setFechas([]);
     } catch (error) {
       console.error('Error deleting all dates:', error);
     } finally {

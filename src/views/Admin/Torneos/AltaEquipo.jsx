@@ -92,18 +92,41 @@ export default function AltaEquipo() {
       if (response.status === 201) {
         const equipoId = response.data.equipo.id;
         if (jugadores.length > 0) {
-          await Promise.all(
-            jugadores.map((jugador) =>
-              api.post('/jugadores', { ...jugador, equipo_id: equipoId })
-            )
-          );
+          try {
+            const jugadoresResponses = await Promise.all(
+              jugadores.map((jugador) =>
+                api.post('/jugadores', { ...jugador, equipo_id: equipoId })
+              )
+            );
+            alert('Equipo y jugadores guardados correctamente');
+            navigate(`/detalle-zona/${zonaId}`);
+          } catch (error) {
+            console.error('Error guardando jugadores:', error);
+            // Eliminar el equipo si falla la creación de jugadores
+            await api.delete(`/equipos/${equipoId}`);
+            alert('Error guardando jugadores. El equipo no se ha guardado.');
+          }
+        } else {
+          alert('Equipo guardado correctamente');
+          navigate(`/detalle-zona/${zonaId}`);
         }
-        setLoading(false);
-        alert('Equipo guardado correctamente');
-        navigate(`/detalle-zona/${zonaId}`);
       }
     } catch (error) {
       console.error('Error guardando equipo:', error);
+      // Eliminar los jugadores creados si falla la creación del equipo
+      if (jugadores.length > 0) {
+        try {
+          await Promise.all(
+            jugadores.map((jugador) =>
+              api.delete(`/jugadores/${jugador.id}`)
+            )
+          );
+        } catch (deleteError) {
+          console.error('Error eliminando jugadores:', deleteError);
+        }
+      }
+      alert('Error guardando equipo');
+    } finally {
       setLoading(false);
     }
   };

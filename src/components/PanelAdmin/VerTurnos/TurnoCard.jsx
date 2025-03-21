@@ -13,6 +13,9 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
     }
   };
 
+  const fecha_modificacion = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000);
+  const fecha_turno = new Date(booking.fecha_turno);
+
   return (
     <div
       key={booking.id}
@@ -68,7 +71,7 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
         >
           <Phone className="h-4 w-4" />
         </button>
-        {booking.estado !== 'Pagado' && booking.estado !== 'Cancelado' && (
+        {booking.estado !== 'Pagado' && booking.estado !== 'Cancelado' && fecha_turno > fecha_modificacion && (
           <button
             onClick={() => setShowPaymentModal(true)}
             size="icon"

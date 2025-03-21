@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';;
 import { useNavigate, useLocation } from 'react-router-dom';
-import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays, ActivityIcon, Users, DollarSign } from 'lucide-react';
+import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays, ActivityIcon, Users, DollarSign, Box } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import PestanaDashboard from './PestanaDashboard';
@@ -11,6 +11,7 @@ import PestanaTurnos from './PestanaTurnos';
 import PestanaAuditoria from './PestanaAuditoria';
 import PestanaPersonas from './PestanaPersonas';
 import PestanaCuentasCorrientes from './PestanaCuentasCorrientes';
+import PestanaCaja from './PestanaCaja';
 
 const NuevoPanelAdmin = () => {
   const navigate = useNavigate();
@@ -41,6 +42,8 @@ const NuevoPanelAdmin = () => {
         return <PestanaPersonas />;
       case 'cuentacorriente':
         return <PestanaCuentasCorrientes />;
+      case 'caja':
+        return <PestanaCaja />;
       default:
         return null;
     }
@@ -124,6 +127,15 @@ const NuevoPanelAdmin = () => {
             >
               <ActivityIcon className="inline-block mr-2" size={18} />
               Auditorías
+            </button>
+            <button
+              onClick={() => setActiveTab("caja")}
+              className={`px-3 items-center flex py-1 sm:py-2 rounded-[4px] text-sm sm:text-base ${
+                activeTab === "caja" ? "bg-naranja text-white" : "bg-gray-200 text-black"
+              }`}
+            >
+              <Box className="inline-block mr-2" size={18} />
+              Caja
             </button>
           </div>
             {renderContenidoPestana()}

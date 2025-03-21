@@ -11,7 +11,6 @@ const PestanaUsuarios = () => {
   const [editando, setEditando] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchType, setSearchType] = useState('dni');
-  // Estructura plana para enviar a la API
   const [newUsuario, setNewUsuario] = useState({
     name: '',
     email: '',
@@ -32,8 +31,10 @@ const PestanaUsuarios = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [clear, setClear] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [validationErrors, setValidationErrors] = useState({});
+  const [isSaving, setIsSaving] = useState(false); // Estado de guardado
+  const [validationErrors, setValidationErrors] = useState({}); // Estado para errores de validación
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [usuarioToDelete, setUsuarioToDelete] = useState(null);
 
   const fetchUsuarios = async (signal) => {
     setLoading(true);
@@ -83,56 +84,40 @@ const PestanaUsuarios = () => {
 
   const handleEditUsuario = async (e) => {
     e.preventDefault();
-    setIsSaving(true);
+    setIsSaving(true); // Iniciar estado de guardado
     try {
       const response = await api.patch(`/usuarios/${editando.id}`, editUsuario);
       if (response.status === 200) {
-        // Actualizar la vista con la estructura nueva
         const updatedUsuarios = usuarios.map(usuario => 
-          usuario.id === editando.id ? { 
-            ...usuario, 
-            email: editUsuario.email,
-            rol: editUsuario.rol,
-            persona: {
-              ...usuario.persona,
-              name: editUsuario.name,
-              dni: editUsuario.dni,
-              telefono: editUsuario.telefono
-            } 
-          } : usuario
+          usuario.id === editando.id ? { ...usuario, ...editUsuario } : usuario
         );
         setUsuarios(updatedUsuarios);
-        resetEditForm();
+        setEditUsuario({
+          name: '',
+          email: '',
+          dni: '',
+          telefono: '',
+          rol: 'cliente',
+        });
+        setEditando(null);
+        setValidationErrors({});
+        setAgregando(false);
         toast.success('Usuario editado correctamente');
       }
     } catch (error) {
       console.error('Error editing usuario:', error);
       toast.error('Error al editar el usuario');
     } finally {
-      setIsSaving(false);
+      setIsSaving(false); // Finalizar estado de guardado
     }
   };
 
-  const resetEditForm = () => {
-    setEditUsuario({
-      name: '',
-      email: '',
-      dni: '',
-      telefono: '',
-      rol: 'cliente',
-    });
-    setEditando(null);
-    setValidationErrors({});
-    setAgregando(false);
-  };
-
   const handleEditClick = (usuario) => {
-    // Extraemos datos de la estructura anidada para llenar el formulario plano
     setEditUsuario({
-      name: usuario.persona?.name || '',
+      name: usuario.persona.name || '',
       email: usuario.email || '',
-      dni: usuario.persona?.dni || '',
-      telefono: usuario.persona?.telefono || '',
+      dni: usuario.dni || '',
+      telefono: usuario.persona.telefono || '',
       rol: usuario.rol || 'cliente',
     });
     setEditando(usuario);
@@ -150,31 +135,39 @@ const PestanaUsuarios = () => {
 
   const handleSearch = () => {
     if (page > 1){
-      setPage(1);
+    setPage(1);
     } else {
-      fetchUsuarios();
+    fetchUsuarios();
     }
   };
 
   const handleClearSearch = () => {
     setSearchTerm('');
     if(page > 1){
-      setPage(1);
+    setPage(1);
     } else {
-      setClear(prev => !prev);
+      setClear(true);
     }
   };
 
   const handleAddUsuario = async (e) => {
     e.preventDefault();
-    setIsSaving(true);
-    setValidationErrors({});
+    setIsSaving(true); // Iniciar estado de guardado
+    setValidationErrors({}); // Limpiar errores de validación
     try {
-      // Enviar la estructura plana tal como estaba antes
       const response = await api.post('/create-user', newUsuario);
       if (response.status === 201) {
-        setUsuarios([response.data.user, ...usuarios]);
-        resetNewUserForm();
+        setUsuarios([response.data.user, ...usuarios]); // Agregar el nuevo usuario al principio de la lista
+        setNewUsuario({
+          name: '',
+          email: '',
+          dni: '',
+          telefono: '',
+          password: '',
+          password_confirmation: '',
+          rol: 'cliente',
+        });
+        setAgregando(false);
         toast.success('Usuario creado con éxito');
       }
     } catch (error) {
@@ -185,25 +178,42 @@ const PestanaUsuarios = () => {
         toast.error('Error al crear el usuario');
       }
     } finally {
+      setIsSaving(false); // Finalizar estado de guardado
+    }
+  };
+
+  const handleDeleteUsuario = (usuario) => {
+    console.log('Usuario seleccionado para eliminar:', usuario);
+    setUsuarioToDelete(usuario);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteUsuario = async () => {
+    console.log('ID del usuario a eliminar:', usuarioToDelete?.id);
+    if (!usuarioToDelete || !usuarioToDelete.id) {
+      console.error('No se encontró un usuario válido para eliminar');
+      toast.error('No se encontró un usuario válido para eliminar');
+      return;
+    }
+  
+    setIsSaving(true);
+    try {
+      const response = await api.delete(`/usuarios/${usuarioToDelete.id}`);
+      if (response.status === 200) {
+        setUsuarios(usuarios.filter(usuario => usuario.id !== usuarioToDelete.id));
+        setShowDeleteModal(false);
+        toast.success('Usuario eliminado correctamente');
+      }
+    } catch (error) {
+      console.error('Error eliminando usuario:', error);
+      toast.error('Error al eliminar el usuario');
+    } finally {
       setIsSaving(false);
     }
   };
 
-  const resetNewUserForm = () => {
-    setNewUsuario({
-      name: '',
-      email: '',
-      dni: '',
-      telefono: '',
-      password: '',
-      password_confirmation: '',
-      rol: 'cliente',
-    });
-    setAgregando(false);
-  };
-
   return (
-    <div className="max-w-7xl mx-auto mt-4">
+    <div className=" max-w-7xl mx-auto mt-4">
       <ToastContainer position="top-right" />
 
       {/* Header */}
@@ -212,7 +222,15 @@ const PestanaUsuarios = () => {
           onClick={() => {
             setAgregando(true);
             setEditando(null);
-            resetNewUserForm();
+            setNewUsuario({
+              name: '',
+              email: '',
+              dni: '',
+              telefono: '',
+              password: '',
+              password_confirmation: '',
+              rol: 'cliente',
+            });
           }}
           className="inline-flex sm:text-base text-sm rounded-[10px] items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow transition-colors duration-200 transform hover:scale-105"
           disabled={isSaving}
@@ -223,56 +241,57 @@ const PestanaUsuarios = () => {
       </div>
 
       <div className="mb-6 flex flex-col sm:flex-row gap-2 sm:gap-4">
-        {/* Selector de búsqueda */}
-        <div className="relative w-full sm:w-1/3">
-          <select
-            value={searchType}
-            onChange={(e) => setSearchType(e.target.value)}
-            className="w-full text-sm sm:text-base px-2 py-1 border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="name">Nombre</option>
-            <option value="dni">DNI</option>
-            <option value="telefono">Teléfono</option>
-            <option value="email">Email</option>
-          </select>
-        </div>
-
-        {/* Input de búsqueda */}
-        <div className="relative flex w-full gap-2">
-          <input
-            type="text"
-            placeholder={`Buscar por ${searchType}`}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full py-1 pl-8 text-sm sm:text-base border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <Search className="absolute left-2 top-2 h-5 w-5 text-gray-400" />
-          <button
-            onClick={handleSearch}
-            className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-green-600 border border-green-600 rounded-[10px] shadow hover:bg-white hover:text-green-600"
-            disabled={isSaving}
-          >
-            <Search className="w-5 h-5 sm:hidden" />
-            <span className="hidden sm:block">Buscar</span>
-          </button>
-
-          <button
-            onClick={handleClearSearch}
-            className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-red-600 border border-red-600 rounded-[10px] shadow hover:bg-white hover:text-red-600"
-            disabled={isSaving}
-          >
-            <Eraser className="w-5 h-5 sm:hidden"/>
-            <span className="hidden sm:block">Limpiar</span>
-          </button>
-        </div>
+      {/* Selector de búsqueda */}
+      <div className="relative w-full sm:w-1/3">
+        <select
+          value={searchType}
+          onChange={(e) => setSearchType(e.target.value)}
+          className="w-full text-sm sm:text-base px-2 py-1 border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="name">Nombre</option>
+          <option value="dni">DNI</option>
+          <option value="telefono">Teléfono</option>
+          <option value="email">Email</option>
+        </select>
       </div>
 
+      {/* Input de búsqueda */}
+      <div className="relative flex w-full gap-2">
+        <input
+          type="text"
+          placeholder={`Buscar por ${searchType}`}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full py-1 pl-8 text-sm sm:text-base border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <Search className="absolute left-2 top-2 h-5 w-5 text-gray-400" />
+        <button
+          onClick={handleSearch}
+          className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-green-600 border border-green-600 rounded-[10px] shadow hover:bg-white hover:text-green-600"
+          disabled={isSaving}
+        >
+          <Search className="w-5 h-5 sm:hidden" /> {/* Icono en móvil */}
+          <span className="hidden sm:block">Buscar</span> {/* Texto en escritorio */}
+        </button>
+
+        <button
+          onClick={handleClearSearch}
+          className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-red-600 border border-red-600 rounded-[10px] shadow hover:bg-white hover:text-red-600"
+          disabled={isSaving}
+        >
+          <Eraser className="w-5 h-5 sm:hidden"/>
+          <span className="hidden sm:block">Limpiar </span> {/* Texto en escritorio */}
+        </button>
+      </div>
+
+     
+    </div>
+
+
       {/* Loading */}
-      {loading && 
-        <div className='flex justify-center items-center h-[50vh]'>
-          <BtnLoading />
-        </div>
-      }
+      {loading && <div className='flex justify-center items-center h-[50vh]'>
+    <BtnLoading />
+    </div>}
 
       {/* Formulario de Creación/Edición */}
       {!loading && agregando && (
@@ -283,10 +302,7 @@ const PestanaUsuarios = () => {
               <input
                 type="text"
                 value={editando ? editUsuario.name : newUsuario.name}
-                onChange={(e) => editando 
-                  ? setEditUsuario({ ...editUsuario, name: e.target.value }) 
-                  : setNewUsuario({ ...newUsuario, name: e.target.value })
-                }
+                onChange={(e) => editando ? setEditUsuario({ ...editUsuario, name: e.target.value }) : setNewUsuario({ ...newUsuario, name: e.target.value })}
                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                 required
               />
@@ -296,10 +312,7 @@ const PestanaUsuarios = () => {
               <input
                 type="email"
                 value={editando ? editUsuario.email : newUsuario.email}
-                onChange={(e) => editando 
-                  ? setEditUsuario({ ...editUsuario, email: e.target.value }) 
-                  : setNewUsuario({ ...newUsuario, email: e.target.value })
-                }
+                onChange={(e) => editando ? setEditUsuario({ ...editUsuario, email: e.target.value }) : setNewUsuario({ ...newUsuario, email: e.target.value })}
                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                 required
               />
@@ -310,12 +323,7 @@ const PestanaUsuarios = () => {
               <input
                 type="text"
                 value={editando ? editUsuario.dni : newUsuario.dni}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  editando 
-                    ? setEditUsuario({ ...editUsuario, dni: value })
-                    : setNewUsuario({ ...newUsuario, dni: value });
-                }}
+                onChange={(e) => editando ? setEditUsuario({ ...editUsuario, dni: e.target.value }) : setNewUsuario({ ...newUsuario, dni: e.target.value })}
                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                 required
               />
@@ -326,10 +334,7 @@ const PestanaUsuarios = () => {
               <input
                 type="tel"
                 value={editando ? editUsuario.telefono : newUsuario.telefono}
-                onChange={(e) => editando 
-                  ? setEditUsuario({ ...editUsuario, telefono: e.target.value }) 
-                  : setNewUsuario({ ...newUsuario, telefono: e.target.value })
-                }
+                onChange={(e) => editando ? setEditUsuario({ ...editUsuario, telefono: e.target.value }) : setNewUsuario({ ...newUsuario, telefono: e.target.value })}
                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                 required
               />
@@ -362,10 +367,7 @@ const PestanaUsuarios = () => {
               <label className="block text-sm font-medium text-gray-700">Rol</label>
               <select
                 value={editando ? editUsuario.rol : newUsuario.rol}
-                onChange={(e) => editando 
-                  ? setEditUsuario({ ...editUsuario, rol: e.target.value }) 
-                  : setNewUsuario({ ...newUsuario, rol: e.target.value })
-                }
+                onChange={(e) => editando ? setEditUsuario({ ...editUsuario, rol: e.target.value }) : setNewUsuario({ ...newUsuario, rol: e.target.value })}
                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                 required
               >
@@ -413,7 +415,7 @@ const PestanaUsuarios = () => {
                         <UserCircle className="h-6 w-6 text-blue-600" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{usuario.persona?.name}</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">{usuario.name}</h3>
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             usuario.rol === 'admin' ? 'bg-green-100 text-green-800' : usuario.rol === 'moderador' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
@@ -428,10 +430,14 @@ const PestanaUsuarios = () => {
                       <button onClick={() => handleEditClick(usuario)} className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200" disabled={isSaving}>
                         <Edit2 className="h-5 w-5" />
                       </button>
-                      <button className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" disabled={isSaving}>
+                      <button
+                        onClick={() => handleDeleteUsuario(usuario)}
+                        className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200"
+                        disabled={isSaving}
+                      >
                         <Trash2 className="h-5 w-5" />
                       </button>
-                      <button onClick={() => handleViewTurnosClick(usuario.persona?.dni)} className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors duration-200" disabled={isSaving}>
+                      <button onClick={() => handleViewTurnosClick(usuario.dni)} className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors duration-200" disabled={isSaving}>
                         Ver Turnos
                       </button>
                     </div>
@@ -448,13 +454,13 @@ const PestanaUsuarios = () => {
                     <div className="flex items-center space-x-2 text-gray-600">
                       <CreditCard className="h-4 w-4 text-gray-400" />
                       <span className="font-bold">DNI: </span>
-                      <span>{usuario.persona?.dni}</span>
+                      <span>{usuario.dni}</span>
                     </div>
 
                     <div className="flex items-center space-x-2 text-gray-600">
                       <Phone className="h-4 w-4 text-gray-400" />
                       <span className="font-bold">Teléfono: </span>
-                      <span>{usuario.persona?.telefono}</span>
+                      <span>{usuario.telefono}</span>
                     </div>
 
                     <div className="flex items-center space-x-2 text-gray-600">
@@ -488,6 +494,33 @@ const PestanaUsuarios = () => {
           >
             Siguiente
           </button>
+        </div>
+      )}
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Confirmar Eliminación</h3>
+            <p className="mb-4">
+              ¿Estás seguro de que deseas eliminar al usuario <strong>{usuarioToDelete?.name}</strong>? Esta acción no se puede deshacer.
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                disabled={isSaving}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDeleteUsuario}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                disabled={isSaving}
+              >
+                {isSaving ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -5,7 +5,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Star, Users, ChevronLeft } from 'lucide-react';
+import { Star, Users, ChevronLeft, CalendarDays } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 export default function Zonas() {
   const { torneoId } = useParams();
@@ -18,8 +20,14 @@ export default function Zonas() {
       try {
         setLoading(true);
         const response = await api.get(`/torneos/${torneoId}/zonas`);
-        setZonas(response.data);
-        console.log(response.data);
+        const zonasConFecha = response.data.map(zona => {
+          const siguienteFecha = zona.fechas.find(fecha => fecha.estado === 'Pendiente');
+          return { ...zona, 
+            siguienteFecha: siguienteFecha ? 
+            format(parseISO(siguienteFecha.fecha_inicio), "EEE, dd/MM/yyyy", {locale: es}) : 'No disponible' };
+        });
+        
+        setZonas(zonasConFecha);
       } catch (error) {
         console.error('Error fetching zones:', error);
       } finally {
@@ -48,7 +56,7 @@ export default function Zonas() {
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
-        <div className="w-full flex mb-2">
+        <div className="w-full flex mb-4">
           <button onClick={() => navigate('/torneos-admi')} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
             <ChevronLeft className="w-5" /> Atrás
           </button>
@@ -71,11 +79,20 @@ export default function Zonas() {
                       <h2 className="text-2xl font-medium">{zona.nombre} {zona.año}</h2>
                       <span className="text-gray-500 lg:text-lg"> <Star /></span>
                     </div>
-                    <p className="text-sm text-gray-500">{zona.formato}</p>
+                    {zona.formato !== 'Grupos' && (
+                    <p className="text-sm text-gray-500">{zona.formato} </p>
+                      )
+                    }
+                    {zona.formato === 'Grupos' && (
+                      <p className="text-sm text-gray-500">{zona.formato} ({zona.grupos.length})</p>
+                    )
+                    }
                   </CardHeader>
                   <CardContent className="p-4 ">
+                    <div className='flex flex-col gap-2'>
                     <p className="w-full flex gap-2 items-center "><Users size={18}/> Equipos: {zona.equipos.length}</p>
-{/* ------- mostrar la siguiente fecha cuando esten hechas las fechas --------- */}
+                    <p className="w-full flex gap-2 items-center "><CalendarDays size={18} />Siguiente Fecha: {zona.siguienteFecha}</p>
+                    </div>
                     <div className="flex mt-4 gap-3 text-sm justify-center">
                       <button onClick={() => navigate(`/detalle-zona/${zona.id}`)} className="flex-1 border text-center border-gray-300 p-1 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Ver Detalles</button>
                       <button className="flex-1 border p-1 border-gray-300 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Editar</button>

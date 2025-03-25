@@ -5,9 +5,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Users, ChevronLeft, Edit3, Trash2 } from 'lucide-react';
+import { Users, ChevronLeft, Edit3, Trash2, Shuffle } from 'lucide-react';
 import CarruselFechas from './CarruselFechas';
 import Grupos from './Grupos';
+import ArañaEliminacion from './ArañaEliminacion';
 
 export default function DetalleZona() {
   const { zonaId } = useParams();
@@ -18,21 +19,26 @@ export default function DetalleZona() {
   const [gruposCreados, setGruposCreados] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [numGrupos, setNumGrupos] = useState(1);
+  const [fechasSorteadas, setFechasSorteadas] = useState(false);
   const navigate = useNavigate();
-
+  
   useEffect(() => {
     const fetchZona = async () => {
       try {
         setLoading(true);
         const response = await api.get(`/zonas/${zonaId}`);
         setZona(response.data);
+        console.log(response.data);
         if (response.data.formato === 'Grupos') {
           const gruposResponse = await api.get(`/zonas/${zonaId}/grupos`);
           setGrupos(gruposResponse.data);
           setGruposCreados(gruposResponse.data.length > 0);
         }
-        const fechasResponse = await api.get(`/zonas/${zonaId}/fechas`);
-        setFechas(fechasResponse.data);
+        if (response.data.equipos.length > 0 && response.data.fechas_sorteadas) {
+          const fechasResponse = await api.get(`/zonas/${zonaId}/fechas`);
+          setFechas(fechasResponse.data);
+          setFechasSorteadas(true); // Establecer fechasSorteadas en true si ya hay fechas cargadas
+        }
       } catch (error) {
         console.error('Error fetching zone details:', error);
       } finally {
@@ -50,6 +56,7 @@ export default function DetalleZona() {
       const response = await api.post(`/zonas/${zonaId}/fechas`, requestData);
       if (response.status === 201) {
         setFechas(response.data.fechas);
+        setFechasSorteadas(true);
       }
     } catch (error) {
       console.error('Error creating dates:', error);
@@ -83,6 +90,12 @@ export default function DetalleZona() {
           ...zona,
           equipos: zona.equipos.filter((equipo) => equipo.id !== equipoId),
         });
+        // Eliminar los grupos y actualizar el estado
+        for (const grupo of grupos) {
+          await api.delete(`/grupo/${grupo.id}`);
+        }
+        setGrupos([]);
+        setGruposCreados(false);
       }
     } catch (error) {
       console.error('Error deleting team:', error);
@@ -136,7 +149,10 @@ export default function DetalleZona() {
             </button>
           </div>
           <div className="bg-white rounded-[8px] shadow-md p-4">
-            <h2 className="text-2xl font-medium">Equipos</h2>
+            <div className='w-full flex items-center justify-between'>
+              <h2 className="text-2xl font-medium">Equipos</h2>
+              <button className="bg-blue-500 text-center flex items-center text-white px-2 py-1 gap-2 rounded-[6px]">Editar <Edit3 size={18} /></button>
+            </div>
             <div className="mt-4">
               {zona.equipos && zona.equipos.length === 0 ? (
                 <p className="text-center text-gray-500">No hay equipos en esta zona.</p>
@@ -186,7 +202,7 @@ export default function DetalleZona() {
             </div>
           )}
           <div className="mt-6">
-            {zona.formato === 'Grupos' && gruposCreados && (
+            {zona.formato === 'Grupos' && !gruposCreados && zona.equipos.length > 0 && (
               <button
                 onClick={() => setModalVisible(true)}
                 className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-[6px] text-sm"
@@ -194,20 +210,28 @@ export default function DetalleZona() {
                 Crear Grupos
               </button>
             )}
-            {gruposCreados && (
+            {((zona.formato === 'Grupos' && gruposCreados) || (zona.formato !== 'Grupos' && zona.equipos.length > 2)) && (
               <button
                 onClick={handleSortearFechas}
-                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-[6px] text-sm mt-4"
+                className={`py-2 px-3 flex items-center gap-2 rounded-[6px] text-sm mt-4 ${fechasSorteadas ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                disabled={fechasSorteadas}
               >
-                Sortear Fechas
+                Sortear Fechas <Shuffle size={18}/>
               </button>
             )}
-            <CarruselFechas zonaId={zonaId} equipos={zona.equipos} fechas={fechas} />
+            {((zona.formato === 'Grupos' && gruposCreados) || (zona.formato !== 'Grupos' && zona.equipos.length > 1)) && (
+              <CarruselFechas zonaId={zonaId} equipos={zona.equipos} fechas={fechas} />
+            )}
+            {(zona.formato === 'Eliminatoria' ) && (
+            <ArañaEliminacion fechaId={zona.fechas[0].id} />
+          )  
+            }
           </div>
         </div>
       </main>
       <Footer />
 
+      
       {modalVisible && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg">

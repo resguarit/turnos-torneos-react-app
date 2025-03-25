@@ -9,7 +9,7 @@ import AltaZona from "@/views/Admin/Torneos/AltaZona";
 import VerTurnos from "@/views/Admin/VerTurnos";
 import Partidos from "@/views/Admin/Partidos";
 import VerPartidos from "@/views/Admin/VerPartidos";
-import CargaPartido from "@/views/Admin/CargaPartido";
+import CargaPartido from "@/views/Admin/Torneos/CargaPartido";
 import Reglamento from "@/views/Admin/Reglamento";
 import Premios from "@/views/Admin/Premios";
 import VerGrilla from "@/views/Admin/VerGrilla";
@@ -31,6 +31,7 @@ import AltaTorneo from "@/views/Admin/Torneos/AltaTorneo";
 import DetalleZona from "@/views/Admin/Torneos/DetalleZona";
 import AltaEquipo from "@/views/Admin/Torneos/AltaEquipo";
 import Jugadores from "@/views/Admin/Torneos/Jugadores";
+import ResultadoPartido from "@/views/Admin/Torneos/ResultadoPartido";
 
 const AppRoutes = () => {
   return (
@@ -58,6 +59,7 @@ const AppRoutes = () => {
       <Route path={`/detalle-zona/:zonaId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><DetalleZona /></ProtectedRoute>} />
       <Route path={`/alta-equipo/:zonaId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaEquipo /></ProtectedRoute>} />
       <Route path={`/jugadores/:equipoId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><Jugadores /></ProtectedRoute>} />
+      <Route path={`/resultado-partido/:partidoId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><ResultadoPartido /></ProtectedRoute>} />
 
       {/* Rutas protegidas para usuarios y administradores */}
       <Route path={`/user-profile`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><UserProfile /></ProtectedRoute>} />

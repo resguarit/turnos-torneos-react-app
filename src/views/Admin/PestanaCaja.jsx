@@ -32,7 +32,8 @@ const PestanaCaja = () => {
   const [transactions, setTransactions] = useState([]);
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [paymentMethod, setPaymentMethod] = useState('efectivo');
+  const [cajaId, setCajaId] = useState(null);
   const [resumenPagos, setResumenPagos] = useState({
     efectivo: 0,
     transferencia: 0,
@@ -47,8 +48,9 @@ const PestanaCaja = () => {
     try {
       const response = await api.get('/caja-abierta');
       if (response.data.status === 200) {
-        const { operador, balance_total, efectivo_en_caja, transacciones, resumen_pagos } = response.data;
+        const { caja, operador, balance_total, efectivo_en_caja, transacciones, resumen_pagos } = response.data;
         setCajaAbierta(true);
+        setCajaId(caja.id);
         setOperador(operador);
         setBalanceTotal(balance_total);
         setEfectivoEnCaja(efectivo_en_caja);
@@ -96,14 +98,15 @@ const PestanaCaja = () => {
 
     setLoading(true);
     try {
-      const response = await api.post('/registrar-transaccion', {
-        tipo: 'deposito',
+      const response = await api.post('/transacciones', {
+        caja_id: cajaId,
         monto: parseFloat(amount),
-        descripcion: description || 'Depósito',
+        tipo: 'ingreso',
+        descripcion: description || 'Depósito en caja',
         metodo_pago: paymentMethod
       });
 
-      if (response.data.status === 200) {
+      if (response.data.success) {
         verificarCajaAbierta(); // Actualizar datos
         setAmount('');
         setDescription('');
@@ -124,14 +127,15 @@ const PestanaCaja = () => {
 
     setLoading(true);
     try {
-      const response = await api.post('/registrar-transaccion', {
-        tipo: 'retiro',
-        monto: parseFloat(amount),
-        descripcion: description || 'Retiro',
-        metodo_pago: paymentMethod
+      const response = await api.post('/transacciones', {
+        caja_id: cajaId,
+        monto: -parseFloat(amount), // Monto negativo para retiros
+        tipo: 'egreso',
+        descripcion: description || 'Retiro de caja',
+        metodo_pago: 'efectivo' // Siempre efectivo para retiros
       });
 
-      if (response.data.status === 200) {
+      if (response.data.success) {
         verificarCajaAbierta(); // Actualizar datos
         setAmount('');
         setDescription('');
@@ -186,7 +190,7 @@ const PestanaCaja = () => {
     setConteoEfectivo('');
     setAmount('');
     setDescription('');
-    setPaymentMethod('cash');
+    setPaymentMethod('efectivo');
     setTransactions([]);
     setBalanceTotal(0);
     setEfectivoEnCaja(0);
@@ -311,24 +315,31 @@ const PestanaCaja = () => {
                             className="flex space-x-4 mt-2"
                           >
                             <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="cash" id="cash" />
+                              <RadioGroupItem value="efectivo" id="cash" />
                               <Label htmlFor="cash" className="flex items-center gap-1 cursor-pointer">
                                 <Banknote className="h-4 w-4" />
                                 Efectivo
                               </Label>
                             </div>
                             <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="transfer" id="transfer" />
+                              <RadioGroupItem value="transferencia" id="transfer" />
                               <Label htmlFor="transfer" className="flex items-center gap-1 cursor-pointer">
                                 <ArrowDownToLine className="h-4 w-4" />
                                 Transferencia
                               </Label>
                             </div>
                             <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="card" id="card" />
+                              <RadioGroupItem value="tarjeta" id="card" />
                               <Label htmlFor="card" className="flex items-center gap-1 cursor-pointer">
                                 <CreditCard className="h-4 w-4" />
                                 Tarjeta
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="mercadopago" id="mercadopago" />
+                              <Label htmlFor="mercadopago" className="flex items-center gap-1 cursor-pointer">
+                                <CreditCard className="h-4 w-4" />
+                                MercadoPago
                               </Label>
                             </div>
                           </RadioGroup>
@@ -380,29 +391,15 @@ const PestanaCaja = () => {
                         <div>
                           <Label className="text-gray-700">Método de pago</Label>
                           <RadioGroup
-                            value={paymentMethod}
-                            onValueChange={setPaymentMethod}
+                            value="efectivo"
+                            disabled
                             className="flex space-x-4 mt-2"
                           >
                             <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="cash" id="cash-withdrawal" />
+                              <RadioGroupItem value="efectivo" id="cash-withdrawal" />
                               <Label htmlFor="cash-withdrawal" className="flex items-center gap-1 cursor-pointer">
                                 <Banknote className="h-4 w-4" />
                                 Efectivo
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="transfer" id="transfer-withdrawal" />
-                              <Label htmlFor="transfer-withdrawal" className="flex items-center gap-1 cursor-pointer">
-                                <ArrowDownToLine className="h-4 w-4" />
-                                Transferencia
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="card" id="card-withdrawal" />
-                              <Label htmlFor="card-withdrawal" className="flex items-center gap-1 cursor-pointer">
-                                <CreditCard className="h-4 w-4" />
-                                Tarjeta
                               </Label>
                             </div>
                           </RadioGroup>
@@ -454,12 +451,14 @@ const PestanaCaja = () => {
                             <p className="font-medium">{transaction.descripcion}</p>
                             <p className="text-sm text-muted-foreground">{new Date(transaction.fecha).toLocaleString()}</p>
                             <div className="flex items-center gap-1 mt-1">
-                              {transaction.metodo_pago === 'cash' && <Banknote className="h-4 w-4" />}
-                              {transaction.metodo_pago === 'transfer' && <ArrowDownToLine className="h-4 w-4" />}
-                              {transaction.metodo_pago === 'card' && <CreditCard className="h-4 w-4" />}
+                              {transaction.metodo_pago === 'efectivo' && <Banknote className="h-4 w-4" />}
+                              {transaction.metodo_pago === 'transferencia' && <ArrowDownToLine className="h-4 w-4" />}
+                              {transaction.metodo_pago === 'tarjeta' && <CreditCard className="h-4 w-4" />}
+                              {transaction.metodo_pago === 'mercadopago' && <CreditCard className="h-4 w-4" />}
                               <span className="text-sm">
-                                {transaction.metodo_pago === 'cash' ? 'Efectivo' : 
-                                 transaction.metodo_pago === 'transfer' ? 'Transferencia' : 'Tarjeta'}
+                                {transaction.metodo_pago === 'efectivo' ? 'Efectivo' : 
+                                 transaction.metodo_pago === 'transferencia' ? 'Transferencia' : 
+                                 transaction.metodo_pago === 'tarjeta' ? 'Tarjeta' : 'MercadoPago'}
                               </span>
                             </div>
                           </div>

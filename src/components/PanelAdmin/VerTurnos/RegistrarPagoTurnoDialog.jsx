@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, DollarSign, FilePlus, CreditCard, ChevronDown, ChevronUp } from "lucide-react";
+import { X, DollarSign, FilePlus, CreditCard, ChevronDown, ChevronUp, Banknote, ArrowDownToLine } from "lucide-react";
 import api from '@/lib/axiosConfig';
 import { toast } from 'react-toastify';
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) => {
   const [loading, setLoading] = useState(false);
@@ -16,6 +18,7 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
     monto: '',
     tipo: 'ingreso', // Por defecto es ingreso
     descripcion: '',
+    metodo_pago: 'efectivo' // Agregamos el método de pago por defecto
   });
   
   // Calcular montos según estado del turno
@@ -160,7 +163,8 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
         turno_id: turno.id,
         monto: parseFloat(formData.monto),
         tipo: 'turno',
-        descripcion: formData.descripcion
+        descripcion: formData.descripcion,
+        metodo_pago: formData.metodo_pago // Agregamos el método de pago a la transacción
       };
       
       // Si hay cuenta corriente, agregarla también
@@ -413,6 +417,45 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
                   readOnly={tipoPago !== 'otro'}
                 />
               </div>
+            </div>
+
+            {/* Método de pago */}
+            <div className="mb-4">
+              <Label className="text-gray-700">Método de pago</Label>
+              <RadioGroup
+                value={formData.metodo_pago}
+                onValueChange={(value) => setFormData({ ...formData, metodo_pago: value })}
+                className="flex space-x-4 mt-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="efectivo" id="cash" />
+                  <Label htmlFor="cash" className="flex items-center gap-1 cursor-pointer">
+                    <Banknote className="h-4 w-4" />
+                    Efectivo
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="transferencia" id="transfer" />
+                  <Label htmlFor="transfer" className="flex items-center gap-1 cursor-pointer">
+                    <ArrowDownToLine className="h-4 w-4" />
+                    Transferencia
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="tarjeta" id="card" />
+                  <Label htmlFor="card" className="flex items-center gap-1 cursor-pointer">
+                    <CreditCard className="h-4 w-4" />
+                    Tarjeta
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="mercadopago" id="mercadopago" />
+                  <Label htmlFor="mercadopago" className="flex items-center gap-1 cursor-pointer">
+                    <CreditCard className="h-4 w-4" />
+                    MercadoPago
+                  </Label>
+                </div>
+              </RadioGroup>
             </div>
 
             {/* Descripción */}

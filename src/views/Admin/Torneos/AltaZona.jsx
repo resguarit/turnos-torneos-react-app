@@ -7,14 +7,14 @@ import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 
 export default function AltaZona() {
-  const { id } = useParams(); // Obtener el ID de la zona desde la URL
+  const { id, torneoId } = useParams(); // Obtener el ID de la zona y el torneo desde la URL
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true); // Estado de carga inicializado en true
   const [formData, setFormData] = useState({
     nombre: '',
     formato: 'Liga', // Valor por defecto
     año: new Date().getFullYear(),
-    torneo_id: '', // ID del torneo asociado
+    torneo_id: torneoId || '', // Asignar el torneo_id desde la URL
   });
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function AltaZona() {
         await api.post('/zonas', formData);
         alert('Zona creada correctamente');
       }
-      navigate('/zonas-admi');
+      navigate(`/zonas-admi/${formData.torneo_id}`);
     } catch (error) {
       console.error('Error saving zona:', error);
       alert('Error al guardar la zona');
@@ -93,7 +93,7 @@ export default function AltaZona() {
       <Header />
       <main className="flex-col grow p-6 bg-gray-100 flex items-center ">
         <div className="w-full flex mb-2">
-          <button onClick={() => navigate('/zonas-admi')} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
+          <button onClick={() => navigate(`/zonas-admi/${formData.torneo_id}`)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
             <ChevronLeft className="w-5" /> Atrás
           </button>
         </div>

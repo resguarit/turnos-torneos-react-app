@@ -8,6 +8,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Users, ChevronLeft, Edit3, Trash2, Shuffle } from 'lucide-react';
 import CarruselFechas from './CarruselFechas';
 import Grupos from './Grupos';
+import ArañaEliminacion from './ArañaEliminacion';
 
 export default function DetalleZona() {
   const { zonaId } = useParams();
@@ -221,6 +222,10 @@ export default function DetalleZona() {
             {((zona.formato === 'Grupos' && gruposCreados) || (zona.formato !== 'Grupos' && zona.equipos.length > 1)) && (
               <CarruselFechas zonaId={zonaId} equipos={zona.equipos} fechas={fechas} />
             )}
+            {(zona.formato === 'Eliminatoria' ) && (
+            <ArañaEliminacion fechaId={zona.fechas[0].id} />
+          )  
+            }
           </div>
         </div>
       </main>

@@ -186,6 +186,12 @@ const handleEditClick = async (estadisticaId, jugadorId) => {
     setChangesDetected(false);
   };
 
+  const handleCancelChanges = () => {
+    setEstadisticas(originalEstadisticas);
+    setChargingMode(false);
+    setChangesDetected(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col font-inter">

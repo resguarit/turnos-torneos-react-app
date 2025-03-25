@@ -1,4 +1,4 @@
-import video from '../../assets/rng.mp4';
+import video from '../../assets/rngBlack.mp4';
 import React, { useState, useEffect } from 'react';
 import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from 'react-router-dom';

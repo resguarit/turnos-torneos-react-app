@@ -1,4 +1,6 @@
 import { Facebook, Instagram, PhoneIcon as WhatsApp } from 'lucide-react'
+import Resguarit from '@/assets/logoresguarit.png'
+import { Link } from 'react-router-dom'
 
 export function Footer() {
 
@@ -8,9 +10,13 @@ const anio = new Date().getFullYear();
     <footer className="bg-footer py-3 px-2 sm:px-6 lg:py-4">
       <div className="w-full  mx-auto grid grid-cols-3 items-center">
         {/* Logo Section - Left */}
+        <Link to="https://resguarit.com.ar/" target="_blank" className="">
         <div className="flex items-center text-[10px] sm:text-xs justify-start">
-          <p className="text-gray-400">Desarrollado por ResguarIt</p>
+          <p className="text-gray-400">Desarrollado por ResguarIt</p>  
+            <img src={Resguarit || "/placeholder.svg"} alt="Logo" className="h-4 lg:h-8 xl:h-10" />
         </div>
+        </Link>
+
 
         {/* Social Media Icons - Center */}
         <div className="flex gap-6 justify-center">

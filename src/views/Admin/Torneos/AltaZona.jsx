@@ -1,89 +1,137 @@
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
+import BtnLoading from '@/components/BtnLoading';
 
 export default function AltaZona() {
-  const { torneoId } = useParams();
-  const [loading, setLoading] = useState(false);
+  const { id, torneoId } = useParams(); // Obtener el ID de la zona y el torneo desde la URL
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true); // Estado de carga inicializado en true
   const [formData, setFormData] = useState({
     nombre: '',
     formato: 'Liga', // Valor por defecto
     año: new Date().getFullYear(),
-    torneo_id: torneoId, // Obtener el torneo_id de la URL
+    torneo_id: torneoId || '', // Asignar el torneo_id desde la URL
   });
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchZona = async () => {
+      if (id) {
+        try {
+          const response = await api.get(`/zonas/${id}`);
+          setFormData({
+            nombre: response.data.nombre,
+            formato: response.data.formato,
+            año: response.data.año,
+            torneo_id: response.data.torneo_id,
+          });
+        } catch (error) {
+          console.error('Error fetching zona:', error);
+          alert('Error al cargar los datos de la zona');
+          navigate('/zonas-admi'); // Redirigir si ocurre un error
+        }
+      }
+    };
+
+    const fetchData = async () => {
+      await fetchZona();
+      setLoading(false); // Finalizar el estado de carga
+    };
+
+    fetchData();
+  }, [id, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
-      const response = await api.post('/zonas', formData);
-      if (response.status === 201) {
-        // Redirigir a /zonas-admi después de crear la zona
-        setLoading(false);
-        navigate(`/zonas-admi/${torneoId}`);
+      if (id) {
+        // Editar zona
+        await api.put(`/zonas/${id}`, formData);
+        alert('Zona actualizada correctamente');
+      } else {
+        // Crear nueva zona
+        await api.post('/zonas', formData);
+        alert('Zona creada correctamente');
       }
+      navigate(`/zonas-admi/${formData.torneo_id}`);
     } catch (error) {
-      console.error('Error creating zone:', error);
+      console.error('Error saving zona:', error);
+      alert('Error al guardar la zona');
+    } finally {
       setLoading(false);
     }
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 6 }, (_, i) => currentYear + i);
 
-  const formatos = [
-    { value: 'Liga', label: 'Liga' },
-    { value: 'Eliminatoria', label: 'Eliminacion Directa' },
-    { value: 'Grupos', label: 'Fase De Grupos' },
-  ];
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col font-inter">
+        <Header />
+        <main className="flex-1 p-6 bg-gray-100 flex items-center justify-center">
+          <BtnLoading />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
       <main className="flex-col grow p-6 bg-gray-100 flex items-center ">
         <div className="w-full flex mb-2">
-          <button onClick={() => navigate(`/zonas-admi/${torneoId}`)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
+          <button onClick={() => navigate(`/zonas-admi/${formData.torneo_id}`)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
             <ChevronLeft className="w-5" /> Atrás
           </button>
         </div>
         <div className="bg-white text-black p-4 rounded-xl shadow-lg w-1/2">
-          <h2 className="text-2xl font-sans font-medium mb-1">Crear Nueva Zona</h2>
-          <p className="mb-4 text-sm text-gray-500">Complete los datos para crear una nueva zona</p>
-          <form className='flex flex-col space-y-3' onSubmit={handleSubmit}>
+          <h2 className="text-2xl font-sans font-medium mb-1">{id ? 'Editar Zona' : 'Crear Nueva Zona'}</h2>
+          <p className="mb-4 text-sm text-gray-500">Complete los datos para {id ? 'editar la' : 'crear una nueva'} zona</p>
+          <form className="flex flex-col space-y-3" onSubmit={handleSubmit}>
             <div>
               <label className="font-medium font-sans text-lg">Nombre de la Zona:</label>
               <input
-                className='border-gray-300 border w-full px-2 rounded-xl'
+                className="border-gray-300 border w-full px-2 rounded-xl"
+                name="nombre"
                 value={formData.nombre}
-                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                onChange={handleChange}
                 required
               />
             </div>
             <div>
               <label className="font-medium font-sans text-lg">Formato:</label>
               <select
-                className='border-gray-300 border w-full p-1 rounded-xl'
+                className="border-gray-300 border w-full p-1 rounded-xl"
+                name="formato"
                 value={formData.formato}
-                onChange={(e) => setFormData({ ...formData, formato: e.target.value })}
+                onChange={handleChange}
                 required
               >
-                {formatos.map((formato) => (
-                  <option key={formato.value} value={formato.value}>
-                    {formato.label}
-                  </option>
-                ))}
+                <option value="Liga">Liga</option>
+                <option value="Eliminatoria">Eliminatoria</option>
+                <option value="Grupos">Grupos</option>
               </select>
             </div>
             <div>
               <label className="font-medium font-sans text-lg">Año:</label>
               <select
-                className='border-gray-300 border w-full p-1 rounded-xl'
+                className="border-gray-300 border w-full p-1 rounded-xl"
+                name="año"
                 value={formData.año}
-                onChange={(e) => setFormData({ ...formData, año: e.target.value })}
+                onChange={handleChange}
                 required
               >
                 {years.map((year) => (
@@ -93,13 +141,13 @@ export default function AltaZona() {
                 ))}
               </select>
             </div>
-            <div className="flex justify-end ">
+            <div className="flex justify-end">
               <button
                 type="submit"
                 disabled={loading}
                 className="p-2 px-4 bg-naranja text-white rounded-[6px]"
               >
-                {loading ? 'Creando zona...' : 'Crear Zona'}
+                {loading ? 'Guardando...' : id ? 'Actualizar Zona' : 'Crear Zona'}
               </button>
             </div>
           </form>

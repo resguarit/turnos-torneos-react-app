@@ -192,6 +192,13 @@ const handleEditClick = async (estadisticaId, jugadorId) => {
     setChangesDetected(false);
   };
 
+  const handleCancelChanges = () => {
+    // Restablece los cambios detectados y vuelve al estado original
+    setEstadisticas(originalEstadisticas); // Restablece las estadísticas originales
+    setChangesDetected(false); // Marca que no hay cambios pendientes
+    setChargingMode(false); // Sale del modo de edición
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col font-inter">

@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import Carrusel from "./Carrusel";
-import video from "../assets/rng.mp4";
 import { useEffect } from "react";
+import rngBlack from "../assets/rngBlack.mp4";
+import video from "../assets/rngBlack.mp4";
 
 function Hero() {
   useEffect(() => {
@@ -29,7 +30,7 @@ function Hero() {
         <div className="absolute inset-0">
           <video
             className="pointer-events-none select-none absolute inset-0 w-full h-full object-cover "
-            src={video}
+            src={rngBlack}
             autoPlay
             loop
             muted

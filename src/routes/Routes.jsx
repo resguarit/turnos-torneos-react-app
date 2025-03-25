@@ -60,6 +60,8 @@ const AppRoutes = () => {
       <Route path={`/alta-equipo/:zonaId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaEquipo /></ProtectedRoute>} />
       <Route path={`/jugadores/:equipoId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><Jugadores /></ProtectedRoute>} />
       <Route path={`/resultado-partido/:partidoId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><ResultadoPartido /></ProtectedRoute>} />
+      <Route path={`/editar-torneo/:id`}element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaTorneo /></ProtectedRoute>}/>
+      <Route path="/editar-zona/:id" element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaZona /></ProtectedRoute>} />
 
       {/* Rutas protegidas para usuarios y administradores */}
       <Route path={`/user-profile`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><UserProfile /></ProtectedRoute>} />

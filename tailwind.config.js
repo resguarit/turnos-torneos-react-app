@@ -30,7 +30,7 @@ export default {
         inter: ['Inter', 'sans-serif'], // Agregamos la fuente Inter
       },
   		colors: {
-        footer: '#18181b',
+        footer: '#2E2626',
         naranja: "#000000",
 		verde: '#32AE41',
   			background: 'hsl(var(--background))',

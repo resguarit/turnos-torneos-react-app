@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, CreditCard, Clock, User, DollarSign, CheckCircle, XCircle, MinusCircle } from "lucide-react";
+import { Calendar, CreditCard, Clock, User, DollarSign, CheckCircle, XCircle, MinusCircle, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CancelacionTurnoDialog from "./CancelacionTurnoDialog";
 import SolicitudCambioTurnoDialog from "./SolicitudCambioTurnoDialog";
@@ -10,10 +10,12 @@ import api from "@/lib/axiosConfig";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { TurnoEstado } from '@/constants/estadoTurno';
+import CoordinarPagoDialog from "./CoordinarPagoDialog";
 
 const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton }) => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showChangeModal, setShowChangeModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   // Fix date formatting by using parseISO
   const fechaFormateada = format(parseISO(turno.fecha_turno), "EEEE, d 'de' MMMM 'de' yyyy", { 
@@ -25,8 +27,8 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
   const handleCancelTurno = async (cancelReason) => {
     setIsCancelling(true);
     try {
-      const response = await api.put(`/turnos/cancelar/${turno.id}`, {
-        motivo: cancelReason // Add cancel reason
+      const response = await api.post(`/turnos/cancelar/${turno.id}`, {
+        motivo: cancelReason === "" ? "No especificado" : cancelReason
       });
 
       if (response.status === 200) {
@@ -44,6 +46,26 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
     } finally {
       setIsCancelling(false);
     }
+  };
+
+  const handleWhatsAppRedirect = () => {
+    // Número de teléfono al que se enviará el mensaje (sin espacios ni caracteres especiales)
+    const phoneNumber = "542214567890"; // Reemplazar con el número real
+    
+    // Mensaje predefinido para WhatsApp
+    const message = `Hola, quisiera coordinar el pago de la seña para mi turno a nombre de ${turno.usuario.nombre} del ${fechaFormateada} a las ${turno.horario.hora_inicio}. El monto de la seña es $${turno.monto_seña}. Gracias!`;
+    
+    // Codificar el mensaje para URL
+    const encodedMessage = encodeURIComponent(message);
+    
+    // Crear el enlace de WhatsApp
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+    
+    // Abrir WhatsApp en una nueva pestaña
+    window.open(whatsappUrl, '_blank');
+    
+    // Cerrar el modal después de redirigir
+    setShowPaymentModal(false);
   };
 
   const getMontoColor = (tipo) => {
@@ -151,26 +173,41 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
             </div>
           </div>
 
-          <div className="flex flex-col-reverse lg:flex-row justify-between gap-2">
-            {turno.estado !== TurnoEstado.CANCELADO && showCancelButton && (
-              <Button
-                onClick={() => setShowCancelModal(true)}
-                className="mt-4 w-full lg:w-1/2 bg-red-500 text-white hover:bg-red-600"
-              >
-                Cancelar Turno
-              </Button>
-            )}
-            {showModifyButton && turno.estado !== TurnoEstado.CANCELADO && (
-              <Button
-                onClick={() => setShowChangeModal(true)}
-                className="mt-4 min-w-fit w-full lg:w-1/2 py-2 bg-green-500 text-white hover:bg-green-600"
-              >
-                Solicitar Cambio del Turno  
-              </Button>
-            )}
+          {/* Contenedor para los botones - ahora en columna */}
+          <div className="flex flex-col gap-2 mt-4">
+            {/* Primera fila de botones */}
+            <div className="flex flex-col lg:flex-row gap-2 w-full">
+              {turno.estado !== TurnoEstado.CANCELADO && turno.estado !== TurnoEstado.PAGADO && turno.estado !== TurnoEstado.SEÑADO && showCancelButton && (
+                <Button
+                  onClick={() => setShowCancelModal(true)}
+                  className="w-full bg-red-500 text-white hover:bg-red-600"
+                >
+                  Cancelar Turno
+                </Button>
+              )}
+              {showModifyButton && turno.estado !== TurnoEstado.CANCELADO && (
+                <Button
+                  onClick={() => setShowChangeModal(true)}
+                  className="w-full bg-cyan-400 text-white hover:bg-cyan-500"
+                >
+                  Solicitar Cambio del Turno  
+                </Button>
+              )}
+            </div>
             
+            {/* Segunda fila - botón de pago solo cuando está pendiente */}
+            {turno.estado === TurnoEstado.PENDIENTE && (
+              <Button
+                onClick={() => setShowPaymentModal(true)}
+                className="w-full bg-green-500 text-white hover:bg-green-600"
+              >
+                Coordinar Pago
+              </Button>
+            )}
           </div>
         </CardContent>
+        
+        {/* Modales */}
         <CancelacionTurnoDialog
           showCancelModal={showCancelModal}
           setShowCancelModal={setShowCancelModal}
@@ -183,6 +220,12 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
           setShowChangeModal={setShowChangeModal}
           turno={turno}
           isSubmitting={isCancelling}
+        />
+        <CoordinarPagoDialog
+          showPaymentModal={showPaymentModal}
+          setShowPaymentModal={setShowPaymentModal}
+          turno={turno}
+          handleWhatsAppRedirect={handleWhatsAppRedirect}
         />
       </Card>
     </div>

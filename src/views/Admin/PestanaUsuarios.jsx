@@ -33,6 +33,8 @@ const PestanaUsuarios = () => {
   const [clear, setClear] = useState(false);
   const [isSaving, setIsSaving] = useState(false); // Estado de guardado
   const [validationErrors, setValidationErrors] = useState({}); // Estado para errores de validación
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [usuarioToDelete, setUsuarioToDelete] = useState(null);
 
   const fetchUsuarios = async (signal) => {
     setLoading(true);
@@ -112,10 +114,10 @@ const PestanaUsuarios = () => {
 
   const handleEditClick = (usuario) => {
     setEditUsuario({
-      name: usuario.name || '',
+      name: usuario.persona.name || '',
       email: usuario.email || '',
       dni: usuario.dni || '',
-      telefono: usuario.telefono || '',
+      telefono: usuario.persona.telefono || '',
       rol: usuario.rol || 'cliente',
     });
     setEditando(usuario);
@@ -177,6 +179,36 @@ const PestanaUsuarios = () => {
       }
     } finally {
       setIsSaving(false); // Finalizar estado de guardado
+    }
+  };
+
+  const handleDeleteUsuario = (usuario) => {
+    console.log('Usuario seleccionado para eliminar:', usuario);
+    setUsuarioToDelete(usuario);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteUsuario = async () => {
+    console.log('ID del usuario a eliminar:', usuarioToDelete?.id);
+    if (!usuarioToDelete || !usuarioToDelete.id) {
+      console.error('No se encontró un usuario válido para eliminar');
+      toast.error('No se encontró un usuario válido para eliminar');
+      return;
+    }
+  
+    setIsSaving(true);
+    try {
+      const response = await api.delete(`/usuarios/${usuarioToDelete.id}`);
+      if (response.status === 200) {
+        setUsuarios(usuarios.filter(usuario => usuario.id !== usuarioToDelete.id));
+        setShowDeleteModal(false);
+        toast.success('Usuario eliminado correctamente');
+      }
+    } catch (error) {
+      console.error('Error eliminando usuario:', error);
+      toast.error('Error al eliminar el usuario');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -398,7 +430,11 @@ const PestanaUsuarios = () => {
                       <button onClick={() => handleEditClick(usuario)} className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200" disabled={isSaving}>
                         <Edit2 className="h-5 w-5" />
                       </button>
-                      <button className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" disabled={isSaving}>
+                      <button
+                        onClick={() => handleDeleteUsuario(usuario)}
+                        className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200"
+                        disabled={isSaving}
+                      >
                         <Trash2 className="h-5 w-5" />
                       </button>
                       <button onClick={() => handleViewTurnosClick(usuario.dni)} className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors duration-200" disabled={isSaving}>
@@ -458,6 +494,33 @@ const PestanaUsuarios = () => {
           >
             Siguiente
           </button>
+        </div>
+      )}
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Confirmar Eliminación</h3>
+            <p className="mb-4">
+              ¿Estás seguro de que deseas eliminar al usuario <strong>{usuarioToDelete?.name}</strong>? Esta acción no se puede deshacer.
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                disabled={isSaving}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDeleteUsuario}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                disabled={isSaving}
+              >
+                {isSaving ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

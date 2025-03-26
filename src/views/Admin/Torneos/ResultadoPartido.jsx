@@ -107,6 +107,7 @@ export default function ResultadoPartido() {
             marcador_local: marcadorLocal,
             marcador_visitante: marcadorVisitante,
             ganador_id: ganadorId,
+            estado: 'Finalizado',
         });
 
         setChargingMode(false);

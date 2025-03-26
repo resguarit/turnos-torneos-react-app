@@ -3,7 +3,8 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import api from '@/lib/axiosConfig';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, ArrowRight } from 'lucide-react';
+import BtnLoading from '@/components/BtnLoading';
 
 export default function VerTablas() {
   const { zonaId } = useParams();
@@ -13,11 +14,13 @@ export default function VerTablas() {
   const [expulsados, setExpulsados] = useState([]);
   const [proximaFecha, setProximaFecha] = useState(null);
   const [partidosProximaFecha, setPartidosProximaFecha] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         // Traer todos los equipos de la zona
         const equiposResponse = await api.get(`/zonas/${zonaId}/equipos`);
         const equipos = equiposResponse.data;
@@ -198,11 +201,27 @@ export default function VerTablas() {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
   }, [zonaId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col font-inter">
+        <Header />
+        <main className="flex-1 p-6 bg-gray-100">
+          <div className="flex justify-center items-center h-full">
+            <BtnLoading />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col font-inter">
@@ -280,8 +299,11 @@ export default function VerTablas() {
               </table>
             </div>
           )}
-
-
+          {proximaFecha && (
+                <button onClick={() => navigate(`/ver-fixture/${zonaId}`)}
+                className='justify-start w-3/4 text-sm items-center text-gray-400 flex'
+                >Ver Fixture Completo <ArrowRight size={16}></ArrowRight></button>
+          )}
           {/* Tabla de Goleadores */}
           <div className="flex flex-col w-3/4 mt-4">
             <h2 className="text-xl font-bold mb-2">Goleadores</h2>

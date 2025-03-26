@@ -35,6 +35,7 @@ import ResultadoPartido from "@/views/Admin/Torneos/ResultadoPartido";
 import VerTorneos from "@/views/Admin/Torneos/VerTorneos";
 import VerZonas from "@/views/Admin/Torneos/VerZonas";
 import VerTablas from "@/views/Admin/Torneos/VerTablas";
+import VerFixture from "@/views/Admin/Torneos/VerFixture";
 
 const AppRoutes = () => {
   return (
@@ -51,6 +52,7 @@ const AppRoutes = () => {
       <Route path={`/torneos-user`} element={<VerTorneos />} />
       <Route path={`/zonas-user/:torneoId`} element={<VerZonas />} />
       <Route path={`/tablas/:zonaId`} element={<VerTablas />} />
+      <Route path={`/ver-fixture/:zonaId`} element={<VerFixture />} />
 
       {/* Rutas protegidas para administradores */}
       <Route path={`/torneos-admi`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><Torneos /></ProtectedRoute>} />

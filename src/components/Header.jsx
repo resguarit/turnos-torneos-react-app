@@ -109,10 +109,16 @@ export function Header() {
                 Administrador
               </Link>
             )}
-            <Link to="/torneos-admi" className="hover:opacity-80">
+            {userRole === "admin" && (
+              <Link to="/torneos-admi" className="hover:opacity-80">
               Torneos
             </Link>
-
+            )}
+            {userRole !== "admin" && (
+              <Link to="/torneos-user" className="hover:opacity-80">
+              Torneos
+            </Link>
+            )}
             {/* Reemplazar "Reservar" por "Continuar Reserva" cuando hay una reserva activa */}
             {hasActiveReservation && !isReservationPage ? (
               <button onClick={handleReturnToReservation} className="hover:opacity-80 bg-green-600 px-2 rounded-xl">
@@ -123,10 +129,11 @@ export function Header() {
                 Reservar
               </Link>
             )}
-
+            {userRole === "admin" && (
             <Link to="/partidos" className="hover:opacity-80">
               Partidos
             </Link>
+            )}
             <Link to="/reglamento" className="hover:opacity-80">
               Reglamento
             </Link>

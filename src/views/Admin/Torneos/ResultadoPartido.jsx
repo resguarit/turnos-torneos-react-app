@@ -90,6 +90,38 @@ export default function ResultadoPartido() {
         await Promise.all(updatedStats.map((estadistica) => api.post('/estadisticas', estadistica)));
       }
 
+        // Calcular el marcador y el ganador
+        let marcadorLocal = 0;
+        let marcadorVisitante = 0;
+
+        Object.keys(estadisticas).forEach((jugadorId) => {
+            const jugador = estadisticas[jugadorId];
+            if (equipoLocal.jugadores.some((j) => j.id === parseInt(jugadorId))) {
+                marcadorLocal += jugador.goles || 0;
+            } else if (equipoVisitante.jugadores.some((j) => j.id === parseInt(jugadorId))) {
+                marcadorVisitante += jugador.goles || 0;
+            }
+        });
+
+        const ganadorId =
+            marcadorLocal > marcadorVisitante
+                ? equipoLocal.id
+                : marcadorVisitante > marcadorLocal
+                    ? equipoVisitante.id
+                    : null;
+
+        await api.put(`/partidos/${partidoId}`, {
+            marcador_local: marcadorLocal,
+            marcador_visitante: marcadorVisitante,
+            ganador_id: ganadorId,
+            estado: 'Finalizado',
+        });
+
+        setChargingMode(false);
+        setOriginalEstadisticas(estadisticas);
+        setChangesDetected(false);
+
+        alert('Cambios aplicados correctamente');
       setOriginalEstadisticas(estadisticas);
       setChangesDetected(false);
       setEditMode(false);
@@ -98,6 +130,79 @@ export default function ResultadoPartido() {
       console.error('Error aplicando cambios:', error);
       alert('Error aplicando cambios');
     }
+};
+
+const handleEditClick = async (estadisticaId, jugadorId) => {
+  try {
+    const updatedData = estadisticas[jugadorId];
+    if (!updatedData) {
+      console.error('No data to update');
+      return;
+    }
+
+    if (estadisticaId) {
+      const response = await api.put(`/estadisticas/${estadisticaId}`, updatedData);
+      const updatedEstadistica = response.data.estadistica;
+      setEstadisticas((prevEstadisticas) => ({
+        ...prevEstadisticas,
+        [updatedEstadistica.jugador_id]: updatedEstadistica,
+      }));
+    } else {
+      const response = await api.post('/estadisticas', updatedData);
+      const createdEstadistica = response.data.estadistica;
+      setEstadisticas((prevEstadisticas) => ({
+        ...prevEstadisticas,
+        [createdEstadistica.jugador_id]: createdEstadistica,
+      }));
+    }
+
+    setEditMode((prevEditMode) => ({
+      ...prevEditMode,
+      [jugadorId]: false,
+    }));
+    setChangesDetected(false);
+    alert('Estadística actualizada correctamente');
+  } catch (error) {
+    console.error('Error updating estadistica:', error);
+    alert('Error updating estadistica');
+  }
+};
+
+  const toggleEditMode = (jugadorId) => {
+    setEditMode((prevEditMode) => ({
+      ...prevEditMode,
+      [jugadorId]: !prevEditMode[jugadorId],
+    }));
+  
+    if (!estadisticas[jugadorId]) {
+      setEstadisticas((prevEstadisticas) => ({
+        ...prevEstadisticas,
+        [jugadorId]: {
+          nro_camiseta: null,
+          goles: 0,
+          asistencias: 0,
+          amarillas: 0,
+          rojas: 0,
+          partido_id: partidoId,
+          jugador_id: jugadorId,
+        },
+      }));
+    }
+  };
+
+  const handleCancelEdit = (jugadorId) => {
+    setEditMode((prevEditMode) => ({
+      ...prevEditMode,
+      [jugadorId]: false,
+    }));
+    setChangesDetected(false);
+  };
+
+  const handleCancelChanges = () => {
+    // Restablece los cambios detectados y vuelve al estado original
+    setEstadisticas(originalEstadisticas); // Restablece las estadísticas originales
+    setChangesDetected(false); // Marca que no hay cambios pendientes
+    setChargingMode(false); // Sale del modo de edición
   };
 
   if (loading) {

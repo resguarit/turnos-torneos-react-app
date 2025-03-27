@@ -117,7 +117,6 @@ export default function ResultadoPartido() {
             estado: 'Finalizado',
         });
 
-        setChargingMode(false);
         setOriginalEstadisticas(estadisticas);
         setChangesDetected(false);
 
@@ -202,7 +201,6 @@ const handleEditClick = async (estadisticaId, jugadorId) => {
     // Restablece los cambios detectados y vuelve al estado original
     setEstadisticas(originalEstadisticas); // Restablece las estadísticas originales
     setChangesDetected(false); // Marca que no hay cambios pendientes
-    setChargingMode(false); // Sale del modo de edición
   };
 
   if (loading) {

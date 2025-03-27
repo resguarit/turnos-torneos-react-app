@@ -1,14 +1,18 @@
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Users, ChevronLeft, Edit3, Trash2, Shuffle } from 'lucide-react';
+import { Users, ChevronLeft, Edit3, Trash2, Shuffle, Calendar } from 'lucide-react';
 import CarruselFechas from './CarruselFechas';
 import Grupos from './Grupos';
 import ArañaEliminacion from './ArañaEliminacion';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { DayPicker } from 'react-day-picker';
+import 'react-day-picker/dist/style.css';
 
 export default function DetalleZona() {
   const { zonaId } = useParams();
@@ -20,6 +24,9 @@ export default function DetalleZona() {
   const [modalVisible, setModalVisible] = useState(false);
   const [numGrupos, setNumGrupos] = useState(1);
   const [fechasSorteadas, setFechasSorteadas] = useState(false);
+  const [fechaInicial, setFechaInicial] = useState(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const calendarRef = useRef(null);
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -49,17 +56,47 @@ export default function DetalleZona() {
     fetchZona();
   }, [zonaId]);
 
+  // Cerrar el calendario al hacer clic fuera de él
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target)) {
+        setCalendarOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleSortearFechas = async () => {
+    if (!fechaInicial) {
+      toast.error('Por favor, selecciona una fecha inicial.');
+      return; // No permitir sortear sin fecha inicial
+    }
+  
     try {
       setLoading(true);
-      const requestData = zona.formato === 'Grupos' ? { num_grupos: numGrupos } : {};
+  
+      // Formatear la fecha inicial al formato esperado por el backend
+      const formattedFechaInicial = format(fechaInicial, 'yyyy-MM-dd');
+  
+      const requestData = {
+        ...(zona.formato === 'Grupos' ? { num_grupos: numGrupos } : {}),
+        fecha_inicial: formattedFechaInicial, // Incluir la fecha inicial en la solicitud
+      };
+  
+      console.log('Datos enviados al backend:', requestData); // Debug para verificar los datos enviados
+  
       const response = await api.post(`/zonas/${zonaId}/fechas`, requestData);
+  
       if (response.status === 201) {
         setFechas(response.data.fechas);
         setFechasSorteadas(true);
+        toast.success('Fechas sorteadas correctamente.');
       }
     } catch (error) {
-      console.error('Error creating dates:', error);
+      console.error('Error al sortear fechas:', error);
+      toast.error('Error al sortear las fechas.');
     } finally {
       setLoading(false);
     }
@@ -151,47 +188,48 @@ export default function DetalleZona() {
           <div className="bg-white rounded-[8px] shadow-md p-4">
             <div className='w-full flex items-center justify-between'>
               <h2 className="text-2xl font-medium">Equipos</h2>
-              <button className="bg-blue-500 text-center flex items-center text-white px-2 py-1 gap-2 rounded-[6px]">Editar <Edit3 size={18} /></button>
             </div>
             <div className="mt-4">
               {zona.equipos && zona.equipos.length === 0 ? (
                 <p className="text-center text-gray-500">No hay equipos en esta zona.</p>
               ) : (
                 <div className="overflow-hidden rounded-[6px] border border-gray-200 bg-white shadow">
-                  <table className="w-full">
-                    <tbody>
-                      {zona.equipos && zona.equipos.map((equipo) => (
-                        <tr key={equipo.id} className="border-b items-center rounded-[6px] border-gray-200 last:border-0">
-                          <td className="p-3 flex items-center">
-                            <div className="w-6 bg-primary items-center justify-center"></div>
-                            <span className="font-medium">{equipo.nombre}</span>
-                          </td>
-                          <td className="text-right p-3 items-center flex-row justify-center">
-                            <div className='flex items-center w-full justify-end space-x-8'>
-                              <button
-                                onClick={() => navigate(`/jugadores/${equipo.id}`)}
-                                className=" bg-green-500 hover:bg-blue-600 text-white py-1 px-3 rounded-[6px] text-sm"
-                              >
-                                Ver jugadores
-                              </button>
-                              <button
-                                onClick={() => navigate(`/editar-equipo/${equipo.id}`)}
-                                className=" items-center flex-row text-blue-500  py-1   text-sm"
-                              >
-                                <Edit3 className="w-5" />
-                              </button>
-                              <button
-                                onClick={() => handleEliminarEquipo(equipo.id)}
-                                className="text-red-500   py-1  rounded-[6px] text-sm"
-                              >
-                                <Trash2 className="w-5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <div className="max-h-[300px] overflow-y-auto"> {/* Limitar la altura y permitir scroll */}
+                    <table className="w-full">
+                      <tbody>
+                        {zona.equipos && zona.equipos.map((equipo) => (
+                          <tr key={equipo.id} className="border-b items-center rounded-[6px] border-gray-200 last:border-0">
+                            <td className="p-3 flex items-center">
+                              <div className="w-6 bg-primary items-center justify-center"></div>
+                              <span className="font-medium">{equipo.nombre}</span>
+                            </td>
+                            <td className="text-right p-3 items-center flex-row justify-center">
+                              <div className='flex items-center w-full justify-end space-x-8'>
+                                <button
+                                  onClick={() => navigate(`/jugadores/${equipo.id}`)}
+                                  className="bg-green-500 hover:bg-blue-600 text-white py-1 px-3 rounded-[6px] text-sm"
+                                >
+                                  Ver jugadores
+                                </button>
+                                <button
+                                  onClick={() => navigate(`/editar-equipo/${equipo.id}`)}
+                                  className="items-center flex-row text-blue-500 py-1 text-sm"
+                                >
+                                  <Edit3 className="w-5" />
+                                </button>
+                                <button
+                                  onClick={() => handleEliminarEquipo(equipo.id)}
+                                  className="text-red-500 py-1 rounded-[6px] text-sm"
+                                >
+                                  <Trash2 className="w-5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
             </div>
@@ -211,13 +249,54 @@ export default function DetalleZona() {
               </button>
             )}
             {((zona.formato === 'Grupos' && gruposCreados) || (zona.formato !== 'Grupos' && zona.equipos.length > 2)) && (
-              <button
-                onClick={handleSortearFechas}
-                className={`py-2 px-3 flex items-center gap-2 rounded-[6px] text-sm mt-4 ${fechasSorteadas ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
-                disabled={fechasSorteadas}
-              >
-                Sortear Fechas <Shuffle size={18}/>
-              </button>
+              <div className="mt-6 flex gap-2 items-center">
+                {/* Botón para seleccionar fecha inicial */}
+                <div className="relative" ref={calendarRef}>
+                  <button
+                    onClick={() => setCalendarOpen(!calendarOpen)}
+                    className="py-2 px-3 flex items-center gap-2 rounded-[6px] text-sm bg-blue-500 hover:bg-blue-600 text-white"
+                  >
+                    {fechaInicial
+                      ? format(fechaInicial, "d 'de' MMMM yyyy", { locale: es })
+                      : 'Inicio de Fecha'}{' '}
+                    <Calendar size={18} />
+                  </button>
+
+                  {calendarOpen && (
+                    <div
+                      className="absolute z-50 bg-white shadow-lg rounded-md p-2 border"
+                      style={{
+                        top: '-200px', // Ajusta la posición hacia arriba
+                        right: '0', // O usa `left: 0` para alinearlo a la izquierda
+                      }}
+                    >
+                      <DayPicker
+                        mode="single"
+                        selected={fechaInicial}
+                        onSelect={(date) => {
+                          setFechaInicial(date);
+                          setCalendarOpen(false);
+                        }}
+                        locale={es}
+                        className="rounded-md"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Botón para sortear fechas */}
+                <button
+                  onClick={handleSortearFechas}
+                  className={`py-2 px-3 flex items-center gap-2 rounded-[6px] text-sm ${
+                    !fechaInicial || loading
+                      ? 'bg-gray-500 cursor-not-allowed'
+                      : 'bg-blue-500 hover:bg-blue-600 text-white'
+                  }`}
+                  disabled={!fechaInicial || loading}
+                >
+                  {loading ? 'Sorteando...' : 'Sortear Fechas'} <Shuffle size={18} />
+                </button>
+              </div>
             )}
             {((zona.formato === 'Grupos' && gruposCreados) || (zona.formato !== 'Grupos' && zona.equipos.length > 1)) && (
               <CarruselFechas zonaId={zonaId} equipos={zona.equipos} fechas={fechas} />

@@ -20,13 +20,16 @@ export default function Zonas() {
       try {
         setLoading(true);
         const response = await api.get(`/torneos/${torneoId}/zonas`);
+        console.log('Datos de las zonas:', response.data); // Agrega este log
         const zonasConFecha = response.data.map(zona => {
-          const siguienteFecha = zona.fechas.find(fecha => fecha.estado === 'Pendiente');
-          return { ...zona, 
-            siguienteFecha: siguienteFecha ? 
-            format(parseISO(siguienteFecha.fecha_inicio), "EEE, dd/MM/yyyy", {locale: es}) : 'No disponible' };
+          const siguienteFecha = zona.fechas?.find(fecha => fecha.estado === 'Pendiente');
+          return { 
+            ...zona, 
+            siguienteFecha: siguienteFecha 
+              ? format(parseISO(siguienteFecha.fecha_inicio), "EEE, dd/MM/yyyy", { locale: es }) 
+              : 'No disponible' 
+          };
         });
-        
         setZonas(zonasConFecha);
       } catch (error) {
         console.error('Error fetching zones:', error);

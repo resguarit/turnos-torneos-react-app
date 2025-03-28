@@ -8,7 +8,8 @@ import api from '@/lib/axiosConfig'
 import BtnLoading from "@/components/BtnLoading"
 import EditFechaModal from './EditFechaModal'
 import PostergarFechasModal from './PostergarFechasModal'
-/* import AsignarHoraYCanchaModal from './AsignarHoraYCanchaModal' */
+import AsignarHoraYCanchaModal from './AsignarHoraYCancha'; // Importa el modal
+
 
 export default function FechaCarousel({ zonaId, equipos }) {
   const [fechas, setFechas] = useState([]);
@@ -19,12 +20,42 @@ export default function FechaCarousel({ zonaId, equipos }) {
   const [modalPostergarVisible, setModalPostergarVisible] = useState(false);
   const [modalAsignarVisible, setModalAsignarVisible] = useState(false);
   const [selectedFecha, setSelectedFecha] = useState(null);
+  const [canchas, setCanchas] = useState([]);
+  const [horarios, setHorarios] = useState([]);
+  const [horariosModal, setHorariosModal] = useState([]); // Estado para los horarios del modal
+  
 
   useEffect(() => {
     const fetchFechas = async () => {
       try {
         const response = await api.get(`/zonas/${zonaId}/fechas`);
-        setFechas(response.data);
+        const fetchedFechas = response.data;
+
+        if (!fetchedFechas || fetchedFechas.length === 0) {
+          console.error('No hay fechas disponibles');
+          setFechas([]);
+          return;
+        }
+
+        setFechas(fetchedFechas);
+
+        const canchasResponse = await api.get(`/canchas`);
+        setCanchas(canchasResponse.data.canchas);
+
+        // Obtener horarios
+        const horariosResponse = await api.get(`/horarios`);
+        setHorarios(horariosResponse.data.horarios);
+
+        // Verifica si hay fechas antes de acceder a la primera
+        const primeraFecha = fetchedFechas[0]?.fecha_inicio;
+        if (primeraFecha) {
+          const responseHorariosModal = await api.get('/horarios-dia', { params: { fecha: primeraFecha } });
+          if (responseHorariosModal.status === 200) {
+            setHorariosModal(responseHorariosModal.data.horarios);
+          }
+        } else {
+          console.error('No se pudo obtener la primera fecha');
+        }
       } catch (error) {
         console.error('Error fetching dates:', error);
       } finally {
@@ -163,45 +194,48 @@ export default function FechaCarousel({ zonaId, equipos }) {
 
       <div className="divide-y divide-gray-200">
         {currentFecha.partidos && currentFecha.partidos.length > 0 ? (
-          currentFecha.partidos.map((partido) => (
-            <div key={partido.id} className="p-3 bg-gray-200 rounded-lg my-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2 flex-1">
-                  <div
-                    className="w-6 h-6 rounded-full"
-                    style={{ backgroundColor: equipos.find(e => e.id === partido.equipo_local_id)?.color || "#ccc" }}
-                  />
-                  <span className="font-medium">
-                    {equipos.find(e => e.id === partido.equipo_local_id)?.nombre || `Equipo ${partido.equipo_local_id}`}
+          currentFecha.partidos.map((partido) => {
+            const cancha = canchas.find((c) => c.id === partido.cancha_id);
+            const horario = horarios.find((h) => h.id === partido.horario_id);
+
+            return (
+              <div key={partido.id} className="p-3 bg-gray-200 rounded-lg my-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2 flex-1">
+                    <div
+                      className="w-6 h-6 rounded-full"
+                      style={{ backgroundColor: equipos.find(e => e.id === partido.equipo_local_id)?.color || "#ccc" }}
+                    />
+                    <span className="font-medium">
+                      {equipos.find(e => e.id === partido.equipo_local_id)?.nombre || `Equipo ${partido.equipo_local_id}`}
+                    </span>
+                  </div>
+
+                  <span className="mx-2 font-bold">vs</span>
+
+                  <div className="flex items-center space-x-2 flex-1 justify-end">
+                    <span className="font-medium">
+                      {equipos.find(e => e.id === partido.equipo_visitante_id)?.nombre || `Equipo ${partido.equipo_visitante_id}`}
+                    </span>
+                    <div
+                      className="w-6 h-6 rounded-full"
+                      style={{ backgroundColor: equipos.find(e => e.id === partido.equipo_visitante_id)?.color || "#ccc" }}
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-between mt-2 text-sm text-gray-600">
+                  <span>Cancha: {cancha?.nro || 'No Definido'}</span>
+                  <span>
+                    Hora: {horario?.hora_inicio || 'No Definido'} - {horario?.hora_fin || 'No Definido'}
                   </span>
                 </div>
-
-                <span className="mx-2 font-bold">vs</span>
-
-                <div className="flex items-center space-x-2 flex-1 justify-end">
-                  <span className="font-medium">
-                    {equipos.find(e => e.id === partido.equipo_visitante_id)?.nombre || `Equipo ${partido.equipo_visitante_id}`}
-                  </span>
-                  <div
-                    className="w-6 h-6 rounded-full"
-                    style={{ backgroundColor: equipos.find(e => e.id === partido.equipo_visitante_id)?.color || "#ccc" }}
-                  />
-                </div>
-
-                {/* <div className="ml-4 text-right min-w-[60px]">
-                  <button
-                    className="text-blue-500"
-                    onClick={handleAsignarHoraYCancha}
-                  >
-                    <Clock size={18} />
-                  </button>
-                </div> */}
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <div className="p-4 text-center text-gray-500">No hay partidos para esta fecha</div>
         )}
+      </div>
         <div className="p-3 justify-center flex bg-white rounded-b-[8px] my-2 gap-5">
           <button
             onClick={() => {
@@ -220,7 +254,6 @@ export default function FechaCarousel({ zonaId, equipos }) {
             <Edit3 size={18} />
           </button>
         </div>
-      </div>
 
       <div className="flex justify-between ">
         <button
@@ -236,6 +269,12 @@ export default function FechaCarousel({ zonaId, equipos }) {
           Postergar Todas las Fechas
         </button>
       </div>
+                      <button
+                        onClick={() => setModalAsignarVisible(true)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-[6px] text-sm mt-4"
+                      >
+                        Asignar Cancha y Hora
+                      </button>
 
       {modalEditVisible && (
         <EditFechaModal
@@ -277,17 +316,15 @@ export default function FechaCarousel({ zonaId, equipos }) {
         />
       )}
 
-     {/*  {modalAsignarVisible && (
+      
+      {modalAsignarVisible && (
         <AsignarHoraYCanchaModal
-          fechaId={currentFecha.id}
-          fecha={currentFecha.fecha_inicio}
-          onSave={() => {
-            setModalAsignarVisible(false);
-            // Fetch updated data if needed
-          }}
-          onClose={() => setModalAsignarVisible(false)}
+        zonaId={zonaId}
+        horarios={horariosModal} // Pasa los horarios al modal
+        onClose={() => setModalAsignarVisible(false)}
         />
-      )} */}
+      )}
+
     </div>
   )
 }

@@ -20,8 +20,9 @@ export default function DetalleZona() {
   const [modalVisible, setModalVisible] = useState(false);
   const [numGrupos, setNumGrupos] = useState(1);
   const [fechasSorteadas, setFechasSorteadas] = useState(false);
+
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     const fetchZona = async () => {
       try {
@@ -39,6 +40,7 @@ export default function DetalleZona() {
           setFechas(fechasResponse.data);
           setFechasSorteadas(true); // Establecer fechasSorteadas en true si ya hay fechas cargadas
         }
+
       } catch (error) {
         console.error('Error fetching zone details:', error);
       } finally {
@@ -219,8 +221,11 @@ export default function DetalleZona() {
                 Sortear Fechas <Shuffle size={18}/>
               </button>
             )}
-            {((zona.formato === 'Grupos' && gruposCreados) || (zona.formato !== 'Grupos' && zona.equipos.length > 1)) && (
-              <CarruselFechas zonaId={zonaId} equipos={zona.equipos} fechas={fechas} />
+            {(zona.fechas.length > 0)  && (
+              <>
+                <CarruselFechas zonaId={zonaId} equipos={zona.equipos} fechas={fechas} />
+
+              </>
             )}
             {(zona.formato === 'Eliminatoria' ) && (
             <ArañaEliminacion fechaId={zona.fechas[0].id} />
@@ -263,6 +268,7 @@ export default function DetalleZona() {
           </div>
         </div>
       )}
+
     </div>
   );
 }

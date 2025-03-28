@@ -10,22 +10,39 @@ export default function VerFixture() {
   const { zonaId } = useParams();
   const navigate = useNavigate();
   const [fechas, setFechas] = useState([]);
+  const [horarios, setHorarios] = useState({});
   const [currentFechaIndex, setCurrentFechaIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFechas = async () => {
+    const fetchFechasYHorarios = async () => {
       try {
-        const response = await api.get(`/zonas/${zonaId}/fechas`);
-        setFechas(response.data);
+        setLoading(true);
+
+        // Traer las fechas de la zona
+        const fechasResponse = await api.get(`/zonas/${zonaId}/fechas`);
+        const fechas = fechasResponse.data;
+
+        // Traer los horarios
+        const horariosResponse = await api.get(`/horarios`);
+        const horariosData = horariosResponse.data.horarios;
+
+        // Crear un mapa de horarios por ID
+        const horariosMap = {};
+        horariosData.forEach((horario) => {
+          horariosMap[horario.id] = horario;
+        });
+
+        setFechas(fechas);
+        setHorarios(horariosMap);
       } catch (error) {
-        console.error('Error fetching fechas:', error);
+        console.error('Error fetching fechas or horarios:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchFechas();
+    fetchFechasYHorarios();
   }, [zonaId]);
 
   const goToPrevious = () => {
@@ -37,8 +54,8 @@ export default function VerFixture() {
   };
 
   if (loading) {
-    return(
-        <div className="min-h-screen flex flex-col font-inter">
+    return (
+      <div className="min-h-screen flex flex-col font-inter">
         <Header />
         <main className="flex-1 p-6 bg-gray-100">
           <div className="flex justify-center items-center h-full">
@@ -78,7 +95,7 @@ export default function VerFixture() {
               <ChevronLeft className="w-5 h-5" />
             </button>
             <div className="flex gap-2 items-center">
-              <h2 className="text-lg font-medium">{currentFecha.nombre} -</h2>
+              <h2 className="text-lg font-medium">{currentFecha.nombre}</h2>
               <span
                 className={`text-xs p-1 rounded-xl ${
                   currentFecha.estado === 'Pendiente'
@@ -104,29 +121,32 @@ export default function VerFixture() {
             </button>
           </div>
 
-          <div className="divide-y divide-gray-200 w-1/2 ">
+          <div className="divide-y divide-gray-200 w-1/2 mt-4">
             {currentFecha.partidos && currentFecha.partidos.length > 0 ? (
-              currentFecha.partidos.map((partido, index) => (
-                <div key={index} className="p-3 bg-gray-200 rounded-lg my-1">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2 flex-1">
-                      <span className="font-medium">{partido.equipos[0].nombre}</span>
-                      
+              currentFecha.partidos.map((partido, index) => {
+                const horario = horarios[partido.horario_id] || {};
+                return (
+                  <div key={index} className="p-3 bg-gray-200 rounded-lg my-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2 flex-1">
+                        <span className="font-medium">{partido.equipos[0].nombre}</span>
+                        <span className="font-bold">({partido.marcador_local ?? '-'})</span>
+                      </div>
+                      <span className="mx-2 font-bold">vs</span>
+                      <div className="flex items-center space-x-2 flex-1 justify-end">
+                        <span className="font-bold">({partido.marcador_visitante ?? '-'})</span>
+                        <span className="font-medium">{partido.equipos[1].nombre}</span>
+                      </div>
                     </div>
-                    <span className="font-bold">({partido.marcador_local ?? '-'})</span>
-                    <span className="mx-2 font-bold">vs</span>
-                    <span className="font-bold">({partido.marcador_visitante ?? '-'})</span>
-                    <div className="flex items-center space-x-2 flex-1 justify-end">
-                      
-                      <span className="font-medium">{partido.equipos[1].nombre}</span>
+                    <div className="flex justify-between mt-2 text-sm text-gray-600">
+                      <span>Cancha: {partido.cancha?.nro || 'No Definido'}</span>
+                      <span>
+                        Hora: {horario.hora_inicio || 'No Definido'} - {horario.hora_fin || 'No Definido'}
+                      </span>
                     </div>
                   </div>
-                  <div className="flex justify-between mt-2 text-sm text-gray-600">
-                    <span>Cancha: {partido.cancha?.nro || 'No Definido'}</span>
-                    <span>Hora: {partido.horario?.hora || 'No Definido'}</span>
-                  </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="p-4 text-center text-gray-500">No hay partidos para esta fecha</div>
             )}

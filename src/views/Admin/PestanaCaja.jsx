@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import api from '@/lib/axiosConfig';
-import { DollarSign, Lock, Unlock, PlusCircle, MinusCircle, ClipboardList, CreditCard, Banknote, ArrowDownToLine } from "lucide-react";
+import { DollarSign, Lock, Unlock, PlusCircle, MinusCircle, ClipboardList, CreditCard, Banknote, ArrowDownToLine, History, ChevronDown, Search } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -18,14 +18,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 
+// Importar componentes
+import EstadoCaja from '@/components/PanelAdmin/Caja/EstadoCaja';
+import AperturaCaja from '@/components/PanelAdmin/Caja/AperturaCaja';
+import DialogCierreCaja from '@/components/PanelAdmin/Caja/DialogCierreCaja';
+import HistorialContent from '@/components/PanelAdmin/Caja/HistorialContent';
+
+// Componente principal
 const PestanaCaja = () => {
+  // Estados
   const [cajaAbierta, setCajaAbierta] = useState(false);
-  const [saldoInicial, setSaldoInicial] = useState('');
-  const [conteoEfectivo, setConteoEfectivo] = useState('');
+  const [saldoInicial, setSaldoInicial] = useState('0');
+  const [conteoEfectivo, setConteoEfectivo] = useState('0');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [showClosingDialog, setShowClosingDialog] = useState(false);
+  const [showHistorialCierres, setShowHistorialCierres] = useState(false);
   const [operador, setOperador] = useState('');
   const [balanceTotal, setBalanceTotal] = useState(0);
   const [efectivoEnCaja, setEfectivoEnCaja] = useState(0);
@@ -39,11 +49,29 @@ const PestanaCaja = () => {
     transferencia: 0,
     tarjeta: 0
   });
+  const [cashClosings, setCashClosings] = useState([]);
+  const [pageCierres, setPageCierres] = useState(1);
+  const [totalPagesCierres, setTotalPagesCierres] = useState(1);
+  const [loadingCierres, setLoadingCierres] = useState(false);
+  const [searchDni, setSearchDni] = useState('');
+  const [searchFechaDesde, setSearchFechaDesde] = useState('');
+  const [searchFechaHasta, setSearchFechaHasta] = useState('');
+  const [searchCierres, setSearchCierres] = useState(false);
 
+  // Efectos
   useEffect(() => {
     verificarCajaAbierta();
   }, []);
 
+  useEffect(() => {
+    fetchCierres();
+  }, [pageCierres]);
+
+  useEffect(() => {
+    fetchCierres();
+  }, [searchCierres]);
+
+  // Funciones
   const verificarCajaAbierta = async () => {
     try {
       const response = await api.get('/caja-abierta');
@@ -67,8 +95,8 @@ const PestanaCaja = () => {
   };
 
   const abrirCaja = async () => {
-    if (!saldoInicial || parseFloat(saldoInicial) <= 0) {
-      toast.error('Ingrese un saldo inicial válido');
+    if (!saldoInicial || parseFloat(saldoInicial) < 0) {
+      toast.error('El saldo inicial debe ser mayor o igual a 0');
       return;
     }
 
@@ -80,7 +108,7 @@ const PestanaCaja = () => {
 
       if (response.data.status === 200) {
         setCajaAbierta(true);
-        verificarCajaAbierta(); // Actualizar datos
+        verificarCajaAbierta();
         toast.success('Caja abierta correctamente');
       }
     } catch (error) {
@@ -107,7 +135,7 @@ const PestanaCaja = () => {
       });
 
       if (response.data.success) {
-        verificarCajaAbierta(); // Actualizar datos
+        verificarCajaAbierta();
         setAmount('');
         setDescription('');
         toast.success('Depósito registrado correctamente');
@@ -129,14 +157,14 @@ const PestanaCaja = () => {
     try {
       const response = await api.post('/transacciones', {
         caja_id: cajaId,
-        monto: -parseFloat(amount), // Monto negativo para retiros
+        monto: -parseFloat(amount),
         tipo: 'egreso',
         descripcion: description || 'Retiro de caja',
-        metodo_pago: 'efectivo' // Siempre efectivo para retiros
+        metodo_pago: 'efectivo'
       });
 
       if (response.data.success) {
-        verificarCajaAbierta(); // Actualizar datos
+        verificarCajaAbierta();
         setAmount('');
         setDescription('');
         toast.success('Retiro registrado correctamente');
@@ -162,7 +190,7 @@ const PestanaCaja = () => {
 
   const cerrarCaja = async () => {
     if (!conteoEfectivo || parseFloat(conteoEfectivo) < 0) {
-      toast.error('Ingrese un conteo de efectivo válido');
+      toast.error('El conteo de efectivo debe ser mayor o igual a 0');
       return;
     }
 
@@ -186,8 +214,8 @@ const PestanaCaja = () => {
   };
 
   const resetearEstados = () => {
-    setSaldoInicial('');
-    setConteoEfectivo('');
+    setSaldoInicial('0');
+    setConteoEfectivo('0');
     setAmount('');
     setDescription('');
     setPaymentMethod('efectivo');
@@ -195,6 +223,58 @@ const PestanaCaja = () => {
     setBalanceTotal(0);
     setEfectivoEnCaja(0);
     setOperador('');
+  };
+
+  const fetchCierres = async () => {
+    setLoadingCierres(true);
+    try {
+      const response = await api.get('/cajas', {
+        params: {
+          page: pageCierres,
+          limit: 5,
+          sortBy: 'fecha_cierre',
+          order: 'desc',
+          dni: searchDni || undefined,
+          fecha_desde: searchFechaDesde || undefined,
+          fecha_hasta: searchFechaHasta || undefined
+        }
+      });
+      
+      if (response.data && response.data.status === 200) {
+        setCashClosings(response.data.cierres || []);
+        setTotalPagesCierres(response.data.totalPages || 1);
+      } else {
+        setCashClosings([]);
+        setTotalPagesCierres(1);
+      }
+    } catch (error) {
+      console.error('Error al cargar los cierres:', error);
+      toast.error('Error al cargar el historial de cierres');
+      setCashClosings([]);
+      setTotalPagesCierres(1);
+    } finally {
+      setLoadingCierres(false);
+    }
+  };
+
+  const handlePageCierresChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPagesCierres) {
+      setPageCierres(newPage);
+    }
+  };
+
+  const handleSearch = async (dni) => {
+    await setSearchDni(dni);
+    setPageCierres(1);
+    setSearchCierres(!searchCierres);
+  };
+
+  const handleClearSearch = async () => {
+    await setSearchDni('');
+    await setSearchFechaDesde('');
+    await setSearchFechaHasta('');
+    setPageCierres(1);
+    setSearchCierres(!searchCierres);
   };
 
   return (
@@ -219,47 +299,37 @@ const PestanaCaja = () => {
             </div>
           ) : (
             <>
-              <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${cajaAbierta ? "bg-green-500" : "bg-red-500"}`}></div>
-                  <span className="font-medium">{cajaAbierta ? "Caja Abierta" : "Caja Cerrada"}</span>
-                  {cajaAbierta && <span className="text-sm text-gray-500">Operador: {operador}</span>}
-                </div>
-
-                {cajaAbierta && (
-                  <div className="flex flex-col items-end">
-                    <span className="text-sm text-gray-500">Balance Total</span>
-                    <span className="text-2xl font-bold">${balanceTotal.toFixed(2)}</span>
-                    <span className="text-sm text-gray-500">Efectivo en caja: ${efectivoEnCaja.toFixed(2)}</span>
-                  </div>
-                )}
-              </div>
+              <EstadoCaja 
+                cajaAbierta={cajaAbierta}
+                operador={operador}
+                balanceTotal={balanceTotal}
+                efectivoEnCaja={efectivoEnCaja}
+              />
 
               {!cajaAbierta ? (
-                <div className="w-full md:w-1/3">
-                  <Label htmlFor="initialAmount" className="text-gray-700">Monto Inicial</Label>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <Input
-                      id="initialAmount"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={saldoInicial}
-                      onChange={(e) => setSaldoInicial(e.target.value)}
-                      placeholder="0.00"
-                      disabled={loading}
-                      className="rounded-md border-gray-300"
-                    />
-                    <Button 
-                      onClick={abrirCaja} 
-                      disabled={loading}
-                      className="bg-gray-600 hover:bg-gray-700 text-white rounded-md px-4 py-2 transition-colors"
-                    >
-                      <Unlock className="h-4 w-4 mr-2" />
-                      Abrir Caja
-                    </Button>
-                  </div>
-                </div>
+                <AperturaCaja 
+                  saldoInicial={saldoInicial}
+                  setSaldoInicial={setSaldoInicial}
+                  abrirCaja={abrirCaja}
+                  loading={loading}
+                  showHistorialCierres={showHistorialCierres}
+                  setShowHistorialCierres={setShowHistorialCierres}
+                  setPageCierres={setPageCierres}
+                  fetchCierres={fetchCierres}
+                  handleSearch={handleSearch}
+                  handleClearSearch={handleClearSearch}
+                  searchFechaDesde={searchFechaDesde}
+                  searchFechaHasta={searchFechaHasta}
+                  setSearchFechaDesde={setSearchFechaDesde}
+                  setSearchFechaHasta={setSearchFechaHasta}
+                  searchDni={searchDni}
+                  setSearchDni={setSearchDni}
+                  loadingCierres={loadingCierres}
+                  cashClosings={cashClosings}
+                  pageCierres={pageCierres}
+                  totalPagesCierres={totalPagesCierres}
+                  handlePageCierresChange={handlePageCierresChange}
+                />
               ) : (
                 <Tabs defaultValue="deposit" className="w-full">
                   <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 rounded-lg gap-1">
@@ -280,7 +350,7 @@ const PestanaCaja = () => {
                   <TabsContent value="deposit">
                     <Card className="border-0 shadow-sm">
                       <CardHeader>
-                        <CardTitle className="text-lg">Registrar Pago</CardTitle>
+                        <CardTitle className="text-lg">Registrar Depósito</CardTitle>
                         <CardDescription>Registre un pago o depósito del cliente</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -335,13 +405,6 @@ const PestanaCaja = () => {
                                 Tarjeta
                               </Label>
                             </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="mercadopago" id="mercadopago" />
-                              <Label htmlFor="mercadopago" className="flex items-center gap-1 cursor-pointer">
-                                <CreditCard className="h-4 w-4" />
-                                MercadoPago
-                              </Label>
-                            </div>
                           </RadioGroup>
                         </div>
                       </CardContent>
@@ -352,7 +415,7 @@ const PestanaCaja = () => {
                           disabled={loading || !amount || parseFloat(amount) <= 0}
                         >
                           <PlusCircle className="h-4 w-4 mr-2" />
-                          Registrar Pago
+                          Registrar Depósito
                         </Button>
                       </CardFooter>
                     </Card>
@@ -421,164 +484,106 @@ const PestanaCaja = () => {
               )}
 
               {cajaAbierta && !initialLoading && (
-                        <CardFooter>
-                          <Button 
-                            onClick={handleClose} 
-                            className="w-full md:w-auto bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
-                          >
-                            <Lock className="h-4 w-4 mr-2" />
-                            Cerrar Caja
-                          </Button>
-                        </CardFooter>
-                      )}
+                <CardFooter>
+                  <Button 
+                    onClick={handleClose} 
+                    className="w-full md:w-auto bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
+                  >
+                    <Lock className="h-4 w-4 mr-2" />
+                    Cerrar Caja
+                  </Button>
+                </CardFooter>
+              )}
 
               {cajaAbierta && transactions.length > 0 && (
-                <Card className="mt-8 border-0 shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <ClipboardList className="h-5 w-5" />
-                      Historial de Transacciones
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {transactions.map((transaction) => (
-                        <div
-                          key={transaction.id}
-                          className="flex flex-col md:flex-row justify-between items-start md:items-center p-3 border rounded-lg gap-2"
-                        >
-                          <div>
-                            <p className="font-medium">{transaction.descripcion}</p>
-                            <p className="text-sm text-muted-foreground">{new Date(transaction.fecha).toLocaleString()}</p>
-                            <div className="flex items-center gap-1 mt-1">
-                              {transaction.metodo_pago === 'efectivo' && <Banknote className="h-4 w-4" />}
-                              {transaction.metodo_pago === 'transferencia' && <ArrowDownToLine className="h-4 w-4" />}
-                              {transaction.metodo_pago === 'tarjeta' && <CreditCard className="h-4 w-4" />}
-                              {transaction.metodo_pago === 'mercadopago' && <CreditCard className="h-4 w-4" />}
-                              <span className="text-sm">
-                                {transaction.metodo_pago === 'efectivo' ? 'Efectivo' : 
-                                 transaction.metodo_pago === 'transferencia' ? 'Transferencia' : 
-                                 transaction.metodo_pago === 'tarjeta' ? 'Tarjeta' : 'MercadoPago'}
-                              </span>
+                <>
+                  <Card className="mt-8 border-0 shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <ClipboardList className="h-5 w-5" />
+                        Historial de Transacciones
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {transactions.map((transaction) => (
+                          <div
+                            key={transaction.id}
+                            className="flex flex-col md:flex-row justify-between items-start md:items-center p-3 border rounded-lg gap-2"
+                          >
+                            <div>
+                              <p className="font-medium">{transaction.descripcion}</p>
+                              <p className="text-sm text-muted-foreground">{new Date(transaction.fecha).toLocaleString()}</p>
+                              <div className="flex items-center gap-1 mt-1">
+                                {transaction.metodo_pago === 'efectivo' && <Banknote className="h-4 w-4" />}
+                                {transaction.metodo_pago === 'transferencia' && <ArrowDownToLine className="h-4 w-4" />}
+                                {transaction.metodo_pago === 'tarjeta' && <CreditCard className="h-4 w-4" />}
+                                {transaction.metodo_pago === 'mercadopago' && <CreditCard className="h-4 w-4" />}
+                                <span className="text-sm">
+                                  {transaction.metodo_pago === 'efectivo' ? 'Efectivo' : 
+                                   transaction.metodo_pago === 'transferencia' ? 'Transferencia' : 
+                                   transaction.metodo_pago === 'tarjeta' ? 'Tarjeta' : 'MercadoPago'}
+                                </span>
+                              </div>
+                            </div>
+                            <div className={`font-bold ${transaction.tipo === 'deposito' ? "text-green-600" : "text-red-600"}`}>
+                              {transaction.tipo === 'deposito' ? '+' : '-'}${transaction.monto.toFixed(2)}
                             </div>
                           </div>
-                          <div className={`font-bold ${transaction.tipo === 'deposito' ? "text-green-600" : "text-red-600"}`}>
-                            {transaction.tipo === 'deposito' ? '+' : '-'}${transaction.monto.toFixed(2)}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Button
+                    onClick={() => {
+                      setShowHistorialCierres(!showHistorialCierres);
+                      if (!showHistorialCierres) {
+                        setPageCierres(1);
+                        fetchCierres();
+                      }
+                    }}
+                    className="w-full mt-4 bg-gray-600 hover:bg-gray-700 text-white rounded-md py-6 text-lg transition-colors flex items-center justify-center gap-2"
+                  >
+                    <History className="h-5 w-5" />
+                    {showHistorialCierres ? 'Ocultar Historial de Cierres' : 'Ver Historial de Cierres'}
+                  </Button>
+
+                  {showHistorialCierres && (
+                    <HistorialContent 
+                      handleSearch={handleSearch}
+                      handleClearSearch={handleClearSearch}
+                      searchFechaDesde={searchFechaDesde}
+                      searchFechaHasta={searchFechaHasta}
+                      setSearchFechaDesde={setSearchFechaDesde}
+                      setSearchFechaHasta={setSearchFechaHasta}
+                      searchDni={searchDni}
+                      setSearchDni={setSearchDni}
+                      loadingCierres={loadingCierres}
+                      cashClosings={cashClosings}
+                      pageCierres={pageCierres}
+                      totalPagesCierres={totalPagesCierres}
+                      handlePageCierresChange={handlePageCierresChange}
+                    />
+                  )}
+                </>
               )}
             </>
           )}
         </CardContent>
-
-        
       </Card>
 
-      <Dialog open={showClosingDialog} onOpenChange={setShowClosingDialog}>
-        <DialogContent className="max-w-md rounded-lg">
-          <DialogHeader>
-            <DialogTitle>Cerrar Caja</DialogTitle>
-            <DialogDescription>Confirme el cierre de caja y el conteo final de efectivo.</DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="grid gap-2">
-              <div className="flex justify-between items-center">
-                <span>Balance total:</span>
-                <span className="font-bold">${balanceTotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>Efectivo en caja:</span>
-                <span className="font-bold">${efectivoEnCaja.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>Pagos electrónicos:</span>
-                <span className="font-bold">${(balanceTotal - efectivoEnCaja).toFixed(2)}</span>
-              </div>
-            </div>
-
-            <Alert>
-              <AlertTitle>Conteo de efectivo físico</AlertTitle>
-              <AlertDescription>
-                Solo debe contar el dinero físico (efectivo) en la caja.
-              </AlertDescription>
-            </Alert>
-
-            <div>
-              <Label htmlFor="closingCount">Conteo de efectivo</Label>
-              <Input
-                id="closingCount"
-                type="number"
-                min="0"
-                step="0.01"
-                value={conteoEfectivo}
-                onChange={(e) => setConteoEfectivo(e.target.value)}
-                placeholder="0.00"
-              />
-            </div>
-
-            {conteoEfectivo && parseFloat(conteoEfectivo) !== efectivoEnCaja && (
-              <Alert variant={parseFloat(conteoEfectivo) > efectivoEnCaja ? "destructive" : "default"}>
-                <AlertTitle>
-                  {parseFloat(conteoEfectivo) > efectivoEnCaja
-                    ? `Sobrante: $${(parseFloat(conteoEfectivo) - efectivoEnCaja).toFixed(2)}`
-                    : `Faltante: $${(efectivoEnCaja - parseFloat(conteoEfectivo)).toFixed(2)}`}
-                </AlertTitle>
-                <AlertDescription>
-                  {parseFloat(conteoEfectivo) > efectivoEnCaja
-                    ? "Hay más efectivo del esperado. Verifique las transacciones."
-                    : "Hay menos efectivo del esperado. Verifique las transacciones."}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <div className="border rounded-md p-3 space-y-2">
-              <h4 className="font-medium">Resumen por método de pago:</h4>
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="flex items-center gap-1">
-                    <Banknote className="h-4 w-4" /> Efectivo:
-                  </span>
-                  <span>${resumenPagos.efectivo.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="flex items-center gap-1">
-                    <ArrowDownToLine className="h-4 w-4" /> Transferencias:
-                  </span>
-                  <span>${resumenPagos.transferencia.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="flex items-center gap-1">
-                    <CreditCard className="h-4 w-4" /> Tarjetas:
-                  </span>
-                  <span>${resumenPagos.tarjeta.toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowClosingDialog(false)}
-              className="bg-white hover:bg-gray-50 border-gray-300 text-gray-700 rounded-md transition-colors"
-            >
-              Cancelar
-            </Button>
-            <Button 
-              onClick={cerrarCaja} 
-              disabled={loading}
-              className="bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
-            >
-              Confirmar Cierre
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DialogCierreCaja 
+        showClosingDialog={showClosingDialog}
+        setShowClosingDialog={setShowClosingDialog}
+        balanceTotal={balanceTotal}
+        efectivoEnCaja={efectivoEnCaja}
+        conteoEfectivo={conteoEfectivo}
+        setConteoEfectivo={setConteoEfectivo}
+        resumenPagos={resumenPagos}
+        cerrarCaja={cerrarCaja}
+        loading={loading}
+      />
     </div>
   );
 };

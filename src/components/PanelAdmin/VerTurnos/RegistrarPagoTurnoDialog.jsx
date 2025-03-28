@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, DollarSign, FilePlus, CreditCard, ChevronDown, ChevronUp, Banknote, ArrowDownToLine } from "lucide-react";
+import { X, DollarSign, FilePlus, CreditCard, ChevronDown, ChevronUp, Banknote, ArrowDownToLine, AlertCircle } from "lucide-react";
 import api from '@/lib/axiosConfig';
 import { toast } from 'react-toastify';
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) => {
   const [loading, setLoading] = useState(false);
@@ -13,12 +14,13 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
   const [transaccionesTurno, setTransaccionesTurno] = useState(null);
   const [loadingTransacciones, setLoadingTransacciones] = useState(false);
   const [mostrarHistorial, setMostrarHistorial] = useState(false);
+  const [cajaId, setCajaId] = useState(null);
   
   const [formData, setFormData] = useState({
     monto: '',
-    tipo: 'ingreso', // Por defecto es ingreso
+    tipo: 'ingreso',
     descripcion: '',
-    metodo_pago: 'efectivo' // Agregamos el método de pago por defecto
+    metodo_pago: 'efectivo'
   });
   
   // Calcular montos según estado del turno
@@ -31,10 +33,22 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
     if (isOpen && turno) {
       buscarCuentaCorriente();
       buscarTransaccionesTurno();
+      verificarCajaAbierta();
       // Si está señado, seleccionar pago total por defecto
       actualizarMontoPorTipo(turno.estado === 'Señado' ? 'total' : 'seña');
     }
   }, [isOpen, turno]);
+  
+  const verificarCajaAbierta = async () => {
+    try {
+      const response = await api.get('/caja-abierta');
+      if (response.data && response.data.status === 200) {
+        setCajaId(response.data.caja.id);
+      }
+    } catch (error) {
+      console.error('Error al verificar caja abierta:', error);
+    }
+  };
   
   const buscarCuentaCorriente = async () => {
     if (!turno?.usuario?.persona_id) return;
@@ -153,6 +167,11 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
       toast.error('El monto debe ser mayor a cero');
       return;
     }
+
+    if (!cajaId) {
+      toast.error('Para registrar pagos de turnos la caja debe estar abierta');
+      return;
+    }
     
     setLoading(true);
     
@@ -164,7 +183,8 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
         monto: parseFloat(formData.monto),
         tipo: 'turno',
         descripcion: formData.descripcion,
-        metodo_pago: formData.metodo_pago // Agregamos el método de pago a la transacción
+        metodo_pago: formData.metodo_pago,
+        caja_id: cajaId // Agregamos el ID de la caja
       };
       
       // Si hay cuenta corriente, agregarla también
@@ -446,13 +466,6 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
                   <Label htmlFor="card" className="flex items-center gap-1 cursor-pointer">
                     <CreditCard className="h-4 w-4" />
                     Tarjeta
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="mercadopago" id="mercadopago" />
-                  <Label htmlFor="mercadopago" className="flex items-center gap-1 cursor-pointer">
-                    <CreditCard className="h-4 w-4" />
-                    MercadoPago
                   </Label>
                 </div>
               </RadioGroup>

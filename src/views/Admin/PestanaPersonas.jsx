@@ -150,7 +150,7 @@ const PestanaPersonas = () => {
   };
 
   const handleViewTurnosClick = (personaDni) => {
-    window.location.href = `/panel-admin?tab=turnos&persona=${personaDni}`;
+    window.location.href = `/panel-admin?tab=turnos&usuario=${personaDni}`;
   };
 
   const handleViewCuentaCorrienteClick = (personaDni) => {

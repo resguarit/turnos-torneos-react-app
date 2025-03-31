@@ -94,7 +94,7 @@ export default function DetalleZona() {
         });
         // Eliminar los grupos y actualizar el estado
         for (const grupo of grupos) {
-          await api.delete(`/grupo/${grupo.id}`);
+          await api.delete(`/grupos/${grupo.id}`);
         }
         setGrupos([]);
         setGruposCreados(false);

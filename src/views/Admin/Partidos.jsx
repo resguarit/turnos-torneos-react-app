@@ -111,10 +111,18 @@ function Partidos() {
     setCurrentPage(pageNumber)
   }
 
-  // Get unique values for filters
-  const uniqueTorneos = [...new Set(partidos.map(partido => partido.fecha.zona.torneo.nombre))]
-  const uniqueZonas = [...new Set(partidos.map(partido => partido.fecha.zona.nombre))]
-  const uniqueFechas = [...new Set(partidos.map(partido => partido.fecha.nombre))]
+  // Get unique values for filters with proper null checking
+  const uniqueTorneos = [...new Set(partidos
+    .filter(partido => partido?.fecha?.zona?.torneo)
+    .map(partido => partido.fecha.zona.torneo.nombre))]
+
+  const uniqueZonas = [...new Set(partidos
+    .filter(partido => partido?.fecha?.zona)
+    .map(partido => partido.fecha.zona.nombre))]
+
+  const uniqueFechas = [...new Set(partidos
+    .filter(partido => partido?.fecha)
+    .map(partido => partido.fecha.nombre))]
 
   return (
     <div className="min-h-screen flex flex-col font-inter">
@@ -287,9 +295,9 @@ function Partidos() {
                       </td>
                       <td className="px-4 py-2 text-center">{partido.horario ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : 'No Definido'}</td>
                       <td className="px-4 py-2 text-center">{partido.cancha ? `${partido.cancha.nro} - ${partido.cancha.tipo_cancha}` : 'No Definido'}</td>
-                      <td className="px-4 py-2 text-center">{partido.fecha.zona.torneo.nombre}</td>
-                      <td className="px-4 py-2 text-center">{partido.fecha.zona.nombre}</td>
-                      <td className="px-4 py-2 text-center">{partido.fecha.nombre}</td>
+                      <td className="px-4 py-2 text-center">{partido?.fecha?.zona?.torneo?.nombre || 'No Definido'}</td>
+                      <td className="px-4 py-2 text-center">{partido?.fecha?.zona?.nombre || 'No Definido'}</td>
+                      <td className="px-4 py-2 text-center">{partido?.fecha?.nombre || 'No Definido'}</td>
                     </tr>
                   ))}
                 </tbody>

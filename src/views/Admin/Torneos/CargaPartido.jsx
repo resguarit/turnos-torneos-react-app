@@ -203,7 +203,7 @@ export default function CargaPartido() {
                           style={{ backgroundColor: "#ccc" }}
                         />
                         <span className="font-medium">
-                          {partido.equipos[0].nombre }
+                          {partido.equipos && partido.equipos.length > 0 ? partido.equipos[0].nombre : 'Equipo no asignado'}
                         </span>
                       </div>
 
@@ -211,7 +211,7 @@ export default function CargaPartido() {
 
                       <div className="flex items-center space-x-2 flex-1 justify-end">
                         <span className="font-medium">
-                          {partido.equipos[1].nombre }
+                          {partido.equipos && partido.equipos.length > 1 ? partido.equipos[1].nombre : 'Equipo no asignado'}
                         </span>
                         <div
                           className="w-6 h-6 rounded-full"

@@ -17,17 +17,25 @@ const NuevoPanelAdmin = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const initialTab = queryParams.get('tab') || 'dashboard';
+  const [userRole, setUserRole] = useState('');
+  const initialTab = queryParams.get('tab') || 'turnos';
   const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    const role = localStorage.getItem('user_role');
+    setUserRole(role);
+  }, []);
 
   useEffect(() => {
     navigate(`?tab=${activeTab}`, { replace: true });
   }, [activeTab, navigate]);
 
+  const isAdmin = userRole === 'admin';
+
   const renderContenidoPestana = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <PestanaDashboard />;
+        return isAdmin ? <PestanaDashboard /> : null;
       case 'schedules':
         return <PestanaHorario />;
       case 'courts':
@@ -36,8 +44,8 @@ const NuevoPanelAdmin = () => {
         return <PestanaUsuarios />;
       case 'turnos':
         return <PestanaTurnos />;
-      case 'auditoria': // Nuevo caso para la pestaña de auditoría
-        return <PestanaAuditoria />;
+      case 'auditoria':
+        return isAdmin ? <PestanaAuditoria /> : null;
       case 'personas':
         return <PestanaPersonas />;
       case 'cuentacorriente':
@@ -55,15 +63,17 @@ const NuevoPanelAdmin = () => {
       <main className="flex-1 p-6 bg-gray-100">
         <div className="max-w-full mx-auto">
           <div className="grid grid-cols-2  sm:flex sm:flex-row gap-2 sm:gap-4">
-            <button
-              onClick={() => setActiveTab("dashboard")}
-              className={`px-3 items-center flex py-1 sm:py-2 rounded-[4px] text-sm sm:text-base  ${
-                activeTab === "dashboard" ? "bg-naranja text-white" : "bg-gray-200 text-black"
-              }`}
-            >
-              <BarChart className="inline-block mr-2" size={18} />
-              Dashboard
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => setActiveTab("dashboard")}
+                className={`px-3 items-center flex py-1 sm:py-2 rounded-[4px] text-sm sm:text-base  ${
+                  activeTab === "dashboard" ? "bg-naranja text-white" : "bg-gray-200 text-black"
+                }`}
+              >
+                <BarChart className="inline-block mr-2" size={18} />
+                Dashboard
+              </button>
+            )}
             <button
               onClick={() => setActiveTab("schedules")}
               className={`px-3 items-center flex  py-1 sm:py-2 rounded-[4px] text-sm sm:text-base  ${
@@ -119,15 +129,17 @@ const NuevoPanelAdmin = () => {
               Turnos
             </button>
             
-            <button
-              onClick={() => setActiveTab("auditoria")}
-              className={`px-3 items-center flex py-1 sm:py-2 rounded-[4px] text-sm sm:text-base  ${
-                activeTab === "auditoria" ? "bg-naranja text-white" : "bg-gray-200 text-black"
-              }`}
-            >
-              <ActivityIcon className="inline-block mr-2" size={18} />
-              Auditorías
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => setActiveTab("auditoria")}
+                className={`px-3 items-center flex py-1 sm:py-2 rounded-[4px] text-sm sm:text-base  ${
+                  activeTab === "auditoria" ? "bg-naranja text-white" : "bg-gray-200 text-black"
+                }`}
+              >
+                <ActivityIcon className="inline-block mr-2" size={18} />
+                Auditorías
+              </button>
+            )}
             <button
               onClick={() => setActiveTab("caja")}
               className={`px-3 items-center flex py-1 sm:py-2 rounded-[4px] text-sm sm:text-base ${

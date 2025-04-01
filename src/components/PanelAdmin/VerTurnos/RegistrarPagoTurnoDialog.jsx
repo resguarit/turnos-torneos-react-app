@@ -15,6 +15,7 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
   const [loadingTransacciones, setLoadingTransacciones] = useState(false);
   const [mostrarHistorial, setMostrarHistorial] = useState(false);
   const [cajaId, setCajaId] = useState(null);
+  const [saldoRestante, setSaldoRestante] = useState(null);
   
   const [formData, setFormData] = useState({
     monto: '',
@@ -90,6 +91,7 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
       const response = await api.get(`/transacciones/turno/${turno.id}`);
       if (response.data) {
         setTransaccionesTurno(response.data);
+        setSaldoRestante(response.data.saldo);
       }
     } catch (error) {
       console.error('Error al buscar las transacciones del turno:', error);
@@ -100,10 +102,10 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
   };
   
   const calcularSaldoRestante = () => {
-    if (!transaccionesTurno) return turno.monto_total;
+    if (!transaccionesTurno || !transaccionesTurno.transacciones) return turno.monto_total;
     
-    const totalPagado = transaccionesTurno.reduce((sum, trans) => {
-      return sum + (trans.tipo === 'devolucion' ? -trans.monto : trans.monto);
+    const totalPagado = transaccionesTurno.transacciones.reduce((sum, trans) => {
+      return sum + (trans.tipo === 'devolucion' ? -parseFloat(trans.monto) : parseFloat(trans.monto));
     }, 0);
     
     return turno.monto_total - totalPagado;
@@ -184,10 +186,9 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
         tipo: 'turno',
         descripcion: formData.descripcion,
         metodo_pago: formData.metodo_pago,
-        caja_id: cajaId // Agregamos el ID de la caja
+        caja_id: cajaId
       };
       
-      // Si hay cuenta corriente, agregarla también
       if (cuentaCorriente) {
         transaccionData.cuenta_corriente_id = cuentaCorriente.id;
       }
@@ -195,10 +196,14 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
       const response = await api.post('/transacciones', transaccionData);
       
       if (response.data && response.data.status === 201) {
+        // Obtener el nuevo saldo después de registrar el pago
+        const saldoResponse = await api.get(`/transacciones/turno/${turno.id}`);
+        const nuevoSaldo = saldoResponse.data.saldo;
+        
         // Determinar nuevo estado del turno
         let nuevoEstado = turno.estado;
         
-        if (tipoPago === 'total' || (tipoPago === 'otro' && parseFloat(formData.monto) >= montoRestante)) {
+        if (nuevoSaldo === 0) {
           nuevoEstado = 'Pagado';
         } else if (tipoPago === 'seña' && turno.estado === 'Pendiente') {
           nuevoEstado = 'Señado';
@@ -230,6 +235,8 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
       setLoading(false);
     }
   };
+  
+  const isLoading = loading || loadingCuenta || loadingTransacciones;
   
   if (!isOpen || !turno) return null;
   
@@ -382,9 +389,9 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
                     tipoPago === 'seña' 
                       ? 'bg-blue-500 text-white' 
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  } ${turno.estado === 'Señado' || turno.estado === 'Pagado' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  } ${(turno.estado === 'Señado' || turno.estado === 'Pagado' || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
                   onClick={() => actualizarMontoPorTipo('seña')}
-                  disabled={turno.estado === 'Señado' || turno.estado === 'Pagado'}
+                  disabled={turno.estado === 'Señado' || turno.estado === 'Pagado' || isLoading}
                 >
                   Seña
                 </button>
@@ -394,9 +401,9 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
                     tipoPago === 'total' 
                       ? 'bg-blue-500 text-white' 
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  } ${turno.estado === 'Pagado' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  } ${(turno.estado === 'Pagado' || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
                   onClick={() => actualizarMontoPorTipo('total')}
-                  disabled={turno.estado === 'Pagado'}
+                  disabled={turno.estado === 'Pagado' || isLoading}
                 >
                   Pago Total
                 </button>
@@ -406,9 +413,9 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
                     tipoPago === 'otro' 
                       ? 'bg-blue-500 text-white' 
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  } ${turno.estado === 'Pagado' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  } ${(turno.estado === 'Pagado' || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
                   onClick={() => actualizarMontoPorTipo('otro')}
-                  disabled={turno.estado === 'Pagado'}
+                  disabled={turno.estado === 'Pagado' || isLoading}
                 >
                   Otro
                 </button>
@@ -431,10 +438,11 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
                   onChange={handleInputChange}
                   placeholder="0.00"
                   className={`block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${
-                    tipoPago !== 'otro' ? 'bg-gray-100' : ''
+                    tipoPago !== 'otro' || isLoading ? 'bg-gray-100' : ''
                   }`}
                   required
-                  readOnly={tipoPago !== 'otro'}
+                  readOnly={tipoPago !== 'otro' || isLoading}
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -446,6 +454,7 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
                 value={formData.metodo_pago}
                 onValueChange={(value) => setFormData({ ...formData, metodo_pago: value })}
                 className="flex space-x-4 mt-2"
+                disabled={isLoading}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="efectivo" id="cash" />
@@ -487,6 +496,7 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
                   onChange={handleInputChange}
                   placeholder="Descripción del pago"
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -496,21 +506,21 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50"
-                disabled={loading}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 disabled:opacity-50"
+                disabled={isLoading}
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={
-                  loading || 
+                  isLoading || 
                   turno.estado === 'Pagado' || 
                   (turno.estado === 'Señado' && tipoPago === 'seña')
                 }
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none disabled:bg-gray-400"
               >
-                {loading ? 'Procesando...' : 'Registrar Pago'}
+                {isLoading ? 'Cargando...' : loading ? 'Procesando...' : 'Registrar Pago'}
               </button>
             </div>
           </form>

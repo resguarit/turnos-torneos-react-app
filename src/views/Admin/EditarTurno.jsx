@@ -269,6 +269,31 @@ function EditarTurno() {
               </div>     
             </div>
 
+            {/* Información Original del Turno */}
+            <div className="space-y-4 bg-white p-4 rounded-2xl shadow-lg mt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Información Original del Turno</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">Fecha Original</Label>
+                  <div className="p-2 bg-gray-50 rounded-lg mt-1">
+                    {format(parseISO(booking.fecha_turno), "d 'de' MMMM, yyyy", { locale: es })}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">Horario Original</Label>
+                  <div className="p-2 bg-gray-50 rounded-lg mt-1">
+                    {booking.horario.hora_inicio} - {booking.horario.hora_fin}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">Cancha Original</Label>
+                  <div className="p-2 bg-gray-50 rounded-lg mt-1">
+                    Cancha {booking.cancha.nro} - {booking.cancha.tipo_cancha}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Formulario editable */}
             <form onSubmit={handleSubmit} className="space-y-4 bg-white rounded-2xl shadow-lg p-4">
               <div className="space-y-4">

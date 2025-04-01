@@ -46,18 +46,18 @@ const AppRoutes = () => {
       <Route path={`/bloqueo-reserva`} element={<ContadorBloqueo />} />
 
       {/* Rutas protegidas para administradores */}
-      <Route path={`/torneos-admi`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><Torneos /></ProtectedRoute>} />
-      <Route path={`/zonas-admi/:torneoId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><Zonas /></ProtectedRoute>} />
-      <Route path={`/alta-zona/:torneoId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaZona /></ProtectedRoute>} />
-      <Route path={`/ver-turnos`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><VerTurnos /></ProtectedRoute>} />
-      <Route path={`/grilla-turnos`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><VerGrilla /></ProtectedRoute>} />
-      <Route path={`/editar-turno/:id`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><EditarTurno /></ProtectedRoute>} />
-      <Route path={`/panel-admin`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><NuevoPanelAdmin /></ProtectedRoute>} />
-      <Route path={`/nuevo-turno-admi`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><NuevoTurnoAdmi /></ProtectedRoute>}/>
-      <Route path={`/alta-torneo`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaTorneo /></ProtectedRoute>} />
-      <Route path={`/detalle-zona/:zonaId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><DetalleZona /></ProtectedRoute>} />
-      <Route path={`/alta-equipo/:zonaId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaEquipo /></ProtectedRoute>} />
-      <Route path={`/jugadores/:equipoId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><Jugadores /></ProtectedRoute>} />
+      <Route path={`/torneos-admi`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><Torneos /></ProtectedRoute>} />
+      <Route path={`/zonas-admi/:torneoId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><Zonas /></ProtectedRoute>} />
+      <Route path={`/alta-zona/:torneoId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><AltaZona /></ProtectedRoute>} />
+      <Route path={`/ver-turnos`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><VerTurnos /></ProtectedRoute>} />
+      <Route path={`/grilla-turnos`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><VerGrilla /></ProtectedRoute>} />
+      <Route path={`/editar-turno/:id`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><EditarTurno /></ProtectedRoute>} />
+      <Route path={`/panel-admin`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><NuevoPanelAdmin /></ProtectedRoute>} />
+      <Route path={`/nuevo-turno-admi`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><NuevoTurnoAdmi /></ProtectedRoute>}/>
+      <Route path={`/alta-torneo`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><AltaTorneo /></ProtectedRoute>} />
+      <Route path={`/detalle-zona/:zonaId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><DetalleZona /></ProtectedRoute>} />
+      <Route path={`/alta-equipo/:zonaId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><AltaEquipo /></ProtectedRoute>} />
+      <Route path={`/jugadores/:equipoId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><Jugadores /></ProtectedRoute>} />
 
       {/* Rutas protegidas para usuarios y administradores */}
       <Route path={`/user-profile`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><UserProfile /></ProtectedRoute>} />

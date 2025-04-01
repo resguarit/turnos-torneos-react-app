@@ -11,6 +11,7 @@ const PestanaUsuarios = () => {
   const [editando, setEditando] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchType, setSearchType] = useState('dni');
+  const [userRole, setUserRole] = useState('');
   // Estructura plana para enviar a la API
   const [newUsuario, setNewUsuario] = useState({
     name: '',
@@ -34,6 +35,13 @@ const PestanaUsuarios = () => {
   const [clear, setClear] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+
+  useEffect(() => {
+    const role = localStorage.getItem('user_role');
+    setUserRole(role);
+  }, []);
+
+  const isAdmin = userRole === 'admin';
 
   const fetchUsuarios = async (signal) => {
     setLoading(true);
@@ -200,6 +208,21 @@ const PestanaUsuarios = () => {
       rol: 'cliente',
     });
     setAgregando(false);
+    setValidationErrors({});
+  };
+
+  // Nueva función para inicializar el formulario sin cerrarlo
+  const initNewUserForm = () => {
+    setNewUsuario({
+      name: '',
+      email: '',
+      dni: '',
+      telefono: '',
+      password: '',
+      password_confirmation: '',
+      rol: 'cliente',
+    });
+    setValidationErrors({});
   };
 
   return (
@@ -208,18 +231,20 @@ const PestanaUsuarios = () => {
 
       {/* Header */}
       <div className="flex justify-end items-center mb-4">
-        <button
-          onClick={() => {
-            setAgregando(true);
-            setEditando(null);
-            resetNewUserForm();
-          }}
-          className="inline-flex sm:text-base text-sm rounded-[10px] items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow transition-colors duration-200 transform hover:scale-105"
-          disabled={isSaving}
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          Añadir Usuario
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => {
+              setAgregando(true);
+              setEditando(null);
+              initNewUserForm();
+            }}
+            className="inline-flex sm:text-base text-sm rounded-[10px] items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow transition-colors duration-200 transform hover:scale-105"
+            disabled={isSaving}
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Añadir Usuario
+          </button>
+        )}
       </div>
 
       <div className="mb-6 flex flex-col sm:flex-row gap-2 sm:gap-4">
@@ -241,7 +266,7 @@ const PestanaUsuarios = () => {
         <div className="relative flex w-full gap-2">
           <input
             type="text"
-            placeholder={`Buscar por ${searchType}`}
+            placeholder={`Buscar por ${searchType === 'name' ? 'nombre' : searchType}`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full py-1 pl-8 text-sm sm:text-base border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -277,6 +302,11 @@ const PestanaUsuarios = () => {
       {/* Formulario de Creación/Edición */}
       {!loading && agregando && (
         <form onSubmit={editando ? handleEditUsuario : handleAddUsuario} className="mb-6 bg-white p-4 rounded-lg shadow">
+          <h2 className="text-xl font-bold mb-4">{editando ? 'Editar Usuario' : 'Crear Nuevo Usuario'}</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            {editando ? 'Modifica los datos del usuario seleccionado.' : 'Completa todos los campos para crear un nuevo usuario en el sistema.'}
+          </p>
+          
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-gray-700">Nombre</label>
@@ -287,9 +317,12 @@ const PestanaUsuarios = () => {
                   ? setEditUsuario({ ...editUsuario, name: e.target.value }) 
                   : setNewUsuario({ ...newUsuario, name: e.target.value })
                 }
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm ${
+                  validationErrors.name ? 'border-red-500 text-red-500' : ''
+                }`}
                 required
               />
+              {validationErrors.name && <p className="text-red-500 text-sm mt-1">{validationErrors.name[0]}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -300,10 +333,12 @@ const PestanaUsuarios = () => {
                   ? setEditUsuario({ ...editUsuario, email: e.target.value }) 
                   : setNewUsuario({ ...newUsuario, email: e.target.value })
                 }
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm ${
+                  validationErrors.email ? 'border-red-500 text-red-500' : ''
+                }`}
                 required
               />
-              {validationErrors.email && <p className="text-red-500 text-sm">{validationErrors.email[0]}</p>}
+              {validationErrors.email && <p className="text-red-500 text-sm mt-1">{validationErrors.email[0]}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">DNI</label>
@@ -316,10 +351,19 @@ const PestanaUsuarios = () => {
                     ? setEditUsuario({ ...editUsuario, dni: value })
                     : setNewUsuario({ ...newUsuario, dni: value });
                 }}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm ${
+                  validationErrors.dni ? 'border-red-500 text-red-500' : ''
+                }`}
                 required
               />
-              {validationErrors.dni && <p className="text-red-500 text-sm">{validationErrors.dni[0]}</p>}
+              {validationErrors.dni && (
+                <p className="text-red-500 text-sm mt-1">
+                  {validationErrors.dni[0].includes('has already been taken') 
+                    ? 'Ya existe un usuario con este DNI en el sistema.'
+                    : validationErrors.dni[0]
+                  }
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Teléfono</label>
@@ -330,9 +374,12 @@ const PestanaUsuarios = () => {
                   ? setEditUsuario({ ...editUsuario, telefono: e.target.value }) 
                   : setNewUsuario({ ...newUsuario, telefono: e.target.value })
                 }
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm ${
+                  validationErrors.telefono ? 'border-red-500 text-red-500' : ''
+                }`}
                 required
               />
+              {validationErrors.telefono && <p className="text-red-500 text-sm mt-1">{validationErrors.telefono[0]}</p>}
             </div>
             {!editando && (
               <>
@@ -342,9 +389,12 @@ const PestanaUsuarios = () => {
                     type="password"
                     value={newUsuario.password}
                     onChange={(e) => setNewUsuario({ ...newUsuario, password: e.target.value })}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm ${
+                      validationErrors.password ? 'border-red-500 text-red-500' : ''
+                    }`}
                     required
                   />
+                  {validationErrors.password && <p className="text-red-500 text-sm mt-1">{validationErrors.password[0]}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Confirmar Contraseña</label>
@@ -352,9 +402,12 @@ const PestanaUsuarios = () => {
                     type="password"
                     value={newUsuario.password_confirmation}
                     onChange={(e) => setNewUsuario({ ...newUsuario, password_confirmation: e.target.value })}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm ${
+                      validationErrors.password_confirmation ? 'border-red-500 text-red-500' : ''
+                    }`}
                     required
                   />
+                  {validationErrors.password_confirmation && <p className="text-red-500 text-sm mt-1">{validationErrors.password_confirmation[0]}</p>}
                 </div>
               </>
             )}
@@ -366,13 +419,16 @@ const PestanaUsuarios = () => {
                   ? setEditUsuario({ ...editUsuario, rol: e.target.value }) 
                   : setNewUsuario({ ...newUsuario, rol: e.target.value })
                 }
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm ${
+                  validationErrors.rol ? 'border-red-500 text-red-500' : ''
+                }`}
                 required
               >
                 <option value="cliente">Cliente</option>
                 <option value="moderador">Moderador</option>
                 <option value="admin">Admin</option>
               </select>
+              {validationErrors.rol && <p className="text-red-500 text-sm mt-1">{validationErrors.rol[0]}</p>}
             </div>
           </div>
           <div className="mt-4 flex justify-end">
@@ -425,12 +481,16 @@ const PestanaUsuarios = () => {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                      <button onClick={() => handleEditClick(usuario)} className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200" disabled={isSaving}>
-                        <Edit2 className="h-5 w-5" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" disabled={isSaving}>
-                        <Trash2 className="h-5 w-5" />
-                      </button>
+                      {isAdmin && (
+                        <>
+                          <button onClick={() => handleEditClick(usuario)} className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200" disabled={isSaving}>
+                            <Edit2 className="h-5 w-5" />
+                          </button>
+                          <button className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" disabled={isSaving}>
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                        </>
+                      )}
                       <button onClick={() => handleViewTurnosClick(usuario.persona?.dni)} className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors duration-200" disabled={isSaving}>
                         Ver Turnos
                       </button>

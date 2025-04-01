@@ -52,6 +52,15 @@ const PestanaCuentasCorrientes = () => {
   const [tipoTransaccion, setTipoTransaccion] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
+  const [userRole, setUserRole] = useState('');
+
+  useEffect(() => {
+    const role = localStorage.getItem('user_role');
+    setUserRole(role);
+  }, []);
+
+  const isAdmin = userRole === 'admin';
+
   useEffect(() => {
     if (activeTab === 'cuentas') {
       fetchCuentasCorrientes();
@@ -456,8 +465,8 @@ const PestanaCuentasCorrientes = () => {
       {/* Buscador */}
       <SearchSection />
 
-      {/* Botón para añadir transacción en la pestaña de transacciones (MOVIDO AQUÍ ARRIBA) */}
-      {!loading && activeTab === 'transacciones' && (
+      {/* Botón para añadir transacción en la pestaña de transacciones */}
+      {!loading && activeTab === 'transacciones' && isAdmin && (
         <div className="mb-4 flex justify-end">
           <button
             onClick={() => handleOpenTransaccionModal()}
@@ -533,16 +542,18 @@ const PestanaCuentasCorrientes = () => {
                       </div>
                     </div>
 
-                    {/* Botón para agregar transacción */}
-                    <div className="mt-4 flex justify-end">
-                      <button
-                        onClick={() => handleOpenTransaccionModal(cuenta.id)}
-                        className="flex items-center px-3 py-1 text-sm text-white bg-green-600 rounded-md hover:bg-green-700"
-                      >
-                        <PlusCircle className="mr-1 h-4 w-4" />
-                        Agregar Transacción
-                      </button>
-                    </div>
+                    {/* Botón para agregar transacción en cuentas corrientes */}
+                    {isAdmin && (
+                      <div className="mt-4 flex justify-end">
+                        <button
+                          onClick={() => handleOpenTransaccionModal(cuenta.id)}
+                          className="flex items-center px-3 py-1 text-sm text-white bg-green-600 rounded-md hover:bg-green-700"
+                        >
+                          <PlusCircle className="mr-1 h-4 w-4" />
+                          Agregar Transacción
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </li>
               ))

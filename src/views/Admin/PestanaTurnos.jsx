@@ -1,39 +1,41 @@
 import React, { useState } from 'react';
 import VerTurnos from './VerTurnos';
 import VerGrilla from './VerGrilla';
+import { CalendarDays, Grid } from 'lucide-react';
 
 const PestanaTurnos = () => {
   const [activeView, setActiveView] = useState('turnos');
 
   return (
-    <div className="w-full">
-      <div className="flex justify-center mb-2 mt-6">
-        <div className="border-b border-gray-200">
-          <nav className="flex -mb-px" aria-label="Tabs">
-            <button
-              onClick={() => setActiveView('turnos')}
-              className={`py-2 px-8 border-b-2 font-medium text-sm whitespace-nowrap
-                ${activeView === 'turnos'
-                  ? 'border-naranja text-naranja'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }
-              `}
-            >
-              Ver Turnos
-            </button>
-            <button
-              onClick={() => setActiveView('grilla')}
-              className={`py-2 px-8 border-b-2 font-medium text-sm whitespace-nowrap
-                ${activeView === 'grilla'
-                  ? 'border-naranja text-naranja'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }
-              `}
-            >
-              Ver Grilla
-            </button>
-          </nav>
-        </div>
+    <div className="w-full py-4">
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200 mb-4">
+        <button
+          className={`px-4 py-2 font-medium text-sm ${
+            activeView === 'turnos'
+              ? 'border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setActiveView('turnos')}
+        >
+          <span className="flex items-center">
+            <CalendarDays className="mr-2 h-4 w-4" />
+            Ver Turnos
+          </span>
+        </button>
+        <button
+          className={`px-4 py-2 font-medium text-sm ${
+            activeView === 'grilla'
+              ? 'border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setActiveView('grilla')}
+        >
+          <span className="flex items-center">
+            <Grid className="mr-2 h-4 w-4" />
+            Ver Grilla
+          </span>
+        </button>
       </div>
       
       {activeView === 'turnos' ? <VerTurnos /> : <VerGrilla />}

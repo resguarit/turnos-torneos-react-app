@@ -14,6 +14,7 @@ import BackButton from '@/components/BackButton';
 import useTimeout from '@/components/useTimeout';
 import * as XLSX from 'xlsx';
 import BtnLoading from '@/components/BtnLoading';
+import ModalTurno from '@/components/PanelAdmin/VerGrilla/ModalTurno';
 
 export default function VerGrilla() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -22,6 +23,8 @@ export default function VerGrilla() {
   const [courts, setCourts] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedTurno, setSelectedTurno] = useState(null);
+  const [showTurnoModal, setShowTurnoModal] = useState(false);
   const navigate = useNavigate();
 
 
@@ -99,10 +102,15 @@ export default function VerGrilla() {
     setIsOpen((prev) => !prev);
   };
 
-  const handleNavigationTurno = (id) => () => {
-    navigate(`/editar-turno/${id}`);
+  const handleTurnoClick = (turno) => {
+    setSelectedTurno(turno);
+    setShowTurnoModal(true);
   };
 
+  const handleCloseTurnoModal = () => {
+    setShowTurnoModal(false);
+    setSelectedTurno(null);
+  };
 
   const exportToPDF = () => {
     const input = document.getElementById('grilla-table');
@@ -267,8 +275,10 @@ export default function VerGrilla() {
                         <td key={key} className="border max-w-14 p-2 h-12">
                           {reservation ? (
                             <div 
-                            onClick={handleNavigationTurno(reservation.id)}
-                            className=" w-full h-full rounded p-2 hover:cursor-pointer text-white" style={{ backgroundColor: reservation.tipo === "fijo" ? "#1E90FF" : reservation.tipo === "unico" ? "#16a34a" : "#FFA500" }}>
+                              onClick={() => handleTurnoClick(reservation)}
+                              className="w-full h-full rounded p-2 hover:cursor-pointer text-white" 
+                              style={{ backgroundColor: reservation.tipo === "fijo" ? "#1E90FF" : reservation.tipo === "unico" ? "#16a34a" : "#FFA500" }}
+                            >
                               <p className="text-xs lg:text-base font-semibold md:flex items-center hidden ">
                                 <User className="w-4 h-4 mr-1" />
                                 {reservation.usuario.nombre}
@@ -292,6 +302,13 @@ export default function VerGrilla() {
             </table>
           </div>
         </div>
+
+        {/* Modal de Turno */}
+        <ModalTurno
+          isOpen={showTurnoModal}
+          onClose={handleCloseTurnoModal}
+          turno={selectedTurno}
+        />
       </main>
     </div>
   );

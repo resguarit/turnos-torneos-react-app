@@ -11,6 +11,7 @@ const PestanaPersonas = () => {
   const [editando, setEditando] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchType, setSearchType] = useState('dni');
+  const [userRole, setUserRole] = useState('');
   // Estructura para datos de la persona
   const [newPersona, setNewPersona] = useState({
     name: '',
@@ -30,6 +31,13 @@ const PestanaPersonas = () => {
   const [clear, setClear] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+
+  useEffect(() => {
+    const role = localStorage.getItem('user_role');
+    setUserRole(role);
+  }, []);
+
+  const isAdmin = userRole === 'admin';
 
   const fetchPersonas = async (signal) => {
     setLoading(true);
@@ -245,18 +253,20 @@ const PestanaPersonas = () => {
 
       {/* Header */}
       <div className="flex justify-end items-center mb-4">
-        <button
-          onClick={() => {
-            setAgregando(true);
-            setEditando(null);
-            initNewPersonaForm();
-          }}
-          className="inline-flex sm:text-base text-sm rounded-[10px] items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow transition-colors duration-200 transform hover:scale-105"
-          disabled={isSaving}
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          Añadir Persona
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => {
+              setAgregando(true);
+              setEditando(null);
+              initNewPersonaForm();
+            }}
+            className="inline-flex sm:text-base text-sm rounded-[10px] items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow transition-colors duration-200 transform hover:scale-105"
+            disabled={isSaving}
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Añadir Persona
+          </button>
+        )}
       </div>
 
       <div className="mb-6 flex flex-col sm:flex-row gap-2 sm:gap-4">
@@ -277,7 +287,7 @@ const PestanaPersonas = () => {
         <div className="relative flex w-full gap-2">
           <input
             type="text"
-            placeholder={`Buscar por ${searchType}`}
+            placeholder={`Buscar por ${searchType === 'name' ? 'nombre' : searchType}`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full py-1 pl-8 text-sm sm:text-base border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -432,12 +442,16 @@ const PestanaPersonas = () => {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                      <button onClick={() => handleEditClick(persona)} className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200" disabled={isSaving}>
-                        <Edit2 className="h-5 w-5" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" disabled={isSaving}>
-                        <Trash2 className="h-5 w-5" />
-                      </button>
+                      {isAdmin && (
+                        <>
+                          <button onClick={() => handleEditClick(persona)} className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200" disabled={isSaving}>
+                            <Edit2 className="h-5 w-5" />
+                          </button>
+                          <button className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" disabled={isSaving}>
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                        </>
+                      )}
                       <button 
                         onClick={() => handleViewTurnosClick(persona.dni)} 
                         className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors duration-200 flex items-center" 

@@ -104,14 +104,16 @@ export function Header() {
             <Link to="/" className="hover:opacity-80">
               Inicio
             </Link>
-            {userRole === "admin" && (
+            {(userRole === "admin" || userRole === "moderador") && (
               <Link to="/panel-admin" className="hover:opacity-80 flex items-center gap-1">
-                Administrador
+                {userRole === "admin" ? "Administrador" : "Moderador"}
               </Link>
             )}
+            {/*
             <Link to="/torneos-admi" className="hover:opacity-80">
               Torneos
             </Link>
+            */}
 
             {/* Reemplazar "Reservar" por "Continuar Reserva" cuando hay una reserva activa */}
             {hasActiveReservation && !isReservationPage ? (
@@ -124,15 +126,18 @@ export function Header() {
               </Link>
             )}
 
+            {/*
             <Link to="/partidos" className="hover:opacity-80">
               Partidos
             </Link>
             <Link to="/reglamento" className="hover:opacity-80">
               Reglamento
             </Link>
+            
             <Link to="/premios" className="hover:opacity-80">
               Premios
             </Link>
+            */} 
 
             {username ? (
               <div className="relative">

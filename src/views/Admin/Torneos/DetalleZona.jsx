@@ -221,7 +221,7 @@ export default function DetalleZona() {
                 Sortear Fechas <Shuffle size={18}/>
               </button>
             )}
-            {(zona.fechas.length > 0)  && (
+            {(zona.fechas.length > 0 || fechasSorteadas)  && (
               <>
                 <CarruselFechas zonaId={zonaId} equipos={zona.equipos} fechas={fechas} />
 

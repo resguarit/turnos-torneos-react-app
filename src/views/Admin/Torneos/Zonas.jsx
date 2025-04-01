@@ -8,11 +8,14 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Star, Users, ChevronLeft, CalendarDays } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { toast } from 'react-toastify';
 
 export default function Zonas() {
   const { torneoId } = useParams();
   const [zonas, setZonas] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [zonaToDelete, setZonaToDelete] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,6 +43,29 @@ export default function Zonas() {
 
     fetchZonas();
   }, [torneoId]);
+
+  const handleDeleteZona = async (zonaId) => {
+    try {
+      setLoading(true);
+      const response = await api.delete(`/zonas/${zonaId}`);
+      
+      if (response.status === 200) {
+        setZonas(zonas.filter(zona => zona.id !== zonaId));
+        setShowDeleteModal(false);
+        toast.success('Zona eliminada correctamente');
+      }
+    } catch (error) {
+      console.error('Error al eliminar la zona:', error);
+      toast.error('Error al eliminar la zona');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openDeleteModal = (zona) => {
+    setZonaToDelete(zona);
+    setShowDeleteModal(true);
+  };
 
   if (loading) {
     return (
@@ -104,6 +130,12 @@ export default function Zonas() {
                       >
                         Editar
                       </button>
+                      <button
+                        onClick={() => openDeleteModal(zona)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                      >
+                        Eliminar
+                      </button>
                     </div>
                   </CardContent>
                 </Card>
@@ -112,6 +144,33 @@ export default function Zonas() {
           )}
         </div>
       </main>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Confirmar Eliminación</h3>
+            <p className="mb-4">
+              ¿Estás seguro de que deseas eliminar la zona <strong>{zonaToDelete?.nombre}</strong>? 
+              Esta acción eliminará todos los equipos, grupos y fechas asociados a esta zona.
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => handleDeleteZona(zonaToDelete.id)}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                disabled={loading}
+              >
+                {loading ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <Footer />
     </div>
   );

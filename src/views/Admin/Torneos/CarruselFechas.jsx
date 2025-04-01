@@ -8,9 +8,8 @@ import api from '@/lib/axiosConfig'
 import BtnLoading from "@/components/BtnLoading"
 import EditFechaModal from './EditFechaModal'
 import PostergarFechasModal from './PostergarFechasModal'
-/* import AsignarHoraYCanchaModal from './AsignarHoraYCanchaModal' */
 
-export default function FechaCarousel({ zonaId, equipos }) {
+export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
   const [fechas, setFechas] = useState([]);
   const [currentFechaIndex, setCurrentFechaIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -72,6 +71,11 @@ export default function FechaCarousel({ zonaId, equipos }) {
         await api.delete(`/fechas/${fecha.id}`);
       }
       setFechas([]);
+      
+      // Llamar a la función callback para notificar al componente padre
+      if (onFechasDeleted && typeof onFechasDeleted === 'function') {
+        onFechasDeleted();
+      }
     } catch (error) {
       console.error('Error deleting all dates:', error);
     } finally {

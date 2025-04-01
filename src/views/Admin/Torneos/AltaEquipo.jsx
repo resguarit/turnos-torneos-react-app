@@ -3,22 +3,27 @@ import api from '@/lib/axiosConfig';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import BackButton from '@/components/BackButton';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 export default function CargarEquipo({ onEquipoSeleccionado }) {
   const { zonaId } = useParams();
+  const [searchParams] = useSearchParams();
+  const equipoToReplace = searchParams.get('reemplazar');
+  const navigate = useNavigate();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [equipos, setEquipos] = useState([]);
   const [filteredEquipos, setFilteredEquipos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [nuevoEquipo, setNuevoEquipo] = useState('');
-  // Estado para controlar si estamos en modo selección o modo creación
-  const [modoOperacion, setModoOperacion] = useState(null); // null, 'seleccion', 'creacion'
+  const [modoOperacion, setModoOperacion] = useState(null);
+  const [equipoAReemplazar, setEquipoAReemplazar] = useState(null);
 
   const fetchEquipos = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/equipos?excluirZona=${zonaId}`);
+      const response = await api.get(`/equipos/exclude-zona/${zonaId}`);
       setEquipos(response.data);
     } catch (error) {
       console.error('Error al cargar equipos:', error);
@@ -29,7 +34,22 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
 
   useEffect(() => {
     fetchEquipos();
-  }, [zonaId]);
+    
+    // Si hay un equipo para reemplazar, obtener sus datos
+    if (equipoToReplace) {
+      fetchEquipoAReemplazar(equipoToReplace);
+    }
+  }, [zonaId, equipoToReplace]);
+
+  const fetchEquipoAReemplazar = async (equipoId) => {
+    try {
+      const response = await api.get(`/equipos/${equipoId}`);
+      setEquipoAReemplazar(response.data);
+    } catch (error) {
+      console.error('Error al cargar el equipo a reemplazar:', error);
+      toast.error('Error al cargar el equipo a reemplazar');
+    }
+  };
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -53,29 +73,42 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
       setLoading(true);
       setModoOperacion('seleccion');
 
-      const equipoSeleccionado = equipos.find((equipo) => equipo.id === equipoId);
+      if (equipoToReplace) {
+        // Si estamos reemplazando un equipo
+        const response = await api.post(`/zonas/${zonaId}/reemplazar-equipo`, {
+          equipo_viejo_id: equipoToReplace,
+          equipo_nuevo_id: equipoId
+        });
+        
+        if (response.status === 200) {
+          toast.success('Equipo reemplazado correctamente');
+          navigate(`/detalle-zona/${zonaId}`);
+        }
+      } else {
+        const equipoSeleccionado = equipos.find((equipo) => equipo.id === equipoId);
 
-      if (!equipoSeleccionado) {
-        alert('Equipo no encontrado.');
-        return;
+        if (!equipoSeleccionado) {
+          toast.error('Equipo no encontrado.');
+          return;
+        }
+
+        const response = await api.put(`/equipos/${equipoId}`, {
+          nombre: equipoSeleccionado.nombre,
+          zona_id: zonaId,
+        });
+
+        if (response.status === 200) {
+          toast.success('Equipo agregado a la zona correctamente.');
+          
+          // Navegar de vuelta a la página de detalles de la zona
+          navigate(`/detalle-zona/${zonaId}`);
+        } else {
+          throw new Error('Error al agregar el equipo a la zona');
+        }
       }
-
-      await api.put(`/equipos/${equipoId}`, {
-        nombre: equipoSeleccionado.nombre,
-        zona_id: zonaId,
-      });
-
-      alert('Equipo agregado a la zona correctamente.');
-
-      setEquipos((prev) => prev.filter((equipo) => equipo.id !== equipoId));
-      setFilteredEquipos((prev) => prev.filter((equipo) => equipo.id !== equipoId));
-      
-      // Resetear el modo después de completar la operación
-      setModoOperacion(null);
-      setSearchTerm('');
     } catch (error) {
-      console.error('Error al agregar equipo a la zona:', error);
-      alert('Error al agregar el equipo a la zona.');
+      console.error('Error details:', error.response?.data || error.message || error);
+      toast.error(equipoToReplace ? 'Error al reemplazar el equipo' : 'Error al agregar el equipo');
     } finally {
       setLoading(false);
     }
@@ -83,7 +116,7 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
 
   const handleNuevoEquipo = async () => {
     if (!nuevoEquipo.trim()) {
-      alert('El nombre del equipo no puede estar vacío.');
+      toast.error('El nombre del equipo no puede estar vacío.');
       return;
     }
 
@@ -91,23 +124,35 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
       setLoading(true);
       setModoOperacion('creacion');
       
+      // Crear el equipo directamente con el ID de la zona actual
       const response = await api.post('/equipos', { 
         nombre: nuevoEquipo, 
-        zona_id: zonaId
+        zona_id: zonaId // Usar zonaId directamente en lugar de null
       });
-      const equipoCreado = response.data;
-
-      setEquipos((prev) => prev.filter((equipo) => equipo.id !== equipoCreado.id));
-      setFilteredEquipos((prev) => prev.filter((equipo) => equipo.id !== equipoCreado.id));
-
-      setNuevoEquipo('');
-      alert('Equipo creado y agregado a la zona correctamente.');
       
-      // Resetear el modo después de completar la operación
-      setModoOperacion(null);
+      if (response.status === 201) {
+        const equipoCreado = response.data.equipo;
+        
+        if (equipoToReplace) {
+          // Si estamos reemplazando un equipo
+          const replaceResponse = await api.post(`/zonas/${zonaId}/reemplazar-equipo`, {
+            equipo_viejo_id: equipoToReplace,
+            equipo_nuevo_id: equipoCreado.id
+          });
+          
+          if (replaceResponse.status === 200) {
+            toast.success('Equipo creado y reemplazado correctamente');
+            navigate(`/detalle-zona/${zonaId}`);
+          }
+        } else {
+          // Equipo creado directamente en la zona, mostrar éxito y redirigir
+          toast.success('Equipo creado y agregado a la zona correctamente.');
+          navigate(`/detalle-zona/${zonaId}`);
+        }
+      }
     } catch (error) {
       console.error('Error al crear equipo:', error);
-      alert('Error al crear el equipo.');
+      toast.error(error.response?.data?.message || 'Error al crear el equipo');
     } finally {
       setLoading(false);
     }
@@ -125,7 +170,18 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
       <Header />
       <main className="max-w-7xl lg:max-w-full p-6 grow">
         <BackButton />
-        <h1 className="text-2xl font-bold mb-6 lg:text-4xl">Cargar Equipo</h1>
+        <h1 className="text-2xl font-bold mb-6 lg:text-4xl">
+          {equipoToReplace ? 'Reemplazar Equipo' : 'Cargar Equipo'}
+        </h1>
+        
+        {equipoToReplace && equipoAReemplazar && (
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6">
+            <p className="text-yellow-700">
+              Estás a punto de reemplazar el equipo <strong>{equipoAReemplazar.nombre}</strong>. 
+              El nuevo equipo heredará todos los partidos y asignaciones del equipo actual.
+            </p>
+          </div>
+        )}
         
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-3xl">

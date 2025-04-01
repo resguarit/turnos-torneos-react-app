@@ -289,7 +289,7 @@ export default function VerTablas() {
                   {partidosProximaFecha.map((partido, index) => (
                     <tr key={index} className="text-center bg-white">
                       <td className="border border-gray-300 px-4 py-2">{partido.equipo_local.nombre}</td>
-                    <td className="border border-gray-300 px-4 py-2">vs</td>
+                      <td className="border border-gray-300 px-4 py-2">vs</td>
                       <td className="border border-gray-300 px-4 py-2">{partido.equipo_visitante.nombre}</td>
                       <td className="border border-gray-300 px-4 py-2">{partido.cancha?.nro || 'No Definido'}</td>
                       <td className="border border-gray-300 px-4 py-2">{partido.horario?.hora || 'No Definido'}</td>

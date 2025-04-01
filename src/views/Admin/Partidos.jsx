@@ -286,7 +286,7 @@ function Partidos() {
                         </div>
                       </td>
                       <td className="px-4 py-2 text-center">{partido.horario ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : 'No Definido'}</td>
-                      <td className="px-4 py-2 text-center">{partido.cancha ? partido.cancha.nombre : 'No Definido'}</td>
+                      <td className="px-4 py-2 text-center">{partido.cancha ? `${partido.cancha.nro} - ${partido.cancha.tipo_cancha}` : 'No Definido'}</td>
                       <td className="px-4 py-2 text-center">{partido.fecha.zona.torneo.nombre}</td>
                       <td className="px-4 py-2 text-center">{partido.fecha.zona.nombre}</td>
                       <td className="px-4 py-2 text-center">{partido.fecha.nombre}</td>

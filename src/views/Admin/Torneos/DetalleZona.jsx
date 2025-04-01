@@ -61,6 +61,7 @@ export default function DetalleZona() {
           setFechas(fechasResponse.data);
           setFechasSorteadas(true); // Establecer fechasSorteadas en true si ya hay fechas cargadas
         }
+
       } catch (error) {
         console.error('Error fetching zone details:', error);
       } finally {

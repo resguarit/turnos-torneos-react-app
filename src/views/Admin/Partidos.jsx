@@ -121,7 +121,7 @@ function Partidos() {
       <Header></Header>
       <div className="p-6 grow bg-gray-100">
         <div className="max-w-7xl lg:max-w-full mx-auto">
-          <h1 className="text-2xl font-bold mb-4 lg:text-4xl">Partidos</h1>
+          <h1 className="text-xl font-bold mb-4 lg:text-2xl">Partidos</h1>
 
           {/* Search and Filter Section */}
           <div className="bg-white p-2 px-3 rounded-[8px] shadow mb-6">
@@ -289,7 +289,7 @@ function Partidos() {
                       <td className="px-4 py-2 text-center">
                         <div className="grid grid-cols-3 items-center w-full">
                           <span className="text-left truncate">{partido.equipos[0]?.nombre}</span>
-                          <span className="text-center min-w-[50px]">{partido.marcador_local ?? '-'} - {partido.marcador_visitante ?? '-'}</span>
+                          <span className="text-center min-w-[50px]">{partido.marcador_visitante ?? '-'} - {partido.marcador_local ?? '-'}</span>
                           <span className="text-right truncate">{partido.equipos[1]?.nombre}</span>
                         </div>
                       </td>

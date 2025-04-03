@@ -90,7 +90,17 @@ export default function CargaPartido() {
   };
 
   if (loading) {
-    return <div className="w-full justify-center flex"><BtnLoading /></div>
+    return (
+      <div className="min-h-screen flex flex-col font-inter">
+        <Header />
+        <main className="flex-1 p-6 bg-gray-100">
+          <div className="flex justify-center items-center h-full">
+            <BtnLoading />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
   const currentFecha = fechas[currentFechaIndex];
@@ -104,15 +114,15 @@ export default function CargaPartido() {
       <Header />
       <main className="max-w-7xl lg:max-w-full p-6 grow">
         <BackButton />
-        <h1 className="text-2xl font-bold mb-6 lg:text-4xl">Cargar Partido</h1>
+        <h1 className="text-xl font-bold mb-4 lg:text-2xl">Cargar Partido</h1>
 
         <div className="space-y-4 mb-6">
           <div>
-            <label className="block font-semibold mb-1 lg:text-xl">
+            <label className="block font-semibold font-sans mb-1 lg:text-xl">
               Selecciona el Torneo:
             </label>
             <select
-              className="w-full border border-gray-300 p-1 lg:text-xl"
+              className="w-1/2 border border-gray-300 p-1 lg:text-lg"
               style={{ borderRadius: '6px' }}
               value={selectedTorneo}
               onChange={handleTorneoChange}
@@ -128,11 +138,11 @@ export default function CargaPartido() {
             </select>
           </div>
           <div>
-            <label className="block font-semibold mb-1 lg:text-xl">
+            <label className="block font-semibold font-sans mb-1 lg:text-xl">
               Selecciona la Zona:
             </label>
             <select
-              className="w-full border border-gray-300 p-1 lg:text-xl"
+              className="w-1/2 border border-gray-300 p-1 lg:text-lg"
               style={{ borderRadius: '6px' }}
               value={selectedZona}
               onChange={handleZonaChange}
@@ -190,37 +200,46 @@ export default function CargaPartido() {
 
             <div className="divide-y divide-gray-200">
               {currentFecha.partidos && currentFecha.partidos.length > 0 ? (
-                currentFecha.partidos.map((partido) => (
-                  <div
-                    key={partido.id}
-                    className="p-3 bg-gray-200 rounded-lg my-2 cursor-pointer"
-                    onClick={() => navigate(`/resultado-partido/${partido.id}`)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2 flex-1">
-                        <div
-                          className="w-6 h-6 rounded-full"
-                          style={{ backgroundColor: "#ccc" }}
-                        />
-                        <span className="font-medium">
-                          {partido.equipos[0].nombre }
-                        </span>
+                currentFecha.partidos.map((partido) => {
+                  const cancha = partido.cancha ? `${partido.cancha.nro} - ${partido.cancha.tipo_cancha}` : "No Definido";
+                  const horario = partido.horario ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : "No Definido";
+
+                  return (
+                    <div
+                      key={partido.id}
+                      className="p-3 bg-gray-200 rounded-lg my-2 cursor-pointer"
+                      onClick={() => navigate(`/resultado-partido/${partido.id}`)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2 flex-1">
+                          <div
+                            className="w-6 h-6 rounded-full"
+                            style={{ backgroundColor: "#ccc" }}
+                          />
+                          <span className="font-medium">
+                            {partido.equipos[0].nombre }
+                          </span>
+                        </div>
+
+                        <span className="mx-2 font-bold">vs</span>
+
+                        <div className="flex items-center space-x-2 flex-1 justify-end">
+                          <span className="font-medium">
+                            {partido.equipos[1].nombre }
+                          </span>
+                          <div
+                            className="w-6 h-6 rounded-full"
+                            style={{ backgroundColor: "#ccc" }}
+                          />
+                        </div>
                       </div>
-
-                      <span className="mx-2 font-bold">vs</span>
-
-                      <div className="flex items-center space-x-2 flex-1 justify-end">
-                        <span className="font-medium">
-                          {partido.equipos[1].nombre }
-                        </span>
-                        <div
-                          className="w-6 h-6 rounded-full"
-                          style={{ backgroundColor: "#ccc" }}
-                        />
+                      <div className="flex justify-between mt-2 text-sm text-gray-600">
+                        <span>Cancha: {cancha}</span>
+                        <span>Hora: {horario}</span>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="p-4 text-center text-gray-500">No hay partidos para esta fecha</div>
               )}

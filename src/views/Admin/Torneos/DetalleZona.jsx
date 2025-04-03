@@ -16,6 +16,7 @@ import 'react-day-picker/dist/style.css';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Modal from '@/components/Modal';
 
 export default function DetalleZona() {
   const { zonaId } = useParams();
@@ -34,9 +35,56 @@ export default function DetalleZona() {
   const calendarRef = useRef(null);
   const navigate = useNavigate();
   const [editMode, setEditMode] = useState(false); // Estado para controlar el modo de edición
+  const [modalRondaVisible, setModalRondaVisible] = useState(false);
+  const [equiposSeleccionados, setEquiposSeleccionados] = useState([]);
+  const [fechaAnteriorId, setFechaAnteriorId] = useState(null);
 
   const handleToggleEditMode = () => {
     setEditMode((prev) => !prev); // Alternar entre modo de edición y vista normal
+  };
+
+  const handleAbrirModalRonda = () => {
+    if (zona.fechas && zona.fechas.length > 0) {
+      setFechaAnteriorId(zona.fechas[zona.fechas.length - 1].id); // Última fecha
+      setModalRondaVisible(true);
+    } else {
+      toast.error('No hay fechas disponibles para generar la siguiente ronda.');
+    }
+  };
+
+  const handleSeleccionarEquipo = (equipoId) => {
+    setEquiposSeleccionados((prev) =>
+      prev.includes(equipoId)
+        ? prev.filter((id) => id !== equipoId) // Deseleccionar
+        : [...prev, equipoId] // Seleccionar
+    );
+  };
+
+  const handleGenerarRonda = async () => {
+    if (equiposSeleccionados.length !== zona.equipos.length / 2) {
+      toast.error('Debes seleccionar exactamente la mitad de los equipos.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await api.post(`/zona/${zonaId}/generar-siguiente-ronda`, {
+        equipos: equiposSeleccionados,
+        fecha_anterior_id: fechaAnteriorId,
+      });
+
+      if (response.status === 201) {
+        setFechas((prev) => [...prev, response.data.fecha]); // Agregar la nueva fecha
+        toast.success('Siguiente ronda creada correctamente.');
+        setModalRondaVisible(false);
+        setEquiposSeleccionados([]);
+      }
+    } catch (error) {
+      console.error('Error al generar la siguiente ronda:', error);
+      toast.error(error.response?.data?.message || 'Error al generar la siguiente ronda.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Añade la función handleReemplazarEquipo
@@ -580,6 +628,14 @@ export default function DetalleZona() {
             {zona.formato === 'Eliminatoria' && zona.fechas && zona.fechas.length > 0 && (
               <ArañaEliminacion fechaId={zona.fechas[0].id} />
             )}
+            {(zona.formato === 'Eliminatoria' || zona.formato === 'Liga + Playoff') && (
+              <button
+                onClick={handleAbrirModalRonda}
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md"
+              >
+                Agregar Ronda
+              </button>
+            )}
           </div>
         </div>
       </main>
@@ -648,6 +704,40 @@ export default function DetalleZona() {
             </div>
           </div>
         </div>
+      )}
+
+      {modalRondaVisible && (
+        <Modal onClose={() => setModalRondaVisible(false)} title="Seleccionar Equipos">
+          <div>
+            <p className="mb-4">Selecciona los equipos que avanzan a la siguiente ronda:</p>
+            <ul className="space-y-2">
+              {zona.equipos.map((equipo) => (
+                <li key={equipo.id} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={equiposSeleccionados.includes(equipo.id)}
+                    onChange={() => handleSeleccionarEquipo(equipo.id)}
+                  />
+                  <span>{equipo.nombre}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="flex justify-end mt-4 space-x-2">
+              <button
+                onClick={() => setModalRondaVisible(false)}
+                className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleGenerarRonda}
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md"
+              >
+                Generar Ronda
+              </button>
+            </div>
+          </div>
+        </Modal>
       )}
       <ToastContainer position="top-right" />
     </div>

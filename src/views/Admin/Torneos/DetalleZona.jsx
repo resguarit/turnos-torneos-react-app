@@ -614,7 +614,6 @@ export default function DetalleZona() {
                 </button>
               </div>
             )}
-            {((zona.fechas.length > 0)) || fechasSorteadas && (
               <CarruselFechas 
                 zonaId={zonaId} 
                 equipos={zona.equipos} 
@@ -624,7 +623,7 @@ export default function DetalleZona() {
                   setFechas([]);
                 }}
               />
-            )}
+
             {zona.formato === 'Eliminatoria' && zona.fechas && zona.fechas.length > 0 && (
               <ArañaEliminacion fechaId={zona.fechas[0].id} />
             )}

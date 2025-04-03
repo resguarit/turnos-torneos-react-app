@@ -203,6 +203,8 @@ export default function CargaPartido() {
                 currentFecha.partidos.map((partido) => {
                   const cancha = partido.cancha ? `${partido.cancha.nro} - ${partido.cancha.tipo_cancha}` : "No Definido";
                   const horario = partido.horario ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : "No Definido";
+                  const marcadorLocal = partido.marcador_local ?? "-";
+                  const marcadorVisitante = partido.marcador_visitante ?? "-";
 
                   return (
                     <div
@@ -217,15 +219,17 @@ export default function CargaPartido() {
                             style={{ backgroundColor: "#ccc" }}
                           />
                           <span className="font-medium">
-                            {partido.equipos[0].nombre }
+                            {partido.equipos[0]?.nombre || "Equipo no definido"}
                           </span>
                         </div>
 
-                        <span className="mx-2 font-bold">vs</span>
+                        <span className="mx-2 font-bold">
+                          {marcadorLocal} - {marcadorVisitante}
+                        </span>
 
                         <div className="flex items-center space-x-2 flex-1 justify-end">
                           <span className="font-medium">
-                            {partido.equipos[1].nombre }
+                            {partido.equipos[1]?.nombre || "Equipo no definido"}
                           </span>
                           <div
                             className="w-6 h-6 rounded-full"

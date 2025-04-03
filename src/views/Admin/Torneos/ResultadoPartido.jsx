@@ -365,7 +365,7 @@ const handleEditClick = async (estadisticaId, jugadorId) => {
       <td className="p-2 text-center">
         <input
           type="checkbox"
-          checked={estadisticas[jugador.id]?.presente || false}
+          checked={estadisticas[jugador.id]?.presente || false} // Marcado si tiene estadística asociada
           onChange={(e) => handleInputChange(jugador.id, 'presente', e.target.checked)}
           className="w-full text-center"
         />
@@ -449,7 +449,7 @@ const handleEditClick = async (estadisticaId, jugadorId) => {
       <td className="p-2 text-center">
         <input
           type="checkbox"
-          checked={estadisticas[jugador.id]?.presente || false}
+          checked={estadisticas[jugador.id]?.presente || false} // Marcado si tiene estadística asociada
           onChange={(e) => handleInputChange(jugador.id, 'presente', e.target.checked)}
           className="w-full text-center"
         />

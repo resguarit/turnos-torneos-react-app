@@ -566,7 +566,7 @@ export default function DetalleZona() {
                 </button>
               </div>
             )}
-            {((zona.formato === 'Grupos' && gruposCreados) || (zona.formato !== 'Grupos' && zona.equipos.length > 1)) && fechasSorteadas && (
+            {((zona.fechas.length > 0)) || fechasSorteadas && (
               <CarruselFechas 
                 zonaId={zonaId} 
                 equipos={zona.equipos} 

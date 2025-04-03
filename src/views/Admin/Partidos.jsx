@@ -124,19 +124,19 @@ function Partidos() {
           <h1 className="text-2xl font-bold mb-4 lg:text-4xl">Partidos</h1>
 
           {/* Search and Filter Section */}
-          <div className="bg-white p-4 rounded-lg shadow mb-6">
-            <h2 className="font-semibold text-lg mb-4">Buscar Partidos</h2>
+          <div className="bg-white p-2 px-3 rounded-[8px] shadow mb-6">
+            <h2 className="font-sans font-semibold text-lg mb-4">Buscar Partidos</h2>
 
             {/* Search Bar */}
-            <div className="relative mb-4">
+            <div className="w-full flex gap-2" >
+            <div className="w-full mb-4">
               <input
                 type="text"
                 placeholder="Buscar por equipo..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-2 pl-10 border rounded-md"
+                className="w-full p-1 pl-3 border rounded-[8px]"
               />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               {searchTerm && (
                 <button onClick={() => setSearchTerm("")} className="absolute right-3 top-2.5">
                   <X className="h-5 w-5 text-gray-400" />
@@ -145,17 +145,16 @@ function Partidos() {
             </div>
 
             {/* Filter Buttons */}
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex  gap-2 mb-4">
               <div className="relative">
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-1"
+                <button
+                  className="flex items-center gap-1 border rounded-[8px] px-2 py-1 bg-white  hover:bg-gray-100"
                   onClick={() => setShowTorneoDropdown(!showTorneoDropdown)}
                 >
                   <Filter className="h-4 w-4" />
                   Torneo
                   <ChevronDown className="h-4 w-4" />
-                </Button>
+                </button>
                 {showTorneoDropdown && (
                   <div className="absolute z-10 mt-1 w-48 bg-white rounded-md shadow-lg">
                     <ul className="py-1">
@@ -174,15 +173,14 @@ function Partidos() {
               </div>
 
               <div className="relative">
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-1"
+                <button
+                  className="flex items-center gap-1 border rounded-[8px] px-2 py-1 bg-white  hover:bg-gray-100"
                   onClick={() => setShowZonaDropdown(!showZonaDropdown)}
                 >
                   <Filter className="h-4 w-4" />
                   Zona
                   <ChevronDown className="h-4 w-4" />
-                </Button>
+                </button>
                 {showZonaDropdown && (
                   <div className="absolute z-10 mt-1 w-48 bg-white rounded-md shadow-lg">
                     <ul className="py-1">
@@ -201,15 +199,14 @@ function Partidos() {
               </div>
 
               <div className="relative">
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-1"
+                <button
+                  className="flex items-center gap-1 border rounded-[8px] px-2 py-1 bg-white  hover:bg-gray-100"
                   onClick={() => setShowFechaDropdown(!showFechaDropdown)}
                 >
                   <Filter className="h-4 w-4" />
                   Fecha
                   <ChevronDown className="h-4 w-4" />
-                </Button>
+                </button>
                 {showFechaDropdown && (
                   <div className="absolute z-10 mt-1 w-48 bg-white rounded-md shadow-lg">
                     <ul className="py-1">
@@ -227,16 +224,19 @@ function Partidos() {
                 )}
               </div>
 
-              {activeFilters.length > 0 && (
+            </div>
+            </div>
+
+            <div className="w-full flex items-center" >
+            {activeFilters.length > 0 && (
                 <Button variant="ghost" className="text-red-500" onClick={clearFilters}>
                   Limpiar filtros
                 </Button>
               )}
-            </div>
 
             {/* Active Filters */}
             {activeFilters.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-2">
+              <div className="flex  gap-2 ">
                 {activeFilters.map((filter, index) => (
                   <div key={index} className="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full text-sm">
                     <span>
@@ -251,6 +251,14 @@ function Partidos() {
               </div>
             )}
           </div>
+          </div>
+
+          <button
+              onClick={handleCargarClick}
+              className="bg-black text-white mb-4 hover:bg-black/90 p-2 rounded-[6px]"
+            >
+              Cargar Partido +
+            </button>
 
           {/* Results Count */}
           <div className="mb-4">
@@ -310,12 +318,7 @@ function Partidos() {
             ))}
           </div>
 
-            <button
-              onClick={handleCargarClick}
-              className="bg-black text-white hover:bg-black/90 text-sm p-2 lg:text-lg rounded-lg"
-            >
-              Cargar Partido +
-            </button>
+
         </div>
       </div>
       <Footer></Footer>

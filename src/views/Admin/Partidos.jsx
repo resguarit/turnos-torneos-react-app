@@ -112,9 +112,20 @@ function Partidos() {
   }
 
   // Get unique values for filters
-  const uniqueTorneos = [...new Set(partidos.map(partido => partido.fecha.zona.torneo.nombre))]
-  const uniqueZonas = [...new Set(partidos.map(partido => partido.fecha.zona.nombre))]
-  const uniqueFechas = [...new Set(partidos.map(partido => partido.fecha.nombre))]
+  const uniqueTorneos = [...new Set(partidos
+    .filter(partido => partido.fecha?.zona?.torneo) // Filtra partidos con datos válidos
+    .map(partido => partido.fecha.zona.torneo.nombre)
+  )];
+
+  const uniqueZonas = [...new Set(partidos
+    .filter(partido => partido.fecha?.zona) // Filtra partidos con datos válidos
+    .map(partido => partido.fecha.zona.nombre)
+  )];
+
+  const uniqueFechas = [...new Set(partidos
+    .filter(partido => partido.fecha) // Filtra partidos con datos válidos
+    .map(partido => partido.fecha.nombre)
+  )];
 
   return (
     <div className="min-h-screen flex flex-col font-inter">

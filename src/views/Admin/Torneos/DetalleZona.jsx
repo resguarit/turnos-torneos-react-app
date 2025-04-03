@@ -577,10 +577,9 @@ export default function DetalleZona() {
                 }}
               />
             )}
-            {(zona.formato === 'Eliminatoria' ) && (
-            <ArañaEliminacion fechaId={zona.fechas[0].id} />
-          )  
-            }
+            {zona.formato === 'Eliminatoria' && zona.fechas && zona.fechas.length > 0 && (
+              <ArañaEliminacion fechaId={zona.fechas[0].id} />
+            )}
           </div>
         </div>
       </main>

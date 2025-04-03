@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import BackButton from '@/components/BackButton';
-import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
+import api from '@/lib/axiosConfig';
+import BackButton from '@/components/BackButton';
 
 export default function ResultadoPartido() {
   const { partidoId } = useParams();
+  const [searchParams] = useSearchParams(); 
+  const torneoId = searchParams.get('torneoId');
+  const zonaId = searchParams.get('zonaId');
   const navigate = useNavigate();
   const [partido, setPartido] = useState(null);
   const [equipoLocal, setEquipoLocal] = useState(null);
@@ -15,10 +18,9 @@ export default function ResultadoPartido() {
   const [verEquipo, setVerEquipo] = useState(1);
   const [loading, setLoading] = useState(false);
   const [estadisticas, setEstadisticas] = useState({});
-  const [editMode, setEditMode] = useState(false);
   const [originalEstadisticas, setOriginalEstadisticas] = useState({});
+  const [editMode, setEditMode] = useState(false);
   const [changesDetected, setChangesDetected] = useState(false);
-  const [chargingMode, setChargingMode] = useState(false);
 
   useEffect(() => {
     const fetchPartido = async () => {
@@ -59,29 +61,34 @@ export default function ResultadoPartido() {
     });
   };
 
+  const handleToggleEditMode = () => {
+    if (editMode) {
+      // Guardar cambios
+      handleApplyChanges();
+    } else {
+      // Activar modo de edición
+      setEditMode(true);
+    }
+  };
+
   const handleApplyChanges = async () => {
     try {
-        // Filtrar solo los jugadores con cambios
-        const updatedStats = Object.keys(estadisticas).map((jugadorId) => {
-            const estadistica = estadisticas[jugadorId];
-            const original = originalEstadisticas[jugadorId] || {};
+      const updatedStats = Object.keys(estadisticas).map((jugadorId) => {
+        const estadistica = estadisticas[jugadorId];
+        return {
+          nro_camiseta: estadistica?.nro_camiseta ?? null,
+          goles: estadistica?.goles ?? 0,
+          asistencias: estadistica?.asistencias ?? 0,
+          amarillas: estadistica?.amarillas ?? 0,
+          rojas: estadistica?.rojas ?? 0,
+          partido_id: partidoId,
+          jugador_id: jugadorId,
+        };
+      });
 
-            return {
-                nro_camiseta: estadistica?.nro_camiseta ?? null,
-                goles: estadistica?.goles ?? 0,
-                asistencias: estadistica?.asistencias ?? 0,
-                amarillas: estadistica?.amarillas ?? 0,
-                rojas: estadistica?.rojas ?? 0,
-                partido_id: partidoId,
-                jugador_id: jugadorId,
-            };
-        }).filter((estadistica, index) => 
-            JSON.stringify(estadistica) !== JSON.stringify(Object.values(originalEstadisticas)[index])
-        );
-
-        if (updatedStats.length > 0) {
-            await Promise.all(updatedStats.map((estadistica) => api.post('/estadisticas', estadistica)));
-        }
+      if (updatedStats.length > 0) {
+        await Promise.all(updatedStats.map((estadistica) => api.post('/estadisticas', estadistica)));
+      }
 
         // Calcular el marcador y el ganador
         let marcadorLocal = 0;
@@ -110,14 +117,17 @@ export default function ResultadoPartido() {
             estado: 'Finalizado',
         });
 
-        setChargingMode(false);
         setOriginalEstadisticas(estadisticas);
         setChangesDetected(false);
 
         alert('Cambios aplicados correctamente');
+      setOriginalEstadisticas(estadisticas);
+      setChangesDetected(false);
+      setEditMode(false);
+      alert('Cambios guardados correctamente');
     } catch (error) {
-        console.error('Error aplicando cambios:', error);
-        alert('Error aplicando cambios');
+      console.error('Error aplicando cambios:', error);
+      alert('Error aplicando cambios');
     }
 };
 
@@ -188,9 +198,9 @@ const handleEditClick = async (estadisticaId, jugadorId) => {
   };
 
   const handleCancelChanges = () => {
-    setEstadisticas(originalEstadisticas);
-    setChargingMode(false);
-    setChangesDetected(false);
+    // Restablece los cambios detectados y vuelve al estado original
+    setEstadisticas(originalEstadisticas); // Restablece las estadísticas originales
+    setChangesDetected(false); // Marca que no hay cambios pendientes
   };
 
   if (loading) {
@@ -225,218 +235,132 @@ const handleEditClick = async (estadisticaId, jugadorId) => {
     <div className="min-h-screen flex flex-col justify-start bg-gray-100 font-inter">
       <Header />
       <main className="max-w-7xl lg:max-w-full p-6 grow">
-        <BackButton />
-        <h1 className=" font-bold mb-4 text-2xl">Resultado Partido</h1>
-        <h2>{partido.equipos[0].nombre} vs {partido.equipos[1].nombre}</h2>
+      <BackButton />
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="font-bold text-2xl">Resultado Partido</h1>
+        </div>
+        <h2 className="flex justify-between items-center">
+          <span>{partido.equipos[0].nombre} vs {partido.equipos[1].nombre}</span>
+        </h2>
         <p>{partido.fecha.nombre}</p>
         <p>Horario: {partido.horario ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : "Indefinido"}</p>
         <p>Cancha: {partido.cancha ? `${partido.cancha.nro} - ${partido.cancha.tipo_cancha}` : "Indefinida"}</p>
         <div>
-          <div className="space-x-4">
-            <button
-              onClick={() => setVerEquipo(1)}
-              className={`rounded-[8px] p-2 ${verEquipo === 1 ? 'bg-blue-500 text-white' : 'bg-white text-black'}`}
-            >
-              {equipoLocal.nombre}
-            </button>
-            <button
-              onClick={() => setVerEquipo(2)}
-              className={`rounded-[8px] p-2 ${verEquipo === 2 ? 'bg-blue-500 text-white' : 'bg-white text-black'}`}
-            >
-              {equipoVisitante.nombre}
-            </button>
+          <div className="space-x-4 flex items-center justify-between">
+            <div className="flex space-x-4">
+              <button
+                onClick={() => setVerEquipo(1)}
+                className={`rounded-[8px] p-2 ${verEquipo === 1 ? 'bg-blue-500 text-white' : 'bg-white text-black'}`}
+              >
+                {equipoLocal.nombre}
+              </button>
+              <button
+                onClick={() => setVerEquipo(2)}
+                className={`rounded-[8px] p-2 ${verEquipo === 2 ? 'bg-blue-500 text-white' : 'bg-white text-black'}`}
+              >
+                {equipoVisitante.nombre}
+              </button>
+            </div>
+            <div className="flex space-x-2">
+              {editMode && (
+                <button
+                  onClick={() => {
+                    setEditMode(false);
+                    setEstadisticas(originalEstadisticas); // Restaurar valores originales
+                  }}
+                  className="p-2 rounded-md bg-red-500 text-white hover:bg-red-600"
+                >
+                  Cancelar
+                </button>
+              )}
+              <button
+                onClick={handleToggleEditMode}
+                className={`p-2 rounded-md ${editMode ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+              >
+                {editMode ? 'Guardar Cambios' : 'Editar'}
+              </button>
+            </div>
           </div>
+          <div className="relative">
+            
           <table className="w-full bg-white rounded-[8px] mt-4 p-1">
-            <thead>
-              <tr className="p-1">
-                <td className="p-2 text-center font-sans font-semibold">DNI</td>
-                <td className="p-2 text-center font-sans font-semibold">Nombre y Apellido</td>
-                <td className="p-2 text-center font-sans font-semibold">Fecha Nacimiento</td>
-                <td className="p-2 text-center font-sans font-semibold">Numero Camiseta</td>
-                <td className="p-2 text-center font-sans font-semibold">Goles</td>
-                <td className="p-2 text-center font-sans font-semibold">Asistencias</td>
-                <td className="p-2 text-center font-sans font-semibold">Amarillas</td>
-                <td className="p-2 text-center font-sans font-semibold">Rojas</td>
-                <td className="p-2 text-center font-sans font-semibold">Presente</td>
-                <td className="p-2 text-center font-sans font-semibold">Acción</td>
-              </tr>
-            </thead>
-            <tbody>
-  {verEquipo === 1 ? equipoLocal.jugadores.map((jugador) => (
-    <tr key={jugador.id} className="p-1">
-      <td className="p-2 text-center">{jugador.dni}</td>
-      <td className="p-2 text-center">{jugador.nombre} {jugador.apellido}</td>
-      <td className="p-2 text-center">{jugador.fecha_nacimiento}</td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.nro_camiseta || null}
-            onChange={(e) => handleInputChange(jugador.id, 'nro_camiseta', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.nro_camiseta || '-'
-        )}
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.goles || 0}
-            onChange={(e) => handleInputChange(jugador.id, 'goles', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.goles || 0
-        )}
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.asistencias || 0}
-            onChange={(e) => handleInputChange(jugador.id, 'asistencias', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.asistencias || 0
-        )}
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.amarillas || 0}
-            onChange={(e) => handleInputChange(jugador.id, 'amarillas', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.amarillas || 0
-        )}
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.rojas || 0}
-            onChange={(e) => handleInputChange(jugador.id, 'rojas', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.rojas || 0
-        )}
-      </td>
-      <td className="p-2 text-center">
-        <input
-          type="checkbox"
-          checked={estadisticas[jugador.id]?.presente || false}
-          onChange={(e) => handleInputChange(jugador.id, 'presente', e.target.checked)}
-          className="w-full text-center"
-        />
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] ? (
-          <div className="flex">
-          <button onClick={() => handleEditClick(estadisticas[jugador.id].id, jugador.id)} className="bg-green-500 text-white rounded-[8px] p-1 ">Guardar</button>
-          <button onClick={() => handleCancelEdit(jugador.id)} className="bg-red-500 text-white rounded-[8px] p-1 ml-2 ">Cancelar</button>
-        </ div>
-        ) : (
-          <button onClick={() => toggleEditMode(jugador.id)} className="bg-blue-500 text-white rounded-[8px] p-1">Editar</button>
-        )}
-      </td>
-    </tr>
-  )) : equipoVisitante.jugadores.map((jugador) => (
-    <tr key={jugador.id} className="p-1">
-      <td className="p-2 text-center">{jugador.dni}</td>
-      <td className="p-2 text-center">{jugador.nombre} {jugador.apellido}</td>
-      <td className="p-2 text-center">{jugador.fecha_nacimiento}</td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.nro_camiseta || null}
-            onChange={(e) => handleInputChange(jugador.id, 'nro_camiseta', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.nro_camiseta || '-'
-        )}
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.goles || 0}
-            onChange={(e) => handleInputChange(jugador.id, 'goles', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.goles || 0
-        )}
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.asistencias || 0}
-            onChange={(e) => handleInputChange(jugador.id, 'asistencias', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.asistencias || 0
-        )}
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.amarillas || 0}
-            onChange={(e) => handleInputChange(jugador.id, 'amarillas', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.amarillas || 0
-        )}
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.rojas || 0}
-            onChange={(e) => handleInputChange(jugador.id, 'rojas', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.rojas || 0
-        )}
-      </td>
-      <td className="p-2 text-center">
-        <input
-          type="checkbox"
-          checked={estadisticas[jugador.id]?.presente || false}
-          onChange={(e) => handleInputChange(jugador.id, 'presente', e.target.checked)}
-          className="w-full text-center"
-        />
-      </td>
-      <td className="p-2 text-center w-fit">
-        {editMode[jugador.id] ? (
-          <div className="flex">
-          <button onClick={() => handleEditClick(estadisticas[jugador.id].id, jugador.id)} className="bg-green-500 text-white rounded-[8px] p-1 text-xs">Guardar</button>
-          <button onClick={() => handleCancelEdit(jugador.id)} className="bg-red-500 text-white rounded-[8px] p-1 ml-2 text-xs">Cancelar</button>
-        </ div>
-        ) : (
-          <button onClick={() => toggleEditMode(jugador.id)} className="bg-blue-500 text-white rounded-[8px] p-1">Editar</button>
-        )}
-      </td>
-    </tr>
-  ))}
-</tbody>
-          </table>
-          <div className="flex justify-end mt-4 space-x-2">
-          {!chargingMode &&  Object.keys(estadisticas).length === 0 && <button onClick={() => setChargingMode(true)} className="bg-green-500 text-white p-2">Cargar Resultados</button>}
-          {chargingMode && changesDetected && <button onClick={handleApplyChanges} className="bg-blue-500 text-white p-2">Aplicar Cambios</button>}
-          {chargingMode  && <button onClick={handleCancelChanges} className="bg-red-500 text-white p-2">Cancelar</button>}
+              <thead>
+                <tr className="p-1">
+                  <td className="p-2 text-center font-sans font-semibold">DNI</td>
+                  <td className="p-2 text-center font-sans font-semibold">Nombre y Apellido</td>
+                  <td className="p-2 text-center font-sans font-semibold">Fecha Nacimiento</td>
+                  <td className="p-2 text-center font-sans font-semibold">Numero Camiseta</td>
+                  <td className="p-2 text-center font-sans font-semibold">Goles</td>
+                  <td className="p-2 text-center font-sans font-semibold">Asistencias</td>
+                  <td className="p-2 text-center font-sans font-semibold">Amarillas</td>
+                  <td className="p-2 text-center font-sans font-semibold">Rojas</td>
+                  <td className="p-2 text-center font-sans font-semibold">Presente</td>
+                </tr>
+              </thead>
+              <tbody>
+                {(verEquipo === 1 ? equipoLocal.jugadores : equipoVisitante.jugadores).map((jugador) => (
+                  <tr key={jugador.id} className="p-1">
+                    <td className="p-2 text-center">{jugador.dni}</td>
+                    <td className="p-2 text-center">{jugador.nombre} {jugador.apellido}</td>
+                    <td className="p-2 text-center">{jugador.fecha_nacimiento}</td>
+                    <td className="p-2 text-center">
+                      <input
+                        type="number"
+                        value={estadisticas[jugador.id]?.nro_camiseta || ''}
+                        onChange={(e) => handleInputChange(jugador.id, 'nro_camiseta', parseInt(e.target.value))}
+                        className={`w-full text-center border ${editMode ? 'border-gray-300' : 'border-transparent'} rounded-md p-1`}
+                        disabled={!editMode}
+                      />
+                    </td>
+                    <td className="p-2 text-center">
+                      <input
+                        type="number"
+                        value={estadisticas[jugador.id]?.goles || 0}
+                        onChange={(e) => handleInputChange(jugador.id, 'goles', parseInt(e.target.value))}
+                        className={`w-full text-center border ${editMode ? 'border-gray-300' : 'border-transparent'} rounded-md p-1`}
+                        disabled={!editMode}
+                      />
+                    </td>
+                    <td className="p-2 text-center">
+                      <input
+                        type="number"
+                        value={estadisticas[jugador.id]?.asistencias || 0}
+                        onChange={(e) => handleInputChange(jugador.id, 'asistencias', parseInt(e.target.value))}
+                        className={`w-full text-center border ${editMode ? 'border-gray-300' : 'border-transparent'} rounded-md p-1`}
+                        disabled={!editMode}
+                      />
+                    </td>
+                    <td className="p-2 text-center">
+                      <input
+                        type="number"
+                        value={estadisticas[jugador.id]?.amarillas || 0}
+                        onChange={(e) => handleInputChange(jugador.id, 'amarillas', parseInt(e.target.value))}
+                        className={`w-full text-center border ${editMode ? 'border-gray-300' : 'border-transparent'} rounded-md p-1`}
+                        disabled={!editMode}
+                      />
+                    </td>
+                    <td className="p-2 text-center">
+                      <input
+                        type="number"
+                        value={estadisticas[jugador.id]?.rojas || 0}
+                        onChange={(e) => handleInputChange(jugador.id, 'rojas', parseInt(e.target.value))}
+                        className={`w-full text-center border ${editMode ? 'border-gray-300' : 'border-transparent'} rounded-md p-1`}
+                        disabled={!editMode}
+                      />
+                    </td>
+                    <td className="p-2 text-center">
+                      <input
+                        type="checkbox"
+                        checked={estadisticas[jugador.id]?.presente || false}
+                        onChange={(e) => handleInputChange(jugador.id, 'presente', e.target.checked)}
+                        disabled={!editMode}
+                        className="w-full text-center"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </main>

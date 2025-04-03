@@ -55,6 +55,7 @@ export function Liga({ matches, date, onEditMatch }) {
           </div>
         ))}
       </div>
+      <BackButton onClick={() => navigate(`/zonas-admi/${torneoId}?zonaId=${zonaId}`)} />
     </div>
   );
 }

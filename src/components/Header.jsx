@@ -16,7 +16,7 @@ export function Header() {
   const [showModal, setShowModal] = useState(false)
   const userRole = localStorage.getItem("user_role")
   const [hasActiveReservation, setHasActiveReservation] = useState(false)
-  const isReservationPage = location.pathname === "/contador-bloqueo" || location.pathname === "/bloqueo-reserva"
+  const isReservationPage = location.pathname === "/contador-bloqueo" || location.pathname === "/bloqueo-reserva" || location.pathname === "/confirmar-turno" || location.pathname === "/confirmar-login"
 
   const toggleMenu = () => {
     setIsOpen(!isOpen)

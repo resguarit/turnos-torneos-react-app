@@ -54,9 +54,15 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
       </div>
 
       <div className="flex flex-wrap gap-2 w-full">
-        <span
-          className={`text-center px-3 py-1 rounded-xl text-sm ${
-            booking.estado === 'Pendiente'
+        {booking.tipo === 'fijo' && (
+          <span className="text-center px-3 py-1 bg-blue-400 rounded-xl text-sm">
+            {`Turno fijo`}
+          </span>
+        )}
+        {booking.tipo !== 'fijo' && (
+          <span
+            className={`text-center px-3 py-1 rounded-xl text-sm ${
+              booking.estado === 'Pendiente'
               ? 'bg-yellow-300'
               : booking.estado === 'Señado'
               ? 'bg-blue-300'
@@ -66,7 +72,8 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
           }`}
         >
           {`Estado: ${booking.estado}`}
-        </span>
+          </span>
+        )}
         <span className="text-center px-3 py-1 bg-gray-300 rounded-xl text-sm">
           {`Cancha ${booking.cancha.nro} - ${booking.cancha.tipo_cancha}`}
         </span>
@@ -97,7 +104,7 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
         >
           <Phone className="h-4 w-4" />
         </button>
-        {booking.estado !== 'Pagado' && booking.estado !== 'Cancelado' && fecha_turno > fecha_modificacion && (
+        {booking.estado !== 'Pagado' && booking.estado !== 'Cancelado' && fecha_turno > fecha_modificacion && booking.tipo !== 'fijo' && (
           <button
             onClick={verificarCajaAbierta}
             disabled={verificandoCaja}

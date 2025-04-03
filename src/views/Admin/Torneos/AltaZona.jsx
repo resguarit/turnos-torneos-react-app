@@ -123,6 +123,8 @@ export default function AltaZona() {
                 <option value="Liga">Liga</option>
                 <option value="Eliminatoria">Eliminatoria</option>
                 <option value="Grupos">Grupos</option>
+                <option value="Liga + Playoff">Liga + PlayOff</option>
+                <option value="Liga Ida y Vuelta">Liga Ida y Vuelta</option>
               </select>
             </div>
             <div>

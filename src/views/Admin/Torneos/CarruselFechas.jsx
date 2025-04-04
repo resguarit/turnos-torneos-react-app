@@ -15,6 +15,9 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
   const [fechas, setFechas] = useState([]);
   const [currentFechaIndex, setCurrentFechaIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadingDeleteAll, setLoadingDeleteAll] = useState(false); // Loading para "Eliminar Todas las Fechas"
+  const [loadingPostergar, setLoadingPostergar] = useState(false); // Loading para "Postergar Todas las Fechas"
+  const [loadingAsignar, setLoadingAsignar] = useState(false); // Loading para "Asignar Cancha y Hora"
   const [modalEditVisible, setModalEditVisible] = useState(false);
   const [modalDeleteVisible, setModalDeleteVisible] = useState(false);
   const [modalPostergarVisible, setModalPostergarVisible] = useState(false);
@@ -23,7 +26,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
   const [canchas, setCanchas] = useState([]);
   const [horarios, setHorarios] = useState([]);
   const [horariosModal, setHorariosModal] = useState([]); // Estado para los horarios del modal
-  
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false); // Estado para mostrar el modal de confirmación
 
   useEffect(() => {
     const fetchFechas = async () => {
@@ -98,12 +101,12 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
 
   const handleDeleteAllFechas = async () => {
     try {
-      setLoading(true);
+      setLoadingDeleteAll(true);
       for (const fecha of fechas) {
         await api.delete(`/fechas/${fecha.id}`);
       }
       setFechas([]);
-      
+
       // Llamar a la función callback para notificar al componente padre
       if (onFechasDeleted && typeof onFechasDeleted === 'function') {
         onFechasDeleted();
@@ -111,13 +114,14 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
     } catch (error) {
       console.error('Error deleting all dates:', error);
     } finally {
-      setLoading(false);
+      setLoadingDeleteAll(false);
+      setShowDeleteAllModal(false); // Cerrar el modal después de la eliminación
     }
   };
 
   const handlePostergarFechas = async (fechaId) => {
     try {
-      setLoading(true);
+      setLoadingPostergar(true);
       const response = await api.post(`/fechas/${fechaId}/postergar`);
       if (response.status === 200) {
         const updatedFechas = await api.get(`/zonas/${zonaId}/fechas`);
@@ -127,12 +131,19 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
     } catch (error) {
       console.error('Error postponing dates:', error);
     } finally {
-      setLoading(false);
+      setLoadingPostergar(false);
     }
   };
 
   const handleAsignarHoraYCancha = async () => {
-    setModalAsignarVisible(true);
+    try {
+      setLoadingAsignar(true);
+      setModalAsignarVisible(true);
+    } catch (error) {
+      console.error('Error assigning time and field:', error);
+    } finally {
+      setLoadingAsignar(false);
+    }
   };
 
   const goToPrevious = () => {
@@ -262,24 +273,61 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
 
       <div className="flex justify-between ">
         <button
-          className="bg-red-500 hover:bg-red-600 text-sm text-white py-1 px-4 rounded-[6px]"
-          onClick={handleDeleteAllFechas}
+          className={`bg-red-500 hover:bg-red-600 text-sm text-white py-1 px-4 rounded-[6px] ${
+            loadingDeleteAll ? 'cursor-not-allowed opacity-50' : ''
+          }`}
+          onClick={() => setShowDeleteAllModal(true)} // Mostrar el modal de confirmación
+          disabled={loadingDeleteAll}
         >
-          Eliminar Todas las Fechas
+          {loadingDeleteAll ? 'Eliminando...' : 'Eliminar Todas las Fechas'}
         </button>
         <button
-          className="bg-blue-500 hover:bg-blue-600 text-sm text-white py-1 px-4 rounded-[6px]"
+          className={`bg-blue-500 hover:bg-blue-600 text-sm text-white py-1 px-4 rounded-[6px] ${
+            loadingPostergar ? 'cursor-not-allowed opacity-50' : ''
+          }`}
           onClick={() => setModalPostergarVisible(true)}
+          disabled={loadingPostergar}
         >
-          Postergar Todas las Fechas
+          {loadingPostergar ? 'Postergando...' : 'Postergar Todas las Fechas'}
         </button>
       </div>
-                      <button
-                        onClick={() => setModalAsignarVisible(true)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-[6px] text-sm mt-4"
-                      >
-                        Asignar Cancha y Hora
-                      </button>
+      <button
+        className={`bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-[6px] text-sm mt-4 ${
+          loadingAsignar ? 'cursor-not-allowed opacity-50' : ''
+        }`}
+        onClick={handleAsignarHoraYCancha}
+        disabled={loadingAsignar}
+      >
+        {loadingAsignar ? 'Asignando...' : 'Asignar Cancha y Hora'}
+      </button>
+
+      {/* Modal de confirmación */}
+      {showDeleteAllModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Confirmar Eliminación</h3>
+            <p className="mb-4">
+              ¿Estás seguro de que deseas eliminar <strong>todas las fechas</strong>? 
+              Esta acción no se puede deshacer.
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowDeleteAllModal(false)} // Cerrar el modal
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteAllFechas} // Llamar a la función para eliminar todas las fechas
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                disabled={loadingDeleteAll}
+              >
+                {loadingDeleteAll ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {modalEditVisible && (
         <EditFechaModal

@@ -625,15 +625,7 @@ export default function DetalleZona() {
               />
 
             {zona.formato === 'Eliminatoria' && zona.fechas && zona.fechas.length > 0 && (
-              <ArañaEliminacion fechaId={zona.fechas[0].id} />
-            )}
-            {(zona.formato === 'Eliminatoria' || zona.formato === 'Liga + Playoff') && (
-              <button
-                onClick={handleAbrirModalRonda}
-                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md"
-              >
-                Agregar Ronda
-              </button>
+              <ArañaEliminacion equipos={zona.equipos} />
             )}
           </div>
         </div>

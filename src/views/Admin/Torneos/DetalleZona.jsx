@@ -4,19 +4,19 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Users, ChevronLeft, Edit3, Trash2, Shuffle, Calendar } from 'lucide-react';
-import CarruselFechas from './CarruselFechas';
-import Grupos from './Grupos';
-import ArañaEliminacion from './ArañaEliminacion';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Modal from '@/components/Modal';
+import {TabEquipos} from './Tabs/TabEquipos';
+import {TabFechas} from './Tabs/TabFechas';
+import {TabGrupos} from './Tabs/TabGrupos';
+import {TabArania} from './Tabs/TabArania';
+import {TabResultados} from './Tabs/TabResultados';
+
 
 export default function DetalleZona() {
   const { zonaId } = useParams();
@@ -38,19 +38,12 @@ export default function DetalleZona() {
   const [modalRondaVisible, setModalRondaVisible] = useState(false);
   const [equiposSeleccionados, setEquiposSeleccionados] = useState([]);
   const [fechaAnteriorId, setFechaAnteriorId] = useState(null);
+  const [activeTab, setActiveTab] = useState('equipos'); // Estado para controlar la pestaña activa
 
   const handleToggleEditMode = () => {
     setEditMode((prev) => !prev); // Alternar entre modo de edición y vista normal
   };
 
-  const handleAbrirModalRonda = () => {
-    if (zona.fechas && zona.fechas.length > 0) {
-      setFechaAnteriorId(zona.fechas[zona.fechas.length - 1].id); // Última fecha
-      setModalRondaVisible(true);
-    } else {
-      toast.error('No hay fechas disponibles para generar la siguiente ronda.');
-    }
-  };
 
   const handleSeleccionarEquipo = (equipoId) => {
     setEquiposSeleccionados((prev) =>
@@ -146,20 +139,20 @@ export default function DetalleZona() {
 
     try {
       setLoading(true);
-      
+
       // Primero, obtener los datos actualizados de la zona
       const zonaActualizada = await api.get(`/zonas/${zonaId}`);
-      
+
       // Verificar que haya suficientes equipos para crear fechas
       if (zonaActualizada.data.equipos.length < 2) {
         toast.error('Se necesitan al menos 2 equipos para sortear fechas.');
         return;
       }
-      
+
       const formattedFechaInicial = format(fechaInicial, 'yyyy-MM-dd');
       const requestData = {
-        ...(zona.formato === 'Grupos' ? { num_grupos: numGrupos } : {}),
         fecha_inicial: formattedFechaInicial,
+        ...(zona.formato === 'Grupos' ? { num_grupos: numGrupos } : {}), // Pasar numGrupos si el formato es "Grupos"
       };
 
       const response = await api.post(`/zonas/${zonaId}/fechas`, requestData);
@@ -402,235 +395,116 @@ export default function DetalleZona() {
 
   return (
     <div className="min-h-screen flex flex-col font-inter">
-      <Header />
-      <main className="flex-1 p-6 bg-gray-100">
-        <div className="w-full flex mb-2">
-          <button onClick={() => navigate(`/zonas-admi/${zona.torneo_id}`)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
-            <ChevronLeft className="w-5" /> Atrás
+    <Header />
+    <main className="flex-1 p-6 bg-gray-100">
+      <div className="w-full flex mb-2">
+        <button onClick={() => navigate(`/zonas-admi/${zona.torneo_id}`)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
+          <ChevronLeft className="w-5" /> Atrás
+        </button>
+      </div>
+      <div className="w-full px-40">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl lg:text-2xl font-bold">{zona.nombre} - {zona.año} <span className="text-sm text-gray-500 font-normal">({zona.formato})</span></h1>
+        </div>
+        
+        {/* Tabs Navigation */}
+        <div className="flex border-b mb-6">
+          <button 
+            className={`px-4 py-2 font-medium ${activeTab === 'equipos' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setActiveTab('equipos')}
+          >
+            Equipos
+          </button>
+          <button 
+            className={`px-4 py-2 font-medium ${activeTab === 'fechas' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setActiveTab('fechas')}
+          >
+            Fechas
+          </button>
+          {zona.formato === 'Grupos' && (
+            <button 
+              className={`px-4 py-2 font-medium ${activeTab === 'grupos' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-700'}`}
+              onClick={() => setActiveTab('grupos')}
+            >
+              Grupos
+            </button>
+          )}
+          {zona.formato === 'Eliminatoria' && (
+            <button 
+              className={`px-4 py-2 font-medium ${activeTab === 'arana' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-700'}`}
+              onClick={() => setActiveTab('arana')}
+            >
+              Araña
+            </button>
+          )}
+          <button 
+            className={`px-4 py-2 font-medium ${activeTab === 'resultados' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setActiveTab('resultados')}
+          >
+            Resultados
           </button>
         </div>
-        <div className="w-full px-40">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl lg:text-2xl font-bold">{zona.nombre} - {zona.año} <span className="text-sm text-gray-500 font-normal">({zona.formato})</span></h1>
-            <button onClick={() => navigate(`/alta-equipo/${zonaId}`)} className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white">
-              + Cargar Equipo
-            </button>
-          </div>
-          <div className="bg-white rounded-[8px] shadow-md p-4">
-            <div className="w-full flex items-center justify-between">
-              <h2 className="text-2xl font-medium">Equipos</h2>
-              <span className="text-sm text-gray-500">
-                Total de equipos: {zona.equipos?.length || 0}
-              </span>
-            </div>
-            <div className="mt-4">
-              {zona.equipos && zona.equipos.length === 0 ? (
-                <p className="text-center text-gray-500">No hay equipos en esta zona.</p>
-              ) : (
-                <div className="overflow-hidden rounded-[6px] border border-gray-200 bg-white shadow">
-                  <div className="max-h-[300px] overflow-y-auto"> {/* Limitar la altura y permitir scroll */}
-                    <table className="w-full">
-                      <tbody>
-                        {zona.equipos && zona.equipos.map((equipo) => (
-                          <tr key={equipo.id} className="border-b items-center rounded-[6px] border-gray-200 last:border-0">
-                            <td className="p-3 flex items-center">
-                              <div className="w-6 bg-primary items-center justify-center"></div>
-                              <span className="font-medium">{equipo.nombre}</span>
-                            </td>
-                            <td className="text-right p-3 items-center flex-row justify-center">
-                              <div className='flex items-center w-full justify-end space-x-4'>
-                                <button
-                                  onClick={() => navigate(`/jugadores/${equipo.id}`)}
-                                  className="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded-[6px] text-sm"
-                                >
-                                  Ver jugadores
-                                </button>
-                                <button
-                                  onClick={() => handleReemplazarEquipo(equipo.id)}
-                                  className="bg-orange-500 hover:bg-orange-600 text-white py-1 px-3 rounded-[6px] text-sm"
-                                >
-                                  Reemplazar
-                                </button>
-                                <button
-                                  onClick={() => navigate(`/editar-equipo/${equipo.id}`)}
-                                  className="items-center flex-row text-blue-500 py-1 text-sm"
-                                >
-                                  <Edit3 className="w-5" />
-                                </button>
-                                <button
-                                  onClick={() => handleEliminarEquipo(equipo.id)}
-                                  className="text-red-500 py-1 rounded-[6px] text-sm"
-                                >
-                                  <Trash2 className="w-5" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-          {zona.formato === 'Grupos' && gruposCreados && (
-            <div className="mt-6">
-              <div className="mb-4">
-                <h2 className="text-2xl font-medium mb-4">Grupos</h2>
-                
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-2">
-                    <label htmlFor="numGrupos" className="text-sm font-medium">
-                      Cantidad de Grupos:
-                    </label>
-                    <input
-                      id="numGrupos"
-                      type="number"
-                      min="1"
-                      value={numGrupos}
-                      onChange={(e) => setNumGrupos(e.target.value)}
-                      className="w-16 border border-gray-300 rounded-md p-1 text-center"
-                    />
-                  </div>
-                  
-                  <button
-                    onClick={handleActualizarGrupos}
-                    className="py-2 px-4 rounded-md bg-green-500 hover:bg-green-600 text-white"
-                  >
-                    Sortear Grupos de Nuevo
-                  </button>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Array.isArray(grupos) && grupos.length > 0 ? (
-                  grupos.map((grupo, index) => (
-                    <div key={grupo.id || index} className="bg-white p-4 rounded-md shadow-md">
-                      <h3 className="text-lg font-bold mb-2">Grupo {index + 1}</h3>
-                      <div className="space-y-2">
-                        {Array.isArray(grupo.equipos) && grupo.equipos.length > 0 ? (
-                          grupo.equipos.map((equipo) => (
-                            <div key={equipo.id} className="flex items-center gap-1">
-                              {editMode ? (
-                                <>
-                                  <input
-                                    type="text"
-                                    value={equipo.nombre}
-                                    disabled
-                                    className="flex-1 border border-gray-300 rounded-md p-2"
-                                  />
-                                  <button
-                                    onClick={() => handleEliminarEquipoDeGrupo(grupo.id, equipo.id)}
-                                    className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-md"
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
-                                </>
-                              ) : (
-                                <span className="flex-1">{equipo.nombre}</span>
-                              )}
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-gray-500 italic">No hay equipos en este grupo.</p>
-                        )}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-center text-gray-500">No hay grupos disponibles.</p>
-                )}
-              </div>
-          
-              {editMode && (
-                <div className="flex justify-end mt-4">
-                  <button
-                    onClick={handleActualizarGrupos}
-                    className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md"
-                  >
-                    Guardar Cambios
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-          <div className="mt-6">
-            {zona.formato === 'Grupos' && !gruposCreados && zona.equipos.length > 0 && (
-              <button
-                onClick={() => setModalVisible(true)}
-                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-[6px] text-sm"
-              >
-                Crear Grupos
-              </button>
-            )}
-            {((zona.formato === 'Grupos' && gruposCreados) || (zona.formato !== 'Grupos' && zona.equipos.length > 2)) && (
-              <div className="mt-6 flex gap-2 items-center">
-                {/* Datepicker */}
-                <div className="relative" ref={calendarRef}>
-                  <button
-                    onClick={() => setCalendarOpen(!calendarOpen)}
-                    className="py-2 px-3 flex items-center gap-2 rounded-[6px] text-sm bg-blue-500 hover:bg-blue-600 text-white"
-                  >
-                    {fechaInicial
-                      ? format(fechaInicial, "d 'de' MMMM yyyy", { locale: es })
-                      : 'Inicio de Fecha'}{' '}
-                    <Calendar size={18} />
-                  </button>
 
-                  {calendarOpen && (
-                    <div
-                      className="absolute z-50 bg-white shadow-lg rounded-md p-2 border"
-                      style={{
-                        top: '-200px',
-                        right: '0',
-                      }}
-                    >
-                      <DayPicker
-                        mode="single"
-                        selected={fechaInicial}
-                        onSelect={(date) => {
-                          setFechaInicial(date);
-                          setCalendarOpen(false);
-                        }}
-                        locale={es}
-                        className="rounded-md"
-                      />
-                    </div>
-                  )}
-                </div>
+        {/* Tab Content */}
+        {activeTab === 'equipos' && (
+          <TabEquipos 
+            zona={zona} 
+            navigate={navigate} 
+            zonaId={zonaId} 
+            handleEliminarEquipo={handleEliminarEquipo}
+            handleReemplazarEquipo={handleReemplazarEquipo}
+          />
+        )}
+        
+        {activeTab === 'fechas' && (
+          <TabFechas 
+            zona={zona}
+            fechas={fechas}
+            fechaInicial={fechaInicial}
+            setFechaInicial={setFechaInicial}
+            calendarOpen={calendarOpen}
+            setCalendarOpen={setCalendarOpen}
+            calendarRef={calendarRef}
+            handleSortearFechas={handleSortearFechas}
+            loading={loading}
+            zonaId={zonaId}
+            equipos={zona.equipos}
+            onFechasDeleted={() => {
+              setFechasSorteadas(false);
+              setFechas([]);
+            }}
+            fechasSorteadas={fechasSorteadas}
+            gruposCreados={gruposCreados}
+            numGrupos={numGrupos}
+          />
+        )}
+        
+        {activeTab === 'grupos' && zona.formato === 'Grupos' && (
+          <TabGrupos 
+            zona={zona}
+            grupos={grupos}
+            gruposCreados={gruposCreados}
+            numGrupos={numGrupos}
+            setNumGrupos={setNumGrupos}
+            handleActualizarGrupos={handleActualizarGrupos}
+            handleCrearGrupos={handleCrearGrupos}
+            setModalVisible={setModalVisible}
+            editMode={editMode}
+            handleEliminarEquipoDeGrupo={handleEliminarEquipoDeGrupo}
+          />
+        )}
+        
+        {activeTab === 'arana' && zona.formato === 'Eliminatoria' && (
+          <TabArania equipos={zona.equipos} />
+        )}
+        
+        {activeTab === 'resultados' && (
+          <TabResultados />
+        )}
+      </div>
+    </main>
+    <Footer />
 
-                {/* Botón de sortear fechas */}
-                <button
-                  onClick={handleSortearFechas}
-                  className={`py-2 px-3 flex items-center gap-2 rounded-[6px] text-sm ${
-                    !fechaInicial || loading
-                      ? 'bg-gray-500 cursor-not-allowed'
-                      : 'bg-blue-500 hover:bg-blue-600 text-white'
-                  }`}
-                  disabled={!fechaInicial || loading}
-                >
-                  {loading ? 'Sorteando...' : 'Sortear Fechas'} <Shuffle size={18} />
-                </button>
-              </div>
-            )}
-              <CarruselFechas 
-                zonaId={zonaId} 
-                equipos={zona.equipos} 
-                fechas={fechas} 
-                onFechasDeleted={() => {
-                  setFechasSorteadas(false);
-                  setFechas([]);
-                }}
-              />
-
-            {zona.formato === 'Eliminatoria' && zona.fechas && zona.fechas.length > 0 && (
-              <ArañaEliminacion equipos={zona.equipos} />
-            )}
-          </div>
-        </div>
-      </main>
-      <Footer />
       
       {modalVisible && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">

@@ -376,6 +376,33 @@ export default function DetalleZona() {
     );
   }
 
+  const handleEliminarGrupos = async () => {
+    try {
+      if (!grupos || grupos.length === 0) {
+        toast.error('No hay grupos para eliminar.');
+        return;
+      }
+
+      const confirmacion = window.confirm('¿Estás seguro de que deseas eliminar todos los grupos de esta zona?');
+      if (!confirmacion) return;
+
+      // Realizar la solicitud DELETE al endpoint para eliminar los grupos de la zona
+      const response = await api.delete(`/zonas/${zonaId}/eliminar-grupos-zona`);
+
+      if (response.status === 200) {
+        toast.success('Grupos eliminados correctamente.');
+        setGrupos([]); // Limpiar los grupos en el estado local
+        setGruposCreados(false); // Indicar que los grupos ya no están creados
+      } else {
+        toast.error('Error al eliminar los grupos.');
+      }
+    } catch (error) {
+      console.error('Error eliminando grupos:', error);
+      toast.error(error.response?.data?.message || 'Error al eliminar los grupos.');
+    }
+  };
+
+
   if (!zona) {
     return (
       <div className="min-h-screen flex flex-col font-inter">
@@ -488,6 +515,7 @@ export default function DetalleZona() {
             setModalVisible={setModalVisible}
             editMode={editMode}
             handleEliminarEquipoDeGrupo={handleEliminarEquipoDeGrupo}
+            handleEliminarGrupos={handleEliminarGrupos}
           />
         )}
         

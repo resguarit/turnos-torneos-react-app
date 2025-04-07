@@ -1,20 +1,24 @@
+import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { useState, useEffect } from 'react';
 import { X, ChevronLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function AltaTorneo() {
-  const { id } = useParams(); // Obtener el ID del torneo desde la URL
+  const { id } = useParams();
   const [deportes, setDeportes] = useState([]);
-  const [loading, setLoading] = useState(true); // Estado de carga inicializado en true
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     nombre: '',
     año: new Date().getFullYear(),
     deporte_id: '',
   });
+  const [modalVisible, setModalVisible] = useState(false); // Estado para controlar el modal
+  const [nuevoDeporte, setNuevoDeporte] = useState({ nombre: '', jugadores_por_equipo: '' }); // Datos del nuevo deporte
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,8 +33,8 @@ export default function AltaTorneo() {
           });
         } catch (error) {
           console.error('Error fetching torneo:', error);
-          alert('Error al cargar los datos del torneo');
-          navigate('/torneos-admi'); // Redirigir si ocurre un error
+          toast.error('Error al cargar los datos del torneo');
+          navigate('/torneos-admi');
         }
       }
     };
@@ -46,7 +50,7 @@ export default function AltaTorneo() {
 
     const fetchData = async () => {
       await Promise.all([fetchTorneo(), fetchDeportes()]);
-      setLoading(false); // Finalizar el estado de carga
+      setLoading(false);
     };
 
     fetchData();
@@ -55,22 +59,22 @@ export default function AltaTorneo() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.deporte_id) {
-      alert('Debe seleccionar un deporte');
+      toast.error('Debe seleccionar un deporte');
       return;
     }
     try {
       setLoading(true);
       if (id) {
         await api.put(`/torneos/${id}`, formData);
-        alert('Torneo actualizado correctamente');
+        toast.success('Torneo actualizado correctamente');
       } else {
         await api.post('/torneos', formData);
-        alert('Torneo creado correctamente');
+        toast.success('Torneo creado correctamente');
       }
       navigate('/torneos-admi');
     } catch (error) {
       console.error('Error saving torneo:', error);
-      alert('Error al guardar el torneo');
+      toast.error('Error al guardar el torneo');
     } finally {
       setLoading(false);
     }
@@ -83,8 +87,22 @@ export default function AltaTorneo() {
     });
   };
 
+  const handleNuevoDeporteSubmit = async () => {
+    try {
+      const response = await api.post('/deportes', nuevoDeporte);
+      const deporteCreado = response.data.deporte;
+      setDeportes([...deportes, deporteCreado]); // Agregar el nuevo deporte a la lista
+      setFormData({ ...formData, deporte_id: deporteCreado.id }); // Seleccionar el nuevo deporte
+      toast.success('Deporte creado correctamente');
+      setModalVisible(false); // Cerrar el modal
+    } catch (error) {
+      console.error('Error creando deporte:', error);
+      toast.error('Error al crear el deporte');
+    }
+  };
+
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 6 }, (_, i) => currentYear + i);11
+  const years = Array.from({ length: 6 }, (_, i) => currentYear + i);
 
   if (loading) {
     return (
@@ -143,7 +161,13 @@ export default function AltaTorneo() {
                 className="border-gray-300 border w-full p-1 rounded-xl"
                 name="deporte_id"
                 value={formData.deporte_id}
-                onChange={handleChange}
+                onChange={(e) => {
+                  if (e.target.value === 'nuevo') {
+                    setModalVisible(true); // Abrir el modal si se selecciona "Nuevo Deporte"
+                  } else {
+                    handleChange(e);
+                  }
+                }}
                 required
               >
                 <option value="" disabled>
@@ -154,6 +178,7 @@ export default function AltaTorneo() {
                     {deporte.nombre} ({deporte.jugadores_por_equipo} jugadores por equipo)
                   </option>
                 ))}
+                <option value="nuevo">+ Nuevo Deporte</option>
               </select>
             </div>
             <div className="flex justify-end">
@@ -169,6 +194,48 @@ export default function AltaTorneo() {
         </div>
       </main>
       <Footer />
+
+      {/* Modal para crear un nuevo deporte */}
+      {modalVisible && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
+            <h2 className="text-xl font-bold mb-4">Crear Nuevo Deporte</h2>
+            <div className="mb-4">
+              <label className="block font-medium mb-1">Nombre del Deporte:</label>
+              <input
+                type="text"
+                className="border border-gray-300 rounded-md p-2 w-full"
+                value={nuevoDeporte.nombre}
+                onChange={(e) => setNuevoDeporte({ ...nuevoDeporte, nombre: e.target.value })}
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block font-medium mb-1">Jugadores por Equipo:</label>
+              <input
+                type="number"
+                className="border border-gray-300 rounded-md p-2 w-full"
+                value={nuevoDeporte.jugadores_por_equipo}
+                onChange={(e) => setNuevoDeporte({ ...nuevoDeporte, jugadores_por_equipo: e.target.value })}
+              />
+            </div>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setModalVisible(false)}
+                className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleNuevoDeporteSubmit}
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md"
+              >
+                Crear
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

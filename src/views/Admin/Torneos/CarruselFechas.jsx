@@ -211,11 +211,17 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
       <div className="divide-y divide-gray-200">
         {currentFecha.partidos && currentFecha.partidos.length > 0 ? (
           currentFecha.partidos.map((partido) => {
-            const cancha = canchas.find((c) => c.id === partido.cancha_id);
-            const horario = horarios.find((h) => h.id === partido.horario_id);
+            const cancha = partido.cancha ? `${partido.cancha.nro} - ${partido.cancha.tipo_cancha}` : "No Definido";
+            const horario = partido.horario ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : "No Definido";
+            const marcadorLocal = partido.marcador_local ?? "-";
+            const marcadorVisitante = partido.marcador_visitante ?? "-";
 
             return (
-              <div key={partido.id} className="p-3 bg-gray-200 rounded-lg my-2">
+              <div
+                key={partido.id}
+                className="p-3 bg-gray-200 rounded-lg my-2 cursor-pointer"
+                onClick={() => navigate(`/resultado-partido/${partido.id}`)} // Navegar al resultado del partido
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2 flex-1">
                     <div
@@ -227,7 +233,9 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
                     </span>
                   </div>
 
-                  <span className="mx-2 font-bold">vs</span>
+                  <span className="mx-2 font-bold">
+                    {marcadorLocal} - {marcadorVisitante}
+                  </span>
 
                   <div className="flex items-center space-x-2 flex-1 justify-end">
                     <span className="font-medium">
@@ -240,10 +248,8 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
                   </div>
                 </div>
                 <div className="flex justify-between mt-2 text-sm text-gray-600">
-                  <span>Cancha: {cancha?.nro || 'No Definido'}</span>
-                  <span>
-                    Hora: {horario?.hora_inicio || 'No Definido'} - {horario?.hora_fin || 'No Definido'}
-                  </span>
+                  <span>Cancha: {cancha}</span>
+                  <span>Hora: {horario}</span>
                 </div>
               </div>
             );

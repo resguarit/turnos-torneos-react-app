@@ -5,6 +5,7 @@ import { Footer } from '@/components/Footer';
 import BackButton from '@/components/BackButton';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
+import { toast } from 'react-toastify'; // Importar react-toastify
 
 export default function ResultadoPartido() {
   const { partidoId } = useParams();
@@ -61,144 +62,159 @@ export default function ResultadoPartido() {
 
   const handleApplyChanges = async () => {
     try {
-        // Filtrar solo los jugadores con cambios
-        const updatedStats = Object.keys(estadisticas).map((jugadorId) => {
-            const estadistica = estadisticas[jugadorId];
-            const original = originalEstadisticas[jugadorId] || {};
+      // Filtrar solo los jugadores con cambios
+      const updatedStats = Object.keys(estadisticas)
+        .map((jugadorId) => {
+          const estadistica = estadisticas[jugadorId];
+          const original = originalEstadisticas[jugadorId] || {};
 
-            return {
-                nro_camiseta: estadistica?.nro_camiseta ?? null,
-                goles: estadistica?.goles ?? 0,
-                asistencias: estadistica?.asistencias ?? 0,
-                amarillas: estadistica?.amarillas ?? 0,
-                rojas: estadistica?.rojas ?? 0,
-                partido_id: partidoId,
-                jugador_id: jugadorId,
-            };
-        }).filter((estadistica, index) => 
+          return {
+            nro_camiseta: estadistica?.nro_camiseta ?? null,
+            goles: estadistica?.goles ?? 0,
+            asistencias: estadistica?.asistencias ?? 0,
+            amarillas: estadistica?.amarillas ?? 0,
+            rojas: estadistica?.rojas ?? 0,
+            partido_id: partidoId,
+            jugador_id: jugadorId,
+          };
+        })
+        .filter(
+          (estadistica, index) =>
             JSON.stringify(estadistica) !== JSON.stringify(Object.values(originalEstadisticas)[index])
         );
 
-        if (updatedStats.length > 0) {
-            await Promise.all(updatedStats.map((estadistica) => api.post('/estadisticas', estadistica)));
-        }
-
-        // Calcular el marcador y el ganador
-        let marcadorLocal = 0;
-        let marcadorVisitante = 0;
-
-        Object.keys(estadisticas).forEach((jugadorId) => {
-            const jugador = estadisticas[jugadorId];
-            if (equipoLocal.jugadores.some((j) => j.id === parseInt(jugadorId))) {
-                marcadorLocal += jugador.goles || 0;
-            } else if (equipoVisitante.jugadores.some((j) => j.id === parseInt(jugadorId))) {
-                marcadorVisitante += jugador.goles || 0;
-            }
-        });
-
-        const ganadorId =
-            marcadorLocal > marcadorVisitante
-                ? equipoLocal.id
-                : marcadorVisitante > marcadorLocal
-                    ? equipoVisitante.id
-                    : null;
-
-        await api.put(`/partidos/${partidoId}`, {
-            marcador_local: marcadorLocal,
-            marcador_visitante: marcadorVisitante,
-            ganador_id: ganadorId,
-            estado: "Finalizado",
-        });
-
-        setChargingMode(false);
-        setOriginalEstadisticas(estadisticas);
-        setChangesDetected(false);
-
-        alert('Cambios aplicados correctamente');
-    } catch (error) {
-        console.error('Error aplicando cambios:', error);
-        alert('Error aplicando cambios');
-    }
-};
-
-const handleEditClick = async (estadisticaId, jugadorId) => {
-  try {
-    const updatedData = estadisticas[jugadorId];
-    if (!updatedData) {
-      console.error('No hay datos para actualizar o crear');
-      return;
-    }
-
-    let response;
-    if (estadisticaId) {
-      // Si existe un ID de estadística, realiza un PUT para actualizar
-      response = await api.put(`/estadisticas/${estadisticaId}`, updatedData);
-      const updatedEstadistica = response.data.estadistica;
-
-      // Actualiza el estado con la estadística actualizada
-      setEstadisticas((prevEstadisticas) => ({
-        ...prevEstadisticas,
-        [updatedEstadistica.jugador_id]: updatedEstadistica,
-      }));
-    } else {
-      // Si no existe un ID de estadística, realiza un POST para crearla
-      response = await api.post('/estadisticas', updatedData);
-      const createdEstadistica = response.data.estadistica;
-
-      // Actualiza el estado con la nueva estadística creada
-      setEstadisticas((prevEstadisticas) => ({
-        ...prevEstadisticas,
-        [createdEstadistica.jugador_id]: createdEstadistica,
-      }));
-    }
-
-    // Calcular el marcador y el ganador
-    let marcadorLocal = 0;
-    let marcadorVisitante = 0;
-
-    Object.keys(estadisticas).forEach((id) => {
-      const jugador = estadisticas[id];
-      if (equipoLocal.jugadores.some((j) => j.id === parseInt(id))) {
-        marcadorLocal += jugador.goles || 0;
-      } else if (equipoVisitante.jugadores.some((j) => j.id === parseInt(id))) {
-        marcadorVisitante += jugador.goles || 0;
+      if (updatedStats.length > 0) {
+        await Promise.all(updatedStats.map((estadistica) => api.post('/estadisticas', estadistica)));
       }
-    });
 
-    const ganadorId =
-      marcadorLocal > marcadorVisitante
-        ? equipoLocal.id
-        : marcadorVisitante > marcadorLocal
-        ? equipoVisitante.id
-        : null;
+      // Calcular el marcador y el ganador
+      let marcadorLocal = 0;
+      let marcadorVisitante = 0;
 
-    // Actualizar el partido con el nuevo marcador y ganador
-    await api.put(`/partidos/${partidoId}`, {
-      marcador_local: marcadorLocal,
-      marcador_visitante: marcadorVisitante,
-      ganador_id: ganadorId,
-    });
+      Object.keys(estadisticas).forEach((jugadorId) => {
+        const jugador = estadisticas[jugadorId];
+        if (equipoLocal.jugadores.some((j) => j.id === parseInt(jugadorId))) {
+          marcadorLocal += jugador.goles || 0;
+        } else if (equipoVisitante.jugadores.some((j) => j.id === parseInt(jugadorId))) {
+          marcadorVisitante += jugador.goles || 0;
+        }
+      });
 
-    // Salir del modo de edición para el jugador
-    setEditMode((prevEditMode) => ({
-      ...prevEditMode,
-      [jugadorId]: false,
-    }));
+      const ganadorId =
+        marcadorLocal > marcadorVisitante
+          ? equipoLocal.id
+          : marcadorVisitante > marcadorLocal
+          ? equipoVisitante.id
+          : null;
 
-    setChangesDetected(false);
-    alert('Estadística y marcador actualizados correctamente');
-  } catch (error) {
-    console.error('Error al guardar la estadística:', error);
-    alert('Error al guardar la estadística');
-  }
-};
+      await api.put(`/partidos/${partidoId}`, {
+        marcador_local: marcadorLocal,
+        marcador_visitante: marcadorVisitante,
+        ganador_id: ganadorId,
+        estado: 'Finalizado',
+      });
+
+      // Verificar si todos los partidos de la fecha están finalizados
+      const fechaId = partido.fecha.id;
+      const partidosResponse = await api.get(`/fechas/${fechaId}/partidos`);
+      const partidos = partidosResponse.data;
+
+      const todosFinalizados = partidos.every((p) => p.estado === 'Finalizado');
+
+      if (todosFinalizados) {
+        await api.put(`/fechas/${fechaId}`, { estado: 'Finalizada' });
+        toast.success('Todos los partidos de la fecha están finalizados. La fecha ha sido marcada como Finalizada.');
+      }
+
+      setChargingMode(false);
+      setOriginalEstadisticas(estadisticas);
+      setChangesDetected(false);
+
+      toast.success('Cambios aplicados correctamente');
+    } catch (error) {
+      console.error('Error aplicando cambios:', error);
+      toast.error('Error aplicando cambios');
+    }
+  };
+
+  const handleEditClick = async (estadisticaId, jugadorId) => {
+    try {
+      const updatedData = estadisticas[jugadorId];
+      if (!updatedData) {
+        console.error('No hay datos para actualizar o crear');
+        return;
+      }
+
+      let response;
+      if (estadisticaId) {
+        // Si existe un ID de estadística, realiza un PUT para actualizar
+        response = await api.put(`/estadisticas/${estadisticaId}`, updatedData);
+        const updatedEstadistica = response.data.estadistica;
+
+        // Actualiza el estado con la estadística actualizada
+        setEstadisticas((prevEstadisticas) => ({
+          ...prevEstadisticas,
+          [updatedEstadistica.jugador_id]: updatedEstadistica,
+        }));
+      } else {
+        // Si no existe un ID de estadística, realiza un POST para crearla
+        response = await api.post('/estadisticas', updatedData);
+        const createdEstadistica = response.data.estadistica;
+
+        // Actualiza el estado con la nueva estadística creada
+        setEstadisticas((prevEstadisticas) => ({
+          ...prevEstadisticas,
+          [createdEstadistica.jugador_id]: createdEstadistica,
+        }));
+      }
+
+      // Calcular el marcador y el ganador
+      let marcadorLocal = 0;
+      let marcadorVisitante = 0;
+
+      Object.keys(estadisticas).forEach((id) => {
+        const jugador = estadisticas[id];
+        if (equipoLocal.jugadores.some((j) => j.id === parseInt(id))) {
+          marcadorLocal += jugador.goles || 0;
+        } else if (equipoVisitante.jugadores.some((j) => j.id === parseInt(id))) {
+          marcadorVisitante += jugador.goles || 0;
+        }
+      });
+
+      const ganadorId =
+        marcadorLocal > marcadorVisitante
+          ? equipoLocal.id
+          : marcadorVisitante > marcadorLocal
+          ? equipoVisitante.id
+          : null;
+
+      // Actualizar el partido con el nuevo marcador y ganador
+      await api.put(`/partidos/${partidoId}`, {
+        marcador_local: marcadorLocal,
+        marcador_visitante: marcadorVisitante,
+        ganador_id: ganadorId,
+      });
+
+      // Salir del modo de edición para el jugador
+      setEditMode((prevEditMode) => ({
+        ...prevEditMode,
+        [jugadorId]: false,
+      }));
+
+      setChangesDetected(false);
+      alert('Estadística y marcador actualizados correctamente');
+    } catch (error) {
+      console.error('Error al guardar la estadística:', error);
+      alert('Error al guardar la estadística');
+    }
+  };
 
   const toggleEditMode = (jugadorId) => {
     setEditMode((prevEditMode) => ({
       ...prevEditMode,
       [jugadorId]: !prevEditMode[jugadorId],
     }));
-  
+
     if (!estadisticas[jugadorId]) {
       setEstadisticas((prevEstadisticas) => ({
         ...prevEstadisticas,

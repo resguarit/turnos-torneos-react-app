@@ -5,6 +5,8 @@ import { ChevronLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
+import { toast } from 'react-toastify'; // Importar react-toastify
+import 'react-toastify/dist/ReactToastify.css'; // Importar estilos de react-toastify
 
 export default function AltaZona() {
   const { id, torneoId } = useParams(); // Obtener el ID de la zona y el torneo desde la URL
@@ -30,7 +32,7 @@ export default function AltaZona() {
           });
         } catch (error) {
           console.error('Error fetching zona:', error);
-          alert('Error al cargar los datos de la zona');
+          toast.error('Error al cargar los datos de la zona'); // Mostrar error con toastify
           navigate('/zonas-admi'); // Redirigir si ocurre un error
         }
       }
@@ -51,16 +53,16 @@ export default function AltaZona() {
       if (id) {
         // Editar zona
         await api.put(`/zonas/${id}`, formData);
-        alert('Zona actualizada correctamente');
+        toast.success('Zona actualizada correctamente'); // Mostrar éxito con toastify
       } else {
         // Crear nueva zona
         await api.post('/zonas', formData);
-        alert('Zona creada correctamente');
+        toast.success('Zona creada correctamente'); // Mostrar éxito con toastify
       }
       navigate(`/zonas-admi/${formData.torneo_id}`);
     } catch (error) {
       console.error('Error saving zona:', error);
-      alert('Error al guardar la zona');
+      toast.error('Error al guardar la zona'); // Mostrar error con toastify
     } finally {
       setLoading(false);
     }

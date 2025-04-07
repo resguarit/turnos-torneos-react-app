@@ -91,27 +91,30 @@ export default function DetalleZona() {
         setLoading(true);
         const response = await api.get(`/zonas/${zonaId}`);
         setZona(response.data);
-        console.log(response.data);
+        console.log('Datos de la zona:', response.data);
+  
         if (response.data.formato === 'Grupos') {
           const gruposResponse = await api.get(`/zonas/${zonaId}/grupos`);
           setGrupos(gruposResponse.data);
           setGruposCreados(gruposResponse.data.length > 0);
+          console.log('Datos de los grupos:', gruposResponse.data);
         }
+  
         if (response.data.equipos.length > 0 && response.data.fechas_sorteadas) {
           const fechasResponse = await api.get(`/zonas/${zonaId}/fechas`);
           setFechas(fechasResponse.data);
-          setFechasSorteadas(true); // Establecer fechasSorteadas en true si ya hay fechas cargadas
+          setFechasSorteadas(true);
         }
-
       } catch (error) {
         console.error('Error fetching zone details:', error);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchZona();
   }, [zonaId]);
+  
 
   // Cerrar el calendario al hacer clic fuera de él
   useEffect(() => {
@@ -126,37 +129,30 @@ export default function DetalleZona() {
   }, []);
 
   const handleSortearFechas = async () => {
-    // Verificar si ya hay fechas sorteadas
     if (fechasSorteadas) {
       toast.error('Primero debe eliminar todas las fechas antes de sortear nuevamente.');
       return;
     }
-
+  
     if (!fechaInicial) {
       toast.error('Por favor, selecciona una fecha inicial.');
       return;
     }
-
+  
     try {
       setLoading(true);
-
-      // Primero, obtener los datos actualizados de la zona
-      const zonaActualizada = await api.get(`/zonas/${zonaId}`);
-
-      // Verificar que haya suficientes equipos para crear fechas
-      if (zonaActualizada.data.equipos.length < 2) {
-        toast.error('Se necesitan al menos 2 equipos para sortear fechas.');
-        return;
-      }
-
+  
+      // Verificar el valor de numGrupos
+      console.log('Número de grupos:', numGrupos);
+  
       const formattedFechaInicial = format(fechaInicial, 'yyyy-MM-dd');
       const requestData = {
         fecha_inicial: formattedFechaInicial,
         ...(zona.formato === 'Grupos' ? { num_grupos: numGrupos } : {}), // Pasar numGrupos si el formato es "Grupos"
       };
-
+  
       const response = await api.post(`/zonas/${zonaId}/fechas`, requestData);
-
+  
       if (response.status === 201 && Array.isArray(response.data.fechas)) {
         setFechas(response.data.fechas);
         setFechasSorteadas(true);
@@ -171,6 +167,7 @@ export default function DetalleZona() {
       setLoading(false);
     }
   };
+  
 
   const handleCrearGrupos = async () => {
     try {
@@ -499,7 +496,7 @@ export default function DetalleZona() {
         )}
         
         {activeTab === 'resultados' && (
-          <TabResultados />
+          <TabResultados zonaId={zonaId}/>
         )}
       </div>
     </main>

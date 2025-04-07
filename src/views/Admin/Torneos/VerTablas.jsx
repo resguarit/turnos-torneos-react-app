@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import api from '@/lib/axiosConfig';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ArrowRight } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import BtnLoading from '@/components/BtnLoading';
+import { TablaPuntaje } from './Tablas/TablaPuntaje';
+import { TablaProximaFecha } from './Tablas/TablaProximaFecha';
+import { TablasEstadisticasJugadores } from './Tablas/TablasEstadisticasJugadores';
+import api from '@/lib/axiosConfig';
 
 export default function VerTablas() {
   const { zonaId } = useParams();
@@ -227,7 +230,7 @@ export default function VerTablas() {
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
-      <div className="w-full flex mb-2">
+        <div className="w-full flex mb-2">
           <button onClick={() => navigate(-1)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
             <ChevronLeft className="w-5" /> Atrás
           </button>
@@ -235,145 +238,42 @@ export default function VerTablas() {
         <div className="flex flex-col justify-center items-center h-full">
           <h1 className="text-center text-2xl font-sans font-semibold">Tablas</h1>
 
-
           <div className="flex flex-col w-3/4 mt-4">
-            <table className="table-auto w-full ">
-              <thead>
-                <tr className="bg-black text-white font-sans">
-                  <th className="border border-gray-300 px-4 py-2">Posición</th>
-                  <th className="border border-gray-300 px-4 py-2">Equipo</th>
-                  <th className="border border-gray-300 px-4 py-2">Puntos</th>
-                  <th className="border border-gray-300 px-4 py-2">PJ</th>
-                  <th className="border border-gray-300 px-4 py-2">PG</th>
-                  <th className="border border-gray-300 px-4 py-2">PP</th>
-                  <th className="border border-gray-300 px-4 py-2">PE</th>
-                  <th className="border border-gray-300 px-4 py-2">GF</th>
-                  <th className="border border-gray-300 px-4 py-2">GC</th>
-                  <th className="border border-gray-300 px-4 py-2">DG</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tablaPuntaje.map((equipo, index) => (
-                  <tr key={index} className="text-center bg-white">
-                    <td className="border border-gray-300 px-4 py-2">{index + 1}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.nombre}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.puntos}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.partidos_jugados}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.partidos_ganados}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.partidos_perdidos}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.partidos_empatados}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.goles_a_favor}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.goles_en_contra}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.diferencia_goles}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <TablaPuntaje data={tablaPuntaje} />
           </div>
 
-{/* Tabla de la próxima fecha */}
-{proximaFecha && (
-            <div className="flex flex-col w-3/4 mt-4">
-              <h2 className="text-xl font-bold mb-2">Próxima Fecha: {proximaFecha.nombre}</h2>
-              <table className="table-auto w-full border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-black text-white font-sans">
-                    <th className="border border-gray-300 px-4 py-2">Local</th>
-                    <th className="border border-gray-300 px-4 py-2">vs</th>
-                    <th className="border border-gray-300 px-4 py-2">Visitante</th>
-                    <th className="border border-gray-300 px-4 py-2">Cancha</th>
-                    <th className="border border-gray-300 px-4 py-2">Hora</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {partidosProximaFecha.map((partido, index) => (
-                    <tr key={index} className="text-center bg-white">
-                      <td className="border border-gray-300 px-4 py-2">{partido.equipo_local.nombre}</td>
-                      <td className="border border-gray-300 px-4 py-2">vs</td>
-                      <td className="border border-gray-300 px-4 py-2">{partido.equipo_visitante.nombre}</td>
-                      <td className="border border-gray-300 px-4 py-2">{partido.cancha?.nro || 'No Definido'}</td>
-                      <td className="border border-gray-300 px-4 py-2">{partido.horario?.hora || 'No Definido'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {proximaFecha && (
+            <div className="w-3/4">
+              <TablaProximaFecha 
+                fecha={proximaFecha} 
+                partidos={partidosProximaFecha} 
+                zonaId={zonaId}
+              />
             </div>
           )}
-          {proximaFecha && (
-                <button onClick={() => navigate(`/ver-fixture/${zonaId}`)}
-                className='justify-start w-3/4 text-sm items-center text-gray-400 flex'
-                >Ver Fixture Completo <ArrowRight size={16}></ArrowRight></button>
-          )}
-          {/* Tabla de Goleadores */}
-          <div className="flex flex-col w-3/4 mt-4">
-            <h2 className="text-xl font-bold mb-2">Goleadores</h2>
-            <table className="table-auto w-full border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-black text-white font-sans">
-                  <th className="border border-gray-300 px-4 py-2">Jugador</th>
-                  <th className="border border-gray-300 px-4 py-2">Equipo</th>
-                  <th className="border border-gray-300 px-4 py-2">Goles</th>
-                </tr>
-              </thead>
-              <tbody>
-                {goleadores.map((jugador, index) => (
-                  <tr key={index} className="text-center bg-white">
-                    <td className="border border-gray-300 px-4 py-2">{jugador.nombre} {jugador.apellido}</td>
-                    <td className="border border-gray-300 px-4 py-2">{jugador.equipo}</td>
-                    <td className="border border-gray-300 px-4 py-2">{jugador.cantidad}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
 
-
-          </div>
-          {/* Tabla de Amonestados */}
-          <div className=' flex w-3/4 gap-40 justify-between'>
-          <div className="flex flex-col w-3/4 mt-4">
-            <h2 className="text-xl font-bold mb-2">Amonestados</h2>
-            <table className="table-auto w-full border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-black text-white font-sans">
-                  <th className="border border-gray-300 px-4 py-2">Jugador</th>
-                  <th className="border border-gray-300 px-4 py-2">Equipo</th>
-                  <th className="border border-gray-300 px-4 py-2">Amarillas</th>
-                </tr>
-              </thead>
-              <tbody>
-                {amonestados.map((jugador, index) => (
-                  <tr key={index} className="text-center bg-white">
-                    <td className="border border-gray-300 px-4 py-2">{jugador.nombre} {jugador.apellido}</td>
-                    <td className="border border-gray-300 px-4 py-2">{jugador.equipo}</td>
-                    <td className="border border-gray-300 px-4 py-2">{jugador.cantidad}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Tabla de Expulsados */}
-          <div className="flex flex-col w-3/4 mt-4">
-            <h2 className="text-xl font-bold mb-2">Expulsados</h2>
-            <table className="table-auto w-full border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-black text-white font-sans">
-                  <th className="border border-gray-300 px-4 py-2">Jugador</th>
-                  <th className="border border-gray-300 px-4 py-2">Equipo</th>
-                  <th className="border border-gray-300 px-4 py-2">Rojas</th>
-                </tr>
-              </thead>
-              <tbody>
-                {expulsados.map((jugador, index) => (
-                  <tr key={index} className="text-center bg-white">
-                    <td className="border border-gray-300 px-4 py-2">{jugador.nombre}{jugador.apellido}</td>
-                    <td className="border border-gray-300 px-4 py-2">{jugador.equipo}</td>
-                    <td className="border border-gray-300 px-4 py-2">{jugador.cantidad}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <div className="w-3/4 flex gap-8 justify-between">
+            <div className="flex-1">
+              <TablasEstadisticasJugadores
+                titulo="Goleadores"
+                datos={goleadores}
+                columnaEstadistica="Goles"
+              />
+            </div>
+            
+            <div className="flex-1">
+              <TablasEstadisticasJugadores
+                titulo="Amonestados"
+                datos={amonestados}
+                columnaEstadistica="Amarillas"
+              />
+              
+              <TablasEstadisticasJugadores
+                titulo="Expulsados"
+                datos={expulsados}
+                columnaEstadistica="Rojas"
+              />
+            </div>
           </div>
         </div>
       </main>

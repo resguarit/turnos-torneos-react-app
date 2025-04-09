@@ -119,7 +119,7 @@ export default function CargaPartido() {
         <div className="space-y-4 mb-6">
           <div>
             <label className="block font-semibold font-sans mb-1 lg:text-xl">
-              Selecciona el Torneo:
+              Torneo:
             </label>
             <select
               className="w-1/2 border border-gray-300 p-1 lg:text-lg"
@@ -139,7 +139,7 @@ export default function CargaPartido() {
           </div>
           <div>
             <label className="block font-semibold font-sans mb-1 lg:text-xl">
-              Selecciona la Zona:
+              Zona:
             </label>
             <select
               className="w-1/2 border border-gray-300 p-1 lg:text-lg"

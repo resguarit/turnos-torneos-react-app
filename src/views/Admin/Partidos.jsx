@@ -84,13 +84,13 @@ function Partidos() {
     activeFilters.forEach((filter) => {
       switch (filter.type) {
         case "tournament":
-          results = results.filter((partido) => partido.fecha.zona.torneo.nombre === filter.value)
+          results = results.filter((partido) => partido.fecha?.zona?.torneo.nombre === filter.value)
           break
         case "zone":
-          results = results.filter((partido) => partido.fecha.zona.nombre === filter.value)
+          results = results.filter((partido) => partido.fecha?.zona?.nombre === filter.value)
           break
         case "date":
-          results = results.filter((partido) => partido.fecha.nombre === filter.value)
+          results = results.filter((partido) => partido.fecha?.nombre === filter.value)
           break
         default:
           break
@@ -306,8 +306,8 @@ function Partidos() {
                       </td>
                       <td className="px-4 py-2 text-center">{partido.horario ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : 'No Definido'}</td>
                       <td className="px-4 py-2 text-center">{partido.cancha ? `${partido.cancha.nro} - ${partido.cancha.tipo_cancha}` : 'No Definido'}</td>
-                      <td className="px-4 py-2 text-center">{partido.fecha.zona.torneo.nombre}</td>
-                      <td className="px-4 py-2 text-center">{partido.fecha.zona.nombre}</td>
+                      <td className="px-4 py-2 text-center">{partido.fecha?.zona?.torneo?.nombre || 'No Definido'}</td>
+                      <td className="px-4 py-2 text-center">{partido.fecha?.zona?.nombre}</td>
                       <td className="px-4 py-2 text-center">{partido.fecha.nombre}</td>
                     </tr>
                   ))}

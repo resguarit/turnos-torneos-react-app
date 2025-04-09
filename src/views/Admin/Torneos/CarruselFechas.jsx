@@ -9,6 +9,7 @@ import BtnLoading from "@/components/BtnLoading"
 import EditFechaModal from './EditFechaModal'
 import PostergarFechasModal from './PostergarFechasModal'
 import AsignarHoraYCanchaModal from './AsignarHoraYCancha'; // Importa el modal
+import EditPartidoModal from './EditPartidoModal'; // Importar el modal para editar partidos
 
 
 export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
@@ -27,6 +28,8 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
   const [horarios, setHorarios] = useState([]);
   const [horariosModal, setHorariosModal] = useState([]); // Estado para los horarios del modal
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false); // Estado para mostrar el modal de confirmación
+  const [selectedPartido, setSelectedPartido] = useState(null); // Estado para el partido seleccionado
+  const [modalEditPartidoVisible, setModalEditPartidoVisible] = useState(false); // Estado para mostrar el modal
 
   useEffect(() => {
     const fetchFechas = async () => {
@@ -146,6 +149,26 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
     }
   };
 
+  const handleEditPartido = (partido) => {
+    setSelectedPartido(partido);
+    setModalEditPartidoVisible(true);
+  };
+
+  const handlePartidoUpdated = (updatedPartido) => {
+    setFechas((prevFechas) =>
+      prevFechas.map((fecha) =>
+        fecha.id === updatedPartido.fecha_id
+          ? {
+              ...fecha,
+              partidos: fecha.partidos.map((partido) =>
+                partido.id === updatedPartido.id ? updatedPartido : partido
+              ),
+            }
+          : fecha
+      )
+    );
+  };
+
   const goToPrevious = () => {
     setCurrentFechaIndex((prev) => (prev > 0 ? prev - 1 : prev));
   }
@@ -211,17 +234,11 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
       <div className="divide-y divide-gray-200">
         {currentFecha.partidos && currentFecha.partidos.length > 0 ? (
           currentFecha.partidos.map((partido) => {
-            const cancha = partido.cancha ? `${partido.cancha.nro} - ${partido.cancha.tipo_cancha}` : "No Definido";
-            const horario = partido.horario ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : "No Definido";
-            const marcadorLocal = partido.marcador_local ?? "-";
-            const marcadorVisitante = partido.marcador_visitante ?? "-";
+            const cancha = canchas.find((c) => c.id === partido.cancha_id);
+            const horario = horarios.find((h) => h.id === partido.horario_id);
 
             return (
-              <div
-                key={partido.id}
-                className="p-3 bg-gray-200 rounded-lg my-2 cursor-pointer"
-                onClick={() => navigate(`/resultado-partido/${partido.id}`)} // Navegar al resultado del partido
-              >
+              <div key={partido.id} className="p-3 bg-gray-200 rounded-lg my-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2 flex-1">
                     <div
@@ -233,9 +250,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
                     </span>
                   </div>
 
-                  <span className="mx-2 font-bold">
-                    {marcadorLocal} - {marcadorVisitante}
-                  </span>
+                  <span className="mx-2 font-bold">vs</span>
 
                   <div className="flex items-center space-x-2 flex-1 justify-end">
                     <span className="font-medium">
@@ -248,8 +263,18 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
                   </div>
                 </div>
                 <div className="flex justify-between mt-2 text-sm text-gray-600">
-                  <span>Cancha: {cancha}</span>
-                  <span>Hora: {horario}</span>
+                  <span>Cancha: {cancha?.nro || 'No Definido'}</span>
+                  <span>
+                    Hora: {horario?.hora_inicio || 'No Definido'} - {horario?.hora_fin || 'No Definido'}
+                  </span>
+                </div>
+                <div className="flex justify-end mt-2">
+                  <button
+                    onClick={() => handleEditPartido(partido)}
+                    className="bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600"
+                  >
+                    Editar
+                  </button>
                 </div>
               </div>
             );
@@ -381,6 +406,14 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
         zonaId={zonaId}
         horarios={horariosModal} // Pasa los horarios al modal
         onClose={() => setModalAsignarVisible(false)}
+        />
+      )}
+
+      {modalEditPartidoVisible && selectedPartido && (
+        <EditPartidoModal
+          partido={selectedPartido}
+          onClose={() => setModalEditPartidoVisible(false)}
+          onSave={handlePartidoUpdated}
         />
       )}
 

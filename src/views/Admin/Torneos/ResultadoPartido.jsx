@@ -20,6 +20,7 @@ export default function ResultadoPartido() {
   const [originalEstadisticas, setOriginalEstadisticas] = useState({});
   const [changesDetected, setChangesDetected] = useState(false);
   const [chargingMode, setChargingMode] = useState(false);
+  const [jugadoresEnAlta, setJugadoresEnAlta] = useState([]); // Estado para jugadores en alta
 
   useEffect(() => {
     const fetchPartido = async () => {
@@ -245,6 +246,59 @@ export default function ResultadoPartido() {
     setChangesDetected(false); // Marca que no hay cambios pendientes
   };
 
+  const handleAddJugador = () => {
+    const nuevoJugador = {
+      id: Date.now(), // ID único temporal
+      dni: '',
+      nombre: '',
+      apellido: '',
+      fecha_nacimiento: '',
+    };
+    setJugadoresEnAlta((prev) => [...prev, nuevoJugador]);
+  };
+
+  const handleConfirmAlta = async (jugadorId) => {
+    const jugador = jugadoresEnAlta.find((j) => j.id === jugadorId);
+
+    if (!jugador || !jugador.nombre || !jugador.apellido || !jugador.dni || !jugador.fecha_nacimiento) {
+      toast.error('Por favor, completa todos los campos del jugador antes de confirmar.');
+      return;
+    }
+
+    try {
+      const response = await api.post(`/equipos/${verEquipo === 1 ? equipoLocal.id : equipoVisitante.id}/jugadores/multiple`, {
+        jugadores: [jugador],
+        equipo_id: verEquipo === 1 ? equipoLocal.id : equipoVisitante.id,
+      });
+
+      if (response.status === 201) {
+        toast.success('Jugador agregado correctamente');
+        setJugadoresEnAlta((prev) => prev.filter((j) => j.id !== jugadorId));
+
+        // Actualizar la lista de jugadores del equipo
+        if (verEquipo === 1) {
+          setEquipoLocal((prev) => ({
+            ...prev,
+            jugadores: [...prev.jugadores, ...response.data.jugadores],
+          }));
+        } else {
+          setEquipoVisitante((prev) => ({
+            ...prev,
+            jugadores: [...prev.jugadores, ...response.data.jugadores],
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error al agregar el jugador:', error);
+      toast.error('Error al agregar el jugador. Verifica los datos e inténtalo nuevamente.');
+    }
+  };
+
+  const handleCancelAlta = (jugadorId) => {
+    // Cancelar el alta del jugador
+    setJugadoresEnAlta((prev) => prev.filter((jugador) => jugador.id !== jugadorId));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col font-inter">
@@ -284,6 +338,8 @@ export default function ResultadoPartido() {
         <p>Horario: {partido.horario ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : "Indefinido"}</p>
         <p>Cancha: {partido.cancha ? `${partido.cancha.nro} - ${partido.cancha.tipo_cancha}` : "Indefinida"}</p>
         <div>
+        <div className='w-full flex justify-between'>
+          
           <div className="space-x-4">
             <button
               onClick={() => setVerEquipo(1)}
@@ -297,6 +353,15 @@ export default function ResultadoPartido() {
             >
               {equipoVisitante.nombre}
             </button>
+          </div>
+          <div>
+            <button
+              onClick={handleAddJugador}
+              className="rounded-[8px] p-2 bg-black text-white"
+            >
+              + Agregar Jugador
+            </button>
+          </div>
           </div>
           <table className="w-full bg-white rounded-[8px] mt-4 p-1">
             <thead>
@@ -314,6 +379,106 @@ export default function ResultadoPartido() {
               </tr>
             </thead>
             <tbody>
+  {jugadoresEnAlta.map((jugador) => (
+    <tr key={jugador.id}>
+      <td className="p-2 text-center">
+        <input
+          type="text"
+          placeholder="DNI"
+          value={jugador.dni}
+          onChange={(e) =>
+            setJugadoresEnAlta((prev) =>
+              prev.map((j) =>
+                j.id === jugador.id ? { ...j, dni: e.target.value } : j
+              )
+            )
+          }
+          className="w-full text-center border border-gray-300 rounded-[6px] p-1"
+        />
+      </td>
+      <td className="p-2 text-center">
+        <div className="flex space-x-1">
+          <input
+            type="text"
+            placeholder="Nombre"
+            value={jugador.nombre}
+            onChange={(e) =>
+              setJugadoresEnAlta((prev) =>
+                prev.map((j) =>
+                  j.id === jugador.id ? { ...j, nombre: e.target.value } : j
+                )
+              )
+            }
+            className="w-full text-center border border-gray-300 rounded-[6px] p-1"
+          />
+          <input
+            type="text"
+            placeholder="Apellido"
+            value={jugador.apellido}
+            onChange={(e) =>
+              setJugadoresEnAlta((prev) =>
+                prev.map((j) =>
+                  j.id === jugador.id ? { ...j, apellido: e.target.value } : j
+                )
+              )
+            }
+            className="w-full text-center border border-gray-300 rounded-[6px] p-1"
+          />
+        </div>
+      </td>
+      <td className="p-2 text-center">
+        <input
+          type="date"
+          placeholder="Fecha de Nacimiento"
+          value={jugador.fecha_nacimiento}
+          onChange={(e) =>
+            setJugadoresEnAlta((prev) =>
+              prev.map((j) =>
+                j.id === jugador.id
+                  ? { ...j, fecha_nacimiento: e.target.value }
+                  : j
+              )
+            )
+          }
+          className="w-full text-center border border-gray-300 rounded-[6px] p-1"
+        />
+      </td>
+      <td className="p-2 text-center">
+        {/* Espacio vacío para mantener la estructura de la tabla */}
+      </td>
+      <td className="p-2 text-center">
+        {/* Espacio vacío para mantener la estructura de la tabla */}
+      </td>
+      <td className="p-2 text-center">
+        {/* Espacio vacío para mantener la estructura de la tabla */}
+      </td>
+      <td className="p-2 text-center">
+        {/* Espacio vacío para mantener la estructura de la tabla */}
+      </td>
+      <td className="p-2 text-center">
+        {/* Espacio vacío para mantener la estructura de la tabla */}
+      </td>
+      <td className="p-2 text-center">
+        {/* Espacio vacío para mantener la estructura de la tabla */}
+      </td>
+      <td className="p-2 text-center">
+        <div className="flex justify-center space-x-2">
+          <button
+            onClick={() => handleConfirmAlta(jugador.id)}
+            className="bg-green-500 text-white rounded-md p-1"
+          >
+            ✓
+          </button>
+          <button
+            onClick={() => handleCancelAlta(jugador.id)}
+            className="bg-red-500 text-white rounded-md p-1"
+          >
+            ✕
+          </button>
+        </div>
+      </td>
+    </tr>
+  ))}
   {verEquipo === 1 ? equipoLocal.jugadores.map((jugador) => (
     <tr key={jugador.id} className="p-1">
       <td className="p-2 text-center">{jugador.dni}</td>
@@ -486,7 +651,7 @@ export default function ResultadoPartido() {
 </tbody>
           </table>
           <div className="flex justify-end mt-4 space-x-2">
-          {!chargingMode &&  Object.keys(estadisticas).length === 0 && <button onClick={() => setChargingMode(true)} className="bg-green-500 text-white p-2">Cargar Resultados</button>}
+          {!chargingMode &&  Object.keys(estadisticas).length === 0 && <button onClick={() => setChargingMode(true)} className="bg-green-500 text-white p-2" disabled={jugadoresEnAlta.length > 0}>Cargar Resultados</button>}
           {chargingMode && changesDetected && <button onClick={handleApplyChanges} className="bg-blue-500 text-white p-2">Aplicar Cambios</button>}
           {chargingMode  && <button onClick={handleCancelChanges} className="bg-red-500 text-white p-2">Cancelar</button>}
           </div>

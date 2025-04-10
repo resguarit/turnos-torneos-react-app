@@ -4,6 +4,8 @@ import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import BtnLoading from '@/components/BtnLoading';
+import ModalConfirmation from '@/components/ModalConfirmation';
+import { useNavigate } from 'react-router-dom';
 
 const PestanaPersonas = () => {
   const [personas, setPersonas] = useState([]);
@@ -12,6 +14,8 @@ const PestanaPersonas = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchType, setSearchType] = useState('dni');
   const [userRole, setUserRole] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [personaToDelete, setPersonaToDelete] = useState(null);
   // Estructura para datos de la persona
   const [newPersona, setNewPersona] = useState({
     name: '',
@@ -31,6 +35,7 @@ const PestanaPersonas = () => {
   const [clear, setClear] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const role = localStorage.getItem('user_role');
@@ -157,12 +162,12 @@ const PestanaPersonas = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleViewTurnosClick = (personaDni) => {
-    window.location.href = `/panel-admin?tab=turnos&usuario=${personaDni}`;
+  const handleVerTurnos = (personaDni) => {
+    navigate(`/panel-admin?tab=turnos&usuario=${personaDni}`);
   };
 
-  const handleViewCuentaCorrienteClick = (personaDni) => {
-    window.location.href = `/panel-admin?tab=cuentacorriente&dni=${personaDni}`;
+  const handleVerCuentaCorriente = (personaDni) => {
+    navigate(`/panel-admin?tab=cuentacorriente&dni=${personaDni}`);
   };
 
   const handlePageChange = (newPage) => {
@@ -245,6 +250,27 @@ const PestanaPersonas = () => {
       direccion: '',
     });
     setValidationErrors({});
+  };
+
+  const handleDeletePersona = async (personaId) => {
+    try {
+      const response = await api.delete(`/personas/${personaId}`);
+      if (response.status === 200) {
+        setPersonas(personas.filter(persona => persona.id !== personaId));
+        toast.success('Persona eliminada correctamente');
+      }
+    } catch (error) {
+      console.error('Error al eliminar persona:', error);
+      toast.error('Error al eliminar la persona');
+    } finally {
+      setShowDeleteModal(false);
+      setPersonaToDelete(null);
+    }
+  };
+
+  const handleDeleteClick = (persona) => {
+    setPersonaToDelete(persona);
+    setShowDeleteModal(true);
   };
 
   return (
@@ -447,13 +473,17 @@ const PestanaPersonas = () => {
                           <button onClick={() => handleEditClick(persona)} className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200" disabled={isSaving}>
                             <Edit2 className="h-5 w-5" />
                           </button>
-                          <button className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" disabled={isSaving}>
+                          <button 
+                            onClick={() => handleDeleteClick(persona)} 
+                            className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" 
+                            disabled={isSaving}
+                          >
                             <Trash2 className="h-5 w-5" />
                           </button>
                         </>
                       )}
                       <button 
-                        onClick={() => handleViewTurnosClick(persona.dni)} 
+                        onClick={() => handleVerTurnos(persona.dni)} 
                         className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors duration-200 flex items-center" 
                         disabled={isSaving}
                         title="Ver Turnos"
@@ -462,7 +492,7 @@ const PestanaPersonas = () => {
                         <span className="ml-1 hidden sm:inline">Ver Turnos</span>
                       </button>
                       <button 
-                        onClick={() => handleViewCuentaCorrienteClick(persona.dni)} 
+                        onClick={() => handleVerCuentaCorriente(persona.dni)} 
                         className="p-2 text-gray-400 hover:text-orange-600 rounded-lg hover:bg-orange-50 transition-colors duration-200 flex items-center" 
                         disabled={isSaving}
                         title="Ver Cuenta Corriente"
@@ -526,6 +556,21 @@ const PestanaPersonas = () => {
             Siguiente
           </button>
         </div>
+      )}
+
+      {/* Modal de Confirmación de Eliminación */}
+      {showDeleteModal && (
+        <ModalConfirmation
+          onConfirm={() => handleDeletePersona(personaToDelete.id)}
+          onCancel={() => {
+            setShowDeleteModal(false);
+            setPersonaToDelete(null);
+          }}
+          title="Eliminar Persona"
+          subtitle={`¿Estás seguro que deseas eliminar a ${personaToDelete?.name}?`}
+          botonText1="Cancelar"
+          botonText2="Eliminar"
+        />
       )}
     </div>
   );

@@ -32,8 +32,9 @@ export default function UserProfile() {
           <h1 className="text-xl md:text-2xl font-bold text-black mb-6">
             Mi Panel de Usuario
           </h1>
-          <div className="flex flex-col items-center justify-center">
-          <div className="grid grid-cols-1 w-[80vw] md:grid-cols-3 gap-6 mb-6">
+          <div className="flex items-center justify-center">
+          {/* Cuando este la seccion de torneos, se debe cambiar el grid-cols-1 a md:grid-cols-3 */}
+          <div className="grid grid-cols-1 w-[50%] gap-6 mb-6">
             <Button
               onClick={() => setActiveSection("appointments")}
               className={`flex lg:text-lg items-center justify-center rounded-[12px] gap-2 p-3  md:p-8 ${
@@ -45,7 +46,7 @@ export default function UserProfile() {
               <CalendarDays style={{height: '24px', width:'24px'}} />
               <span>Mis Turnos</span>
             </Button>
-            <Button
+            {/* <Button
               onClick={() => setActiveSection("teams")}
               className={`flex lg:text-lg items-center justify-center rounded-[12px] gap-2 p-3  md:p-8  ${
                 activeSection === "teams"
@@ -55,7 +56,7 @@ export default function UserProfile() {
             >
               <Users style={{height: '24px', width:'24px'}} className="h-6 w-6" />
               <span>Mis Equipos</span>
-            </Button>
+            </Button> 
             <Button
               onClick={() => setActiveSection("tournaments")}
               className={`flex lg:text-lg items-center justify-center rounded-[12px] gap-2 p-3  md:p-8  ${
@@ -66,7 +67,7 @@ export default function UserProfile() {
             >
               <Trophy style={{height: '24px', width:'24px'}} className="h-6 w-6" />
               <span>Mis Torneos</span>
-            </Button>
+            </Button>*/}
           </div>
           </div>
           <div className="border-0 shadow-none">

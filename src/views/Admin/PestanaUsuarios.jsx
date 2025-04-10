@@ -4,6 +4,8 @@ import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import BtnLoading from '@/components/BtnLoading';
+import ModalConfirmation from '@/components/ModalConfirmation';
+import { useNavigate } from 'react-router-dom';
 
 const PestanaUsuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -12,6 +14,8 @@ const PestanaUsuarios = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchType, setSearchType] = useState('dni');
   const [userRole, setUserRole] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [usuarioToDelete, setUsuarioToDelete] = useState(null);
   // Estructura plana para enviar a la API
   const [newUsuario, setNewUsuario] = useState({
     name: '',
@@ -35,6 +39,7 @@ const PestanaUsuarios = () => {
   const [clear, setClear] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const role = localStorage.getItem('user_role');
@@ -42,6 +47,27 @@ const PestanaUsuarios = () => {
   }, []);
 
   const isAdmin = userRole === 'admin';
+
+  const handleDeleteUser = async (usuarioId) => {
+    try {
+      const response = await api.delete(`/usuarios/${usuarioId}`);
+      if (response.status === 200) {
+        setUsuarios(usuarios.filter(usuario => usuario.id !== usuarioId));
+        toast.success('Usuario eliminado correctamente');
+      }
+    } catch (error) {
+      console.error('Error al eliminar usuario:', error);
+      toast.error('Error al eliminar el usuario');
+    } finally {
+      setShowDeleteModal(false);
+      setUsuarioToDelete(null);
+    }
+  };
+
+  const handleDeleteClick = (usuario) => {
+    setUsuarioToDelete(usuario);
+    setShowDeleteModal(true);
+  };
 
   const fetchUsuarios = async (signal) => {
     setLoading(true);
@@ -148,8 +174,8 @@ const PestanaUsuarios = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleViewTurnosClick = (usuarioDni) => {
-    window.location.href = `/panel-admin?tab=turnos&usuario=${usuarioDni}`;
+  const handleVerTurnos = (usuarioDni) => {
+    navigate(`/panel-admin?tab=turnos&usuario=${usuarioDni}`);
   };
 
   const handlePageChange = (newPage) => {
@@ -178,10 +204,14 @@ const PestanaUsuarios = () => {
     setIsSaving(true);
     setValidationErrors({});
     try {
-      // Enviar la estructura plana tal como estaba antes
       const response = await api.post('/create-user', newUsuario);
       if (response.status === 201) {
-        setUsuarios([response.data.user, ...usuarios]);
+        // Crear el objeto usuario con la estructura correcta incluyendo la persona
+        const nuevoUsuario = {
+          ...response.data.user,
+          persona: response.data.persona
+        };
+        setUsuarios([nuevoUsuario, ...usuarios]);
         resetNewUserForm();
         toast.success('Usuario creado con éxito');
       }
@@ -486,12 +516,16 @@ const PestanaUsuarios = () => {
                           <button onClick={() => handleEditClick(usuario)} className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200" disabled={isSaving}>
                             <Edit2 className="h-5 w-5" />
                           </button>
-                          <button className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" disabled={isSaving}>
+                          <button 
+                            onClick={() => handleDeleteClick(usuario)} 
+                            className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" 
+                            disabled={isSaving}
+                          >
                             <Trash2 className="h-5 w-5" />
                           </button>
                         </>
                       )}
-                      <button onClick={() => handleViewTurnosClick(usuario.persona?.dni)} className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors duration-200" disabled={isSaving}>
+                      <button onClick={() => handleVerTurnos(usuario.persona?.dni)} className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors duration-200" disabled={isSaving}>
                         Ver Turnos
                       </button>
                     </div>
@@ -549,6 +583,21 @@ const PestanaUsuarios = () => {
             Siguiente
           </button>
         </div>
+      )}
+
+      {/* Modal de Confirmación de Eliminación */}
+      {showDeleteModal && (
+        <ModalConfirmation
+          onConfirm={() => handleDeleteUser(usuarioToDelete.id)}
+          onCancel={() => {
+            setShowDeleteModal(false);
+            setUsuarioToDelete(null);
+          }}
+          title="Eliminar Usuario"
+          subtitle={`¿Estás seguro que deseas eliminar al usuario ${usuarioToDelete?.persona?.name}?`}
+          botonText1="Cancelar"
+          botonText2="Eliminar"
+        />
       )}
     </div>
   );

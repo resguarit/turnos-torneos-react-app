@@ -49,16 +49,8 @@ const Login = () => {
             localStorage.setItem('user_role', response.rol);
             navigate('/');
         } catch (error) {
-            if (error.status === 401) {
-                setError('Contraseña incorrecta');
-                setInputErrors({ identifier: false, password: true });
-            } else if (error.status === 404) {
-                setError('Credenciales incorrectas');
-                setInputErrors({ identifier: true, password: true });
-            } else {
-                setError('Error al iniciar sesión');
-                setInputErrors({ identifier: true, password: true });
-            }
+            setError('Credenciales incorrectas');
+            setInputErrors({ identifier: true, password: true });
         } finally {
             setLoading(false);
         }
@@ -159,11 +151,6 @@ const Login = () => {
                                     {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                                 </button>
                             </form>
-                            <div className="relative">
-                                <div className="absolute inset-0 flex items-center">
-                                    <div className="w-full border-t"></div>
-                                </div>
-                            </div>
                         </div>
                         <div className="text-center pt-4 mt-6 border-t text-sm">
                             <p>¿No tienes una cuenta? 

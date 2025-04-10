@@ -206,24 +206,15 @@ function SignUp() {
                                     </button>
                                 </div>
                             </div>
-                            <button type="submit" className="w-full bg-naranja text-base font-medium rounded-xl p-2 hover:bg-naranja/90 text-white" disabled={loading}>
-                                {loading ? 'Registrando Usuario...' : 'Registrarme'}
-                            </button>
+                            <div className="flex justify-center pt-3">
+                                <button type="submit" className="w-full bg-naranja text-base font-medium rounded-xl p-2 hover:bg-naranja/90 text-white" disabled={loading}>
+                                    {loading ? 'Registrando Usuario...' : 'Registrarme'}
+                                </button>
+                            </div>
                         </form>
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t"></div>
-                            </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-2 text-sm bg-white text-gray-500">O continúa con</span>
-                            </div>
-                        </div>
-                        <button variant="outline" className="w-full rounded-xl text-base p-2 border-2 items-center flex justify-center gap-4">
-                            <FcGoogle className='h-6 w-6' />
-                            Google
-                        </button>
+                        
                     </div>
-                    <div className="text-center pt-3 mt-2 border-t text-sm">
+                    <div className="text-center pt-3 border-t text-sm">
                         <p>¿Ya estás registrado? 
                             <Link to="/login" className="text-naranja hover:underline ml-1">
                                 Inicia Sesión

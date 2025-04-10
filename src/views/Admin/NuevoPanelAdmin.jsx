@@ -27,6 +27,13 @@ const NuevoPanelAdmin = () => {
   }, []);
 
   useEffect(() => {
+    const tab = queryParams.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
     navigate(`?tab=${activeTab}`, { replace: true });
   }, [activeTab, navigate]);
 

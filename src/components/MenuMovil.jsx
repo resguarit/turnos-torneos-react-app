@@ -181,15 +181,17 @@ const MenuMovil = ({ setMenuOpen }) => {
             {/* Crear un array de enlaces de navegación, reemplazando "Reservas" por "Continuar Reserva" cuando sea necesario */}
             {[
               { label: "Inicio", path: "/" },
-              { label: "Torneos", path: "/torneos-admi" },
+              //{ label: "Torneos", path: "/torneos-admi" },
               // Reemplazar "Reservas" por "Continuar Reserva" cuando hay una reserva activa
               ...(hasActiveReservation && !isReservationPage
                 ? [{ label: "Continuar Reserva", path: "/bloqueo-reserva", onClick: handleReturnToReservation }]
                 : [{ label: "Reservas", path: "/reserva-mobile" }]),
-              { label: "Partidos", path: "/partidos" },
-              { label: "Reglamento", path: "/reglamento" },
-              { label: "Premios", path: "/premios" },
-              ...(userRole === "admin" ? [{ label: "Administrador", path: "/panel-admin" }] : []),
+              //{ label: "Partidos", path: "/partidos" },
+              //{ label: "Reglamento", path: "/reglamento" },
+              //{ label: "Premios", path: "/premios" },
+              ...(userRole === "admin" || userRole === "moderador" 
+                ? [{ label: userRole === "admin" ? "Administrador" : "Moderador", path: "/panel-admin" }] 
+                : []),
             ].map((item) => (
               <div
                 key={item.path}

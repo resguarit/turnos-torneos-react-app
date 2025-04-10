@@ -292,6 +292,7 @@ function VerTurnos() {
   return (
     <>
       <div className="min-h-screen flex flex-col font-inter">
+        <ToastContainer position="top-right" />
         <main className="flex-1 mt-4 bg-gray-100">
           <div className="mb-8">
             <div className="space-y-4">

@@ -2,7 +2,8 @@ import axios from 'axios';
 
 const api = axios.create({
   //baseURL: 'https://rockandgolback-production.up.railway.app/api',
-  baseURL: 'https://vps-4793092-x.dattaweb.com:8090/preview/turnos.com.ar/api',
+  baseURL: 'http://localhost:8000/api',
+  //baseURL: 'https://vps-4793092-x.dattaweb.com:8090/preview/turnos.com.ar/api',
 });
 
 // Interceptor para agregar el token a todas las solicitudes

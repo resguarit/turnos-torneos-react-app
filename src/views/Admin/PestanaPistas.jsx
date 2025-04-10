@@ -8,19 +8,35 @@ import BtnLoading from '@/components/BtnLoading';
 
 const PestanaPistas = () => {
   const [pistas, setPistas] = useState([]);
+  const [deportes, setDeportes] = useState([]);
   const [agregando, setAgregando] = useState(false);
   const [editando, setEditando] = useState(null);
   const [pistaToDelete, setPistaToDelete] = useState(null);
   const [newPista, setNewPista] = useState({
     nro: '',
-    tipo_cancha: '',
+    deporte_id: '',
     precio_por_hora: '',
     seña: '',
-    descripcion: '', // Agregar campo de descripción
+    descripcion: '',
     activa: true,
   });
   const [loading, setLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false); // Estado de guardado
+  const [loadingDeportes, setLoadingDeportes] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const fetchDeportes = async () => {
+    try {
+      const response = await api.get('/deportes');
+      if (response.data) {
+        setDeportes(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching deportes:', error);
+      toast.error('Error al cargar los deportes');
+    } finally {
+      setLoadingDeportes(false);
+    }
+  };
 
   const fetchPistas = async (signal) => {
     setLoading(true);
@@ -29,21 +45,20 @@ const PestanaPistas = () => {
       if (response.status === 200) {
         setPistas(response.data.canchas);
       }
-      setLoading(false);
     } catch (error) {
       if (error.name !== 'AbortError' && error.name !== 'CanceledError') {
         console.error('Error fetching canchas:', error);
         toast.error('Error al cargar las canchas');
-        setLoading(false);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     const controller = new AbortController();
-
     fetchPistas(controller.signal);
-
+    fetchDeportes();
     return () => {
       controller.abort();
     };
@@ -51,17 +66,17 @@ const PestanaPistas = () => {
 
   const handleAddPista = async (e) => {
     e.preventDefault();
-    setIsSaving(true); // Iniciar estado de guardado
+    setIsSaving(true);
     try {
       const response = await api.post('/canchas', newPista);
       if (response.status === 201) {
-        setPistas([response.data.cancha, ...pistas]); // Agregar la nueva pista al principio de la lista
+        setPistas([response.data.cancha, ...pistas]);
         setNewPista({
           nro: '',
-          tipo_cancha: '',
+          deporte_id: '',
           precio_por_hora: '',
           seña: '',
-          descripcion: '', // Resetear campo de descripción
+          descripcion: '',
           activa: true,
         });
         setAgregando(false);
@@ -71,13 +86,13 @@ const PestanaPistas = () => {
       console.error('Error adding cancha:', error);
       toast.error('Error al añadir la cancha');
     } finally {
-      setIsSaving(false); // Finalizar estado de guardado
+      setIsSaving(false);
     }
   };
 
   const handleEditPista = async (e) => {
     e.preventDefault();
-    setIsSaving(true); // Iniciar estado de guardado
+    setIsSaving(true);
     try {
       const response = await api.patch(`/canchas/${editando.id}`, newPista);
       if (response.status === 200) {
@@ -87,10 +102,10 @@ const PestanaPistas = () => {
         setPistas(updatedPistas);
         setNewPista({
           nro: '',
-          tipo_cancha: '',
+          deporte_id: '',
           precio_por_hora: '',
           seña: '',
-          descripcion: '', // Resetear campo de descripción
+          descripcion: '',
           activa: true,
         });
         setEditando(null);
@@ -101,7 +116,7 @@ const PestanaPistas = () => {
       console.error('Error editing cancha:', error);
       toast.error('Error al editar la cancha');
     } finally {
-      setIsSaving(false); // Finalizar estado de guardado
+      setIsSaving(false);
     }
   };
 
@@ -120,13 +135,16 @@ const PestanaPistas = () => {
   };
 
   const handleEditClick = (pista) => {
-    setNewPista(pista);
+    setNewPista({
+      ...pista,
+      deporte_id: pista.deporte_id || ''
+    });
     setEditando(pista);
     setAgregando(true);
   };
 
   return (
-    <div className=" max-w-7xl mx-auto mt-4">
+    <div className="max-w-7xl mx-auto mt-4">
       <ToastContainer position="top-right" />
       <div className="flex justify-end items-center mb-4">
         <button
@@ -135,10 +153,10 @@ const PestanaPistas = () => {
             setEditando(null);
             setNewPista({
               nro: '',
-              tipo_cancha: '',
+              deporte_id: '',
               precio_por_hora: '',
               seña: '',
-              descripcion: '', // Resetear campo de descripción
+              descripcion: '',
               activa: true,
             });
           }}
@@ -150,9 +168,9 @@ const PestanaPistas = () => {
         </button>
       </div>
 
-      {loading ? (
+      {loading || loadingDeportes ? (
         <div className='flex justify-center items-center h-[50vh]'>
-        <BtnLoading />
+          <BtnLoading />
         </div>
       ) : (
         <>
@@ -170,14 +188,20 @@ const PestanaPistas = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Tipo de Cancha</label>
-                  <input
-                    type="text"
-                    value={newPista.tipo_cancha}
-                    onChange={(e) => setNewPista({ ...newPista, tipo_cancha: e.target.value })}
+                  <label className="block text-sm font-medium text-gray-700">Deporte</label>
+                  <select
+                    value={newPista.deporte_id}
+                    onChange={(e) => setNewPista({ ...newPista, deporte_id: e.target.value })}
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                     required
-                  />
+                  >
+                    <option value="">Seleccionar deporte</option>
+                    {deportes.map((deporte) => (
+                      <option key={deporte.id} value={deporte.id}>
+                        {`${deporte.nombre} ${deporte.jugadores_por_equipo}`}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Precio por Hora</label>
@@ -206,7 +230,6 @@ const PestanaPistas = () => {
                     value={newPista.descripcion}
                     onChange={(e) => setNewPista({ ...newPista, descripcion: e.target.value })}
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                    required
                   />
                 </div>
                 <div className="flex items-center">
@@ -240,25 +263,43 @@ const PestanaPistas = () => {
           )}
 
           <div className="bg-white w-full rounded-xl shadow-lg border border-gray-100 overflow-x-auto">
-            <ul className="divide-y divide-gray-100 w-full ">
+            <ul className="divide-y divide-gray-100 w-full">
               {pistas.map((pista) => (
                 <li key={pista.id} className="hover:bg-gray-50 transition-colors duration-150 w-full">
-                  <div className="p-6 flex justify-between items-center space-x-8 sm:space-x-3 ">
-                    <div className="flex  items-center space-x-8 ">
+                  <div className="p-6 flex justify-between items-center space-x-8 sm:space-x-3">
+                    <div className="flex items-center space-x-8">
                       <div className="bg-naranja text-center rounded-[8px] p-2">
-                        <span className="text-sm sm:text-base  font-semibold text-white">{`Cancha ${pista.nro} - ${pista.tipo_cancha}`}</span>
+                        <span className="text-sm sm:text-base font-semibold text-white">
+                          {`Cancha ${pista.nro} - ${pista.tipo_cancha}`}
+                        </span>
                       </div>
-                      <span className=" text-sm sm:text-base font-bold text-gray-700">Precio por Hora: <span className="font-normal">${pista.precio_por_hora}</span></span>
-                      <span className=" text-sm sm:text-base font-bold text-gray-700">Seña: <span className="font-normal">${pista.seña}</span></span>
-                      <span className=" text-sm sm:text-base font-bold text-gray-700">Descripción: <span className="font-normal">{pista.descripcion}</span></span>
-                      <span className=" text-sm sm:text-base font-bold text-gray-700">Activa: <span className="font-normal">{pista.activa ? 'Sí' : 'No'}</span></span>
+                      <span className="text-sm sm:text-base font-bold text-gray-700">
+                        Precio por Hora: <span className="font-normal">${pista.precio_por_hora}</span>
+                      </span>
+                      <span className="text-sm sm:text-base font-bold text-gray-700">
+                        Seña: <span className="font-normal">${pista.seña}</span>
+                      </span>
+                      <span className="text-sm sm:text-base font-bold text-gray-700">
+                        Descripción: <span className="font-normal">{pista.descripcion}</span>
+                      </span>
+                      <span className="text-sm sm:text-base font-bold text-gray-700">
+                        Activa: <span className="font-normal">{pista.activa ? 'Sí' : 'No'}</span>
+                      </span>
                     </div>
 
                     <div className="flex items-center space-x-3 sm:space-x-3">
-                      <button onClick={() => handleEditClick(pista)} className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200" disabled={isSaving}>
+                      <button 
+                        onClick={() => handleEditClick(pista)} 
+                        className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200" 
+                        disabled={isSaving}
+                      >
                         <Edit2 className="h-5 w-5" />
                       </button>
-                      <button onClick={() => setPistaToDelete(pista)} className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" disabled={isSaving}>
+                      <button 
+                        onClick={() => setPistaToDelete(pista)} 
+                        className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" 
+                        disabled={isSaving}
+                      >
                         <Trash2 className="h-5 w-5" />
                       </button>
                     </div>

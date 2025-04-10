@@ -34,6 +34,7 @@ const PestanaCuentasCorrientes = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState(dniParam || '');
   const [clear, setClear] = useState(false);
+  const [triggerSearch, setTriggerSearch] = useState(false);
 
   // Estado para cuentas corrientes
   const [cuentasCorrientes, setCuentasCorrientes] = useState([]);
@@ -67,7 +68,7 @@ const PestanaCuentasCorrientes = () => {
     } else {
       fetchTransacciones();
     }
-  }, [activeTab, page, clear]);
+  }, [activeTab, page, clear, triggerSearch]);
 
   const fetchCuentasCorrientes = async () => {
     setLoading(true);
@@ -129,22 +130,19 @@ const PestanaCuentasCorrientes = () => {
     setPage(newPage);
   };
 
-  const handleSearch = () => {
+  const handleSearch = async (term) => {
+    await setSearchTerm(term);
     setPage(1);
-    if (activeTab === 'cuentas') {
-      fetchCuentasCorrientes();
-    } else {
-      fetchTransacciones();
-    }
+    setTriggerSearch(!triggerSearch);
   };
 
-  const handleClearSearch = () => {
-    setSearchTerm('');
+  const handleClearSearch = async () => {
+    await setSearchTerm('');
     setPage(1);
     if (activeTab === 'transacciones') {
       clearFilters();
     } else {
-      fetchCuentasCorrientes();
+      setTriggerSearch(!triggerSearch);
     }
   };
 
@@ -388,45 +386,53 @@ const PestanaCuentasCorrientes = () => {
   );
 
   // Modificar el SearchSection para simplificar la búsqueda
-  const SearchSection = () => (
-    <div className="mb-6 flex flex-col sm:flex-row gap-2 sm:gap-4">
-      <div className="relative flex w-full gap-2">
-        <input
-          type="text"
-          placeholder="Buscar por DNI"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full py-1 pl-8 text-sm sm:text-base border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <Search className="absolute left-2 top-2 h-5 w-5 text-gray-400" />
-        
-        {activeTab === 'transacciones' && (
+  const SearchSection = () => {
+    const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
+
+    useEffect(() => {
+      setLocalSearchTerm(searchTerm);
+    }, [searchTerm]);
+
+    return (
+      <div className="mb-6 flex flex-col sm:flex-row gap-2 sm:gap-4">
+        <div className="relative flex w-full gap-2">
+          <input
+            type="text"
+            placeholder="Buscar por DNI"
+            value={localSearchTerm}
+            onChange={(e) => setLocalSearchTerm(e.target.value)}
+            className="w-full py-1 pl-8 text-sm sm:text-base border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <Search className="absolute left-2 top-2 h-5 w-5 text-gray-400" />
+          
+          {activeTab === 'transacciones' && (
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-blue-600 border border-blue-600 rounded-[10px] shadow hover:bg-white hover:text-blue-600"
+            >
+              <span>Filtros</span>
+            </button>
+          )}
+
           <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-blue-600 border border-blue-600 rounded-[10px] shadow hover:bg-white hover:text-blue-600"
+            onClick={() => handleSearch(localSearchTerm)}
+            className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-green-600 border border-green-600 rounded-[10px] shadow hover:bg-white hover:text-green-600"
           >
-            <span>Filtros</span>
+            <Search className="w-5 h-5 sm:hidden" />
+            <span className="hidden sm:block">Buscar</span>
           </button>
-        )}
 
-        <button
-          onClick={handleSearch}
-          className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-green-600 border border-green-600 rounded-[10px] shadow hover:bg-white hover:text-green-600"
-        >
-          <Search className="w-5 h-5 sm:hidden" />
-          <span className="hidden sm:block">Buscar</span>
-        </button>
-
-        <button
-          onClick={handleClearSearch}
-          className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-red-600 border border-red-600 rounded-[10px] shadow hover:bg-white hover:text-red-600"
-        >
-          <Eraser className="w-5 h-5 sm:hidden"/>
-          <span className="hidden sm:block">Limpiar</span>
-        </button>
+          <button
+            onClick={handleClearSearch}
+            className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-red-600 border border-red-600 rounded-[10px] shadow hover:bg-white hover:text-red-600"
+          >
+            <Eraser className="w-5 h-5 sm:hidden"/>
+            <span className="hidden sm:block">Limpiar</span>
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="max-w-7xl mx-auto mt-4">

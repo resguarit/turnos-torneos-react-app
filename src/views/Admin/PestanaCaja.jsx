@@ -57,6 +57,7 @@ const PestanaCaja = () => {
   const [searchFechaDesde, setSearchFechaDesde] = useState('');
   const [searchFechaHasta, setSearchFechaHasta] = useState('');
   const [searchCierres, setSearchCierres] = useState(false);
+  const [showMovimientos, setShowMovimientos] = useState(false);
 
   // Efectos
   useEffect(() => {
@@ -331,168 +332,178 @@ const PestanaCaja = () => {
                   handlePageCierresChange={handlePageCierresChange}
                 />
               ) : (
-                <Tabs defaultValue="deposit" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 rounded-lg gap-1">
-                    <TabsTrigger 
-                      value="deposit" 
-                      className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+                <>
+                  <div className="flex flex-col gap-4">
+                    <Button
+                      onClick={() => setShowMovimientos(!showMovimientos)}
+                      className="w-full bg-gray-600 hover:bg-gray-700 text-white rounded-md py-6 text-lg transition-colors flex items-center justify-center gap-2"
                     >
-                      Depósito
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="withdrawal"
-                      className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+                      <PlusCircle className="h-5 w-5" />
+                      {showMovimientos ? 'Ocultar Registro de Movimientos' : 'Registrar Movimiento'}
+                    </Button>
+
+                    {showMovimientos && (
+                      <Tabs defaultValue="deposit" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 rounded-lg gap-1">
+                          <TabsTrigger 
+                            value="deposit" 
+                            className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+                          >
+                            Depósito
+                          </TabsTrigger>
+                          <TabsTrigger 
+                            value="withdrawal"
+                            className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+                          >
+                            Retiro
+                          </TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="deposit">
+                          <Card className="border-0 shadow-sm">
+                            <CardHeader>
+                              <CardTitle className="text-lg">Registrar Depósito</CardTitle>
+                              <CardDescription>Registre un pago o depósito del cliente</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              <div>
+                                <Label htmlFor="amount" className="text-gray-700">Monto</Label>
+                                <Input
+                                  id="amount"
+                                  type="number"
+                                  min="0.01"
+                                  step="0.01"
+                                  value={amount}
+                                  onChange={(e) => setAmount(e.target.value)}
+                                  placeholder="0.00"
+                                  className="rounded-md border-gray-300 mt-1"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="description" className="text-gray-700">Descripción</Label>
+                                <Input
+                                  id="description"
+                                  value={description}
+                                  onChange={(e) => setDescription(e.target.value)}
+                                  placeholder="Concepto del pago"
+                                  className="rounded-md border-gray-300 mt-1"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-gray-700">Método de pago</Label>
+                                <RadioGroup
+                                  value={paymentMethod}
+                                  onValueChange={setPaymentMethod}
+                                  className="flex space-x-4 mt-2"
+                                >
+                                  <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="efectivo" id="cash" />
+                                    <Label htmlFor="cash" className="flex items-center gap-1 cursor-pointer">
+                                      <Banknote className="h-4 w-4" />
+                                      Efectivo
+                                    </Label>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="transferencia" id="transfer" />
+                                    <Label htmlFor="transfer" className="flex items-center gap-1 cursor-pointer">
+                                      <ArrowDownToLine className="h-4 w-4" />
+                                      Transferencia
+                                    </Label>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="tarjeta" id="card" />
+                                    <Label htmlFor="card" className="flex items-center gap-1 cursor-pointer">
+                                      <CreditCard className="h-4 w-4" />
+                                      Tarjeta
+                                    </Label>
+                                  </div>
+                                </RadioGroup>
+                              </div>
+                            </CardContent>
+                            <CardFooter>
+                              <Button
+                                onClick={handleDeposit}
+                                className="w-full bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors"
+                                disabled={loading || !amount || parseFloat(amount) <= 0}
+                              >
+                                <PlusCircle className="h-4 w-4 mr-2" />
+                                Registrar Depósito
+                              </Button>
+                            </CardFooter>
+                          </Card>
+                        </TabsContent>
+
+                        <TabsContent value="withdrawal">
+                          <Card className="border-0 shadow-sm">
+                            <CardHeader>
+                              <CardTitle className="text-lg">Registrar Devolución</CardTitle>
+                              <CardDescription>Registre una devolución o retiro al cliente</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              <div>
+                                <Label htmlFor="withdrawalAmount" className="text-gray-700">Monto</Label>
+                                <Input
+                                  id="withdrawalAmount"
+                                  type="number"
+                                  min="0.01"
+                                  step="0.01"
+                                  value={amount}
+                                  onChange={(e) => setAmount(e.target.value)}
+                                  placeholder="0.00"
+                                  className="rounded-md border-gray-300 mt-1"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="withdrawalDescription" className="text-gray-700">Descripción</Label>
+                                <Input
+                                  id="withdrawalDescription"
+                                  value={description}
+                                  onChange={(e) => setDescription(e.target.value)}
+                                  placeholder="Motivo de la devolución"
+                                  className="rounded-md border-gray-300 mt-1"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-gray-700">Método de pago</Label>
+                                <RadioGroup
+                                  value="efectivo"
+                                  disabled
+                                  className="flex space-x-4 mt-2"
+                                >
+                                  <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="efectivo" id="cash-withdrawal" />
+                                    <Label htmlFor="cash-withdrawal" className="flex items-center gap-1 cursor-pointer">
+                                      <Banknote className="h-4 w-4" />
+                                      Efectivo
+                                    </Label>
+                                  </div>
+                                </RadioGroup>
+                              </div>
+                            </CardContent>
+                            <CardFooter>
+                              <Button
+                                onClick={handleWithdrawal}
+                                className="w-full bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors"
+                                disabled={loading || !amount || parseFloat(amount) <= 0}
+                              >
+                                <MinusCircle className="h-4 w-4 mr-2" />
+                                Registrar Devolución
+                              </Button>
+                            </CardFooter>
+                          </Card>
+                        </TabsContent>
+                      </Tabs>
+                    )}
+
+                    <Button 
+                      onClick={handleClose} 
+                      className="w-full md:w-auto bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
                     >
-                      Retiro
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="deposit">
-                    <Card className="border-0 shadow-sm">
-                      <CardHeader>
-                        <CardTitle className="text-lg">Registrar Depósito</CardTitle>
-                        <CardDescription>Registre un pago o depósito del cliente</CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <Label htmlFor="amount" className="text-gray-700">Monto</Label>
-                          <Input
-                            id="amount"
-                            type="number"
-                            min="0.01"
-                            step="0.01"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                            placeholder="0.00"
-                            className="rounded-md border-gray-300 mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="description" className="text-gray-700">Descripción</Label>
-                          <Input
-                            id="description"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Concepto del pago"
-                            className="rounded-md border-gray-300 mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-gray-700">Método de pago</Label>
-                          <RadioGroup
-                            value={paymentMethod}
-                            onValueChange={setPaymentMethod}
-                            className="flex space-x-4 mt-2"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="efectivo" id="cash" />
-                              <Label htmlFor="cash" className="flex items-center gap-1 cursor-pointer">
-                                <Banknote className="h-4 w-4" />
-                                Efectivo
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="transferencia" id="transfer" />
-                              <Label htmlFor="transfer" className="flex items-center gap-1 cursor-pointer">
-                                <ArrowDownToLine className="h-4 w-4" />
-                                Transferencia
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="tarjeta" id="card" />
-                              <Label htmlFor="card" className="flex items-center gap-1 cursor-pointer">
-                                <CreditCard className="h-4 w-4" />
-                                Tarjeta
-                              </Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
-                      </CardContent>
-                      <CardFooter>
-                        <Button
-                          onClick={handleDeposit}
-                          className="w-full bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors"
-                          disabled={loading || !amount || parseFloat(amount) <= 0}
-                        >
-                          <PlusCircle className="h-4 w-4 mr-2" />
-                          Registrar Depósito
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  </TabsContent>
-
-                  <TabsContent value="withdrawal">
-                    <Card className="border-0 shadow-sm">
-                      <CardHeader>
-                        <CardTitle className="text-lg">Registrar Devolución</CardTitle>
-                        <CardDescription>Registre una devolución o retiro al cliente</CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <Label htmlFor="withdrawalAmount" className="text-gray-700">Monto</Label>
-                          <Input
-                            id="withdrawalAmount"
-                            type="number"
-                            min="0.01"
-                            step="0.01"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                            placeholder="0.00"
-                            className="rounded-md border-gray-300 mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="withdrawalDescription" className="text-gray-700">Descripción</Label>
-                          <Input
-                            id="withdrawalDescription"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Motivo de la devolución"
-                            className="rounded-md border-gray-300 mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-gray-700">Método de pago</Label>
-                          <RadioGroup
-                            value="efectivo"
-                            disabled
-                            className="flex space-x-4 mt-2"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="efectivo" id="cash-withdrawal" />
-                              <Label htmlFor="cash-withdrawal" className="flex items-center gap-1 cursor-pointer">
-                                <Banknote className="h-4 w-4" />
-                                Efectivo
-                              </Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
-                      </CardContent>
-                      <CardFooter>
-                        <Button
-                          onClick={handleWithdrawal}
-                          className="w-full bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors"
-                          disabled={loading || !amount || parseFloat(amount) <= 0}
-                        >
-                          <MinusCircle className="h-4 w-4 mr-2" />
-                          Registrar Devolución
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  </TabsContent>
-                </Tabs>
-              )}
-
-              {cajaAbierta && !initialLoading && (
-                <CardFooter>
-                  <Button 
-                    onClick={handleClose} 
-                    className="w-full md:w-auto bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
-                  >
-                    <Lock className="h-4 w-4 mr-2" />
-                    Cerrar Caja
-                  </Button>
-                </CardFooter>
+                      <Lock className="h-4 w-4 mr-2" />
+                      Cerrar Caja
+                    </Button>
+                  </div>
+                </>
               )}
 
               {cajaAbierta && transactions.length > 0 && (

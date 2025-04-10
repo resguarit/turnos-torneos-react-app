@@ -80,14 +80,16 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
       </div>
 
       <div className="flex gap-2 justify-center w-full">
-        <button
-          onClick={() => handleDeleteSubmit(booking)}
-          size="icon"
-          className="bg-red-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
-          disabled={verificandoCaja}
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
+        {booking.estado !== 'Cancelado' && (
+          <button
+            onClick={() => handleDeleteSubmit(booking)}
+            size="icon"
+            className="bg-red-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
+            disabled={verificandoCaja}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
         <button
           size="icon"
           className="bg-blue-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"

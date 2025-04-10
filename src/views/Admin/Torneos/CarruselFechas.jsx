@@ -45,6 +45,10 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
 
         setFechas(fetchedFechas);
 
+        // Establecer el índice inicial en la primera fecha con estado "Pendiente"
+        const firstPendingIndex = fetchedFechas.findIndex(fecha => fecha.estado === 'Pendiente');
+        setCurrentFechaIndex(firstPendingIndex !== -1 ? firstPendingIndex : 0);
+
         const canchasResponse = await api.get(`/canchas`);
         setCanchas(canchasResponse.data.canchas);
 
@@ -52,7 +56,6 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
         const horariosResponse = await api.get(`/horarios`);
         setHorarios(horariosResponse.data.horarios);
 
-        // Verifica si hay fechas antes de acceder a la primera
         const primeraFecha = fetchedFechas[0]?.fecha_inicio;
         if (primeraFecha) {
           const responseHorariosModal = await api.get('/horarios-dia', { params: { fecha: primeraFecha } });

@@ -10,7 +10,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  base: '/preview/frontturnos.com.ar',
+  base: '/',
   build: {
     assetsDir: 'assets',
     emptyOutDir: true,

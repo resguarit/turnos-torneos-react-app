@@ -21,6 +21,7 @@ export default function ResultadoPartido() {
   const [changesDetected, setChangesDetected] = useState(false);
   const [chargingMode, setChargingMode] = useState(false);
   const [jugadoresEnAlta, setJugadoresEnAlta] = useState([]); // Estado para jugadores en alta
+  const [loadingApply, setLoadingApply] = useState(false); // Estado para el botón de aplicar cambios
 
   useEffect(() => {
     const fetchPartido = async () => {
@@ -63,6 +64,7 @@ export default function ResultadoPartido() {
 
   const handleApplyChanges = async () => {
     try {
+      setLoadingApply(true);
       // Filtrar solo los jugadores con cambios
       const updatedStats = Object.keys(estadisticas)
         .map((jugadorId) => {
@@ -135,6 +137,8 @@ export default function ResultadoPartido() {
     } catch (error) {
       console.error('Error aplicando cambios:', error);
       toast.error('Error aplicando cambios');
+    } finally{
+      setLoadingApply(false);
     }
   };
 
@@ -652,7 +656,7 @@ export default function ResultadoPartido() {
           </table>
           <div className="flex justify-end mt-4 space-x-2">
           {!chargingMode &&  Object.keys(estadisticas).length === 0 && <button onClick={() => setChargingMode(true)} className="bg-green-500 text-white p-2" disabled={jugadoresEnAlta.length > 0}>Cargar Resultados</button>}
-          {chargingMode && changesDetected && <button onClick={handleApplyChanges} className="bg-blue-500 text-white p-2">Aplicar Cambios</button>}
+          {chargingMode && changesDetected && <button onClick={handleApplyChanges} disabled={loadingApply} className={`text-white p-2 ${loadingApply ? 'bg-blue-300' : 'bg-blue-500'}`}>{loadingApply? "Aplicando Cambios..." : "Aplicar Cambios"}</button>}
           {chargingMode  && <button onClick={handleCancelChanges} className="bg-red-500 text-white p-2">Cancelar</button>}
           </div>
         </div>

@@ -161,8 +161,8 @@ export default function ResultadoPartido() {
           ...prevEstadisticas,
           [updatedEstadistica.jugador_id]: updatedEstadistica,
         }));
-      } else {
-        // Si no existe un ID de estadística, realiza un POST para crearla
+      } else if (!originalEstadisticas[jugadorId]) {
+        // Si no existe un ID de estadística y no está en las estadísticas originales, realiza un POST
         response = await api.post('/estadisticas', updatedData);
         const createdEstadistica = response.data.estadistica;
 
@@ -171,6 +171,8 @@ export default function ResultadoPartido() {
           ...prevEstadisticas,
           [createdEstadistica.jugador_id]: createdEstadistica,
         }));
+      } else {
+        console.warn('La estadística ya existe, no se realizará un POST.');
       }
 
       // Calcular el marcador y el ganador
@@ -207,10 +209,10 @@ export default function ResultadoPartido() {
       }));
 
       setChangesDetected(false);
-      alert('Estadística y marcador actualizados correctamente');
+      toast.success('Estadística y marcador actualizados correctamente');
     } catch (error) {
       console.error('Error al guardar la estadística:', error);
-      alert('Error al guardar la estadística');
+      toast.error('Error al guardar la estadística');
     }
   };
 
@@ -337,327 +339,420 @@ export default function ResultadoPartido() {
       <main className="max-w-7xl lg:max-w-full p-6 grow">
         <BackButton />
         <h1 className=" font-bold mb-4 text-2xl">Resultado Partido</h1>
-        <h2>{partido.equipos[0].nombre} vs {partido.equipos[1].nombre}</h2>
-        <p>{partido.fecha.nombre}</p>
-        <p>Horario: {partido.horario ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : "Indefinido"}</p>
-        <p>Cancha: {partido.cancha ? `${partido.cancha.nro} - ${partido.cancha.tipo_cancha}` : "Indefinida"}</p>
-        <div>
-        <div className='w-full flex justify-between'>
-          
-          <div className="space-x-4">
-            <button
-              onClick={() => setVerEquipo(1)}
-              className={`rounded-[8px] p-2 ${verEquipo === 1 ? 'bg-blue-500 text-white' : 'bg-white text-black'}`}
-            >
-              {equipoLocal.nombre}
-            </button>
-            <button
-              onClick={() => setVerEquipo(2)}
-              className={`rounded-[8px] p-2 ${verEquipo === 2 ? 'bg-blue-500 text-white' : 'bg-white text-black'}`}
-            >
-              {equipoVisitante.nombre}
-            </button>
+        <div className='w-full  flex'>
+        <div className="bg-white w-1/2 rounded-[8px] shadow-md p-4 mb-6">
+          <h2 className="text-2xl font-bold text-center mb-3 text-blue-600">
+            {partido.equipos[0].nombre} <span className="text-gray-500">vs</span> {partido.equipos[1].nombre}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+            <div className="bg-gray-50 p-3 rounded-[8px]">
+              <p className="text-sm text-gray-500 mb-1">Fecha</p>
+              <p className="font-medium">{partido.fecha.nombre}</p>
+            </div>
+            <div className="bg-gray-50 p-3 rounded-[8px]">
+              <p className="text-sm text-gray-500 mb-1">Horario</p>
+              <p className="font-medium">
+                {partido.horario ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : "Indefinido"}
+              </p>
+            </div>
+            <div className="bg-gray-50 p-3 rounded-[8px]">
+              <p className="text-sm text-gray-500 mb-1">Cancha</p>
+              <p className="font-medium">
+                {partido.cancha ? `${partido.cancha.nro} - ${partido.cancha.tipo_cancha}` : "Indefinida"}
+              </p>
+            </div>
           </div>
-          <div>
-            <button
-              onClick={handleAddJugador}
-              className="rounded-[8px] p-2 bg-black text-white"
-            >
-              + Agregar Jugador
-            </button>
-          </div>
-          </div>
-          <table className="w-full bg-white rounded-[8px] mt-4 p-1">
-            <thead>
-              <tr className="p-1">
-                <td className="p-2 text-center font-sans font-semibold">DNI</td>
-                <td className="p-2 text-center font-sans font-semibold">Nombre y Apellido</td>
-                <td className="p-2 text-center font-sans font-semibold">Fecha Nacimiento</td>
-                <td className="p-2 text-center font-sans font-semibold">Numero Camiseta</td>
-                <td className="p-2 text-center font-sans font-semibold">Goles</td>
-                <td className="p-2 text-center font-sans font-semibold">Asistencias</td>
-                <td className="p-2 text-center font-sans font-semibold">Amarillas</td>
-                <td className="p-2 text-center font-sans font-semibold">Rojas</td>
-                <td className="p-2 text-center font-sans font-semibold">Presente</td>
-                <td className="p-2 text-center font-sans font-semibold">Acción</td>
-              </tr>
-            </thead>
-            <tbody>
-  {jugadoresEnAlta.map((jugador) => (
-    <tr key={jugador.id}>
-      <td className="p-2 text-center">
-        <input
-          type="text"
-          placeholder="DNI"
-          value={jugador.dni}
-          onChange={(e) =>
-            setJugadoresEnAlta((prev) =>
-              prev.map((j) =>
-                j.id === jugador.id ? { ...j, dni: e.target.value } : j
-              )
-            )
-          }
-          className="w-full text-center border border-gray-300 rounded-[6px] p-1"
-        />
-      </td>
-      <td className="p-2 text-center">
-        <div className="flex space-x-1">
-          <input
-            type="text"
-            placeholder="Nombre"
-            value={jugador.nombre}
-            onChange={(e) =>
-              setJugadoresEnAlta((prev) =>
-                prev.map((j) =>
-                  j.id === jugador.id ? { ...j, nombre: e.target.value } : j
-                )
-              )
-            }
-            className="w-full text-center border border-gray-300 rounded-[6px] p-1"
-          />
-          <input
-            type="text"
-            placeholder="Apellido"
-            value={jugador.apellido}
-            onChange={(e) =>
-              setJugadoresEnAlta((prev) =>
-                prev.map((j) =>
-                  j.id === jugador.id ? { ...j, apellido: e.target.value } : j
-                )
-              )
-            }
-            className="w-full text-center border border-gray-300 rounded-[6px] p-1"
-          />
         </div>
-      </td>
-      <td className="p-2 text-center">
-        <input
-          type="date"
-          placeholder="Fecha de Nacimiento"
-          value={jugador.fecha_nacimiento}
-          onChange={(e) =>
-            setJugadoresEnAlta((prev) =>
-              prev.map((j) =>
-                j.id === jugador.id
-                  ? { ...j, fecha_nacimiento: e.target.value }
-                  : j
-              )
-            )
-          }
-          className="w-full text-center border border-gray-300 rounded-[6px] p-1"
-        />
-      </td>
-      <td className="p-2 text-center">
-        {/* Espacio vacío para mantener la estructura de la tabla */}
-      </td>
-      <td className="p-2 text-center">
-        {/* Espacio vacío para mantener la estructura de la tabla */}
-      </td>
-      <td className="p-2 text-center">
-        {/* Espacio vacío para mantener la estructura de la tabla */}
-      </td>
-      <td className="p-2 text-center">
-        {/* Espacio vacío para mantener la estructura de la tabla */}
-      </td>
-      <td className="p-2 text-center">
-        {/* Espacio vacío para mantener la estructura de la tabla */}
-      </td>
-      <td className="p-2 text-center">
-        {/* Espacio vacío para mantener la estructura de la tabla */}
-      </td>
-      <td className="p-2 text-center">
-        <div className="flex justify-center space-x-2">
-          <button
-            onClick={() => handleConfirmAlta(jugador.id)}
-            className="bg-green-500 text-white rounded-md p-1"
-          >
-            ✓
-          </button>
-          <button
-            onClick={() => handleCancelAlta(jugador.id)}
-            className="bg-red-500 text-white rounded-md p-1"
-          >
-            ✕
-          </button>
         </div>
-      </td>
-    </tr>
-  ))}
-  {verEquipo === 1 ? equipoLocal.jugadores.map((jugador) => (
-    <tr key={jugador.id} className="p-1">
-      <td className="p-2 text-center">{jugador.dni}</td>
-      <td className="p-2 text-center">{jugador.nombre} {jugador.apellido}</td>
-      <td className="p-2 text-center">{jugador.fecha_nacimiento}</td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.nro_camiseta || null}
-            onChange={(e) => handleInputChange(jugador.id, 'nro_camiseta', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.nro_camiseta || '-'
-        )}
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.goles || 0}
-            onChange={(e) => handleInputChange(jugador.id, 'goles', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.goles || 0
-        )}
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.asistencias || 0}
-            onChange={(e) => handleInputChange(jugador.id, 'asistencias', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.asistencias || 0
-        )}
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.amarillas || 0}
-            onChange={(e) => handleInputChange(jugador.id, 'amarillas', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.amarillas || 0
-        )}
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.rojas || 0}
-            onChange={(e) => handleInputChange(jugador.id, 'rojas', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.rojas || 0
-        )}
-      </td>
-      <td className="p-2 text-center">
-        <input
-          type="checkbox"
-          checked={estadisticas[jugador.id]?.presente || false} // Marcado si tiene estadística asociada
-          onChange={(e) => handleInputChange(jugador.id, 'presente', e.target.checked)}
-          className="w-full text-center"
-        />
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] ? (
-          <div className="flex">
-          <button onClick={() => handleEditClick(estadisticas[jugador.id].id, jugador.id)} className="bg-green-500 text-white rounded-[8px] p-1 ">Guardar</button>
-          <button onClick={() => handleCancelEdit(jugador.id)} className="bg-red-500 text-white rounded-[8px] p-1 ml-2 ">Cancelar</button>
-        </ div>
-        ) : (
-          <button onClick={() => toggleEditMode(jugador.id)} className="bg-blue-500 text-white rounded-[8px] p-1">Editar</button>
-        )}
-      </td>
-    </tr>
-  )) : equipoVisitante.jugadores.map((jugador) => (
-    <tr key={jugador.id} className="p-1">
-      <td className="p-2 text-center">{jugador.dni}</td>
-      <td className="p-2 text-center">{jugador.nombre} {jugador.apellido}</td>
-      <td className="p-2 text-center">{jugador.fecha_nacimiento}</td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.nro_camiseta || null}
-            onChange={(e) => handleInputChange(jugador.id, 'nro_camiseta', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.nro_camiseta || '-'
-        )}
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.goles || 0}
-            onChange={(e) => handleInputChange(jugador.id, 'goles', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.goles || 0
-        )}
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.asistencias || 0}
-            onChange={(e) => handleInputChange(jugador.id, 'asistencias', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.asistencias || 0
-        )}
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.amarillas || 0}
-            onChange={(e) => handleInputChange(jugador.id, 'amarillas', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.amarillas || 0
-        )}
-      </td>
-      <td className="p-2 text-center">
-        {editMode[jugador.id] || chargingMode ? (
-          <input
-            type="number"
-            value={estadisticas[jugador.id]?.rojas || 0}
-            onChange={(e) => handleInputChange(jugador.id, 'rojas', parseInt(e.target.value))}
-            className="w-full text-center"
-          />
-        ) : (
-          estadisticas[jugador.id]?.rojas || 0
-        )}
-      </td>
-      <td className="p-2 text-center">
-        <input
-          type="checkbox"
-          checked={estadisticas[jugador.id]?.presente || false} // Marcado si tiene estadística asociada
-          onChange={(e) => handleInputChange(jugador.id, 'presente', e.target.checked)}
-          className="w-full text-center"
-        />
-      </td>
-      <td className="p-2 text-center w-fit">
-        {editMode[jugador.id] ? (
-          <div className="flex">
-          <button onClick={() => handleEditClick(estadisticas[jugador.id].id, jugador.id)} className="bg-green-500 text-white rounded-[8px] p-1 text-xs">Guardar</button>
-          <button onClick={() => handleCancelEdit(jugador.id)} className="bg-red-500 text-white rounded-[8px] p-1 ml-2 text-xs">Cancelar</button>
-        </ div>
-        ) : (
-          <button onClick={() => toggleEditMode(jugador.id)} className="bg-blue-500 text-white rounded-[8px] p-1">Editar</button>
-        )}
-      </td>
-    </tr>
-  ))}
-</tbody>
-          </table>
-          <div className="flex justify-end mt-4 space-x-2">
-          {!chargingMode &&  Object.keys(estadisticas).length === 0 && <button onClick={() => setChargingMode(true)} className="bg-green-500 text-white p-2" disabled={jugadoresEnAlta.length > 0}>Cargar Resultados</button>}
-          {chargingMode && changesDetected && <button onClick={handleApplyChanges} disabled={loadingApply} className={`text-white p-2 ${loadingApply ? 'bg-blue-300' : 'bg-blue-500'}`}>{loadingApply? "Aplicando Cambios..." : "Aplicar Cambios"}</button>}
-          {chargingMode  && <button onClick={handleCancelChanges} className="bg-red-500 text-white p-2">Cancelar</button>}
+        <div className="mt-2">
+          <div className="w-full flex flex-col sm:flex-row justify-between gap-4 mb-4">
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => setVerEquipo(1)}
+                className={`rounded-[8px] px-4 py-2.5 font-medium transition-colors shadow-sm ${
+                  verEquipo === 1
+                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+                }`}
+              >
+                {equipoLocal.nombre}
+              </button>
+              <button
+                onClick={() => setVerEquipo(2)}
+                className={`rounded-[8px] px-4 py-2.5 font-medium transition-colors shadow-sm ${
+                  verEquipo === 2
+                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+                }`}
+              >
+                {equipoVisitante.nombre}
+              </button>
+            </div>
+            <div>
+              <button
+                onClick={handleAddJugador}
+                className="rounded-[8px] px-4 py-2.5 bg-black text-white font-medium hover:bg-gray-900 transition-colors shadow-sm flex items-center gap-1"
+              >
+                <span className="text-lg">+</span> Agregar Jugador
+              </button>
+            </div>
+          </div>
+          <div className="overflow-x-auto rounded-[8px] shadow">
+            <table className="w-full bg-white">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">DNI</th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nombre y Apellido
+                  </th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Fecha Nacimiento
+                  </th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Numero Camiseta
+                  </th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Goles</th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Asistencias
+                  </th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Amarillas
+                  </th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Rojas</th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Presente
+                  </th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {jugadoresEnAlta.map((jugador) => (
+                  <tr key={jugador.id}>
+                    <td className="p-2 text-center">
+                      <input
+                        type="text"
+                        placeholder="DNI"
+                        value={jugador.dni}
+                        onChange={(e) =>
+                          setJugadoresEnAlta((prev) =>
+                            prev.map((j) => (j.id === jugador.id ? { ...j, dni: e.target.value } : j)),
+                          )
+                        }
+                        className="w-full text-center border border-gray-300 rounded-[6px] p-1"
+                      />
+                    </td>
+                    <td className="p-2 text-center">
+                      <div className="flex space-x-1">
+                        <input
+                          type="text"
+                          placeholder="Nombre"
+                          value={jugador.nombre}
+                          onChange={(e) =>
+                            setJugadoresEnAlta((prev) =>
+                              prev.map((j) => (j.id === jugador.id ? { ...j, nombre: e.target.value } : j)),
+                            )
+                          }
+                          className="w-full text-center border border-gray-300 rounded-[6px] p-1"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Apellido"
+                          value={jugador.apellido}
+                          onChange={(e) =>
+                            setJugadoresEnAlta((prev) =>
+                              prev.map((j) => (j.id === jugador.id ? { ...j, apellido: e.target.value } : j)),
+                            )
+                          }
+                          className="w-full text-center border border-gray-300 rounded-[6px] p-1"
+                        />
+                      </div>
+                    </td>
+                    <td className="p-2 text-center">
+                      <input
+                        type="date"
+                        placeholder="Fecha de Nacimiento"
+                        value={jugador.fecha_nacimiento}
+                        onChange={(e) =>
+                          setJugadoresEnAlta((prev) =>
+                            prev.map((j) => (j.id === jugador.id ? { ...j, fecha_nacimiento: e.target.value } : j)),
+                          )
+                        }
+                        className="w-full text-center border border-gray-300 rounded-[6px] p-1"
+                      />
+                    </td>
+                    <td className="p-2 text-center">{/* Espacio vacío para mantener la estructura de la tabla */}</td>
+                    <td className="p-2 text-center">{/* Espacio vacío para mantener la estructura de la tabla */}</td>
+                    <td className="p-2 text-center">{/* Espacio vacío para mantener la estructura de la tabla */}</td>
+                    <td className="p-2 text-center">{/* Espacio vacío para mantener la estructura de la tabla */}</td>
+                    <td className="p-2 text-center">{/* Espacio vacío para mantener la estructura de la tabla */}</td>
+                    <td className="p-2 text-center">{/* Espacio vacío para mantener la estructura de la tabla */}</td>
+                    <td className="p-2 text-center">
+                      <div className="flex justify-center space-x-2">
+                        <button
+                          onClick={() => handleConfirmAlta(jugador.id)}
+                          className="bg-green-600 text-white rounded-[6px] p-1.5 hover:bg-green-700 transition-colors"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => handleCancelAlta(jugador.id)}
+                          className="bg-red-600 text-white rounded-[6px] p-1.5 hover:bg-red-700 transition-colors"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {verEquipo === 1
+                  ? equipoLocal.jugadores.map((jugador) => (
+                      <tr key={jugador.id} className="border-b border-gray-200 hover:bg-gray-50">
+                        <td className="p-2 text-center">{jugador.dni}</td>
+                        <td className="p-2 text-center">
+                          {jugador.nombre} {jugador.apellido}
+                        </td>
+                        <td className="p-2 text-center">{jugador.fecha_nacimiento}</td>
+                        <td className="p-2 text-center">
+                          {editMode[jugador.id] || chargingMode ? (
+                            <input
+                              type="number"
+                              value={estadisticas[jugador.id]?.nro_camiseta || null}
+                              onChange={(e) =>
+                                handleInputChange(jugador.id, "nro_camiseta", Number.parseInt(e.target.value))
+                              }
+                              className="w-full text-center border border-gray-300 rounded p-1"
+                            />
+                          ) : (
+                            estadisticas[jugador.id]?.nro_camiseta || "-"
+                          )}
+                        </td>
+                        <td className="p-2 text-center">
+                          {editMode[jugador.id] || chargingMode ? (
+                            <input
+                              type="number"
+                              value={estadisticas[jugador.id]?.goles || 0}
+                              onChange={(e) => handleInputChange(jugador.id, "goles", Number.parseInt(e.target.value))}
+                              className="w-full text-center border border-gray-300 rounded p-1"
+                            />
+                          ) : (
+                            estadisticas[jugador.id]?.goles || 0
+                          )}
+                        </td>
+                        <td className="p-2 text-center">
+                          {editMode[jugador.id] || chargingMode ? (
+                            <input
+                              type="number"
+                              value={estadisticas[jugador.id]?.asistencias || 0}
+                              onChange={(e) =>
+                                handleInputChange(jugador.id, "asistencias", Number.parseInt(e.target.value))
+                              }
+                              className="w-full text-center border border-gray-300 rounded p-1"
+                            />
+                          ) : (
+                            estadisticas[jugador.id]?.asistencias || 0
+                          )}
+                        </td>
+                        <td className="p-2 text-center">
+                          {editMode[jugador.id] || chargingMode ? (
+                            <input
+                              type="number"
+                              value={estadisticas[jugador.id]?.amarillas || 0}
+                              onChange={(e) =>
+                                handleInputChange(jugador.id, "amarillas", Number.parseInt(e.target.value))
+                              }
+                              className="w-full text-center border border-gray-300 rounded p-1"
+                            />
+                          ) : (
+                            estadisticas[jugador.id]?.amarillas || 0
+                          )}
+                        </td>
+                        <td className="p-2 text-center">
+                          {editMode[jugador.id] || chargingMode ? (
+                            <input
+                              type="number"
+                              value={estadisticas[jugador.id]?.rojas || 0}
+                              onChange={(e) => handleInputChange(jugador.id, "rojas", Number.parseInt(e.target.value))}
+                              className="w-full text-center border border-gray-300 rounded p-1"
+                            />
+                          ) : (
+                            estadisticas[jugador.id]?.rojas || 0
+                          )}
+                        </td>
+                        <td className="p-2 text-center">
+                          <input
+                            type="checkbox"
+                            checked={estadisticas[jugador.id]?.presente || false} // Marcado si tiene estadística asociada
+                            onChange={(e) => handleInputChange(jugador.id, "presente", e.target.checked)}
+                            className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                          />
+                        </td>
+                        <td className="p-2 text-center">
+                          {editMode[jugador.id] ? (
+                            <div className="flex">
+                              <button
+                                onClick={() => handleEditClick(estadisticas[jugador.id].id, jugador.id)}
+                                className="bg-green-600 text-white rounded-[6px] px-2 py-1 text-sm hover:bg-green-700 transition-colors"
+                              >
+                                Guardar
+                              </button>
+                              <button
+                                onClick={() => handleCancelEdit(jugador.id)}
+                                className="bg-red-600 text-white rounded-[6px] px-2 py-1 ml-2 text-sm hover:bg-red-700 transition-colors"
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => toggleEditMode(jugador.id)}
+                              className="bg-blue-600 text-white rounded-[8px] px-3 py-1 text-sm hover:bg-blue-700 transition-colors"
+                            >
+                              Editar
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  : equipoVisitante.jugadores.map((jugador) => (
+                      <tr key={jugador.id} className="border-b border-gray-200 hover:bg-gray-50">
+                        <td className="p-2 text-center">{jugador.dni}</td>
+                        <td className="p-2 text-center">
+                          {jugador.nombre} {jugador.apellido}
+                        </td>
+                        <td className="p-2 text-center">{jugador.fecha_nacimiento}</td>
+                        <td className="p-2 text-center">
+                          {editMode[jugador.id] || chargingMode ? (
+                            <input
+                              type="number"
+                              value={estadisticas[jugador.id]?.nro_camiseta || null}
+                              onChange={(e) =>
+                                handleInputChange(jugador.id, "nro_camiseta", Number.parseInt(e.target.value))
+                              }
+                              className="w-full text-center border border-gray-300 rounded p-1"
+                            />
+                          ) : (
+                            estadisticas[jugador.id]?.nro_camiseta || "-"
+                          )}
+                        </td>
+                        <td className="p-2 text-center">
+                          {editMode[jugador.id] || chargingMode ? (
+                            <input
+                              type="number"
+                              value={estadisticas[jugador.id]?.goles || 0}
+                              onChange={(e) => handleInputChange(jugador.id, "goles", Number.parseInt(e.target.value))}
+                              className="w-full text-center border border-gray-300 rounded p-1"
+                            />
+                          ) : (
+                            estadisticas[jugador.id]?.goles || 0
+                          )}
+                        </td>
+                        <td className="p-2 text-center">
+                          {editMode[jugador.id] || chargingMode ? (
+                            <input
+                              type="number"
+                              value={estadisticas[jugador.id]?.asistencias || 0}
+                              onChange={(e) =>
+                                handleInputChange(jugador.id, "asistencias", Number.parseInt(e.target.value))
+                              }
+                              className="w-full text-center border border-gray-300 rounded p-1"
+                            />
+                          ) : (
+                            estadisticas[jugador.id]?.asistencias || 0
+                          )}
+                        </td>
+                        <td className="p-2 text-center">
+                          {editMode[jugador.id] || chargingMode ? (
+                            <input
+                              type="number"
+                              value={estadisticas[jugador.id]?.amarillas || 0}
+                              onChange={(e) =>
+                                handleInputChange(jugador.id, "amarillas", Number.parseInt(e.target.value))
+                              }
+                              className="w-full text-center border border-gray-300 rounded p-1"
+                            />
+                          ) : (
+                            estadisticas[jugador.id]?.amarillas || 0
+                          )}
+                        </td>
+                        <td className="p-2 text-center">
+                          {editMode[jugador.id] || chargingMode ? (
+                            <input
+                              type="number"
+                              value={estadisticas[jugador.id]?.rojas || 0}
+                              onChange={(e) => handleInputChange(jugador.id, "rojas", Number.parseInt(e.target.value))}
+                              className="w-full text-center border border-gray-300 rounded p-1"
+                            />
+                          ) : (
+                            estadisticas[jugador.id]?.rojas || 0
+                          )}
+                        </td>
+                        <td className="p-2 text-center">
+                          <input
+                            type="checkbox"
+                            checked={estadisticas[jugador.id]?.presente || false} // Marcado si tiene estadística asociada
+                            onChange={(e) => handleInputChange(jugador.id, "presente", e.target.checked)}
+                            className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                          />
+                        </td>
+                        <td className="p-2 text-center w-fit">
+                          {editMode[jugador.id] ? (
+                            <div className="flex">
+                              <button
+                                onClick={() => handleEditClick(estadisticas[jugador.id].id, jugador.id)}
+                                className="bg-green-600 text-white rounded-[6px] px-2 py-1 text-sm hover:bg-green-700 transition-colors"
+                              >
+                                Guardar
+                              </button>
+                              <button
+                                onClick={() => handleCancelEdit(jugador.id)}
+                                className="bg-red-600 text-white rounded-[6px] px-2 py-1 ml-2 text-sm hover:bg-red-700 transition-colors"
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => toggleEditMode(jugador.id)}
+                              className="bg-blue-600 text-white rounded-[6px] px-3 py-1 text-sm hover:bg-blue-700 transition-colors"
+                            >
+                              Editar
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex justify-end mt-6 gap-3">
+            {!chargingMode && Object.keys(estadisticas).length === 0 && (
+              <button
+                onClick={() => setChargingMode(true)}
+                className="px-4 py-2.5 bg-green-600 text-white font-medium rounded-[8px] shadow-sm hover:bg-green-700 transition-colors"
+                disabled={jugadoresEnAlta.length > 0}
+              >
+                Cargar Resultados
+              </button>
+            )}
+            {chargingMode && changesDetected && (
+              <button
+                onClick={handleApplyChanges}
+                disabled={loadingApply}
+                className={`px-4 py-2.5 text-white font-medium rounded-[8px] shadow-sm transition-colors ${
+                  loadingApply ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                {loadingApply ? "Aplicando Cambios..." : "Aplicar Cambios"}
+              </button>
+            )}
+            {chargingMode && (
+              <button
+                onClick={handleCancelChanges}
+                className="px-4 py-2.5 bg-red-600 text-white font-medium rounded-[8px] shadow-sm hover:bg-red-700 transition-colors"
+              >
+                Cancelar
+              </button>
+            )}
           </div>
         </div>
       </main>

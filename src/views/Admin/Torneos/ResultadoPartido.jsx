@@ -21,7 +21,6 @@ export default function ResultadoPartido() {
   const [changesDetected, setChangesDetected] = useState(false);
   const [chargingMode, setChargingMode] = useState(false);
   const [jugadoresEnAlta, setJugadoresEnAlta] = useState([]); // Estado para jugadores en alta
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchPartido = async () => {
@@ -64,21 +63,12 @@ export default function ResultadoPartido() {
 
   const handleApplyChanges = async () => {
     try {
-      setIsConfirmModalOpen(true); // Open confirmation modal instead of directly applying changes
-    } catch (error) {
-      console.error('Error preparing confirmation:', error);
-      toast.error('Error al preparar la confirmación');
-    }
-  };
-
-  const handleConfirmResults = async () => {
-    try {
       // Filtrar solo los jugadores con cambios
       const updatedStats = Object.keys(estadisticas)
         .map((jugadorId) => {
           const estadistica = estadisticas[jugadorId];
           const original = originalEstadisticas[jugadorId] || {};
-  
+
           return {
             nro_camiseta: estadistica?.nro_camiseta ?? null,
             goles: estadistica?.goles ?? 0,
@@ -93,15 +83,15 @@ export default function ResultadoPartido() {
           (estadistica, index) =>
             JSON.stringify(estadistica) !== JSON.stringify(Object.values(originalEstadisticas)[index])
         );
-  
+
       if (updatedStats.length > 0) {
         await Promise.all(updatedStats.map((estadistica) => api.post('/estadisticas', estadistica)));
       }
-  
+
       // Calcular el marcador y el ganador
       let marcadorLocal = 0;
       let marcadorVisitante = 0;
-  
+
       Object.keys(estadisticas).forEach((jugadorId) => {
         const jugador = estadisticas[jugadorId];
         if (equipoLocal.jugadores.some((j) => j.id === parseInt(jugadorId))) {
@@ -110,42 +100,41 @@ export default function ResultadoPartido() {
           marcadorVisitante += jugador.goles || 0;
         }
       });
-  
+
       const ganadorId =
         marcadorLocal > marcadorVisitante
           ? equipoLocal.id
           : marcadorVisitante > marcadorLocal
           ? equipoVisitante.id
           : null;
-  
+
       await api.put(`/partidos/${partidoId}`, {
         marcador_local: marcadorLocal,
         marcador_visitante: marcadorVisitante,
         ganador_id: ganadorId,
         estado: 'Finalizado',
       });
-  
+
       // Verificar si todos los partidos de la fecha están finalizados
       const fechaId = partido.fecha.id;
       const partidosResponse = await api.get(`/fechas/${fechaId}/partidos`);
       const partidos = partidosResponse.data;
-  
+
       const todosFinalizados = partidos.every((p) => p.estado === 'Finalizado');
-  
+
       if (todosFinalizados) {
         await api.put(`/fechas/${fechaId}`, { estado: 'Finalizada' });
         toast.success('Todos los partidos de la fecha están finalizados. La fecha ha sido marcada como Finalizada.');
       }
-  
+
       setChargingMode(false);
       setOriginalEstadisticas(estadisticas);
       setChangesDetected(false);
-      setIsConfirmModalOpen(false); // Close the modal
-  
-      toast.success('Resultado del partido guardado correctamente');
+
+      toast.success('Cambios aplicados correctamente');
     } catch (error) {
       console.error('Error aplicando cambios:', error);
-      toast.error('Error al guardar el resultado del partido');
+      toast.error('Error aplicando cambios');
     }
   };
 

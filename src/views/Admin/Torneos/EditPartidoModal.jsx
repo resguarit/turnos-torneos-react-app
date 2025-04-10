@@ -83,7 +83,7 @@ export default function EditPartidoModal({ partido, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+      <div className="bg-white p-6 rounded-[8px] shadow-lg w-full max-w-md">
         <h2 className="text-xl font-bold mb-4">Editar Partido</h2>
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Fecha</label>
@@ -92,7 +92,7 @@ export default function EditPartidoModal({ partido, onClose, onSave }) {
             name="fecha"
             value={formData.fecha}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md p-2"
+            className="w-full border border-gray-300 rounded-[6px] p-2"
           />
         </div>
         <div className="mb-4">
@@ -101,7 +101,7 @@ export default function EditPartidoModal({ partido, onClose, onSave }) {
             name="horario_id"
             value={formData.horario_id}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md p-2"
+            className="w-full border border-gray-300 rounded-[6px] p-2"
           >
             <option value="" disabled>
               Seleccionar horario
@@ -119,7 +119,7 @@ export default function EditPartidoModal({ partido, onClose, onSave }) {
             name="cancha_id"
             value={formData.cancha_id}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md p-2"
+            className="w-full border border-gray-300 rounded-[6px] p-2"
           >
             <option value="" disabled>
               Seleccionar cancha
@@ -137,7 +137,7 @@ export default function EditPartidoModal({ partido, onClose, onSave }) {
             name="estado"
             value={formData.estado}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md p-2"
+            className="w-full border border-gray-300 rounded-[6px] p-2"
           >
             <option value="" disabled>
               Seleccionar estado
@@ -152,13 +152,13 @@ export default function EditPartidoModal({ partido, onClose, onSave }) {
         <div className="flex justify-end space-x-4">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-[6px] hover:bg-gray-300"
           >
             Cancelar
           </button>
           <button
             onClick={handleSave}
-            className={`px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 ${
+            className={`px-4 py-2 bg-blue-500 text-white rounded-[6px] hover:bg-blue-600 ${
               loading ? "opacity-50 cursor-not-allowed" : ""
             }`}
             disabled={loading}

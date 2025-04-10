@@ -253,7 +253,13 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
                     </span>
                   </div>
 
-                  <span className="mx-2 font-bold">vs</span>
+                  {partido.estado === 'Finalizado' ? (
+                    <span className="mx-2 font-bold">
+                      {partido.marcador_local ?? '-'} - {partido.marcador_visitante ?? '-'}
+                    </span>
+                  ) : (
+                    <span className="mx-2 font-bold">-</span>
+                  )}
 
                   <div className="flex items-center space-x-2 flex-1 justify-end">
                     <span className="font-medium">
@@ -274,7 +280,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
                 <div className="flex justify-end mt-2">
                   <button
                     onClick={() => handleEditPartido(partido)}
-                    className="bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600"
+                    className="bg-blue-500 text-white px-2 py-1 rounded-[6px] hover:bg-blue-600"
                   >
                     Editar
                   </button>
@@ -338,7 +344,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
       {/* Modal de confirmación */}
       {showDeleteAllModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+          <div className="bg-white p-6 rounded-[8px] shadow-lg w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">Confirmar Eliminación</h3>
             <p className="mb-4">
               ¿Estás seguro de que deseas eliminar <strong>todas las fechas</strong>? 
@@ -347,13 +353,13 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
             <div className="flex justify-end space-x-4">
               <button
                 onClick={() => setShowDeleteAllModal(false)} // Cerrar el modal
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-[6px] hover:bg-gray-300"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleDeleteAllFechas} // Llamar a la función para eliminar todas las fechas
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                className="px-4 py-2 bg-red-600 text-white rounded-[6px] hover:bg-red-700"
                 disabled={loadingDeleteAll}
               >
                 {loadingDeleteAll ? 'Eliminando...' : 'Eliminar'}
@@ -374,19 +380,19 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
 
       {modalDeleteVisible && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
+          <div className="bg-white p-6 rounded-[8px] shadow-lg">
             <h2 className="text-xl font-bold mb-4">Eliminar Fecha</h2>
             <p>¿Estás seguro de que deseas eliminar esta fecha?</p>
             <div className="flex justify-end space-x-4 mt-4">
               <button
                 onClick={() => setModalDeleteVisible(false)}
-                className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md"
+                className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-[6px]"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleDeleteFecha}
-                className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md"
+                className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-[6px]"
               >
                 Eliminar
               </button>

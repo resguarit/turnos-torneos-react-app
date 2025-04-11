@@ -278,7 +278,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
                       style={{ backgroundColor: equipos.find(e => e.id === partido.equipo_local_id)?.color || "#ccc" }}
                     />
                     <span className="font-medium">
-                      {equipos.find(e => e.id === partido.equipo_local_id)?.nombre || `Equipo ${partido.equipo_local_id}`}
+                      {equipos.find(e => e.id === partido.equipo_local_id)?.nombre || partido.equipos[0].nombre }
                     </span>
                   </div>
 
@@ -292,7 +292,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
 
                   <div className="flex items-center space-x-2 flex-1 justify-end">
                     <span className="font-medium">
-                      {equipos.find(e => e.id === partido.equipo_visitante_id)?.nombre || `Equipo ${partido.equipo_visitante_id}`}
+                      {equipos.find(e => e.id === partido.equipo_visitante_id)?.nombre || partido.equipos[1].nombre}
                     </span>
                     <div
                       className="w-6 h-6 rounded-full"
@@ -478,6 +478,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
       {modalEditPartidoVisible && selectedPartido && (
         <EditPartidoModal
           partido={selectedPartido}
+          equipos={equipos} // Asegúrate de pasar equipos aquí
           onClose={() => setModalEditPartidoVisible(false)}
           onSave={handlePartidoUpdated}
         />

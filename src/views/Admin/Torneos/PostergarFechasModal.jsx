@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import {format, parseISO} from 'date-fns';
+import {es} from 'date-fns/locale';
 
 export default function PostergarFechasModal({ fechas, onSave, onClose }) {
   const [selectedFechaId, setSelectedFechaId] = useState('');
@@ -15,19 +17,22 @@ export default function PostergarFechasModal({ fechas, onSave, onClose }) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded-[8px] shadow-lg">
+      <div className="bg-white p-6 rounded-[8px] shadow-lg w-1/3">
         <h2 className="text-xl font-bold mb-4">Postergar Fechas</h2>
+        <div className='w-full bg-blue-200 border-l-blue-500 border-l-2 p-2 rounded-md mb-4 flex items-center'>
+          <p className="text-sm text-blue-700 ">Esta función permite reprogramar automáticamente todas las fechas de una zona, comenzando desde la fecha seleccionada y desplazándolas una semana hacia adelante</p>
+        </div>
         <label className="block mb-2">
           Seleccionar Fecha:
           <select
             value={selectedFechaId}
             onChange={(e) => setSelectedFechaId(e.target.value)}
-            className="border border-gray-300 rounded-[6px] p-2 w-full"
+            className="border capitalize border-gray-300 rounded-[6px] p-2 w-full"
           >
             {fechas && fechas.length > 0 ? (
               fechas.map((fecha) => (
                 <option key={fecha.id} value={fecha.id}>
-                  {fecha.nombre} - {fecha.fecha_inicio}
+                  {fecha.nombre} - {format(parseISO(fecha.fecha_inicio), "EEE, dd/MM/yyyy", { locale: es })} 
                 </option>
               ))
             ) : (
@@ -49,7 +54,7 @@ export default function PostergarFechasModal({ fechas, onSave, onClose }) {
             className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-[6px]"
             disabled={!selectedFechaId}
           >
-            Guardar
+            Postergar
           </button>
         </div>
       </div>

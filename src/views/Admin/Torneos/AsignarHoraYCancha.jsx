@@ -41,8 +41,11 @@ export default function AsignarHoraYCanchaModal({ zonaId, horarios, onClose }) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+      <div className="bg-white p-6 rounded-[8px] shadow-lg w-96">
         <h2 className="text-xl font-bold mb-4">Asignar Cancha y Hora</h2>
+        <div className='w-full bg-blue-200 border-l-blue-500 border-l-2 p-2 rounded-md mb-4 flex items-center'>
+          <p className="text-sm text-blue-700 ">Esta función permite asignar automáticamente horarios y canchas para todos los partidos de una zona, definiendo cuántos partidos se jugarán simultáneamente y el horario de inicio</p>
+        </div>
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Partidos a la vez</label>
           <input
@@ -50,7 +53,7 @@ export default function AsignarHoraYCanchaModal({ zonaId, horarios, onClose }) {
             min="1"
             value={partidosALaVez}
             onChange={(e) => setPartidosALaVez(e.target.value)}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+            className="mt-1 block w-full border py-1 px-2 border-gray-300 rounded-[6px] shadow-sm"
           />
         </div>
         <div className="mb-4">
@@ -58,7 +61,7 @@ export default function AsignarHoraYCanchaModal({ zonaId, horarios, onClose }) {
           <select
             value={horarioInicio}
             onChange={(e) => setHorarioInicio(e.target.value)}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+            className="mt-1 block w-full border py-1 px-2 border-gray-300 rounded-[6px] shadow-sm"
           >
             <option value="">Seleccionar horario</option>
             {horarios.length > 0 ? (

@@ -2,14 +2,16 @@ import React, { useState, useEffect } from "react";
 import api from "@/lib/axiosConfig";
 import { toast } from "react-toastify";
 
-export default function EditPartidoModal({ partido, onClose, onSave }) {
+export default function EditPartidoModal({ partido, onClose, onSave, equipos }) {
   const [horarios, setHorarios] = useState([]);
   const [canchas, setCanchas] = useState([]);
   const [formData, setFormData] = useState({
-    fecha: partido.fecha || "", // Agregar el campo fecha
-    horario_id: partido.horario?.id || "",
-    cancha_id: partido.cancha?.id || "",
+    fecha: partido.fecha || "",
+    horario_id: partido.horario?.id || null, // Mantener el valor actual o null
+    cancha_id: partido.cancha?.id || null, // Mantener el valor actual o null
     estado: partido.estado || "",
+    equipo_local_id: partido.equipo_local_id || "",
+    equipo_visitante_id: partido.equipo_visitante_id || "",
   });
   const [loading, setLoading] = useState(false);
   console.log("Partido:", partido);
@@ -58,9 +60,9 @@ export default function EditPartidoModal({ partido, onClose, onSave }) {
 
     // Reset dependent fields
     if (name === "fecha") {
-      setFormData((prev) => ({ ...prev, horario_id: "", cancha_id: "" }));
+      setFormData((prev) => ({ ...prev, horario_id: partido.horario?.id || null, cancha_id: partido.cancha?.id || null }));
     } else if (name === "horario_id") {
-      setFormData((prev) => ({ ...prev, cancha_id: "" }));
+      setFormData((prev) => ({ ...prev, cancha_id: partido.cancha?.id || null }));
     }
   };
 
@@ -92,14 +94,14 @@ export default function EditPartidoModal({ partido, onClose, onSave }) {
             name="fecha"
             value={formData.fecha}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-[6px] p-2"
+            className="w-full border border-gray-300 rounded-[6px] p-1"
           />
         </div>
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Horario</label>
           <select
             name="horario_id"
-            value={formData.horario_id}
+            value={formData.horario_id || ""}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-[6px] p-2"
           >
@@ -117,7 +119,7 @@ export default function EditPartidoModal({ partido, onClose, onSave }) {
           <label className="block text-sm font-medium text-gray-700">Cancha</label>
           <select
             name="cancha_id"
-            value={formData.cancha_id}
+            value={formData.cancha_id || ""}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-[6px] p-2"
           >
@@ -149,6 +151,47 @@ export default function EditPartidoModal({ partido, onClose, onSave }) {
             <option value="Cancelado">Cancelado</option>
           </select>
         </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">Equipos</label>
+          <div className="flex items-center space-x-2">
+            {/* Selector de equipo local */}
+            <select
+              name="equipo_local_id"
+              value={formData.equipo_local_id || partido.equipo_local_id}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-[6px] p-2"
+            >
+              <option value="" disabled>
+                Seleccionar equipo local
+              </option>
+              {equipos.map((equipo) => (
+                <option key={equipo.id} value={equipo.id}>
+                  {equipo.nombre}
+                </option>
+              ))}
+            </select>
+
+            <span className="font-bold">vs</span>
+
+            {/* Selector de equipo visitante */}
+            <select
+              name="equipo_visitante_id"
+              value={formData.equipo_visitante_id || partido.equipo_visitante_id}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-[6px] p-2"
+            >
+              <option value="" disabled>
+                Seleccionar equipo visitante
+              </option>
+              {equipos.map((equipo) => (
+                <option key={equipo.id} value={equipo.id}>
+                  {equipo.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        
         <div className="flex justify-end space-x-4">
           <button
             onClick={onClose}

@@ -33,6 +33,8 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
   const [modalEditPartidoVisible, setModalEditPartidoVisible] = useState(false); // Estado para mostrar el modal
   const [modalCrearFechaVisible, setModalCrearFechaVisible] = useState(false);
   const [modalAgregarPartidoVisible, setModalAgregarPartidoVisible] = useState(false);
+  const [modalEliminarPartido, setModalEliminarPartido] = useState(false); // Estado para mostrar el modal de eliminar partido
+  const [selectedPartidoEliminar, setSelectedPartidoEliminar] = useState(null); // Estado para el partido seleccionado para eliminar
 
   useEffect(() => {
     const fetchFechas = async () => {
@@ -192,6 +194,32 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
     }
   };
 
+  const handleDeletePartido = async () => {
+    try {
+      setLoading(true);
+      const response = await api.delete(`/partidos/${selectedPartidoEliminar}`);
+      if (response.status === 200) {
+        setFechas((prevFechas) =>
+          prevFechas.map((fecha) =>
+            fecha.id === selectedFecha.id
+              ? {
+                  ...fecha,
+                  partidos: fecha.partidos.filter((partido) => partido.id !== selectedPartidoEliminar),
+                }
+              : fecha
+          )
+        );
+        setModalEliminarPartido(false);
+      }
+    } catch (error) {
+      console.error('Error deleting match:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
   const goToPrevious = () => {
     setCurrentFechaIndex((prev) => (prev > 0 ? prev - 1 : prev));
   }
@@ -306,7 +334,17 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
                     Hora: {horario?.hora_inicio || 'No Definido'} - {horario?.hora_fin || 'No Definido'}
                   </span>
                 </div>
-                <div className="flex justify-end mt-2">
+                <div className="flex justify-between mt-2">
+                <button
+                    onClick={() => { console.log(partido) ;
+                      setSelectedPartidoEliminar(partido.id);
+                      setModalEliminarPartido(true);
+                      
+                    }}
+                    className="text-black  text-sm  py-1 rounded-[6px] hover:text-red-600"
+                  >
+                    <Trash2 size={18} />
+                  </button>
                   <button
                     onClick={() => handleEditPartido(partido)}
                     className="bg-blue-500 text-white text-sm px-2 py-1 rounded-[6px] hover:bg-blue-600"
@@ -503,6 +541,29 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
           onClose={() => setModalAgregarPartidoVisible(false)}
           onPartidoAgregado={handlePartidoAgregado}
         />
+      )}
+
+      {modalEliminarPartido && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white p-6 rounded-[8px] shadow-lg">
+          <h2 className="text-xl font-bold mb-4">Eliminar Partido</h2>
+          <p>¿Estás seguro de que deseas eliminar este partido?</p>
+          <div className="flex justify-end space-x-4 mt-4">
+            <button
+              onClick={() => setModalEliminarPartido(false)}
+              className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-[6px]"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleDeletePartido}
+              className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-[6px]"
+            >
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
       )}
 
     </div>

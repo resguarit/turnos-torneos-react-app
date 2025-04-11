@@ -12,7 +12,7 @@ const MenuMovil = ({ setMenuOpen }) => {
   const userRole = localStorage.getItem("user_role")
   const navigate = useNavigate()
   const location = useLocation()
-  const isReservationPage = location.pathname === "/contador-bloqueo" || location.pathname === "/bloqueo-reserva"
+  const isReservationPage = location.pathname === "/contador-bloqueo" || location.pathname === "/bloqueo-reserva" || location.pathname === "/confirmar-turno" || location.pathname === "/confirmar-login"
 
   const toggleMenu = () => {
     setIsOpen(!isOpen)
@@ -57,7 +57,14 @@ const MenuMovil = ({ setMenuOpen }) => {
   const handleReturnToReservation = () => {
     closeMenu()
     closeUserMenu()
-    navigate("/bloqueo-reserva")
+    const token = localStorage.getItem('token')
+    const reservaTemp = JSON.parse(localStorage.getItem('reservaTemp'))
+    
+    if (!token) {
+      navigate(`/confirmar-turno?time=${reservaTemp.horario_id}&date=${reservaTemp.fecha}&court=${reservaTemp.cancha_id}`)
+    } else {
+      navigate("/bloqueo-reserva")
+    }
   }
 
   useEffect(() => {

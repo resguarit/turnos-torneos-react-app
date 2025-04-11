@@ -128,6 +128,11 @@ export default function ConfirmarLogin() {
     navigate(`/confirmar-turno?time=${selectedTime}&date=${selectedDate}&court=${selectedCourt}`);
   };
 
+  const handleCancel = () => {
+    localStorage.removeItem('reservaTemp');
+    navigate('/reserva-mobile');
+  };
+
   // Obtener detalles del horario y la cancha
   useEffect(() => {
     const fetchDetails = async () => {
@@ -313,20 +318,29 @@ export default function ConfirmarLogin() {
           </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4 pb-0">
-          <div className="relative">
+            <div className="relative">
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="px-2 text-muted-foreground">
                   O si no tienes una cuenta
                 </span>
               </div>
             </div>
-            <button 
-              className="w-1/2 bg-white border border-naranja text-naranja text-sm p-2 rounded-[10px] hover:bg-naranja hover:text-white"
-              onClick={navigateToSignUp}
-              disabled={loading}
-            >
-              Registrarse
-            </button>
+            <div className="flex flex-col space-y-2">
+              <button 
+                className="w-full bg-white border border-naranja text-naranja text-sm p-2 rounded-[10px] hover:bg-naranja hover:text-white"
+                onClick={navigateToSignUp}
+                disabled={loading}
+              >
+                Registrarse
+              </button>
+              <button 
+                className="w-full bg-red-500 text-white text-sm p-2 rounded-[10px] hover:bg-red-600"
+                onClick={handleCancel}
+                disabled={loading}
+              >
+                Cancelar Reserva
+              </button>
+            </div>
           </CardFooter>
         </Card>
       </main>

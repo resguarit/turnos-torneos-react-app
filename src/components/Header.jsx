@@ -79,7 +79,14 @@ export function Header() {
   }
 
   const handleReturnToReservation = () => {
-    navigate("/bloqueo-reserva")
+    const token = localStorage.getItem('token')
+    const reservaTemp = JSON.parse(localStorage.getItem('reservaTemp'))
+    
+    if (!token) {
+      navigate(`/confirmar-turno?time=${reservaTemp.horario_id}&date=${reservaTemp.fecha}&court=${reservaTemp.cancha_id}`)
+    } else {
+      navigate("/bloqueo-reserva")
+    }
   }
 
   return (

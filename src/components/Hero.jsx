@@ -1,10 +1,43 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Carrusel from "./Carrusel";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import rngBlack from "../assets/rngBlack.mp4";
 import video from "../assets/rngBlack.mp4";
+import { ArrowLeftCircle } from "lucide-react";
 
 function Hero() {
+  const navigate = useNavigate();
+  const [hasActiveReservation, setHasActiveReservation] = useState(false);
+
+  useEffect(() => {
+    const checkActiveReservation = () => {
+      const reservaTemp = localStorage.getItem("reservaTemp");
+      setHasActiveReservation(!!reservaTemp);
+    };
+
+    checkActiveReservation();
+
+    window.addEventListener("storage", checkActiveReservation);
+
+    const interval = setInterval(checkActiveReservation, 1000);
+
+    return () => {
+      window.removeEventListener("storage", checkActiveReservation);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const handleReturnToReservation = () => {
+    const token = localStorage.getItem('token');
+    const reservaTemp = JSON.parse(localStorage.getItem('reservaTemp'));
+    
+    if (!token) {
+      navigate(`/confirmar-turno?time=${reservaTemp.horario_id}&date=${reservaTemp.fecha}&court=${reservaTemp.cancha_id}`);
+    } else {
+      navigate("/bloqueo-reserva");
+    }
+  };
+
   useEffect(() => {
     const videoElement = document.querySelector("video");
 
@@ -55,11 +88,13 @@ function Hero() {
           <h2 className="font-inter tracking-wide font-medium text-sm md:text-lg lg:text-xl text-white">
             Descubrí las mejores canchas de fútbol y unite a la comunidad más grande de jugadores
           </h2>
-          <Link to="/reserva-mobile">
-            <button className="bg-naranja rounded-xl text-white p-2 font-inter font-medium text-xs md:text-sm tracking-wide w-full">
-              QUIERO RESERVAR UN TURNO
-            </button>
-          </Link>
+          {!hasActiveReservation && (
+            <Link to="/reserva-mobile">
+              <button className="bg-naranja rounded-xl text-white p-2 font-inter font-medium text-xs md:text-sm tracking-wide w-full">
+                QUIERO RESERVAR UN TURNO
+              </button>
+            </Link>
+          )}
         </div>
       </div>
     </>

@@ -170,6 +170,11 @@ export default function ConfirmarTurno() {
   const navigateToLogin = () => {
     navigate(`/confirmar-login?time=${selectedTime}&date=${selectedDate}&court=${selectedCourt}`);
   };
+
+  const handleCancel = () => {
+    localStorage.removeItem('reservaTemp');
+    navigate('/reserva-mobile');
+  };
   
   const señaPercentage = reservationDetails.cancha ? (reservationDetails.cancha.seña / reservationDetails.cancha.precio_por_hora) * 100 : 0;
 
@@ -365,13 +370,22 @@ export default function ConfirmarTurno() {
                 </span>
               </div>
             </div>
-            <button 
-              className="w-1/2 bg-white border border-naranja text-naranja text-sm p-2 rounded-[10px] hover:bg-naranja hover:text-white"
-              onClick={navigateToLogin}
-              disabled={loading}
-            >
-              Iniciar Sesión
-            </button>
+            <div className="flex flex-col space-y-2">
+              <button 
+                className="w-full bg-white border border-naranja text-naranja text-sm p-2 rounded-[10px] hover:bg-naranja hover:text-white"
+                onClick={navigateToLogin}
+                disabled={loading}
+              >
+                Iniciar Sesión
+              </button>
+              <button 
+                className="w-full bg-red-500 text-white text-sm p-2 rounded-[10px] hover:bg-red-600"
+                onClick={handleCancel}
+                disabled={loading}
+              >
+                Cancelar Reserva
+              </button>
+            </div>
           </CardFooter>
         </Card>
       </main>

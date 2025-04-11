@@ -41,10 +41,10 @@ export default function CrearFechaModal({ zonaId, equipos, onClose, onFechaCread
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-1/2">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
         <h2 className="text-xl font-sans font-bold mb-4">Crear Nueva Fecha</h2>
         <div className="mb-2">
-          <label className="block font-semibold font-sans">Nombre</label>
+          <label className="block  text-gray-700 ">Nombre</label>
           <input
             type="text"
             value={nombre}
@@ -54,7 +54,7 @@ export default function CrearFechaModal({ zonaId, equipos, onClose, onFechaCread
         </div>
         <div className="flex w-full justify-between mb-2 gap-4">
         <div className="flex-col w-full">
-          <label className="block font-semibold font-sans">Fecha de Inicio</label>
+          <label className="block text-gray-700 ">Fecha de Inicio</label>
           <input
             type="date"
             value={fechaInicio}
@@ -63,7 +63,7 @@ export default function CrearFechaModal({ zonaId, equipos, onClose, onFechaCread
           />
           </div>
           <div className="flex-col w-full">
-          <label className="block font-semibold font-sans">Fecha de Fin</label>
+          <label className="block text-gray-700 ">Fecha de Fin</label>
           <input
             type="date"
             value={fechaFin}

@@ -80,7 +80,7 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-[8px] shadow-lg w-1/2">
+      <div className="bg-white p-6 rounded-[8px] shadow-lg w-1/3">
         <h2 className="text-xl font-bold mb-4">Agregar Partido</h2>
 
         {/* Selector de equipos */}
@@ -90,7 +90,7 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
             onChange={(e) => setEquipoLocal(e.target.value)}
             className="border border-gray-300 rounded-[6px] p-2 flex-1"
           >
-            <option value="">Seleccionar Equipo Local</option>
+            <option value="" disabled>Equipo Local</option>
             {equipos.map((equipo) => (
               <option key={equipo.id} value={equipo.id}>
                 {equipo.nombre}
@@ -103,7 +103,7 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
             onChange={(e) => setEquipoVisitante(e.target.value)}
             className="border border-gray-300 rounded-[6px] p-2 flex-1"
           >
-            <option value="">Seleccionar Equipo Visitante</option>
+            <option value="" disabled>Equipo Visitante</option>
             {equipos.map((equipo) => (
               <option key={equipo.id} value={equipo.id}>
                 {equipo.nombre}
@@ -113,11 +113,13 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
         </div>
 
         {/* Selector de horario */}
+        <p className="text-sm text-red-500 mb-1">Opcional *</p>
+        <div className="rounded-[8px] border border-gray-300 p-1 justify-center flex flex-col mb-4">
         <div className="mb-4">
           <select
             value={horario}
             onChange={(e) => setHorario(e.target.value)}
-            className="border border-gray-300 rounded-[6px] p-2 w-full"
+            className="border border-gray-300 rounded-[6px] text-sm p-1 w-full"
           >
             <option value="">Seleccionar Horario</option>
             {horarios.map((h) => (
@@ -129,11 +131,11 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
         </div>
 
         {/* Selector de cancha */}
-        <div className="mb-4">
+        <div className="">
           <select
             value={cancha}
             onChange={(e) => setCancha(e.target.value)}
-            className="border border-gray-300 rounded-[6px] p-2 w-full"
+            className="border border-gray-300 rounded-[6px] text-sm p-1 w-full"
             disabled={!horario} // Deshabilitar si no hay horario seleccionado
           >
             <option value="">Seleccionar Cancha</option>
@@ -144,7 +146,7 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
             ))}
           </select>
         </div>
-
+        </div>
         {/* Botones de acción */}
         <div className="flex justify-end space-x-4">
           <button

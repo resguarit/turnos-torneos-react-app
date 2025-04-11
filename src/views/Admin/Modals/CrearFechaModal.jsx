@@ -32,18 +32,6 @@ export default function CrearFechaModal({ zonaId, equipos, onClose, onFechaCread
 
       const nuevaFecha = response.data.fecha;
 
-      // Crear los partidos asociados
-      for (const partido of partidos) {
-        await api.post("/partidos", {
-          ...partido,
-          fecha: fechaInicio,
-          estado: "Pendiente",
-          fecha_id: nuevaFecha.id,
-          horario_id: null,
-          cancha_id: null,
-        });
-      }
-
       onFechaCreada(nuevaFecha);
       onClose();
     } catch (error) {
@@ -84,52 +72,6 @@ export default function CrearFechaModal({ zonaId, equipos, onClose, onFechaCread
           />
           </div>
         </div>
-
-        <h3 className="text-lg  font-semibold mb-1 mt-6">Agregar Partidos</h3>
-        <div>
-        <div className="flex items-center space-x-2 mb-2">
-          <select
-            value={equipoLocal}
-            onChange={(e) => setEquipoLocal(e.target.value)}
-            className="border border-gray-300 rounded-[6px] p-2 flex-1"
-          >
-            <option value="">Seleccionar Equipo Local</option>
-            {equipos.map((equipo) => (
-              <option key={equipo.id} value={equipo.id}>
-                {equipo.nombre}
-              </option>
-            ))}
-          </select>
-          <p className="font-sans font-semibold">vs</p>
-          <select
-            value={equipoVisitante}
-            onChange={(e) => setEquipoVisitante(e.target.value)}
-            className="border border-gray-300 rounded-[6px] p-2 flex-1"
-          >
-            <option value="">Seleccionar Equipo Visitante</option>
-            {equipos.map((equipo) => (
-              <option key={equipo.id} value={equipo.id}>
-                {equipo.nombre}
-              </option>
-            ))}
-          </select>
-          </div>
-          <button
-            onClick={agregarPartido}
-            className="bg-blue-500 text-white px-3 py-1 text-sm rounded-[6px] hover:bg-blue-600"
-          >
-            Agregar Partido
-          </button>
-        
-        </div>
-        <ul className="mb-4">
-          {partidos.map((partido, index) => (
-            <li key={index} className="text-sm">
-              {equipos.find((e) => e.id === partido.equipo_local_id)?.nombre} vs{" "}
-              {equipos.find((e) => e.id === partido.equipo_visitante_id)?.nombre}
-            </li>
-          ))}
-        </ul>
 
         <div className="flex justify-end space-x-4">
           <button

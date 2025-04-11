@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight, Edit3, Trash2, Clock } from "lucide-react"
+import { ChevronLeft, ChevronRight, Edit3, Trash2, Clock, CopyPlus } from "lucide-react"
 import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import api from '@/lib/axiosConfig'
@@ -10,7 +10,8 @@ import EditFechaModal from './EditFechaModal'
 import PostergarFechasModal from './PostergarFechasModal'
 import AsignarHoraYCanchaModal from './AsignarHoraYCancha'; // Importa el modal
 import EditPartidoModal from './EditPartidoModal'; // Importar el modal para editar partidos
-
+import CrearFechaModal from "../Modals/CrearFechaModal";
+import AgregarPartidoModal from "../Modals/AgregarPartidoModal"; // Importar el modal
 
 export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
   const [fechas, setFechas] = useState([]);
@@ -30,6 +31,8 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false); // Estado para mostrar el modal de confirmación
   const [selectedPartido, setSelectedPartido] = useState(null); // Estado para el partido seleccionado
   const [modalEditPartidoVisible, setModalEditPartidoVisible] = useState(false); // Estado para mostrar el modal
+  const [modalCrearFechaVisible, setModalCrearFechaVisible] = useState(false);
+  const [modalAgregarPartidoVisible, setModalAgregarPartidoVisible] = useState(false);
 
   useEffect(() => {
     const fetchFechas = async () => {
@@ -172,6 +175,23 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
     );
   };
 
+  const handleFechaCreada = (nuevaFecha) => {
+    // Actualiza las fechas en el carrusel después de crear una nueva
+    setFechas((prevFechas) => [...prevFechas, nuevaFecha]);
+  };
+
+  const handlePartidoAgregado = async () => {
+    try {
+      setLoading(true); // Mostrar el estado de carga
+      const response = await api.get(`/zonas/${zonaId}/fechas`);
+      setFechas(response.data); // Actualizar las fechas con los datos más recientes
+    } catch (error) {
+      console.error("Error al recargar las fechas:", error);
+    } finally {
+      setLoading(false); // Ocultar el estado de carga
+    }
+  };
+
   const goToPrevious = () => {
     setCurrentFechaIndex((prev) => (prev > 0 ? prev - 1 : prev));
   }
@@ -197,6 +217,15 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
 
   return (
     <div className="mt-10 w-full  mx-auto bg-gray-100 overflow-hidden">
+      <div className="flex justify-end mb-2">
+        <button
+          onClick={() => setModalCrearFechaVisible(true)}
+          className="bg-green-500 text-white text-sm px-3 py-1 rounded-[6px] hover:bg-green-600"
+        >
+          + Agregar Fecha
+        </button>
+      </div>
+
       <div className="flex items-center justify-between p-3 bg-white border-b rounded-t-[8px]">
         <button
           onClick={goToPrevious}
@@ -280,7 +309,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
                 <div className="flex justify-end mt-2">
                   <button
                     onClick={() => handleEditPartido(partido)}
-                    className="bg-blue-500 text-white px-2 py-1 rounded-[6px] hover:bg-blue-600"
+                    className="bg-blue-500 text-white text-sm px-2 py-1 rounded-[6px] hover:bg-blue-600"
                   >
                     Editar
                   </button>
@@ -309,6 +338,15 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
           >
             <Edit3 size={18} />
           </button>
+          <button
+            onClick={() => {
+              setSelectedFecha(currentFecha);
+              setModalAgregarPartidoVisible(true);
+            }}
+          >
+            <CopyPlus size={18}/>
+          </button>
+          
         </div>
 
       <div className="flex justify-between ">
@@ -423,6 +461,27 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
           partido={selectedPartido}
           onClose={() => setModalEditPartidoVisible(false)}
           onSave={handlePartidoUpdated}
+        />
+      )}
+
+      {modalCrearFechaVisible && (
+        <CrearFechaModal
+          zonaId={zonaId}
+          equipos={equipos}
+          onClose={() => setModalCrearFechaVisible(false)}
+          onFechaCreada={handleFechaCreada}
+        />
+      )}
+
+      {/* Modal para agregar partido */}
+      {modalAgregarPartidoVisible && (
+        <AgregarPartidoModal
+          fecha={selectedFecha}
+          equipos={equipos}
+          canchas={canchas}
+          horarios={horarios}
+          onClose={() => setModalAgregarPartidoVisible(false)}
+          onPartidoAgregado={handlePartidoAgregado}
         />
       )}
 

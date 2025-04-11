@@ -322,36 +322,55 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
         )}
       </div>
         <div className="p-3 justify-center flex bg-white rounded-b-[8px] my-2 gap-5">
-          <button
-            onClick={() => {
-              setSelectedFecha(currentFecha);
-              setModalDeleteVisible(true);
-            }}
-          >
-            <Trash2 size={18} />
-          </button>
-          <button
-            onClick={() => {
-              setSelectedFecha(currentFecha);
-              setModalEditVisible(true);
-            }}
-          >
-            <Edit3 size={18} />
-          </button>
-          <button
-            onClick={() => {
-              setSelectedFecha(currentFecha);
-              setModalAgregarPartidoVisible(true);
-            }}
-          >
-            <CopyPlus size={18}/>
-          </button>
-          
-        </div>
+  {/* Botón de eliminar fecha */}
+  <div className="relative group items-center flex">
+    <button
+      onClick={() => {
+        setSelectedFecha(currentFecha);
+        setModalDeleteVisible(true);
+      }}
+    >
+      <Trash2 size={18} />
+    </button>
+    <div className="absolute whitespace-nowrap bottom-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      Eliminar Fecha
+    </div>
+  </div>
+
+  {/* Botón de editar fecha */}
+  <div className="relative group items-center flex">
+    <button
+      onClick={() => {
+        setSelectedFecha(currentFecha);
+        setModalEditVisible(true);
+      }}
+    >
+      <Edit3 size={18} />
+    </button>
+    <div className="absolute whitespace-nowrap bottom-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      Editar Fecha
+    </div>
+  </div>
+
+  {/* Botón de agregar partido */}
+  <div className="relative group items-center flex">
+    <button
+      onClick={() => {
+        setSelectedFecha(currentFecha);
+        setModalAgregarPartidoVisible(true);
+      }}
+    >
+      <CopyPlus size={18} />
+    </button>
+    <div className="absolute bottom-8 whitespace-nowrap left-1/2 transform -translate-x-1/2 bg-black text-white text-xs rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      Agregar Partido
+    </div>
+  </div>
+</div>
 
       <div className="flex justify-between ">
         <button
-          className={`bg-red-500 hover:bg-red-600 text-sm text-white py-1 px-4 rounded-[6px] ${
+          className={`bg-red-500 hover:bg-red-600 text-sm text-white py-2 px-4 rounded-[6px] ${
             loadingDeleteAll ? 'cursor-not-allowed opacity-50' : ''
           }`}
           onClick={() => setShowDeleteAllModal(true)} // Mostrar el modal de confirmación
@@ -360,7 +379,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
           {loadingDeleteAll ? 'Eliminando...' : 'Eliminar Todas las Fechas'}
         </button>
         <button
-          className={`bg-blue-500 hover:bg-blue-600 text-sm text-white py-1 px-4 rounded-[6px] ${
+          className={`bg-red-500 hover:bg-red-600 text-sm text-white py-2 px-4 rounded-[6px] ${
             loadingPostergar ? 'cursor-not-allowed opacity-50' : ''
           }`}
           onClick={() => setModalPostergarVisible(true)}

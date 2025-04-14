@@ -24,16 +24,18 @@ function Partidos() {
   useEffect(() => {
     const fetchPartidos = async () => {
       try {
-        const response = await api.get('/partidos')
-        setPartidos(response.data)
-        setFilteredPartidos(response.data)
+        const response = await api.get('/partidos');
+        // Ordenar los partidos por fecha de creación en orden descendente
+        const sortedPartidos = response.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        setPartidos(sortedPartidos);
+        setFilteredPartidos(sortedPartidos);
       } catch (error) {
-        console.error('Error fetching partidos:', error)
+        console.error('Error fetching partidos:', error);
       }
-    }
+    };
 
-    fetchPartidos()
-  }, [])
+    fetchPartidos();
+  }, []);
 
   // Handle navigation
   const handleVerMasClick = () => {
@@ -282,9 +284,9 @@ function Partidos() {
 
           {/* Partidos Table */}
           {currentItems.length > 0 && (
-            <div className="bg-white shadow overflow-x-auto mb-4 lg:text-lg rounded-lg">
+            <div className="bg-white shadow overflow-x-auto mb-4 lg:text-lg rounded-[6px]">
               <table className="w-full">
-                <thead className="bg-naranja text-white">
+                <thead className="bg-naranja text-white font-sans">
                   <tr>
                     <th className="px-10 py-2 text-center font-medium">Resultado</th>
                     <th className="px-4 py-2 text-center font-medium">Horario</th>

@@ -16,6 +16,8 @@ import {TabFechas} from './Tabs/TabFechas';
 import {TabGrupos} from './Tabs/TabGrupos';
 import {TabArania} from './Tabs/TabArania';
 import {TabResultados} from './Tabs/TabResultados';
+import {TabResultadosGrupos} from './Tabs/TabResultadosGrupos';
+import {TabEliminatoria} from './Tabs/TabResultadosEliminatoria';
 
 
 export default function DetalleZona() {
@@ -535,7 +537,18 @@ export default function DetalleZona() {
         )}
         
         {activeTab === 'resultados' && (
-          <TabResultados zonaId={zonaId}/>
+          <>
+          {zona.formato === 'Liga' && <TabResultados zonaId={zonaId} />}
+          {zona.formato === 'Grupos' && (
+            <TabResultadosGrupos zonaId={zonaId} grupos={grupos} />
+          )}
+          {(zona.formato === 'Eliminatoria' || zona.formato === 'Liga + Playoff') && (
+            <TabEliminatoria 
+              equipos={zona.equipos} 
+              etapa={zona.etapaActual} 
+            />
+          )}
+        </>
         )}
       </div>
     </main>

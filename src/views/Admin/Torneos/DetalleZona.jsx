@@ -274,6 +274,8 @@ export default function DetalleZona() {
     }
   };
 
+  
+
   const handleActualizarGrupos = async () => {
     try {
       // Verificar que haya suficientes equipos para crear/actualizar grupos
@@ -319,14 +321,22 @@ export default function DetalleZona() {
     );
   };
 
-  const handleAgregarEquipoAGrupo = (grupoId, equipo) => {
-    setGrupos((prevGrupos) =>
-      prevGrupos.map((grupo) =>
-        grupo.id === grupoId
-          ? { ...grupo, equipos: [...grupo.equipos, equipo] }
-          : grupo
-      )
-    );
+  const handleAgregarEquipoAGrupo = async (grupoId, equipoId) => {
+    try {
+      setLoading(true);
+      const response = await api.post(`/grupos/${grupoId}/equipos/${equipoId}`);
+      
+      if (response.status === 200) {
+        // Actualizar la lista de grupos
+        const gruposResponse = await api.get(`/zonas/${zonaId}/grupos`);
+        setGrupos(gruposResponse.data);
+        toast.success('Equipo agregado al grupo correctamente.');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Error al agregar el equipo.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEliminarEquipoDeGrupo = async (grupoId, equipoId) => {
@@ -516,6 +526,7 @@ export default function DetalleZona() {
             editMode={editMode}
             handleEliminarEquipoDeGrupo={handleEliminarEquipoDeGrupo}
             handleEliminarGrupos={handleEliminarGrupos}
+            handleAgregarEquipoAGrupo={handleAgregarEquipoAGrupo}
           />
         )}
         

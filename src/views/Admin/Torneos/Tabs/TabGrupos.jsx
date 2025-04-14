@@ -1,5 +1,5 @@
-import React from 'react';
-import { Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Trash2, Edit3, Shuffle } from 'lucide-react';
 import api from '@/lib/axiosConfig'; // Asegúrate de importar tu configuración de Axios
 import { toast } from 'react-toastify'; // Importar toastify para notificaciones
 import 'react-toastify/dist/ReactToastify.css'; // Importar estilos de toastify
@@ -15,8 +15,11 @@ export function TabGrupos({
   editMode,
   setModalVisible,
   gruposCreados,
+  handleAgregarEquipoAGrupo,
 }) {
   
+  const [editingGroupId, setEditingGroupId] = useState(null)
+
   return (
     <div>
       <div className="mt-6">
@@ -34,59 +37,87 @@ export function TabGrupos({
                 min="1"
                 value={numGrupos}
                 onChange={(e) => setNumGrupos(e.target.value)}
-                className="w-16 border border-gray-300 rounded-md p-1 text-center"
+                className="w-16 border border-gray-300 rounded-[6px] p-1 text-center"
               />
             </div>
 
             <button
               onClick={handleActualizarGrupos}
-              className="py-2 px-4 rounded-md bg-green-500 hover:bg-green-600 text-white"
+              className="py-2 px-4 text-sm rounded-[6px] items-center flex gap-2 bg-green-500  hover:bg-green-600 text-white"
             >
-              Sortear Grupos de Nuevo
+              Sortear Grupos de Nuevo <Shuffle size={16}  />
             </button>
           </div>
           )}
         </div>
     
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.isArray(grupos) && grupos.length > 0 ? (
-            grupos.map((grupo, index) => (
-              <div key={grupo.id || index} className="bg-white p-4 rounded-md shadow-md">
-                <h3 className="text-lg font-bold mb-2">Grupo {index + 1}</h3>
-                <div className="space-y-2">
-                  {Array.isArray(grupo.equipos) && grupo.equipos.length > 0 ? (
-                    grupo.equipos.map((equipo) => (
-                      <div key={equipo.id} className="flex items-center gap-1">
-                        {editMode ? (
-                          <>
-                            <input
-                              type="text"
-                              value={equipo.nombre}
-                              disabled
-                              className="flex-1 border border-gray-300 rounded-md p-2"
-                            />
-                            <button
-                              onClick={() => handleEliminarEquipoDeGrupo(grupo.id, equipo.id)}
-                              className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-md"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </>
-                        ) : (
-                          <span className="flex-1">{equipo.nombre}</span>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 italic">No hay equipos en este grupo.</p>
-                  )}
-                </div>
+        {Array.isArray(grupos) && grupos.length > 0 ? (
+          grupos.map((grupo, index) => (
+            <div key={grupo.id || index} className="bg-white p-4 rounded-[6px] shadow-md">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-lg font-bold">Grupo {index + 1}</h3>
+                <button
+                  onClick={() => setEditingGroupId(grupo.id === editingGroupId ? null : grupo.id)}
+                  className="text-gray-500 hover:text-blue-500"
+                >
+                  <Edit3 size={16} />
+                </button>
               </div>
-            ))
-          ) : (
-            <p className="text-center text-gray-500">No hay grupos disponibles.</p>
-          )}
-        </div>
+              <div className="space-y-2">
+                {grupo.equipos.map((equipo) => (
+                  <div key={equipo.id} className="flex items-center gap-1">
+                    {editingGroupId === grupo.id ? (
+                      <>
+                        <input
+                          type="text"
+                          value={equipo.nombre}
+                          disabled
+                          className="flex-1 border border-gray-300 rounded-md p-2"
+                        />
+                        <button
+                          onClick={() => handleEliminarEquipoDeGrupo(grupo.id, equipo.id)}
+                          className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-md"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </>
+                    ) : (
+                      <span className="flex-1">{equipo.nombre}</span>
+                    )}
+                  </div>
+                ))}
+                {/* Dropdown para agregar equipos */}
+                {editingGroupId === grupo.id && (
+                  <div className="mt-2">
+                    <select
+                      onChange={(e) => {
+                        const equipoId = e.target.value;
+                        if (equipoId) {
+                          handleAgregarEquipoAGrupo(grupo.id, equipoId);
+                        }
+                      }}
+                      className="w-full border border-gray-300 rounded-md p-2"
+                      defaultValue=""
+                    >
+                      <option value="">Agregar equipo...</option>
+                      {zona.equipos
+                        .filter((equipo) => !grupo.equipos.some((e) => e.id === equipo.id))
+                        .map((equipo) => (
+                          <option key={equipo.id} value={equipo.id}>
+                            {equipo.nombre}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-center text-gray-500">No hay grupos disponibles.</p>
+        )}
+      </div>
 
         {editMode && (
           <div className="flex justify-end mt-4">
@@ -112,7 +143,7 @@ export function TabGrupos({
         {zona.formato === 'Grupos' && gruposCreados && (
           <button
             onClick={handleEliminarGrupos}
-            className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-[6px] text-sm mt-4"
+            className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-[6px] text-sm mt-2"
           >
             Eliminar Grupos
           </button>

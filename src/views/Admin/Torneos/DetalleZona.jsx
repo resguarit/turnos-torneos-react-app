@@ -482,13 +482,16 @@ export default function DetalleZona() {
               Araña
             </button>
           )}
+          {(zona.formato !== 'Eliminatoria') && (
           <button 
             className={`px-4 py-2 font-medium ${activeTab === 'resultados' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-700'}`}
             onClick={() => setActiveTab('resultados')}
           >
             Resultados
           </button>
+          )}
         </div>
+        
 
         {/* Tab Content */}
         {activeTab === 'equipos' && (
@@ -550,12 +553,6 @@ export default function DetalleZona() {
           {zona.formato === 'Liga' && <TabResultados zonaId={zonaId} />}
           {zona.formato === 'Grupos' && (
             <TabResultadosGrupos zonaId={zonaId} grupos={grupos} />
-          )}
-          {(zona.formato === 'Eliminatoria' || zona.formato === 'Liga + Playoff') && (
-            <TabEliminatoria 
-              equipos={zona.equipos} 
-              etapa={zona.etapaActual} 
-            />
           )}
         </>
         )}

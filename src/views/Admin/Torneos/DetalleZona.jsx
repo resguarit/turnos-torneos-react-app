@@ -141,17 +141,26 @@ export default function DetalleZona() {
       return;
     }
   
+    if (zona.formato === 'Grupos' && (!grupos || grupos.length < 2)) {
+      toast.error('Debe haber al menos 2 grupos creados para sortear las fechas.');
+      return;
+    }
+  
     try {
       setLoading(true);
   
-      // Verificar el valor de numGrupos
-      console.log('Número de grupos:', numGrupos);
+      // Usar la cantidad de grupos creados si existen
+      const numGruposToSend = zona.formato === 'Grupos' ? grupos.length : numGrupos;
+  
+      console.log('Número de grupos enviados:', numGruposToSend);
   
       const formattedFechaInicial = format(fechaInicial, 'yyyy-MM-dd');
       const requestData = {
         fecha_inicial: formattedFechaInicial,
-        ...(zona.formato === 'Grupos' ? { num_grupos: numGrupos } : {}), // Pasar numGrupos si el formato es "Grupos"
+        ...(zona.formato === 'Grupos' ? { num_grupos: numGruposToSend } : {}),
       };
+  
+      console.log('Datos enviados al backend:', requestData);
   
       const response = await api.post(`/zonas/${zonaId}/fechas`, requestData);
   

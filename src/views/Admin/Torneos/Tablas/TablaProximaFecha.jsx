@@ -28,7 +28,7 @@ export const TablaProximaFecha = ({ fecha, partidos, zonaId }) => {
                 <td className="border border-gray-300 px-4 py-2">vs</td>
                 <td className="border border-gray-300 px-4 py-2">{partido.equipo_visitante.nombre}</td>
                 <td className="border border-gray-300 px-4 py-2">{partido.cancha?.nro || 'No Definido'}</td>
-                <td className="border border-gray-300 px-4 py-2">{partido.horario?.hora || 'No Definido'}</td>
+                <td className="border border-gray-300 px-4 py-2">{partido.horario?.hora_inicio && partido.horario?.hora_fin ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : "No Definido"}</td>
               </tr>
             ))}
           </tbody>

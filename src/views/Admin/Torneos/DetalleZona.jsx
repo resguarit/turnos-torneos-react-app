@@ -241,11 +241,11 @@ export default function DetalleZona() {
         }
       }
 
-      // Ahora desasociar el equipo de la zona
-      const response = await api.put(`/equipos/${equipoToDeleteId}`, {
-        nombre: equipoAEliminar.nombre,
-        escudo: equipoAEliminar.escudo || null,
-        zona_id: null
+      // Usar el nuevo endpoint para quitar el equipo de la zona
+      const response = await api.delete(`/zonas/${zonaId}/equipos`, {
+        data: {
+          equipo_ids: [equipoToDeleteId]
+        }
       });
       
       if (response.status === 200) {

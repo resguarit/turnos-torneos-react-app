@@ -123,11 +123,12 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
     try {
       setLoading(true);
       setModoOperacion('creacion');
+      console.log('zonaId:', zonaId); 
       
       // Crear el equipo directamente con el ID de la zona actual
       const response = await api.post('/equipos', { 
         nombre: nuevoEquipo, 
-        zona_id: zonaId // Usar zonaId directamente en lugar de null
+        zona_id: zonaId 
       });
       
       if (response.status === 201) {

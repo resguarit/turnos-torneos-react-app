@@ -449,7 +449,7 @@ export default function DetalleZona() {
       </div>
       <div className="w-full px-40">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl lg:text-2xl font-bold">{zona.nombre} - {zona.año} <span className="text-sm text-gray-500 font-normal">({zona.formato})</span></h1>
+          <h1 className="text-2xl lg:text-2xl font-bold">{zona.torneo.nombre} - {zona.nombre} - {zona.año} <span className="text-sm text-gray-500 font-normal">({zona.formato})</span></h1>
         </div>
         
         {/* Tabs Navigation */}

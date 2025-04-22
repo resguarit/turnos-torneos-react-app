@@ -19,7 +19,6 @@ import {TabResultados} from './Tabs/TabResultados';
 import {TabResultadosGrupos} from './Tabs/TabResultadosGrupos';
 import {TabEliminatoria} from './Tabs/TabResultadosEliminatoria';
 
-
 export default function DetalleZona() {
   const { zonaId } = useParams();
   const [zona, setZona] = useState(null);
@@ -36,16 +35,87 @@ export default function DetalleZona() {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const calendarRef = useRef(null);
   const navigate = useNavigate();
-  const [editMode, setEditMode] = useState(false); // Estado para controlar el modo de edición
+  const [editMode, setEditMode] = useState(false);
   const [modalRondaVisible, setModalRondaVisible] = useState(false);
   const [equiposSeleccionados, setEquiposSeleccionados] = useState([]);
   const [fechaAnteriorId, setFechaAnteriorId] = useState(null);
-  const [activeTab, setActiveTab] = useState('equipos'); // Estado para controlar la pestaña activa
+  const [activeTab, setActiveTab] = useState('equipos');
+  const abortControllerRef = useRef(new AbortController());
+
+  // Limpiar el controlador de aborto cuando el componente se desmonte
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  // Cargar datos iniciales de la zona
+  useEffect(() => {
+    const fetchZona = async () => {
+      try {
+        setLoading(true);
+        
+        const response = await api.get(`/zonas/${zonaId}`, {
+          signal: abortControllerRef.current.signal
+        });
+        
+        if (!response.data) {
+          toast.error('No se encontraron datos de la zona');
+          return;
+        }
+        
+        setZona(response.data);
+        console.log('Datos de la zona:', response.data);
+  
+        if (response.data.formato === 'Grupos') {
+          const gruposResponse = await api.get(`/zonas/${zonaId}/grupos`, {
+            signal: abortControllerRef.current.signal
+          });
+          setGrupos(gruposResponse.data);
+          setGruposCreados(gruposResponse.data.length > 0);
+          console.log('Datos de los grupos:', gruposResponse.data);
+        }
+  
+        if (response.data.fechas_sorteadas) {
+          const fechasResponse = await api.get(`/zonas/${zonaId}/fechas`, {
+            signal: abortControllerRef.current.signal
+          });
+          setFechas(fechasResponse.data);
+          setFechasSorteadas(true);
+        } else {
+          setFechasSorteadas(false);
+        }
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          console.log('Petición cancelada');
+          return;
+        }
+        console.error('Error fetching zone details:', error);
+        toast.error('Error al cargar los datos de la zona');
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchZona();
+  }, [zonaId]);
+
+  // Función para manejar el cambio de pestaña
+  const handleTabChange = (tab) => {
+    // Cancelar peticiones pendientes
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    // Crear nuevo controlador
+    abortControllerRef.current = new AbortController();
+    setActiveTab(tab);
+  };
 
   const handleToggleEditMode = () => {
     setEditMode((prev) => !prev); // Alternar entre modo de edición y vista normal
   };
-
 
   const handleSeleccionarEquipo = (equipoId) => {
     setEquiposSeleccionados((prev) =>
@@ -87,37 +157,6 @@ export default function DetalleZona() {
     navigate(`/alta-equipo/${zonaId}?reemplazar=${equipoId}`);
   };
   
-  useEffect(() => {
-    const fetchZona = async () => {
-      try {
-        setLoading(true);
-        const response = await api.get(`/zonas/${zonaId}`);
-        setZona(response.data);
-        console.log('Datos de la zona:', response.data);
-  
-        if (response.data.formato === 'Grupos') {
-          const gruposResponse = await api.get(`/zonas/${zonaId}/grupos`);
-          setGrupos(gruposResponse.data);
-          setGruposCreados(gruposResponse.data.length > 0);
-          console.log('Datos de los grupos:', gruposResponse.data);
-        }
-  
-        if (response.data.equipos.length > 0 && response.data.fechas_sorteadas) {
-          const fechasResponse = await api.get(`/zonas/${zonaId}/fechas`);
-          setFechas(fechasResponse.data);
-          setFechasSorteadas(true);
-        }
-      } catch (error) {
-        console.error('Error fetching zone details:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    fetchZona();
-  }, [zonaId]);
-  
-
   // Cerrar el calendario al hacer clic fuera de él
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -423,7 +462,6 @@ export default function DetalleZona() {
     }
   };
 
-
   if (!zona) {
     return (
       <div className="min-h-screen flex flex-col font-inter">
@@ -456,20 +494,20 @@ export default function DetalleZona() {
         <div className="flex border-b mb-6">
           <button 
             className={`px-4 py-2 font-medium ${activeTab === 'equipos' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-700'}`}
-            onClick={() => setActiveTab('equipos')}
+            onClick={() => handleTabChange('equipos')}
           >
             Equipos
           </button>
           <button 
             className={`px-4 py-2 font-medium ${activeTab === 'fechas' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-700'}`}
-            onClick={() => setActiveTab('fechas')}
+            onClick={() => handleTabChange('fechas')}
           >
             Fechas
           </button>
           {zona.formato === 'Grupos' && (
             <button 
               className={`px-4 py-2 font-medium ${activeTab === 'grupos' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-700'}`}
-              onClick={() => setActiveTab('grupos')}
+              onClick={() => handleTabChange('grupos')}
             >
               Grupos
             </button>
@@ -477,7 +515,7 @@ export default function DetalleZona() {
           {zona.formato === 'Eliminatoria' && (
             <button 
               className={`px-4 py-2 font-medium ${activeTab === 'arana' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-700'}`}
-              onClick={() => setActiveTab('arana')}
+              onClick={() => handleTabChange('arana')}
             >
               Araña
             </button>
@@ -485,7 +523,7 @@ export default function DetalleZona() {
           {(zona.formato !== 'Eliminatoria') && (
           <button 
             className={`px-4 py-2 font-medium ${activeTab === 'resultados' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-700'}`}
-            onClick={() => setActiveTab('resultados')}
+            onClick={() => handleTabChange('resultados')}
           >
             Resultados
           </button>
@@ -501,6 +539,7 @@ export default function DetalleZona() {
             zonaId={zonaId} 
             handleEliminarEquipo={handleEliminarEquipo}
             handleReemplazarEquipo={handleReemplazarEquipo}
+            abortController={abortControllerRef.current}
           />
         )}
         
@@ -517,13 +556,12 @@ export default function DetalleZona() {
             loading={loading}
             zonaId={zonaId}
             equipos={zona.equipos}
+            fechasSorteadas={fechasSorteadas}
             onFechasDeleted={() => {
               setFechasSorteadas(false);
               setFechas([]);
             }}
-            fechasSorteadas={fechasSorteadas}
-            gruposCreados={gruposCreados}
-            numGrupos={numGrupos}
+            abortController={abortControllerRef.current}
           />
         )}
         
@@ -541,18 +579,22 @@ export default function DetalleZona() {
             handleEliminarEquipoDeGrupo={handleEliminarEquipoDeGrupo}
             handleEliminarGrupos={handleEliminarGrupos}
             handleAgregarEquipoAGrupo={handleAgregarEquipoAGrupo}
+            abortController={abortControllerRef.current}
           />
         )}
         
         {activeTab === 'arana' && zona.formato === 'Eliminatoria' && (
-          <TabArania equipos={zona.equipos} />
+          <TabArania 
+            equipos={zona.equipos} 
+            abortController={abortControllerRef.current}
+          />
         )}
         
         {activeTab === 'resultados' && (
           <>
-          {zona.formato === 'Liga' && <TabResultados zonaId={zonaId} />}
+          {zona.formato === 'Liga' && <TabResultados zonaId={zonaId} abortController={abortControllerRef.current} />}
           {zona.formato === 'Grupos' && (
-            <TabResultadosGrupos zonaId={zonaId} grupos={grupos} />
+            <TabResultadosGrupos zonaId={zonaId} grupos={grupos} abortController={abortControllerRef.current} />
           )}
         </>
         )}

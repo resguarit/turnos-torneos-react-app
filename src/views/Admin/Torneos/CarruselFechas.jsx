@@ -12,8 +12,10 @@ import AsignarHoraYCanchaModal from '../Modals/AsignarHoraYCancha'; // Importa e
 import EditPartidoModal from '../Modals/EditPartidoModal'; // Importar el modal para editar partidos
 import CrearFechaModal from "../Modals/CrearFechaModal";
 import AgregarPartidoModal from "../Modals/AgregarPartidoModal"; // Importar el modal
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
-export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
+export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortController }) {
   const [fechas, setFechas] = useState([]);
   const [currentFechaIndex, setCurrentFechaIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -35,11 +37,14 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
   const [modalAgregarPartidoVisible, setModalAgregarPartidoVisible] = useState(false);
   const [modalEliminarPartido, setModalEliminarPartido] = useState(false); // Estado para mostrar el modal de eliminar partido
   const [selectedPartidoEliminar, setSelectedPartidoEliminar] = useState(null); // Estado para el partido seleccionado para eliminar
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchFechas = async () => {
       try {
-        const response = await api.get(`/zonas/${zonaId}/fechas`);
+        const response = await api.get(`/zonas/${zonaId}/fechas`, {
+          signal: abortController?.signal
+        });
         const fetchedFechas = response.data;
 
         if (!fetchedFechas || fetchedFechas.length === 0) {
@@ -54,16 +59,23 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
         const firstPendingIndex = fetchedFechas.findIndex(fecha => fecha.estado === 'Pendiente');
         setCurrentFechaIndex(firstPendingIndex !== -1 ? firstPendingIndex : 0);
 
-        const canchasResponse = await api.get(`/canchas`);
+        const canchasResponse = await api.get(`/canchas`, {
+          signal: abortController?.signal
+        });
         setCanchas(canchasResponse.data.canchas);
 
         // Obtener horarios
-        const horariosResponse = await api.get(`/horarios`);
+        const horariosResponse = await api.get(`/horarios`, {
+          signal: abortController?.signal
+        });
         setHorarios(horariosResponse.data.horarios);
 
         const primeraFecha = fetchedFechas[0]?.fecha_inicio;
         if (primeraFecha) {
-          const responseHorariosModal = await api.get('/horarios-dia', { params: { fecha: primeraFecha } });
+          const responseHorariosModal = await api.get('/horarios-dia', { 
+            params: { fecha: primeraFecha },
+            signal: abortController?.signal
+          });
           if (responseHorariosModal.status === 200) {
             setHorariosModal(responseHorariosModal.data.horarios);
           }
@@ -71,14 +83,16 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
           console.error('No se pudo obtener la primera fecha');
         }
       } catch (error) {
-        console.error('Error fetching dates:', error);
+        if (error.name !== 'AbortError') {
+          console.error('Error fetching dates:', error);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchFechas();
-  }, [zonaId]);
+  }, [zonaId, abortController]);
 
   const handleEditFecha = async (updatedFecha) => {
     try {
@@ -95,16 +109,18 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
     }
   };
 
-  const handleDeleteFecha = async () => {
+  const handleDeleteFecha = async (fechaId) => {
     try {
       setLoading(true);
-      const response = await api.delete(`/fechas/${selectedFecha.id}`);
-      if (response.status === 200) {
-        setFechas(fechas.filter(fecha => fecha.id !== selectedFecha.id));
-        setModalDeleteVisible(false);
-      }
+      await api.delete(`/fechas/${fechaId}`, {
+        signal: abortController?.signal
+      });
+      toast.success('Fecha eliminada correctamente');
+      onFechasDeleted();
     } catch (error) {
-      console.error('Error deleting date:', error);
+      if (error.name !== 'AbortError') {
+        toast.error('Error al eliminar la fecha');
+      }
     } finally {
       setLoading(false);
     }
@@ -218,8 +234,6 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
     }
   };
 
-
-
   const goToPrevious = () => {
     setCurrentFechaIndex((prev) => (prev > 0 ? prev - 1 : prev));
   }
@@ -242,7 +256,6 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
     ? format(parseISO(currentFecha.fecha_inicio), "dd/MM/yyyy", { locale: es })
     : ""
 
-
   return (
     <div className="mt-10 w-full  mx-auto bg-gray-100 overflow-hidden">
       <div className="flex justify-end mb-2">
@@ -262,25 +275,25 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
-<div className="gap-2 flex items-center ">
-        <h2 className="text-lg font-medium">
-          {currentFecha.nombre} - {formattedDate}
-        </h2>
-        <span
-          className={`text-xs p-1 rounded-xl ${
-            currentFecha.estado === 'Pendiente'
-              ? 'bg-yellow-300 text-yellow-700'
-              : currentFecha.estado === 'En Curso'
-              ? 'bg-blue-300 text-blue-700'
-              : currentFecha.estado === 'Finalizada'
-              ? 'bg-green-300 text-green-700'
-              : currentFecha.estado === 'Suspendida'
-              ? 'bg-gray-300 text-gray-700'
-              : 'bg-red-300 text-red-700'
-          }`}
-        >
-          {`${currentFecha.estado}`}
-        </span>
+        <div className="gap-2 flex items-center">
+          <h2 className="text-lg font-medium">
+            {currentFecha.nombre} - {formattedDate}
+          </h2>
+          <span
+            className={`text-xs p-1 rounded-xl ${
+              currentFecha.estado === 'Pendiente'
+                ? 'bg-yellow-300 text-yellow-700'
+                : currentFecha.estado === 'En Curso'
+                ? 'bg-blue-300 text-blue-700'
+                : currentFecha.estado === 'Finalizada'
+                ? 'bg-green-300 text-green-700'
+                : currentFecha.estado === 'Suspendida'
+                ? 'bg-gray-300 text-gray-700'
+                : 'bg-red-300 text-red-700'
+            }`}
+          >
+            {`${currentFecha.estado}`}
+          </span>
         </div>
         <button
           onClick={goToNext}
@@ -298,7 +311,11 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
             const horario = horarios.find((h) => h.id === partido.horario_id);
 
             return (
-              <div key={partido.id} className="p-3 bg-gray-200 rounded-lg my-2">
+              <div 
+                key={partido.id} 
+                className="p-3 bg-gray-200 rounded-lg my-2 cursor-pointer hover:bg-gray-300 transition-colors"
+                onClick={() => navigate(`/resultado-partido/${partido.id}`)}
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2 flex-1">
                     <div
@@ -335,18 +352,21 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
                   </span>
                 </div>
                 <div className="flex justify-between mt-2">
-                <button
-                    onClick={() => { console.log(partido) ;
+                  <button
+                    onClick={(e) => { 
+                      e.stopPropagation();
                       setSelectedPartidoEliminar(partido.id);
                       setModalEliminarPartido(true);
-                      
                     }}
-                    className="text-black  text-sm  py-1 rounded-[6px] hover:text-red-600"
+                    className="text-black text-sm py-1 rounded-[6px] hover:text-red-600"
                   >
                     <Trash2 size={18} />
                   </button>
                   <button
-                    onClick={() => handleEditPartido(partido)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditPartido(partido);
+                    }}
                     className="bg-blue-500 text-white text-sm px-2 py-1 rounded-[6px] hover:bg-blue-600"
                   >
                     Editar
@@ -486,7 +506,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted }) {
                 Cancelar
               </button>
               <button
-                onClick={handleDeleteFecha}
+                onClick={() => handleDeleteFecha(selectedFecha.id)}
                 className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-[6px]"
               >
                 Eliminar

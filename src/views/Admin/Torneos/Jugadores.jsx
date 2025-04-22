@@ -13,6 +13,7 @@ export default function Jugadores() {
   const [loading, setLoading] = useState(false);
   const [jugadoresNuevos, setJugadoresNuevos] = useState([]);
   const [jugadorEditando, setJugadorEditando] = useState(null);
+  const [equipo, setEquipo] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,6 +22,8 @@ export default function Jugadores() {
         setLoading(true);
         const response = await api.get(`/equipos/${equipoId}/jugadores`);
         setJugadores(response.data);
+        const responseEquipo = await api.get(`/equipos/${equipoId}`);
+        setEquipo(responseEquipo.data);
       } catch (error) {
         console.error('Error fetching players:', error);
       } finally {
@@ -120,7 +123,7 @@ export default function Jugadores() {
            
           </div>
           <div className="bg-white w-full rounded-[8px] shadow-md p-4">
-            <h2 className="text-2xl font-medium mb-4">Lista de Jugadores</h2>
+            <h2 className="text-2xl font-medium mb-4">Lista de Jugadores de <span className='bg-blue-500 bg-opacity-30 rounded-3xl p-1'>{equipo.nombre}</span></h2>
             <table className="min-w-full bg-white">
               <thead>
                 <tr>

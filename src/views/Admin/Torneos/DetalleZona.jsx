@@ -141,17 +141,26 @@ export default function DetalleZona() {
       return;
     }
   
+    if (zona.formato === 'Grupos' && (!grupos || grupos.length < 2)) {
+      toast.error('Debe haber al menos 2 grupos creados para sortear las fechas.');
+      return;
+    }
+  
     try {
       setLoading(true);
   
-      // Verificar el valor de numGrupos
-      console.log('Número de grupos:', numGrupos);
+      // Usar la cantidad de grupos creados si existen
+      const numGruposToSend = zona.formato === 'Grupos' ? grupos.length : numGrupos;
+  
+      console.log('Número de grupos enviados:', numGruposToSend);
   
       const formattedFechaInicial = format(fechaInicial, 'yyyy-MM-dd');
       const requestData = {
         fecha_inicial: formattedFechaInicial,
-        ...(zona.formato === 'Grupos' ? { num_grupos: numGrupos } : {}), // Pasar numGrupos si el formato es "Grupos"
+        ...(zona.formato === 'Grupos' ? { num_grupos: numGruposToSend } : {}),
       };
+  
+      console.log('Datos enviados al backend:', requestData);
   
       const response = await api.post(`/zonas/${zonaId}/fechas`, requestData);
   
@@ -440,7 +449,7 @@ export default function DetalleZona() {
       </div>
       <div className="w-full px-40">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl lg:text-2xl font-bold">{zona.nombre} - {zona.año} <span className="text-sm text-gray-500 font-normal">({zona.formato})</span></h1>
+          <h1 className="text-2xl lg:text-2xl font-bold">{zona.torneo.nombre} - {zona.nombre} - {zona.año} <span className="text-sm text-gray-500 font-normal">({zona.formato})</span></h1>
         </div>
         
         {/* Tabs Navigation */}
@@ -473,13 +482,16 @@ export default function DetalleZona() {
               Araña
             </button>
           )}
+          {(zona.formato !== 'Eliminatoria') && (
           <button 
             className={`px-4 py-2 font-medium ${activeTab === 'resultados' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-700'}`}
             onClick={() => setActiveTab('resultados')}
           >
             Resultados
           </button>
+          )}
         </div>
+        
 
         {/* Tab Content */}
         {activeTab === 'equipos' && (
@@ -541,12 +553,6 @@ export default function DetalleZona() {
           {zona.formato === 'Liga' && <TabResultados zonaId={zonaId} />}
           {zona.formato === 'Grupos' && (
             <TabResultadosGrupos zonaId={zonaId} grupos={grupos} />
-          )}
-          {(zona.formato === 'Eliminatoria' || zona.formato === 'Liga + Playoff') && (
-            <TabEliminatoria 
-              equipos={zona.equipos} 
-              etapa={zona.etapaActual} 
-            />
           )}
         </>
         )}

@@ -121,7 +121,7 @@ export default function VerFixture() {
             </button>
           </div>
 
-          <div className="divide-y divide-gray-200 w-1/2 mt-4">
+          <div className="divide-y divide-gray-200 w-1/2 ">
             {currentFecha.partidos && currentFecha.partidos.length > 0 ? (
               currentFecha.partidos.map((partido, index) => {
                 const horario = horarios[partido.horario_id] || {};
@@ -129,13 +129,18 @@ export default function VerFixture() {
                   <div key={index} className="p-3 bg-gray-200 rounded-lg my-1">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2 flex-1">
-                        <span className="font-medium">{partido.equipos[0].nombre}</span>
-                        <span className="font-bold">({partido.marcador_local ?? '-'})</span>
+                        <span className="font-medium">{partido.equipos[0]?.nombre || 'Equipo Local'}</span>
                       </div>
-                      <span className="mx-2 font-bold">vs</span>
+                      {partido.estado === 'Finalizado' ? (
+                    <span className="mx-2 font-bold">
+                      {partido.marcador_local ?? '-'} - {partido.marcador_visitante ?? '-'}
+                    </span>
+                  ) : (
+                    <span className="mx-2 font-bold">-</span>
+                  )}
+
                       <div className="flex items-center space-x-2 flex-1 justify-end">
-                        <span className="font-bold">({partido.marcador_visitante ?? '-'})</span>
-                        <span className="font-medium">{partido.equipos[1].nombre}</span>
+                        <span className="font-medium">{partido.equipos[1]?.nombre || 'Equipo Visitante'}</span>
                       </div>
                     </div>
                     <div className="flex justify-between mt-2 text-sm text-gray-600">

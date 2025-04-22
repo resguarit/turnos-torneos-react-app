@@ -6,10 +6,10 @@ import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import api from '@/lib/axiosConfig'
 import BtnLoading from "@/components/BtnLoading"
-import EditFechaModal from './EditFechaModal'
-import PostergarFechasModal from './PostergarFechasModal'
-import AsignarHoraYCanchaModal from './AsignarHoraYCancha'; // Importa el modal
-import EditPartidoModal from './EditPartidoModal'; // Importar el modal para editar partidos
+import EditFechaModal from '../Modals/EditFechaModal'
+import PostergarFechasModal from '../Modals/PostergarFechasModal'
+import AsignarHoraYCanchaModal from '../Modals/AsignarHoraYCancha'; // Importa el modal
+import EditPartidoModal from '../Modals/EditPartidoModal'; // Importar el modal para editar partidos
 import CrearFechaModal from "../Modals/CrearFechaModal";
 import AgregarPartidoModal from "../Modals/AgregarPartidoModal"; // Importar el modal
 

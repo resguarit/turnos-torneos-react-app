@@ -128,7 +128,7 @@ export default function EditPartidoModal({ partido, onClose, onSave, equipos }) 
             </option>
             {canchas.map((cancha) => (
               <option key={cancha.id} value={cancha.id}>
-                {`Cancha ${cancha.nro} - ${cancha.tipo_cancha}`}
+                {`Cancha ${cancha.nro} - ${cancha.tipo}`}
               </option>
             ))}
           </select>

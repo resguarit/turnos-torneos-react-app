@@ -20,8 +20,8 @@ export function TabResultadosGrupos({ zonaId, grupos }) {
           estadisticasGrupo[grupo.id] = [];
 
           for (const equipo of grupo.equipos) {
-            // Obtener partidos del equipo
-            const response = await api.get(`/equipos/${equipo.id}/partidos`);
+            // Obtener partidos del equipo en la zona específica
+            const response = await api.get(`/equipos/${equipo.id}/zona/${zonaId}/partidos`);
             const partidos = response.data;
 
             // Inicializar datos del equipo
@@ -110,7 +110,7 @@ export function TabResultadosGrupos({ zonaId, grupos }) {
       {/* Tablas por grupo */}
       <div className="flex flex-col gap-4 mb-6">
         {grupos.map((grupo) => (
-          <div key={grupo.id} className=" p-2 ">
+          <div key={grupo.id} className="p-2">
             <h3 className="text-lg font-bold mb-1">{grupo.nombre}</h3>
             <TablaPuntaje data={estadisticasPorGrupo[grupo.id] || []} />
           </div>

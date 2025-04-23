@@ -18,7 +18,8 @@ export function TabFechas({
   setFechasSorteadas, 
   setFechas, 
   fechasSorteadas,
-  abortController 
+  abortController,
+  onFechasDeleted
 }) {
     
     return(
@@ -77,10 +78,7 @@ export function TabFechas({
                 zonaId={zonaId} 
                 equipos={zona.equipos} 
                 fechas={fechas} 
-                onFechasDeleted={() => {
-                  setFechasSorteadas(false);
-                  setFechas([]);
-                }}
+                onFechasDeleted={onFechasDeleted}
                 abortController={abortController}
               />
         </div>

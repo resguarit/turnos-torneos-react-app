@@ -40,16 +40,17 @@ export default function DetalleZona() {
   const [equiposSeleccionados, setEquiposSeleccionados] = useState([]);
   const [fechaAnteriorId, setFechaAnteriorId] = useState(null);
   const [activeTab, setActiveTab] = useState('equipos');
-  const abortControllerRef = useRef(new AbortController());
+  const abortControllerRef = useRef(null);
 
-  // Limpiar el controlador de aborto cuando el componente se desmonte
+  // Inicializar el abortController cuando cambia zonaId
   useEffect(() => {
+    abortControllerRef.current = new AbortController();
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, []);
+  }, [zonaId]);
 
   // Cargar datos iniciales de la zona
   useEffect(() => {
@@ -58,7 +59,7 @@ export default function DetalleZona() {
         setLoading(true);
         
         const response = await api.get(`/zonas/${zonaId}`, {
-          signal: abortControllerRef.current.signal
+          signal: abortControllerRef.current?.signal
         });
         
         if (!response.data) {
@@ -71,7 +72,7 @@ export default function DetalleZona() {
   
         if (response.data.formato === 'Grupos') {
           const gruposResponse = await api.get(`/zonas/${zonaId}/grupos`, {
-            signal: abortControllerRef.current.signal
+            signal: abortControllerRef.current?.signal
           });
           setGrupos(gruposResponse.data);
           setGruposCreados(gruposResponse.data.length > 0);
@@ -80,7 +81,7 @@ export default function DetalleZona() {
   
         if (response.data.fechas_sorteadas) {
           const fechasResponse = await api.get(`/zonas/${zonaId}/fechas`, {
-            signal: abortControllerRef.current.signal
+            signal: abortControllerRef.current?.signal
           });
           setFechas(fechasResponse.data);
           setFechasSorteadas(true);

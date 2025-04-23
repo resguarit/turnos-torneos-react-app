@@ -89,7 +89,7 @@ export default function EditarEquipo() {
           </button>
         </div>
         <div className="max-w-xl mx-auto">
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-[8px] shadow-md p-6">
             <h1 className="text-2xl font-bold mb-6">Editar Equipo</h1>
             
             <form onSubmit={handleSubmit}>
@@ -102,7 +102,7 @@ export default function EditarEquipo() {
                   id="nombreEquipo"
                   value={nombreEquipo}
                   onChange={(e) => setNombreEquipo(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-[6px] focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Nombre del equipo"
                   required
                 />
@@ -112,7 +112,7 @@ export default function EditarEquipo() {
                 <button
                   type="submit"
                   disabled={saving || !nombreEquipo.trim()}
-                  className={`px-4 py-2 rounded-md ${
+                  className={`px-4 py-2 rounded-[6px] ${
                     saving || !nombreEquipo.trim() 
                       ? 'bg-gray-400 cursor-not-allowed' 
                       : 'bg-blue-500 hover:bg-blue-600 text-white'

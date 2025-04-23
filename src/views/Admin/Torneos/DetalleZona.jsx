@@ -469,7 +469,7 @@ export default function DetalleZona() {
         <Header />
         <main className="flex-1 p-6 bg-gray-100">
           <div className="flex justify-center items-center h-full">
-            <p className="text-center text-gray-500">No se encontraron detalles de la zona.</p>
+            <BtnLoading />
           </div>
         </main>
         <Footer />

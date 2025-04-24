@@ -213,7 +213,10 @@ export default function DetalleZona() {
       }
     } catch (error) {
       console.error('Error al sortear fechas:', error);
-      toast.error(error.response?.data?.message || 'Error al sortear las fechas.');
+  
+      // Mostrar el mensaje de error del backend si está disponible
+      const errorMessage = error.response?.data?.message || 'Error al sortear las fechas.';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -600,6 +603,7 @@ export default function DetalleZona() {
         </>
         )}
       </div>
+      <ToastContainer position="top-right" />
     </main>
     <Footer />
 
@@ -702,7 +706,7 @@ export default function DetalleZona() {
           </div>
         </Modal>
       )}
-      <ToastContainer position="top-right" />
+      
     </div>
   );
 }

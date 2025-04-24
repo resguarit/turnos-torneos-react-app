@@ -188,6 +188,9 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
               {equiposSeleccionados.length > 0 && (
                 <div className="mt-6 bg-gray-50 p-4 rounded-lg">
                   <h2 className="text-lg font-semibold mb-2">Equipos seleccionados:</h2>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Total: {equiposSeleccionados.length} equipo(s) seleccionado(s)
+                  </p>
                   <ul className="space-y-2">
                     {equiposSeleccionados.map(id => {
                       const equipo = equipos.find(e => e.id === id);

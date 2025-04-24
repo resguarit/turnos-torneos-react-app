@@ -51,7 +51,7 @@ export function TabGrupos({
           )}
         </div>
     
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.isArray(grupos) && grupos.length > 0 ? (
           grupos.map((grupo, index) => (
             <div key={grupo.id || index} className="bg-white p-4 rounded-[6px] shadow-md">
@@ -64,16 +64,16 @@ export function TabGrupos({
                   <Edit3 size={16} />
                 </button>
               </div>
-              <div className="space-y-2">
-                {grupo.equipos.map((equipo) => (
-                  <div key={equipo.id} className="flex items-center gap-1">
+              <div className="space-y-2 w-full">
+                {(grupo.equipos || []).map((equipo) => (
+                  <div key={equipo.id} className="flex items-center  gap-1">
                     {editingGroupId === grupo.id ? (
                       <>
                         <input
                           type="text"
                           value={equipo.nombre}
                           disabled
-                          className="flex-1 border border-gray-300 rounded-md p-2"
+                          className="flex-1 w-full border border-gray-300  p-1"
                         />
                         <button
                           onClick={() => handleEliminarEquipoDeGrupo(grupo.id, equipo.id)}

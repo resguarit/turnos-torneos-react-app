@@ -18,6 +18,7 @@ import {TabArania} from './Tabs/TabArania';
 import {TabResultados} from './Tabs/TabResultados';
 import {TabResultadosGrupos} from './Tabs/TabResultadosGrupos';
 import {TabEliminatoria} from './Tabs/TabResultadosEliminatoria';
+import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal';
 
 export default function DetalleZona() {
   const { zonaId } = useParams();
@@ -41,6 +42,7 @@ export default function DetalleZona() {
   const [fechaAnteriorId, setFechaAnteriorId] = useState(null);
   const [activeTab, setActiveTab] = useState('equipos');
   const abortControllerRef = useRef(null);
+  const [modalConfirmVisible, setModalConfirmVisible] = useState(false);
 
   // Inicializar el abortController cuando cambia zonaId
   useEffect(() => {
@@ -304,7 +306,7 @@ export default function DetalleZona() {
         // Actualizar el estado local
         setZona({
           ...zona,
-          equipos: zona.equipos.filter((equipo) => Number(equipo.id) !== equipoToDeleteId),
+          equipos: zona.equipos.filter((equipo) => Number(e.id) !== equipoToDeleteId),
         });
         
         // Actualizar también el estado de grupos para reflejar los cambios
@@ -426,6 +428,29 @@ export default function DetalleZona() {
     }
   };
 
+  const confirmarEliminarGrupos = async () => {
+    try {
+      setLoading(true);
+  
+      // Realizar la solicitud DELETE al endpoint para eliminar los grupos de la zona
+      const response = await api.delete(`/zonas/${zonaId}/eliminar-grupos-zona`);
+  
+      if (response.status === 200) {
+        toast.success('Grupos eliminados correctamente.');
+        setGrupos([]); // Limpiar los grupos en el estado local
+        setGruposCreados(false); // Indicar que los grupos ya no están creados
+      } else {
+        toast.error('Error al eliminar los grupos.');
+      }
+    } catch (error) {
+      console.error('Error eliminando grupos:', error);
+      toast.error(error.response?.data?.message || 'Error al eliminar los grupos.');
+    } finally {
+      setLoading(false);
+      setModalConfirmVisible(false); // Cerrar el modal
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col font-inter">
@@ -440,30 +465,14 @@ export default function DetalleZona() {
     );
   }
 
-  const handleEliminarGrupos = async () => {
-    try {
-      if (!grupos || grupos.length === 0) {
-        toast.error('No hay grupos para eliminar.');
-        return;
-      }
-
-      const confirmacion = window.confirm('¿Estás seguro de que deseas eliminar todos los grupos de esta zona?');
-      if (!confirmacion) return;
-
-      // Realizar la solicitud DELETE al endpoint para eliminar los grupos de la zona
-      const response = await api.delete(`/zonas/${zonaId}/eliminar-grupos-zona`);
-
-      if (response.status === 200) {
-        toast.success('Grupos eliminados correctamente.');
-        setGrupos([]); // Limpiar los grupos en el estado local
-        setGruposCreados(false); // Indicar que los grupos ya no están creados
-      } else {
-        toast.error('Error al eliminar los grupos.');
-      }
-    } catch (error) {
-      console.error('Error eliminando grupos:', error);
-      toast.error(error.response?.data?.message || 'Error al eliminar los grupos.');
+  const handleEliminarGrupos = () => {
+    if (!grupos || grupos.length === 0) {
+      toast.error('No hay grupos para eliminar.');
+      return;
     }
+  
+    // Mostrar el modal de confirmación
+    setModalConfirmVisible(true);
   };
 
   if (!zona) {
@@ -705,6 +714,17 @@ export default function DetalleZona() {
             </div>
           </div>
         </Modal>
+      )}
+      
+      {modalConfirmVisible && (
+        <ConfirmDeleteModal
+          isOpen={modalConfirmVisible}
+          onClose={() => setModalConfirmVisible(false)}
+          onConfirm={confirmarEliminarGrupos}
+          loading={loading}
+          pronombre="este"
+          entidad="grupo"
+        />
       )}
       
     </div>

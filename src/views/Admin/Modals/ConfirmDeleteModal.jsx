@@ -1,13 +1,13 @@
 import React from 'react';
 
-export default function ConfirmDeleteModal({ isOpen, onClose, onConfirm, loading }) {
+export default function ConfirmDeleteModal({ isOpen, onClose, onConfirm, loading, pronombre, entidad }) {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md">
         <h2 className="text-lg font-bold text-gray-800 mb-4">Confirmar Eliminación</h2>
-        <p className="text-gray-600 mb-6">¿Estás seguro de que deseas eliminar esta estadística? Esta acción no se puede deshacer.</p>
+        <p className="text-gray-600 mb-6">¿Estás seguro de que deseas eliminar {pronombre} {entidad}? Esta acción no se puede deshacer.</p>
         <div className="flex justify-end gap-3">
           <button
             onClick={onClose}

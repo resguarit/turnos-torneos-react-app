@@ -1,84 +1,49 @@
 import React from 'react';
 
 export const TablaPuntaje = ({ data, formato }) => {
+  // Asegúrate de que 'data' sea un array antes de mapearlo. Si no, usa un array vacío.
+  const equiposData = Array.isArray(data) ? data : [];
+
   if (formato === 'Grupos') {
-    // Renderizar tablas por grupo
     return (
-      <div>
-        {data.map((grupo, grupoIndex) => (
-          <div key={grupoIndex} className="mb-6">
-            <h3 className="text-lg font-bold mb-2">Grupo {grupo.nombre}</h3>
-            <table className="table-auto w-full">
-              <thead>
-                <tr className="bg-black text-white font-sans">
-                  <th className="border border-gray-300 px-4 py-2">Posición</th>
-                  <th className="border border-gray-300 px-4 py-2">Equipo</th>
-                  <th className="border border-gray-300 px-4 py-2">Puntos</th>
-                  <th className="border border-gray-300 px-4 py-2">PJ</th>
-                  <th className="border border-gray-300 px-4 py-2">PG</th>
-                  <th className="border border-gray-300 px-4 py-2">PP</th>
-                  <th className="border border-gray-300 px-4 py-2">PE</th>
-                  <th className="border border-gray-300 px-4 py-2">GF</th>
-                  <th className="border border-gray-300 px-4 py-2">GC</th>
-                  <th className="border border-gray-300 px-4 py-2">DG</th>
-                </tr>
-              </thead>
-              <tbody>
-                {grupo.equipos.map((equipo, index) => (
-                  <tr key={index} className="text-center bg-white">
-                    <td className="border border-gray-300 px-4 py-2">{index + 1}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.nombre}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.puntos}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.partidos_jugados}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.partidos_ganados}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.partidos_perdidos}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.partidos_empatados}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.goles_a_favor}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.goles_en_contra}</td>
-                    <td className="border border-gray-300 px-4 py-2">{equipo.diferencia_goles}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ))}
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border border-gray-300">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="py-2 px-3 border-b text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Equipo</th>
+              <th className="py-2 px-3 border-b text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Pts</th>
+              <th className="py-2 px-3 border-b text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">PJ</th>
+              <th className="py-2 px-3 border-b text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">PG</th>
+              <th className="py-2 px-3 border-b text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">PE</th>
+              <th className="py-2 px-3 border-b text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">PP</th>
+              <th className="py-2 px-3 border-b text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">GF</th>
+              <th className="py-2 px-3 border-b text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">GC</th>
+              <th className="py-2 px-3 border-b text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">DG</th>
+            </tr>
+          </thead>
+          <tbody className="text-gray-700">
+            {/* Usa equiposData (que siempre es un array) para mapear */}
+            {equiposData.map((equipo, index) => (
+              <tr key={equipo.id || index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <td className="py-2 px-3 border-b text-sm">{equipo.nombre}</td>
+                <td className="py-2 px-3 border-b text-center text-sm font-medium">{equipo.puntos}</td>
+                <td className="py-2 px-3 border-b text-center text-sm">{equipo.partidosJugados}</td>
+                <td className="py-2 px-3 border-b text-center text-sm">{equipo.partidosGanados}</td>
+                <td className="py-2 px-3 border-b text-center text-sm">{equipo.partidosEmpatados}</td>
+                <td className="py-2 px-3 border-b text-center text-sm">{equipo.partidosPerdidos}</td>
+                <td className="py-2 px-3 border-b text-center text-sm">{equipo.golesFavor}</td>
+                <td className="py-2 px-3 border-b text-center text-sm">{equipo.golesContra}</td>
+                <td className="py-2 px-3 border-b text-center text-sm">{equipo.diferenciaGoles}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   }
 
-  // Renderizar tabla única para formato diferente a "Grupos"
-  return (
-    <table className="table-auto w-full">
-      <thead>
-        <tr className="bg-black text-white font-sans">
-          <th className="border border-gray-300 px-4 py-2">Posición</th>
-          <th className="border border-gray-300 px-4 py-2">Equipo</th>
-          <th className="border border-gray-300 px-4 py-2">Puntos</th>
-          <th className="border border-gray-300 px-4 py-2">PJ</th>
-          <th className="border border-gray-300 px-4 py-2">PG</th>
-          <th className="border border-gray-300 px-4 py-2">PP</th>
-          <th className="border border-gray-300 px-4 py-2">PE</th>
-          <th className="border border-gray-300 px-4 py-2">GF</th>
-          <th className="border border-gray-300 px-4 py-2">GC</th>
-          <th className="border border-gray-300 px-4 py-2">DG</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((equipo, index) => (
-          <tr key={index} className="text-center bg-white">
-            <td className="border border-gray-300 px-4 py-2">{index + 1}</td>
-            <td className="border border-gray-300 px-4 py-2">{equipo.nombre}</td>
-            <td className="border border-gray-300 px-4 py-2">{equipo.puntos}</td>
-            <td className="border border-gray-300 px-4 py-2">{equipo.partidos_jugados}</td>
-            <td className="border border-gray-300 px-4 py-2">{equipo.partidos_ganados}</td>
-            <td className="border border-gray-300 px-4 py-2">{equipo.partidos_perdidos}</td>
-            <td className="border border-gray-300 px-4 py-2">{equipo.partidos_empatados}</td>
-            <td className="border border-gray-300 px-4 py-2">{equipo.goles_a_favor}</td>
-            <td className="border border-gray-300 px-4 py-2">{equipo.goles_en_contra}</td>
-            <td className="border border-gray-300 px-4 py-2">{equipo.diferencia_goles}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
+  // Renderizar tabla única para formato diferente a "Grupos" (si es necesario)
+  // ... (puedes agregar lógica similar aquí si usas 'data' para otros formatos)
+
+  return <div>Formato no soportado o datos no disponibles.</div>; // O un mensaje/componente adecuado
 };

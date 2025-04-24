@@ -17,6 +17,7 @@ export default function ArañaEliminacion({ equipos }) {
           new Date(a.fecha_inicio) - new Date(b.fecha_inicio))
         const roundsData = eliminatoriaFechas.map(fecha => ({
           id: fecha.id,
+          nombre: fecha.nombre,
           matches: fecha.partidos.map(p => ({
             id: p.id,
             teams: [p.equipo_local_id, p.equipo_visitante_id],
@@ -83,22 +84,30 @@ export default function ArañaEliminacion({ equipos }) {
     );
   };
 
+  const isFinalRound = () => {
+    if (!rounds.length) return false;
+    const lastRound = rounds[rounds.length - 1];
+    return lastRound.matches.length === 1 && lastRound.matches[0].teams.length === 2;
+  };
+
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md mt-4">
+    <div className="p-4 bg-white rounded-lg shadow-md mt-4">
       <h3 className="text-xl font-bold mb-4">Araña Eliminación</h3>
       <div className="flex overflow-x-auto justify-center gap-8 p-4">
         {rounds.map((round, roundIndex) => (
           <div key={round.id} className="flex flex-col gap-4">
-            <div className="text-center font-semibold ">Ronda {rounds.length - roundIndex}</div>
-            <div className="flex flex-col gap-6">
+            <div className="text-center font-semibold ">{round.nombre || 'No definido'}</div>            
+<div className="flex flex-col gap-6">
               {round.matches.map((match, matchIndex) => (
                 <div key={match.id} className="relative">
                   <div className="flex flex-col gap-2 border p-2 rounded-[6px] min-w-[200px]">
                     {match.teams.map(teamId => (
                       <div 
                         key={teamId} 
-                        className="p-2 bg-gray-200 rounded-[6px] hover:bg-gray-300 cursor-pointer"
-                        onClick={() => handleWinnerSelect(roundIndex, matchIndex, teamId)}
+                        className={`p-2 rounded-[6px] cursor-pointer ${
+                          isFinalRound() ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-200 hover:bg-gray-300'
+                        }`}
+                        onClick={() => !isFinalRound() && handleWinnerSelect(roundIndex, matchIndex, teamId)}
                       >
                         {getTeamName(teamId)}
                         {selectedWinners[`${roundIndex}-${matchIndex}`] === teamId && (
@@ -123,7 +132,7 @@ export default function ArañaEliminacion({ equipos }) {
         <div className="mt-4 flex justify-center">
           <button 
             onClick={handleGenerateNextRound}
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:bg-gray-400"
+            className="bg-blue-500 text-white px-4 py-2 rounded-[6px] hover:bg-blue-600 disabled:bg-gray-400"
             disabled={loading}
           >
             {loading ? 'Generando...' : 'Generar Siguiente Ronda'}

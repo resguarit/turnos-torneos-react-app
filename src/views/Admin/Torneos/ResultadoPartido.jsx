@@ -7,6 +7,7 @@ import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { toast } from 'react-toastify'; // Importar react-toastify
 import ResultadoModal from '../Modals/ResultadoModal';
+import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal';
 
 export default function ResultadoPartido() {
   const { partidoId } = useParams();
@@ -24,6 +25,8 @@ export default function ResultadoPartido() {
   const [jugadoresEnAlta, setJugadoresEnAlta] = useState([]); // Estado para jugadores en alta
   const [loadingApply, setLoadingApply] = useState(false); // Estado para el botón de aplicar cambios
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedJugadorId, setSelectedJugadorId] = useState(null);
   const [resumenPartido, setResumenPartido] = useState({
     local: { goles: 0, amarillas: 0, rojas: 0 },
     visitante: { goles: 0, amarillas: 0, rojas: 0 }
@@ -254,6 +257,7 @@ export default function ResultadoPartido() {
   };
 
   const handleCancelChanges = () => {
+    setChargingMode(false);
     // Restablece los cambios detectados y vuelve al estado original
     setEstadisticas(originalEstadisticas); // Restablece las estadísticas originales
     setChangesDetected(false); // Marca que no hay cambios pendientes
@@ -311,6 +315,36 @@ export default function ResultadoPartido() {
     // Cancelar el alta del jugador
     setJugadoresEnAlta((prev) => prev.filter((jugador) => jugador.id !== jugadorId));
   };
+
+  const handleConfirmDelete = async () => {
+    try {
+      const estadisticaId = estadisticas[selectedJugadorId]?.id;
+  
+      if (!estadisticaId) {
+        toast.error('No se encontró una estadística para eliminar.');
+        return;
+      }
+  
+      // Llamada al backend para eliminar la estadística
+      await api.delete(`/estadisticas/${estadisticaId}`);
+  
+      // Actualizar el estado local eliminando la estadística del jugador
+      setEstadisticas((prev) => {
+        const updatedStats = { ...prev };
+        delete updatedStats[selectedJugadorId];
+        return updatedStats;
+      });
+  
+      toast.success('Estadística eliminada correctamente.');
+    } catch (error) {
+      console.error('Error al eliminar la estadística:', error);
+      toast.error('Error al eliminar la estadística.');
+    } finally {
+      setShowDeleteModal(false); // Cerrar el modal
+      setSelectedJugadorId(null); // Limpiar el jugador seleccionado
+    }
+  };
+  
 
   if (loading) {
     return (
@@ -636,12 +670,30 @@ export default function ResultadoPartido() {
                               </button>
                             </div>
                           ) : (
-                            <button
-                              onClick={() => toggleEditMode(jugador.id)}
-                              className="bg-blue-600 text-white rounded-[8px] px-3 py-1 text-sm hover:bg-blue-700 transition-colors"
-                            >
-                              Editar
-                            </button>
+                            estadisticas[jugador.id] && Object.values(estadisticas[jugador.id]).some((value) => value > 0) && (
+                              <div className="flex justify-center space-x-2">
+                                {/* Botón Editar */}
+                                <button
+                                  onClick={() => toggleEditMode(jugador.id)}
+                                  disabled={chargingMode}
+                                  className="bg-blue-600 text-white rounded-[8px] px-3 py-1 text-sm hover:bg-blue-700 transition-colors"
+                                >
+                                  Editar
+                                </button>
+
+                                {/* Botón Eliminar */}
+                                <button
+                                  onClick={() => {
+                                    setSelectedJugadorId(jugador.id); // Guardar el jugador seleccionado
+                                    setShowDeleteModal(true); // Mostrar el modal
+                                  }}
+                                  disabled={chargingMode}
+                                  className="bg-red-600 text-white rounded-[8px] px-3 py-1 text-sm hover:bg-red-700 transition-colors"
+                                >
+                                  Eliminar
+                                </button>
+                              </div>
+                            )
                           )}
                         </td>
                       </tr>
@@ -744,12 +796,30 @@ export default function ResultadoPartido() {
                               </button>
                             </div>
                           ) : (
-                            <button
-                              onClick={() => toggleEditMode(jugador.id)}
-                              className="bg-blue-600 text-white rounded-[6px] px-3 py-1 text-sm hover:bg-blue-700 transition-colors"
-                            >
-                              Editar
-                            </button>
+                            estadisticas[jugador.id] && Object.values(estadisticas[jugador.id]).some((value) => value > 0) && (
+                              <div className="flex justify-center space-x-2">
+                                {/* Botón Editar */}
+                                <button
+                                  onClick={() => toggleEditMode(jugador.id)}
+                                  disabled={chargingMode}
+                                  className="bg-blue-600 text-white rounded-[8px] px-3 py-1 text-sm hover:bg-blue-700 transition-colors"
+                                >
+                                  Editar
+                                </button>
+
+                                {/* Botón Eliminar */}
+                                <button
+                                  onClick={() => {
+                                    setSelectedJugadorId(jugador.id); // Guardar el jugador seleccionado
+                                    setShowDeleteModal(true); // Mostrar el modal
+                                  }}
+                                  disabled={chargingMode}
+                                  className="bg-red-600 text-white rounded-[8px] px-3 py-1 text-sm hover:bg-red-700 transition-colors"
+                                >
+                                  Eliminar
+                                </button>
+                              </div>
+                            )
                           )}
                         </td>
                       </tr>
@@ -796,6 +866,12 @@ export default function ResultadoPartido() {
           equipoLocalNombre={equipoLocal?.nombre || ''}
           equipoVisitanteNombre={equipoVisitante?.nombre || ''}
           loading={loadingApply}
+        />
+        <ConfirmDeleteModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleConfirmDelete}
+          loading={loading}
         />
       </main>
       <Footer />

@@ -43,16 +43,16 @@ export default function EditarEquipo() {
     
     try {
       setSaving(true);
-      
+
+      const zonaId = equipo.zonas?.[0]?.id;
       const response = await api.put(`/equipos/${equipoId}`, {
         nombre: nombreEquipo,
-        zona_id: equipo.zona_id
       });
       
       if (response.status === 200) {
         toast.success('Equipo actualizado correctamente');
         // Navegar de vuelta a la página de la zona
-        navigate(`/detalle-zona/${equipo.zona_id}`);
+        navigate(`/detalle-zona/${zonaId}`);
       }
     } catch (error) {
       console.error('Error al actualizar el equipo:', error);

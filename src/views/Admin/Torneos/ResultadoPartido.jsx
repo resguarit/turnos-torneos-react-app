@@ -6,6 +6,7 @@ import BackButton from '@/components/BackButton';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { toast } from 'react-toastify'; // Importar react-toastify
+import ResultadoModal from '../Modals/ResultadoModal';
 
 export default function ResultadoPartido() {
   const { partidoId } = useParams();
@@ -22,6 +23,11 @@ export default function ResultadoPartido() {
   const [chargingMode, setChargingMode] = useState(false);
   const [jugadoresEnAlta, setJugadoresEnAlta] = useState([]); // Estado para jugadores en alta
   const [loadingApply, setLoadingApply] = useState(false); // Estado para el botón de aplicar cambios
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [resumenPartido, setResumenPartido] = useState({
+    local: { goles: 0, amarillas: 0, rojas: 0 },
+    visitante: { goles: 0, amarillas: 0, rojas: 0 }
+  });
 
   useEffect(() => {
     const fetchPartido = async () => {
@@ -62,7 +68,8 @@ export default function ResultadoPartido() {
     });
   };
 
-  const handleApplyChanges = async () => {
+  const handleConfirmApply = async () => {
+    setShowConfirmationModal(false);
     try {
       setLoadingApply(true);
       // Filtrar solo los jugadores con cambios
@@ -332,6 +339,32 @@ export default function ResultadoPartido() {
       </div>
     );
   }
+
+  const handleOpenConfirmation = () => {
+    const nuevoResumen = {
+      local: { goles: 0, amarillas: 0, rojas: 0 },
+      visitante: { goles: 0, amarillas: 0, rojas: 0 }
+    };
+  
+    Object.keys(estadisticas).forEach((jugadorId) => {
+      const stats = estadisticas[jugadorId];
+      if (equipoLocal?.jugadores?.some(j => j.id === parseInt(jugadorId))) {
+        nuevoResumen.local.goles += stats.goles || 0;
+        nuevoResumen.local.amarillas += stats.amarillas || 0;
+        nuevoResumen.local.rojas += stats.rojas || 0;
+      } else if (equipoVisitante?.jugadores?.some(j => j.id === parseInt(jugadorId))) {
+        nuevoResumen.visitante.goles += stats.goles || 0;
+        nuevoResumen.visitante.amarillas += stats.amarillas || 0;
+        nuevoResumen.visitante.rojas += stats.rojas || 0;
+      }
+    });
+  
+    setResumenPartido(nuevoResumen);
+    setShowConfirmationModal(true);
+  };
+
+
+  
 
   return (
     <div className="min-h-screen flex flex-col justify-start bg-gray-100 font-inter">
@@ -736,7 +769,7 @@ export default function ResultadoPartido() {
             )}
             {chargingMode && changesDetected && (
               <button
-                onClick={handleApplyChanges}
+                onClick={handleOpenConfirmation}
                 disabled={loadingApply}
                 className={`px-4 py-2.5 text-white font-medium rounded-[8px] shadow-sm transition-colors ${
                   loadingApply ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
@@ -755,6 +788,15 @@ export default function ResultadoPartido() {
             )}
           </div>
         </div>
+        <ResultadoModal
+          isOpen={showConfirmationModal}
+          onClose={() => setShowConfirmationModal(false)}
+          onConfirm={handleConfirmApply}
+          resumen={resumenPartido}
+          equipoLocalNombre={equipoLocal?.nombre || ''}
+          equipoVisitanteNombre={equipoVisitante?.nombre || ''}
+          loading={loadingApply}
+        />
       </main>
       <Footer />
     </div>

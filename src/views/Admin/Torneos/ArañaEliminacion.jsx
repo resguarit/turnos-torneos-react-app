@@ -64,6 +64,7 @@ export default function ArañaEliminacion({ equipos }) {
         };
         setRounds([...rounds, newRound]);
         setSelectedWinners({});
+        /* window.location.reload(); */
       }
     } catch (error) {
       console.error('Error generating next round:', error);

@@ -7,7 +7,7 @@ import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { toast } from 'react-toastify'; // Importar react-toastify
 import ResultadoModal from '../Modals/ResultadoModal';
-import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal';
+import { Info, Trash } from 'lucide-react';
 
 export default function ResultadoPartido() {
   const { partidoId } = useParams();
@@ -18,50 +18,50 @@ export default function ResultadoPartido() {
   const [verEquipo, setVerEquipo] = useState(1);
   const [loading, setLoading] = useState(false);
   const [estadisticas, setEstadisticas] = useState({});
-  const [editMode, setEditMode] = useState(false);
   const [originalEstadisticas, setOriginalEstadisticas] = useState({});
   const [changesDetected, setChangesDetected] = useState(false);
   const [chargingMode, setChargingMode] = useState(false);
   const [jugadoresEnAlta, setJugadoresEnAlta] = useState([]); // Estado para jugadores en alta
   const [loadingApply, setLoadingApply] = useState(false); // Estado para el botón de aplicar cambios
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedJugadorId, setSelectedJugadorId] = useState(null);
   const [resumenPartido, setResumenPartido] = useState({
     local: { goles: 0, amarillas: 0, rojas: 0 },
     visitante: { goles: 0, amarillas: 0, rojas: 0 }
   });
+  const [refreshKey, setRefreshKey] = useState(0); // Estado disparador
+
+  // Mover la definición de fetchPartido fuera del useEffect para poder llamarla desde otros lugares
+  const fetchPartido = async () => {
+    try {
+      setLoading(true);
+
+      const response = await api.get(`/partidos/${partidoId}`);
+      setPartido(response.data);
+
+      const responseEstadisticas = await api.get(`/partidos/${partidoId}/estadisticas`);
+      const estadisticasMap = responseEstadisticas.data.reduce((acc, estadistica) => {
+        acc[estadistica.jugador_id] = { ...estadistica, presente: true };
+        return acc;
+      }, {});
+      setEstadisticas(estadisticasMap);
+      setOriginalEstadisticas(estadisticasMap);
+
+      const equipoLocalId = response.data.equipos[0].id;
+      const equipoVisitanteId = response.data.equipos[1].id;
+      const equipoLocal = await api.get(`/equipos/${equipoLocalId}`);
+      setEquipoLocal(equipoLocal.data);
+      const equipoVisitante = await api.get(`/equipos/${equipoVisitanteId}`);
+      setEquipoVisitante(equipoVisitante.data);
+    } catch (error) {
+      console.error('Error fetching partido:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPartido = async () => {
-      try {
-        setLoading(true);
-
-        const response = await api.get(`/partidos/${partidoId}`);
-        setPartido(response.data);
-
-        const responseEstadisticas = await api.get(`/partidos/${partidoId}/estadisticas`);
-        const estadisticasMap = responseEstadisticas.data.reduce((acc, estadistica) => {
-          acc[estadistica.jugador_id] = estadistica;
-          return acc;
-        }, {});
-        setEstadisticas(estadisticasMap);
-        setOriginalEstadisticas(estadisticasMap);
-
-        const equipoLocalId = response.data.equipos[0].id;
-        const equipoVisitanteId = response.data.equipos[1].id;
-        const equipoLocal = await api.get(`/equipos/${equipoLocalId}`);
-        setEquipoLocal(equipoLocal.data);
-        const equipoVisitante = await api.get(`/equipos/${equipoVisitanteId}`);
-        setEquipoVisitante(equipoVisitante.data);
-      } catch (error) {
-        console.error('Error fetching partido:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchPartido();
-  }, [partidoId]);
+  }, [partidoId, refreshKey]); // Añadir refreshKey a las dependencias
 
   const handleInputChange = (jugadorId, field, value) => {
     setEstadisticas((prev) => {
@@ -75,41 +75,47 @@ export default function ResultadoPartido() {
     setShowConfirmationModal(false);
     try {
       setLoadingApply(true);
-      // Filtrar solo los jugadores con cambios
-      const updatedStats = Object.keys(estadisticas)
+      // Filtrar solo los jugadores presentes y con cambios (o nuevos)
+      const estadisticasParaEnviar = Object.keys(estadisticas)
+        .filter(jugadorId => estadisticas[jugadorId]?.presente)
         .map((jugadorId) => {
           const estadistica = estadisticas[jugadorId];
-          const original = originalEstadisticas[jugadorId] || {};
-
           return {
-            nro_camiseta: estadistica?.nro_camiseta ?? null,
-            goles: estadistica?.goles ?? 0,
-            asistencias: estadistica?.asistencias ?? 0,
-            amarillas: estadistica?.amarillas ?? 0,
-            rojas: estadistica?.rojas ?? 0,
+            // Asegurarse de enviar null si no hay valor, aunque la validación previa debería cubrir nro_camiseta
+            nro_camiseta: estadistica?.nro_camiseta ? Number.parseInt(estadistica.nro_camiseta) : null, 
+            goles: estadistica?.goles ? Number.parseInt(estadistica.goles) : 0,
+            asistencias: estadistica?.asistencias ? Number.parseInt(estadistica.asistencias) : 0,
+            amarillas: estadistica?.amarillas ? Number.parseInt(estadistica.amarillas) : 0,
+            rojas: estadistica?.rojas ? Number.parseInt(estadistica.rojas) : 0,
             partido_id: partidoId,
-            jugador_id: jugadorId,
+            jugador_id: parseInt(jugadorId), // Asegurar que el ID es un número
           };
-        })
-        .filter(
-          (estadistica, index) =>
-            JSON.stringify(estadistica) !== JSON.stringify(Object.values(originalEstadisticas)[index])
-        );
+        });
 
-      if (updatedStats.length > 0) {
-        await Promise.all(updatedStats.map((estadistica) => api.post('/estadisticas', estadistica)));
+      // Si hay estadísticas para enviar (jugadores presentes)
+      if (estadisticasParaEnviar.length > 0) {
+        console.log("Enviando estadísticas:", estadisticasParaEnviar);
+        // Usar la nueva ruta con partidoId
+        await api.post(`/partidos/${partidoId}/estadisticas/multiple`, { estadisticas: estadisticasParaEnviar }); 
+      } else {
+        // Si no hay jugadores presentes, igual necesitamos llamar al endpoint para que borre los existentes
+        console.log("No hay estadísticas de jugadores presentes para enviar. Llamando para posible limpieza.");
+        await api.post(`/partidos/${partidoId}/estadisticas/multiple`, { estadisticas: [] }); 
       }
 
-      // Calcular el marcador y el ganador
+      // Calcular el marcador y el ganador basados SOLO en jugadores presentes
       let marcadorLocal = 0;
       let marcadorVisitante = 0;
 
       Object.keys(estadisticas).forEach((jugadorId) => {
         const jugador = estadisticas[jugadorId];
-        if (equipoLocal.jugadores.some((j) => j.id === parseInt(jugadorId))) {
-          marcadorLocal += jugador.goles || 0;
-        } else if (equipoVisitante.jugadores.some((j) => j.id === parseInt(jugadorId))) {
-          marcadorVisitante += jugador.goles || 0;
+        // Sumar solo si está presente
+        if (jugador?.presente) { 
+          if (equipoLocal.jugadores.some((j) => j.id === parseInt(jugadorId))) {
+            marcadorLocal += jugador.goles || 0;
+          } else if (equipoVisitante.jugadores.some((j) => j.id === parseInt(jugadorId))) {
+            marcadorVisitante += jugador.goles || 0;
+          }
         }
       });
 
@@ -144,6 +150,13 @@ export default function ResultadoPartido() {
       setChangesDetected(false);
 
       toast.success('Cambios aplicados correctamente');
+
+      // Incrementar el disparador para forzar re-ejecución del useEffect
+      setRefreshKey(prevKey => prevKey + 1); 
+      
+      // Ya no llamamos a fetchPartido() directamente aquí
+      // await fetchPartido(); 
+
     } catch (error) {
       console.error('Error aplicando cambios:', error);
       toast.error('Error aplicando cambios');
@@ -152,115 +165,10 @@ export default function ResultadoPartido() {
     }
   };
 
-  const handleEditClick = async (estadisticaId, jugadorId) => {
-    try {
-      const updatedData = estadisticas[jugadorId];
-      if (!updatedData) {
-        console.error('No hay datos para actualizar o crear');
-        return;
-      }
-
-      let response;
-      if (estadisticaId) {
-        // Si existe un ID de estadística, realiza un PUT para actualizar
-        response = await api.put(`/estadisticas/${estadisticaId}`, updatedData);
-        const updatedEstadistica = response.data.estadistica;
-
-        // Actualiza el estado con la estadística actualizada
-        setEstadisticas((prevEstadisticas) => ({
-          ...prevEstadisticas,
-          [updatedEstadistica.jugador_id]: updatedEstadistica,
-        }));
-      } else if (!originalEstadisticas[jugadorId]) {
-        // Si no existe un ID de estadística y no está en las estadísticas originales, realiza un POST
-        response = await api.post('/estadisticas', updatedData);
-        const createdEstadistica = response.data.estadistica;
-
-        // Actualiza el estado con la nueva estadística creada
-        setEstadisticas((prevEstadisticas) => ({
-          ...prevEstadisticas,
-          [createdEstadistica.jugador_id]: createdEstadistica,
-        }));
-      } else {
-        console.warn('La estadística ya existe, no se realizará un POST.');
-      }
-
-      // Calcular el marcador y el ganador
-      let marcadorLocal = 0;
-      let marcadorVisitante = 0;
-
-      Object.keys(estadisticas).forEach((id) => {
-        const jugador = estadisticas[id];
-        if (equipoLocal.jugadores.some((j) => j.id === parseInt(id))) {
-          marcadorLocal += jugador.goles || 0;
-        } else if (equipoVisitante.jugadores.some((j) => j.id === parseInt(id))) {
-          marcadorVisitante += jugador.goles || 0;
-        }
-      });
-
-      const ganadorId =
-        marcadorLocal > marcadorVisitante
-          ? equipoLocal.id
-          : marcadorVisitante > marcadorLocal
-          ? equipoVisitante.id
-          : null;
-
-      // Actualizar el partido con el nuevo marcador y ganador
-      await api.put(`/partidos/${partidoId}`, {
-        marcador_local: marcadorLocal,
-        marcador_visitante: marcadorVisitante,
-        ganador_id: ganadorId,
-      });
-
-      // Salir del modo de edición para el jugador
-      setEditMode((prevEditMode) => ({
-        ...prevEditMode,
-        [jugadorId]: false,
-      }));
-
-      setChangesDetected(false);
-      toast.success('Estadística y marcador actualizados correctamente');
-    } catch (error) {
-      console.error('Error al guardar la estadística:', error);
-      toast.error('Error al guardar la estadística');
-    }
-  };
-
-  const toggleEditMode = (jugadorId) => {
-    setEditMode((prevEditMode) => ({
-      ...prevEditMode,
-      [jugadorId]: !prevEditMode[jugadorId],
-    }));
-
-    if (!estadisticas[jugadorId]) {
-      setEstadisticas((prevEstadisticas) => ({
-        ...prevEstadisticas,
-        [jugadorId]: {
-          nro_camiseta: null,
-          goles: 0,
-          asistencias: 0,
-          amarillas: 0,
-          rojas: 0,
-          partido_id: partidoId,
-          jugador_id: jugadorId,
-        },
-      }));
-    }
-  };
-
-  const handleCancelEdit = (jugadorId) => {
-    setEditMode((prevEditMode) => ({
-      ...prevEditMode,
-      [jugadorId]: false,
-    }));
-    setChangesDetected(false);
-  };
-
   const handleCancelChanges = () => {
     setChargingMode(false);
-    // Restablece los cambios detectados y vuelve al estado original
-    setEstadisticas(originalEstadisticas); // Restablece las estadísticas originales
-    setChangesDetected(false); // Marca que no hay cambios pendientes
+    setEstadisticas(originalEstadisticas);
+    setChangesDetected(false);
   };
 
   const handleAddJugador = () => {
@@ -316,35 +224,52 @@ export default function ResultadoPartido() {
     setJugadoresEnAlta((prev) => prev.filter((jugador) => jugador.id !== jugadorId));
   };
 
-  const handleConfirmDelete = async () => {
-    try {
-      const estadisticaId = estadisticas[selectedJugadorId]?.id;
-  
-      if (!estadisticaId) {
-        toast.error('No se encontró una estadística para eliminar.');
-        return;
-      }
-  
-      // Llamada al backend para eliminar la estadística
-      await api.delete(`/estadisticas/${estadisticaId}`);
-  
-      // Actualizar el estado local eliminando la estadística del jugador
-      setEstadisticas((prev) => {
-        const updatedStats = { ...prev };
-        delete updatedStats[selectedJugadorId];
-        return updatedStats;
-      });
-  
-      toast.success('Estadística eliminada correctamente.');
-    } catch (error) {
-      console.error('Error al eliminar la estadística:', error);
-      toast.error('Error al eliminar la estadística.');
-    } finally {
-      setShowDeleteModal(false); // Cerrar el modal
-      setSelectedJugadorId(null); // Limpiar el jugador seleccionado
+  const handleOpenConfirmation = () => {
+    // Validación: Verificar que todos los jugadores presentes tengan número de camiseta
+    const jugadoresPresentes = Object.keys(estadisticas).filter(
+      (jugadorId) => estadisticas[jugadorId]?.presente
+    );
+
+    const sinCamiseta = jugadoresPresentes.find((jugadorId) => {
+      const nroCamiseta = estadisticas[jugadorId]?.nro_camiseta;
+      return !nroCamiseta || Number.parseInt(nroCamiseta) <= 0;
+    });
+
+    if (sinCamiseta) {
+      const jugadorInfo = 
+        equipoLocal.jugadores.find(j => j.id === parseInt(sinCamiseta)) || 
+        equipoVisitante.jugadores.find(j => j.id === parseInt(sinCamiseta));
+      toast.error(
+        `El jugador ${jugadorInfo?.nombre || ''} ${jugadorInfo?.apellido || ''} (DNI: ${jugadorInfo?.dni || 'N/A'}) está marcado como presente pero no tiene un número de camiseta válido asignado.`, 
+        { autoClose: 5000 }
+      );
+      return; // Detener si hay un jugador sin camiseta válida
     }
-  };
+
+    const nuevoResumen = {
+      local: { goles: 0, amarillas: 0, rojas: 0 },
+      visitante: { goles: 0, amarillas: 0, rojas: 0 }
+    };
   
+    Object.keys(estadisticas).forEach((jugadorId) => {
+      const stats = estadisticas[jugadorId];
+      // Solo sumar si el jugador está presente
+      if (stats?.presente) { 
+        if (equipoLocal?.jugadores?.some(j => j.id === parseInt(jugadorId))) {
+          nuevoResumen.local.goles += stats.goles || 0;
+          nuevoResumen.local.amarillas += stats.amarillas || 0;
+          nuevoResumen.local.rojas += stats.rojas || 0;
+        } else if (equipoVisitante?.jugadores?.some(j => j.id === parseInt(jugadorId))) {
+          nuevoResumen.visitante.goles += stats.goles || 0;
+          nuevoResumen.visitante.amarillas += stats.amarillas || 0;
+          nuevoResumen.visitante.rojas += stats.rojas || 0;
+        }
+      }
+    });
+  
+    setResumenPartido(nuevoResumen);
+    setShowConfirmationModal(true);
+  };
 
   if (loading) {
     return (
@@ -373,32 +298,6 @@ export default function ResultadoPartido() {
       </div>
     );
   }
-
-  const handleOpenConfirmation = () => {
-    const nuevoResumen = {
-      local: { goles: 0, amarillas: 0, rojas: 0 },
-      visitante: { goles: 0, amarillas: 0, rojas: 0 }
-    };
-  
-    Object.keys(estadisticas).forEach((jugadorId) => {
-      const stats = estadisticas[jugadorId];
-      if (equipoLocal?.jugadores?.some(j => j.id === parseInt(jugadorId))) {
-        nuevoResumen.local.goles += stats.goles || 0;
-        nuevoResumen.local.amarillas += stats.amarillas || 0;
-        nuevoResumen.local.rojas += stats.rojas || 0;
-      } else if (equipoVisitante?.jugadores?.some(j => j.id === parseInt(jugadorId))) {
-        nuevoResumen.visitante.goles += stats.goles || 0;
-        nuevoResumen.visitante.amarillas += stats.amarillas || 0;
-        nuevoResumen.visitante.rojas += stats.rojas || 0;
-      }
-    });
-  
-    setResumenPartido(nuevoResumen);
-    setShowConfirmationModal(true);
-  };
-
-
-  
 
   return (
     <div className="min-h-screen flex flex-col justify-start bg-gray-100 font-inter">
@@ -580,121 +479,106 @@ export default function ResultadoPartido() {
                         </td>
                         <td className="p-2 text-center">{jugador.fecha_nacimiento}</td>
                         <td className="p-2 text-center">
-                          {editMode[jugador.id] || chargingMode ? (
+                          {chargingMode ? (
                             <input
                               type="number"
-                              value={estadisticas[jugador.id]?.nro_camiseta || null}
+                              value={estadisticas[jugador.id]?.nro_camiseta || ''}
                               onChange={(e) =>
-                                handleInputChange(jugador.id, "nro_camiseta", Number.parseInt(e.target.value))
+                                handleInputChange(jugador.id, "nro_camiseta", e.target.value ? Number.parseInt(e.target.value) : null)
                               }
                               className="w-full text-center border border-gray-300 rounded p-1"
+                              min="1"
                             />
                           ) : (
                             estadisticas[jugador.id]?.nro_camiseta || "-"
                           )}
                         </td>
                         <td className="p-2 text-center">
-                          {editMode[jugador.id] || chargingMode ? (
+                          {chargingMode ? (
                             <input
                               type="number"
-                              value={estadisticas[jugador.id]?.goles || 0}
-                              onChange={(e) => handleInputChange(jugador.id, "goles", Number.parseInt(e.target.value))}
+                              value={estadisticas[jugador.id]?.goles ?? 0}
+                              onChange={(e) => handleInputChange(jugador.id, "goles", Number.parseInt(e.target.value) || 0)}
                               className="w-full text-center border border-gray-300 rounded p-1"
+                              min="0"
                             />
                           ) : (
-                            estadisticas[jugador.id]?.goles || 0
+                            estadisticas[jugador.id]?.goles ?? 0
                           )}
                         </td>
                         <td className="p-2 text-center">
-                          {editMode[jugador.id] || chargingMode ? (
+                          {chargingMode ? (
                             <input
                               type="number"
-                              value={estadisticas[jugador.id]?.asistencias || 0}
+                              value={estadisticas[jugador.id]?.asistencias ?? 0}
                               onChange={(e) =>
-                                handleInputChange(jugador.id, "asistencias", Number.parseInt(e.target.value))
+                                handleInputChange(jugador.id, "asistencias", Number.parseInt(e.target.value) || 0)
                               }
                               className="w-full text-center border border-gray-300 rounded p-1"
+                              min="0"
                             />
                           ) : (
-                            estadisticas[jugador.id]?.asistencias || 0
+                            estadisticas[jugador.id]?.asistencias ?? 0
                           )}
                         </td>
                         <td className="p-2 text-center">
-                          {editMode[jugador.id] || chargingMode ? (
+                          {chargingMode ? (
                             <input
                               type="number"
-                              value={estadisticas[jugador.id]?.amarillas || 0}
+                              value={estadisticas[jugador.id]?.amarillas ?? 0}
                               onChange={(e) =>
-                                handleInputChange(jugador.id, "amarillas", Number.parseInt(e.target.value))
+                                handleInputChange(jugador.id, "amarillas", Number.parseInt(e.target.value) || 0)
                               }
                               className="w-full text-center border border-gray-300 rounded p-1"
+                              min="0"
                             />
                           ) : (
-                            estadisticas[jugador.id]?.amarillas || 0
+                            estadisticas[jugador.id]?.amarillas ?? 0
                           )}
                         </td>
                         <td className="p-2 text-center">
-                          {editMode[jugador.id] || chargingMode ? (
+                          {chargingMode ? (
                             <input
                               type="number"
-                              value={estadisticas[jugador.id]?.rojas || 0}
-                              onChange={(e) => handleInputChange(jugador.id, "rojas", Number.parseInt(e.target.value))}
+                              value={estadisticas[jugador.id]?.rojas ?? 0}
+                              onChange={(e) => handleInputChange(jugador.id, "rojas", Number.parseInt(e.target.value) || 0)}
                               className="w-full text-center border border-gray-300 rounded p-1"
+                              min="0"
                             />
                           ) : (
-                            estadisticas[jugador.id]?.rojas || 0
+                            estadisticas[jugador.id]?.rojas ?? 0
                           )}
                         </td>
                         <td className="p-2 text-center">
                           <input
                             type="checkbox"
-                            checked={estadisticas[jugador.id]?.presente || false} // Marcado si tiene estadística asociada
-                            onChange={(e) => handleInputChange(jugador.id, "presente", e.target.checked)}
-                            className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                            checked={!!estadisticas[jugador.id]?.presente}
+                            disabled={!chargingMode}
+                            onChange={(e) => {
+                              const isPresente = e.target.checked;
+                              if (isPresente && !estadisticas[jugador.id]) {
+                                setEstadisticas((prev) => ({
+                                  ...prev,
+                                  [jugador.id]: {
+                                    nro_camiseta: null,
+                                    goles: 0,
+                                    asistencias: 0,
+                                    amarillas: 0,
+                                    rojas: 0,
+                                    partido_id: partidoId,
+                                    jugador_id: jugador.id,
+                                    presente: true,
+                                  },
+                                }));
+                              } else {
+                                handleInputChange(jugador.id, "presente", isPresente);
+                              }
+                            }}
+                            className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50"
                           />
                         </td>
                         <td className="p-2 text-center">
-                          {editMode[jugador.id] ? (
-                            <div className="flex">
-                              <button
-                                onClick={() => handleEditClick(estadisticas[jugador.id].id, jugador.id)}
-                                className="bg-green-600 text-white rounded-[6px] px-2 py-1 text-sm hover:bg-green-700 transition-colors"
-                              >
-                                Guardar
-                              </button>
-                              <button
-                                onClick={() => handleCancelEdit(jugador.id)}
-                                className="bg-red-600 text-white rounded-[6px] px-2 py-1 ml-2 text-sm hover:bg-red-700 transition-colors"
-                              >
-                                Cancelar
-                              </button>
-                            </div>
-                          ) : (
-                            estadisticas[jugador.id] && Object.values(estadisticas[jugador.id]).some((value) => value > 0) && (
-                              <div className="flex justify-center space-x-2">
-                                {/* Botón Editar */}
-                                <button
-                                  onClick={() => toggleEditMode(jugador.id)}
-                                  disabled={chargingMode}
-                                  className="bg-blue-600 text-white rounded-[8px] px-3 py-1 text-sm hover:bg-blue-700 transition-colors"
-                                >
-                                  Editar
-                                </button>
-
-                                {/* Botón Eliminar */}
-                                <button
-                                  onClick={() => {
-                                    setSelectedJugadorId(jugador.id); // Guardar el jugador seleccionado
-                                    setShowDeleteModal(true); // Mostrar el modal
-                                  }}
-                                  disabled={chargingMode}
-                                  className="bg-red-600 text-white rounded-[8px] px-3 py-1 text-sm hover:bg-red-700 transition-colors"
-                                >
-                                  Eliminar
-                                </button>
-                              </div>
-                            )
-                          )}
+                          {/* Ya no hay botones de acción aquí */}
                         </td>
                       </tr>
                     ))
@@ -706,156 +590,164 @@ export default function ResultadoPartido() {
                         </td>
                         <td className="p-2 text-center">{jugador.fecha_nacimiento}</td>
                         <td className="p-2 text-center">
-                          {editMode[jugador.id] || chargingMode ? (
+                          {chargingMode ? (
                             <input
                               type="number"
-                              value={estadisticas[jugador.id]?.nro_camiseta || null}
+                              value={estadisticas[jugador.id]?.nro_camiseta || ''}
                               onChange={(e) =>
-                                handleInputChange(jugador.id, "nro_camiseta", Number.parseInt(e.target.value))
+                                handleInputChange(jugador.id, "nro_camiseta", e.target.value ? Number.parseInt(e.target.value) : null)
                               }
                               className="w-full text-center border border-gray-300 rounded p-1"
+                              min="1"
                             />
                           ) : (
                             estadisticas[jugador.id]?.nro_camiseta || "-"
                           )}
                         </td>
                         <td className="p-2 text-center">
-                          {editMode[jugador.id] || chargingMode ? (
+                          {chargingMode ? (
                             <input
                               type="number"
-                              value={estadisticas[jugador.id]?.goles || 0}
-                              onChange={(e) => handleInputChange(jugador.id, "goles", Number.parseInt(e.target.value))}
+                              value={estadisticas[jugador.id]?.goles ?? 0}
+                              onChange={(e) => handleInputChange(jugador.id, "goles", Number.parseInt(e.target.value) || 0)}
                               className="w-full text-center border border-gray-300 rounded p-1"
+                              min="0"
                             />
                           ) : (
-                            estadisticas[jugador.id]?.goles || 0
+                            estadisticas[jugador.id]?.goles ?? 0
                           )}
                         </td>
                         <td className="p-2 text-center">
-                          {editMode[jugador.id] || chargingMode ? (
+                          {chargingMode ? (
                             <input
                               type="number"
-                              value={estadisticas[jugador.id]?.asistencias || 0}
+                              value={estadisticas[jugador.id]?.asistencias ?? 0}
                               onChange={(e) =>
-                                handleInputChange(jugador.id, "asistencias", Number.parseInt(e.target.value))
+                                handleInputChange(jugador.id, "asistencias", Number.parseInt(e.target.value) || 0)
                               }
                               className="w-full text-center border border-gray-300 rounded p-1"
+                              min="0"
                             />
                           ) : (
-                            estadisticas[jugador.id]?.asistencias || 0
+                            estadisticas[jugador.id]?.asistencias ?? 0
                           )}
                         </td>
                         <td className="p-2 text-center">
-                          {editMode[jugador.id] || chargingMode ? (
+                          {chargingMode ? (
                             <input
                               type="number"
-                              value={estadisticas[jugador.id]?.amarillas || 0}
+                              value={estadisticas[jugador.id]?.amarillas ?? 0}
                               onChange={(e) =>
-                                handleInputChange(jugador.id, "amarillas", Number.parseInt(e.target.value))
+                                handleInputChange(jugador.id, "amarillas", Number.parseInt(e.target.value) || 0)
                               }
                               className="w-full text-center border border-gray-300 rounded p-1"
+                              min="0"
                             />
                           ) : (
-                            estadisticas[jugador.id]?.amarillas || 0
+                            estadisticas[jugador.id]?.amarillas ?? 0
                           )}
                         </td>
                         <td className="p-2 text-center">
-                          {editMode[jugador.id] || chargingMode ? (
+                          {chargingMode ? (
                             <input
                               type="number"
-                              value={estadisticas[jugador.id]?.rojas || 0}
-                              onChange={(e) => handleInputChange(jugador.id, "rojas", Number.parseInt(e.target.value))}
+                              value={estadisticas[jugador.id]?.rojas ?? 0}
+                              onChange={(e) => handleInputChange(jugador.id, "rojas", Number.parseInt(e.target.value) || 0)}
                               className="w-full text-center border border-gray-300 rounded p-1"
+                              min="0"
                             />
                           ) : (
-                            estadisticas[jugador.id]?.rojas || 0
+                            estadisticas[jugador.id]?.rojas ?? 0
                           )}
                         </td>
                         <td className="p-2 text-center">
                           <input
                             type="checkbox"
-                            checked={estadisticas[jugador.id]?.presente || false} // Marcado si tiene estadística asociada
-                            onChange={(e) => handleInputChange(jugador.id, "presente", e.target.checked)}
-                            className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                            checked={!!estadisticas[jugador.id]?.presente}
+                            disabled={!chargingMode}
+                            onChange={(e) => {
+                              const isPresente = e.target.checked;
+                              if (isPresente && !estadisticas[jugador.id]) {
+                                setEstadisticas((prev) => ({
+                                  ...prev,
+                                  [jugador.id]: {
+                                    nro_camiseta: null,
+                                    goles: 0,
+                                    asistencias: 0,
+                                    amarillas: 0,
+                                    rojas: 0,
+                                    partido_id: partidoId,
+                                    jugador_id: jugador.id,
+                                    presente: true,
+                                  },
+                                }));
+                              } else {
+                                handleInputChange(jugador.id, "presente", isPresente);
+                              }
+                            }}
+                            className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50"
                           />
                         </td>
-                        <td className="p-2 text-center w-fit">
-                          {editMode[jugador.id] ? (
-                            <div className="flex">
-                              <button
-                                onClick={() => handleEditClick(estadisticas[jugador.id].id, jugador.id)}
-                                className="bg-green-600 text-white rounded-[6px] px-2 py-1 text-sm hover:bg-green-700 transition-colors"
-                              >
-                                Guardar
-                              </button>
-                              <button
-                                onClick={() => handleCancelEdit(jugador.id)}
-                                className="bg-red-600 text-white rounded-[6px] px-2 py-1 ml-2 text-sm hover:bg-red-700 transition-colors"
-                              >
-                                Cancelar
-                              </button>
-                            </div>
-                          ) : (
-                            estadisticas[jugador.id] && Object.values(estadisticas[jugador.id]).some((value) => value > 0) && (
-                              <div className="flex justify-center space-x-2">
-                                {/* Botón Editar */}
-                                <button
-                                  onClick={() => toggleEditMode(jugador.id)}
-                                  disabled={chargingMode}
-                                  className="bg-blue-600 text-white rounded-[8px] px-3 py-1 text-sm hover:bg-blue-700 transition-colors"
-                                >
-                                  Editar
-                                </button>
-
-                                {/* Botón Eliminar */}
-                                <button
-                                  onClick={() => {
-                                    setSelectedJugadorId(jugador.id); // Guardar el jugador seleccionado
-                                    setShowDeleteModal(true); // Mostrar el modal
-                                  }}
-                                  disabled={chargingMode}
-                                  className="bg-red-600 text-white rounded-[8px] px-3 py-1 text-sm hover:bg-red-700 transition-colors"
-                                >
-                                  Eliminar
-                                </button>
-                              </div>
-                            )
-                          )}
+                        <td className="p-2 text-center">
+                          {/* Ya no hay botones de acción aquí */}
                         </td>
                       </tr>
                     ))}
               </tbody>
             </table>
           </div>
-          <div className="flex justify-end mt-6 gap-3">
-            {!chargingMode && Object.keys(estadisticas).length === 0 && (
-              <button
-                onClick={() => setChargingMode(true)}
-                className="px-4 py-2.5 bg-green-600 text-white font-medium rounded-[8px] shadow-sm hover:bg-green-700 transition-colors"
-                disabled={jugadoresEnAlta.length > 0}
-              >
-                Cargar Resultados
-              </button>
-            )}
-            {chargingMode && changesDetected && (
-              <button
-                onClick={handleOpenConfirmation}
-                disabled={loadingApply}
-                className={`px-4 py-2.5 text-white font-medium rounded-[8px] shadow-sm transition-colors ${
-                  loadingApply ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                }`}
-              >
-                {loadingApply ? "Aplicando Cambios..." : "Aplicar Cambios"}
-              </button>
-            )}
-            {chargingMode && (
-              <button
-                onClick={handleCancelChanges}
-                className="px-4 py-2.5 bg-red-600 text-white font-medium rounded-[8px] shadow-sm hover:bg-red-700 transition-colors"
-              >
-                Cancelar
-              </button>
-            )}
+          <div className="flex justify-between items-center mt-6 gap-3">
+            <div className='flex flex-col justify-center gap-2'>
+            <div className="flex items-center justify-start px-4">
+              <Info className="w-4 h-4 mr-2" />
+              <p className="text-gray-500 text-sm">
+                Solo los jugadores <span className="font-bold">marcados como presente</span> seran tenidos en cuenta para el marcador final
+              </p>
+            </div>
+            <div className="flex items-center justify-start px-4">
+              <Trash className="w-4 h-4 mr-2" />
+              <p className="text-gray-500 text-sm">
+                Para eliminar la estadistica de un jugador, <span className="font-bold">desmarque el checkbox de presente</span>
+              </p>
+            </div>
+            </div>
+            <div className="flex gap-3">
+              {!chargingMode && Object.keys(originalEstadisticas).length === 0 && (
+                <button
+                  onClick={() => setChargingMode(true)}
+                  className="px-4 py-2.5 bg-green-600 text-white font-medium rounded-[8px] shadow-sm hover:bg-green-700 transition-colors"
+                  disabled={jugadoresEnAlta.length > 0}
+                >
+                  Cargar Resultados
+                </button>
+              )}
+              {!chargingMode && Object.keys(originalEstadisticas).length > 0 && (
+                <button
+                  onClick={() => setChargingMode(true)} 
+                  className="px-4 py-2.5 bg-yellow-500 text-white font-medium rounded-[8px] shadow-sm hover:bg-yellow-600 transition-colors"
+                  disabled={jugadoresEnAlta.length > 0}
+                >
+                  Editar Resultados
+                </button>
+              )}
+              {chargingMode && changesDetected && (
+                <button
+                  onClick={handleOpenConfirmation}
+                  disabled={loadingApply}
+                  className={`px-4 py-2.5 text-white font-medium rounded-[8px] shadow-sm transition-colors ${loadingApply ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
+                >
+                  {loadingApply ? "Aplicando Cambios..." : "Aplicar Cambios"}
+                </button>
+              )}
+              {chargingMode && (
+                <button
+                  onClick={handleCancelChanges}
+                  className="px-4 py-2.5 bg-red-600 text-white font-medium rounded-[8px] shadow-sm hover:bg-red-700 transition-colors"
+                >
+                  Cancelar
+                </button>
+              )}
+            </div>
           </div>
         </div>
         <ResultadoModal
@@ -866,12 +758,6 @@ export default function ResultadoPartido() {
           equipoLocalNombre={equipoLocal?.nombre || ''}
           equipoVisitanteNombre={equipoVisitante?.nombre || ''}
           loading={loadingApply}
-        />
-        <ConfirmDeleteModal
-          isOpen={showDeleteModal}
-          onClose={() => setShowDeleteModal(false)}
-          onConfirm={handleConfirmDelete}
-          loading={loading}
         />
       </main>
       <Footer />

@@ -129,12 +129,10 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
   const handleDeleteAllFechas = async () => {
     try {
       setLoadingDeleteAll(true);
-      for (const fecha of fechas) {
-        await api.delete(`/fechas/${fecha.id}`);
-      }
+      const fechaIds = fechas.map(fecha => fecha.id);
+      await api.delete('/fechas', { data: { fecha_ids: fechaIds } });
       setFechas([]);
-
-      // Llamar a la función callback para notificar al componente padre
+      
       if (onFechasDeleted && typeof onFechasDeleted === 'function') {
         onFechasDeleted();
       }
@@ -142,7 +140,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
       console.error('Error deleting all dates:', error);
     } finally {
       setLoadingDeleteAll(false);
-      setShowDeleteAllModal(false); // Cerrar el modal después de la eliminación
+      setShowDeleteAllModal(false);
     }
   };
 
@@ -247,7 +245,30 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
   }
 
   if (!fechas || fechas.length === 0) {
-    return <div className="text-center p-4">No hay fechas disponibles</div>
+    return (
+      <div className="flex flex-col items-center justify-center h-full">
+        <div className="text-center p-4">
+          No hay fechas disponibles
+          <div className="flex items-center justify-center pt-4">
+            <button
+              onClick={() => setModalCrearFechaVisible(true)}
+              className="bg-green-500 text-white text-xl px-8 py-4 rounded-[6px] hover:bg-green-600"
+            >
+              + Agregar Fecha
+            </button>
+          </div>
+        
+        {modalCrearFechaVisible && (
+          <CrearFechaModal
+            zonaId={zonaId}
+            equipos={equipos}
+            onClose={() => setModalCrearFechaVisible(false)}
+            onFechaCreada={handleFechaCreada}
+          />
+        )}
+      </div>
+      </div>
+    )
   }
 
   const currentFecha = fechas[currentFechaIndex]

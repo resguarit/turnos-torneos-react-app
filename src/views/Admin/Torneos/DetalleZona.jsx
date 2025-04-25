@@ -428,6 +428,37 @@ export default function DetalleZona() {
     }
   };
 
+  // Función para recargar los datos de la zona
+  const recargarDatosZona = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/zonas/${zonaId}`, {
+        signal: abortControllerRef.current?.signal
+      });
+      
+      if (response.data) {
+        setZona(response.data);
+        setFechasSorteadas(response.data.fechas_sorteadas);
+        
+        if (response.data.fechas_sorteadas) {
+          const fechasResponse = await api.get(`/zonas/${zonaId}/fechas`, {
+            signal: abortControllerRef.current?.signal
+          });
+          setFechas(fechasResponse.data);
+        } else {
+          setFechas([]);
+        }
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error('Error al recargar datos:', error);
+        toast.error('Error al recargar los datos');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const confirmarEliminarGrupos = async () => {
     try {
       setLoading(true);
@@ -570,10 +601,7 @@ export default function DetalleZona() {
             zonaId={zonaId}
             equipos={zona.equipos}
             fechasSorteadas={fechasSorteadas}
-            onFechasDeleted={() => {
-              setFechasSorteadas(false);
-              setFechas([]);
-            }}
+            onFechasDeleted={recargarDatosZona}
             abortController={abortControllerRef.current}
           />
         )}

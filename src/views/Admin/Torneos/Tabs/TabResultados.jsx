@@ -57,17 +57,15 @@ export function TabResultados({ zonaId, abortController }) {
         });
         // Ensure response.data is an array before finding
         const fechas = Array.isArray(fechasResponse.data) ? fechasResponse.data : [];
+        // Find the next pending fecha
         const fechaProxima = fechas.find((fecha) => fecha.estado === 'Pendiente');
         setProximaFecha(fechaProxima);
 
-        if (fechaProxima) {
-          const partidosProximaResponse = await api.get(`/fechas/${fechaProxima.id}/partidos`, {
-            signal: abortController?.signal
-          });
-          // Ensure response.data is an array
-          setPartidosProximaFecha(Array.isArray(partidosProximaResponse.data) ? partidosProximaResponse.data : []);
+        // Use partidos directly from the fechaProxima object if it exists
+        if (fechaProxima && Array.isArray(fechaProxima.partidos)) {
+          setPartidosProximaFecha(fechaProxima.partidos);
         } else {
-          setPartidosProximaFecha([]); // Clear if no next matchday
+          setPartidosProximaFecha([]); // Clear if no next matchday or no partidos array
         }
 
       } catch (error) {
@@ -127,7 +125,6 @@ export function TabResultados({ zonaId, abortController }) {
       {/* Próxima Fecha */}
       {proximaFecha ? (
         <div className="w-full">
-          <h2 className="text-xl font-semibold mb-3 text-gray-800">Próxima Fecha: {proximaFecha.nombre}</h2>
           <TablaProximaFecha
             fecha={proximaFecha}
             partidos={partidosProximaFecha}

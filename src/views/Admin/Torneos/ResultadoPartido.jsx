@@ -305,7 +305,7 @@ export default function ResultadoPartido() {
       <main className="max-w-7xl lg:max-w-full p-6 grow">
         <BackButton />
         <h1 className=" font-bold mb-4 text-2xl">Resultado Partido</h1>
-        <div className='w-full  flex'>
+        <div className='w-full  flex gap-4'>
         <div className="bg-white w-1/2 rounded-[8px] shadow-md p-4 mb-6">
           <h2 className="text-2xl font-bold text-center mb-3 text-blue-600">
             {partido.equipos[0].nombre} <span className="text-gray-500">vs</span> {partido.equipos[1].nombre}
@@ -328,6 +328,12 @@ export default function ResultadoPartido() {
               </p>
             </div>
           </div>
+        </div>
+        {/* Aca se muestra el marcador */}
+        <div className="bg-white w-1/2 rounded-[8px] shadow-md p-4 mb-6">
+         <h1 className="text-2xl font-bold text-center mb-3 text-blue-600">
+          Marcador
+         </h1>
         </div>
         </div>
         <div className="mt-2">

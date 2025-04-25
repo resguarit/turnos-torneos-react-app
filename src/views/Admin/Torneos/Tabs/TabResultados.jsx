@@ -1,12 +1,12 @@
-import React, { useEffect, useState, useRef } from 'react'; // Import useRef
+import React, { useEffect, useState } from 'react'; // Removed useRef as it's not directly used here anymore for this specific logic
 import { TablaPuntaje } from '../Tablas/TablaPuntaje';
 import { TablaProximaFecha } from '../Tablas/TablaProximaFecha';
 import { TablasEstadisticasJugadores } from '../Tablas/TablasEstadisticasJugadores';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
-import { toast } from 'react-toastify'; // Import toast
+import { toast } from 'react-toastify';
 
-export function TabResultados({ zonaId, abortController }) { // Add abortController prop
+export function TabResultados({ zonaId, abortController }) {
   const [tablaPuntaje, setTablaPuntaje] = useState([]);
   const [goleadores, setGoleadores] = useState([]);
   const [amonestados, setAmonestados] = useState([]);
@@ -28,70 +28,35 @@ export function TabResultados({ zonaId, abortController }) { // Add abortControl
         } else {
           console.warn('Respuesta inválida para estadísticas de liga.');
           setTablaPuntaje([]);
-          toast.error('No se pudieron cargar las estadísticas de la liga.');
+          // Keep showing toast only if it's not an abort error later
         }
 
         // --- Fetch Player Statistics (Goleadores, Amonestados, Expulsados) ---
-        // Traer todos los jugadores de la zona
-        const jugadoresResponse = await api.get(`/jugadores/zona/${zonaId}`, {
+        // Call the new endpoint
+        const playerStatsResponse = await api.get(`/zonas/${zonaId}/estadisticas/jugadores`, {
           signal: abortController?.signal
         });
-        const jugadores = jugadoresResponse.data;
 
-        // Crear un mapa para relacionar IDs de jugadores con sus nombres y equipos
-        const jugadoresMap = {};
-        jugadores.forEach((jugador) => {
-          jugadoresMap[jugador.id] = {
-            nombre: jugador.nombre,
-            apellido: jugador.apellido,
-            equipo: jugador.equipo.nombre, // Assuming jugador.equipo is available
-          };
-        });
+        if (playerStatsResponse.status === 200 && playerStatsResponse.data) {
+          // Directly set state from the response
+          setGoleadores(playerStatsResponse.data.goleadores || []);
+          setAmonestados(playerStatsResponse.data.amonestados || []);
+          setExpulsados(playerStatsResponse.data.expulsados || []);
+        } else {
+          console.warn('Respuesta inválida para estadísticas de jugadores.');
+          setGoleadores([]);
+          setAmonestados([]);
+          setExpulsados([]);
+          // Keep showing toast only if it's not an abort error later
+        }
 
-        // Traer las estadísticas individuales de la zona
-        const estadisticasResponse = await api.get(`/zonas/${zonaId}/estadisticas`, {
-          signal: abortController?.signal
-        });
-        const estadisticas = estadisticasResponse.data;
-
-        // Crear mapas para goleadores, amonestados y expulsados
-        const goleadoresMap = {};
-        const amonestadosMap = {};
-        const expulsadosMap = {};
-
-        estadisticas.forEach((estadistica) => {
-          const { jugador_id, goles, amarillas, rojas } = estadistica;
-          const jugador = jugadoresMap[jugador_id];
-          if (!jugador) return;
-
-          // Initialize if not exists
-          if (!goleadoresMap[jugador_id]) goleadoresMap[jugador_id] = { ...jugador, cantidad: 0 };
-          if (!amonestadosMap[jugador_id]) amonestadosMap[jugador_id] = { ...jugador, cantidad: 0 };
-          if (!expulsadosMap[jugador_id]) expulsadosMap[jugador_id] = { ...jugador, cantidad: 0 };
-
-          // Sum stats
-          goleadoresMap[jugador_id].cantidad += goles || 0;
-          amonestadosMap[jugador_id].cantidad += amarillas || 0;
-          expulsadosMap[jugador_id].cantidad += rojas || 0;
-        });
-
-        // Convert maps to arrays, filter, sort, and slice
-        const goleadoresArray = Object.values(goleadoresMap)
-          .filter((j) => j.cantidad > 0).sort((a, b) => b.cantidad - a.cantidad).slice(0, 10);
-        const amonestadosArray = Object.values(amonestadosMap)
-          .filter((j) => j.cantidad > 0).sort((a, b) => b.cantidad - a.cantidad).slice(0, 10);
-        const expulsadosArray = Object.values(expulsadosMap)
-          .filter((j) => j.cantidad > 0).sort((a, b) => b.cantidad - a.cantidad).slice(0, 10);
-
-        setGoleadores(goleadoresArray);
-        setAmonestados(amonestadosArray);
-        setExpulsados(expulsadosArray);
 
         // --- Fetch Next Matchday (Próxima Fecha) ---
         const fechasResponse = await api.get(`/zonas/${zonaId}/fechas`, {
           signal: abortController?.signal
         });
-        const fechas = fechasResponse.data;
+        // Ensure response.data is an array before finding
+        const fechas = Array.isArray(fechasResponse.data) ? fechasResponse.data : [];
         const fechaProxima = fechas.find((fecha) => fecha.estado === 'Pendiente');
         setProximaFecha(fechaProxima);
 
@@ -99,7 +64,8 @@ export function TabResultados({ zonaId, abortController }) { // Add abortControl
           const partidosProximaResponse = await api.get(`/fechas/${fechaProxima.id}/partidos`, {
             signal: abortController?.signal
           });
-          setPartidosProximaFecha(partidosProximaResponse.data);
+          // Ensure response.data is an array
+          setPartidosProximaFecha(Array.isArray(partidosProximaResponse.data) ? partidosProximaResponse.data : []);
         } else {
           setPartidosProximaFecha([]); // Clear if no next matchday
         }
@@ -108,11 +74,18 @@ export function TabResultados({ zonaId, abortController }) { // Add abortControl
         // Check if the error is due to cancellation
         if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') {
           console.log('Petición de resultados cancelada.');
-          return; // Don't treat cancellation as an error
+          // Clear state if requests were cancelled mid-way
+          setTablaPuntaje([]);
+          setGoleadores([]);
+          setAmonestados([]);
+          setExpulsados([]);
+          setProximaFecha(null);
+          setPartidosProximaFecha([]);
+          return; // Don't treat cancellation as an error to show toast
         }
         console.error('Error fetching data:', error);
         toast.error('Error al cargar los datos de resultados.');
-        // Optionally clear state on error
+        // Clear state on other errors
         setTablaPuntaje([]);
         setGoleadores([]);
         setAmonestados([]);
@@ -127,11 +100,8 @@ export function TabResultados({ zonaId, abortController }) { // Add abortControl
     fetchData();
 
     // Cleanup function provided by parent (DetalleZona)
-    // return () => {
-    //   abortController?.abort(); // Parent handles this
-    // };
 
-  }, [zonaId, abortController]); // Add abortController to dependencies
+  }, [zonaId, abortController]);
 
   if (loading) {
     return (
@@ -142,13 +112,12 @@ export function TabResultados({ zonaId, abortController }) { // Add abortControl
   }
 
   return (
-    <div className="space-y-8"> {/* Added spacing between sections */}
+    <div className="space-y-8">
       {/* Tabla de Puntaje */}
       {tablaPuntaje.length > 0 ? (
         <div className="w-full">
           <h2 className="text-xl font-semibold mb-3 text-gray-800">Tabla de Posiciones</h2>
-          {/* Pass the fetched data directly */}
-          <TablaPuntaje data={tablaPuntaje} formato="Liga" /> {/* Assuming 'Liga' is the correct format string */}
+          <TablaPuntaje data={tablaPuntaje} formato="Liga" />
         </div>
       ) : (
         <p className="text-center text-gray-500">No hay datos de tabla de posiciones disponibles.</p>
@@ -170,26 +139,35 @@ export function TabResultados({ zonaId, abortController }) { // Add abortControl
       )}
 
       {/* Estadísticas de Jugadores */}
-      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8"> {/* Use grid for better layout */}
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <TablasEstadisticasJugadores
             titulo="Goleadores"
-            datos={goleadores}
+            datos={goleadores} // Pass the fetched goleadores
             columnaEstadistica="Goles"
+            valorKey="goles" // Key for the value in the data object
+            nombreKey="nombre_completo" // Key for the name in the data object
+            equipoKey="equipo" // Key for the team name
           />
         </div>
         <div>
           <TablasEstadisticasJugadores
             titulo="Amonestados"
-            datos={amonestados}
+            datos={amonestados} // Pass the fetched amonestados
             columnaEstadistica="Amarillas"
+            valorKey="amarillas" // Key for the value
+            nombreKey="nombre_completo"
+            equipoKey="equipo"
           />
         </div>
         <div>
           <TablasEstadisticasJugadores
             titulo="Expulsados"
-            datos={expulsados}
+            datos={expulsados} // Pass the fetched expulsados
             columnaEstadistica="Rojas"
+            valorKey="rojas" // Key for the value
+            nombreKey="nombre_completo"
+            equipoKey="equipo"
           />
         </div>
       </div>

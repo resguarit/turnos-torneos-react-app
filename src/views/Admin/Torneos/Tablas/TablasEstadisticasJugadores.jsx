@@ -1,29 +1,41 @@
 import React from 'react';
 
-export const TablasEstadisticasJugadores = ({ titulo, datos, columnaEstadistica }) => {
-  if (!datos || datos.length === 0) return null;
+export const TablasEstadisticasJugadores = ({
+  titulo,
+  datos,
+  columnaEstadistica,
+  valorKey, // e.g., 'goles', 'amarillas', 'rojas'
+  nombreKey = 'nombre_completo', // Default key for player name
+  equipoKey = 'equipo' // Default key for team name
+}) => {
+  // Ensure datos is an array
+  const statsData = Array.isArray(datos) ? datos : [];
 
   return (
-    <div className="flex flex-col w-full mt-4">
-      <h2 className="text-xl font-bold mb-2">{titulo}</h2>
-      <table className="table-auto w-full border-collapse border border-gray-300">
-        <thead>
-          <tr className="bg-black text-white font-sans">
-            <th className="border border-gray-300 px-4 py-2">Jugador</th>
-            <th className="border border-gray-300 px-4 py-2">Equipo</th>
-            <th className="border border-gray-300 px-4 py-2">{columnaEstadistica}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {datos.map((jugador, index) => (
-            <tr key={index} className="text-center bg-white">
-              <td className="border border-gray-300 px-4 py-2">{jugador.nombre} {jugador.apellido}</td>
-              <td className="border border-gray-300 px-4 py-2">{jugador.equipo}</td>
-              <td className="border border-gray-300 px-4 py-2">{jugador.cantidad}</td>
+    <div className="">
+      <h3 className="text-lg font-semibold mb-3 ">{titulo}</h3>
+      {statsData.length > 0 ? (
+        <table className="min-w-full text-sm">
+          <thead>
+            <tr className="text-white bg-black">
+              <th className="py-2 px-3 text-left font-medium ">Jugador</th>
+              <th className="py-2 px-3 text-left font-medium ">Equipo</th>
+              <th className="py-2 px-3 text-center font-medium ">{columnaEstadistica}</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {statsData.map((item, index) => (
+              <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <td className="py-2 px-3 text-gray-600">{item[nombreKey]}</td>
+                <td className="py-2 px-3 text-gray-600">{item[equipoKey]}</td>
+                <td className="py-2 px-3 text-center font-semibold text-gray-600">{item[valorKey]}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p className="text-gray-500 text-center py-4 bg-white">No hay datos disponibles.</p>
+      )}
     </div>
   );
 };

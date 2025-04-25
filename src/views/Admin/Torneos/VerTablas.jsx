@@ -8,10 +8,13 @@ import { TablaPuntaje } from './Tablas/TablaPuntaje';
 import { TablaProximaFecha } from './Tablas/TablaProximaFecha';
 import { TablasEstadisticasJugadores } from './Tablas/TablasEstadisticasJugadores';
 import api from '@/lib/axiosConfig';
+import { toast } from 'react-toastify'; // Import toast for error messages
 
 export default function VerTablas() {
   const { zonaId } = useParams();
-  const [tablaPuntaje, setTablaPuntaje] = useState([]);
+  const [zonaInfo, setZonaInfo] = useState(null); // Store zone info (like format)
+  const [tablaPuntaje, setTablaPuntaje] = useState([]); // For Liga format
+  const [estadisticasGrupos, setEstadisticasGrupos] = useState([]); // For Grupos format
   const [goleadores, setGoleadores] = useState([]);
   const [amonestados, setAmonestados] = useState([]);
   const [expulsados, setExpulsados] = useState([]);
@@ -22,188 +25,77 @@ export default function VerTablas() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        // Traer todos los equipos de la zona
-        const equiposResponse = await api.get(`/zonas/${zonaId}/equipos`);
-        const equipos = equiposResponse.data;
+        // 1. Fetch Zone Info first to determine format
+        const zonaResponse = await api.get(`/zonas/${zonaId}`);
+        if (zonaResponse.status !== 200 || !zonaResponse.data) {
+          throw new Error('No se pudo obtener la información de la zona.');
+        }
+        const currentZonaInfo = zonaResponse.data;
+        setZonaInfo(currentZonaInfo);
 
-        // Crear un mapa para inicializar los datos de los equipos
-        const equiposMap = {};
-        equipos.forEach((equipo) => {
-          equiposMap[equipo.id] = {
-            nombre: equipo.nombre,
-            puntos: 0,
-            partidos_jugados: 0,
-            partidos_ganados: 0,
-            partidos_perdidos: 0,
-            partidos_empatados: 0,
-            goles_a_favor: 0,
-            goles_en_contra: 0,
-            diferencia_goles: 0,
-          };
-        });
-
-        // Traer los partidos de la zona
-        const partidosResponse = await api.get(`/partidos/zona/${zonaId}`);
-        const partidosFinalizados = partidosResponse.data.filter(
-          (partido) => partido.estado === 'Finalizado'
-        );
-
-        // Procesar los partidos finalizados
-        partidosFinalizados.forEach((partido) => {
-          const {
-            equipo_local,
-            equipo_visitante,
-            marcador_local,
-            marcador_visitante,
-          } = partido;
-
-          // Actualizar estadísticas del equipo local
-          equiposMap[equipo_local.id].partidos_jugados += 1;
-          equiposMap[equipo_local.id].goles_a_favor += marcador_local;
-          equiposMap[equipo_local.id].goles_en_contra += marcador_visitante;
-          equiposMap[equipo_local.id].diferencia_goles += marcador_local - marcador_visitante;
-
-          // Actualizar estadísticas del equipo visitante
-          equiposMap[equipo_visitante.id].partidos_jugados += 1;
-          equiposMap[equipo_visitante.id].goles_a_favor += marcador_visitante;
-          equiposMap[equipo_visitante.id].goles_en_contra += marcador_local;
-          equiposMap[equipo_visitante.id].diferencia_goles += marcador_visitante - marcador_local;
-
-          // Determinar el resultado del partido
-          if (marcador_local > marcador_visitante) {
-            // Equipo local gana
-            equiposMap[equipo_local.id].puntos += 3;
-            equiposMap[equipo_local.id].partidos_ganados += 1;
-            equiposMap[equipo_visitante.id].partidos_perdidos += 1;
-          } else if (marcador_local < marcador_visitante) {
-            // Equipo visitante gana
-            equiposMap[equipo_visitante.id].puntos += 3;
-            equiposMap[equipo_visitante.id].partidos_ganados += 1;
-            equiposMap[equipo_local.id].partidos_perdidos += 1;
+        // 2. Fetch Standings based on format
+        if (currentZonaInfo.formato === 'Grupos') {
+          const gruposStatsResponse = await api.get(`/zonas/${zonaId}/estadisticas-grupos`);
+          if (gruposStatsResponse.status === 200 && Array.isArray(gruposStatsResponse.data)) {
+            setEstadisticasGrupos(gruposStatsResponse.data);
           } else {
-            // Empate
-            equiposMap[equipo_local.id].puntos += 1;
-            equiposMap[equipo_visitante.id].puntos += 1;
-            equiposMap[equipo_local.id].partidos_empatados += 1;
-            equiposMap[equipo_visitante.id].partidos_empatados += 1;
+            console.warn('Respuesta inválida para estadísticas de grupos.');
+            setEstadisticasGrupos([]);
+            toast.error('No se pudieron cargar las estadísticas de los grupos.');
           }
-        });
-
-        // Convertir el mapa en un array y ordenar por puntos, diferencia de goles y partidos jugados
-        const tabla = Object.values(equiposMap).sort((a, b) => {
-          if (a.partidos_jugados === 0 && b.partidos_jugados > 0) {
-            return 1; // Mover equipos sin partidos al final
+        } else if (currentZonaInfo.formato === 'Liga' || currentZonaInfo.formato === 'Liga + Playoff') {
+          // Fetch Liga stats only for these formats
+          const ligaStatsResponse = await api.get(`/zonas/${zonaId}/estadisticas-liga`);
+          if (ligaStatsResponse.status === 200 && Array.isArray(ligaStatsResponse.data)) {
+            setTablaPuntaje(ligaStatsResponse.data);
+          } else {
+            console.warn('Respuesta inválida para estadísticas de liga.');
+            setTablaPuntaje([]);
+            toast.error('No se pudieron cargar las estadísticas de la liga.');
           }
-          if (b.partidos_jugados === 0 && a.partidos_jugados > 0) {
-            return -1; // Mantener equipos con partidos al principio
-          }
-          if (b.puntos === a.puntos) {
-            return b.diferencia_goles - a.diferencia_goles;
-          }
-          return b.puntos - a.puntos;
-        });
+        }
+        // For other formats (like Eliminatoria, Liga Ida y Vuelta if not handled above), tablaPuntaje and estadisticasGrupos will remain empty arrays
 
-        setTablaPuntaje(tabla);
+        // 3. Fetch Player Statistics (Common for all formats)
+        const playerStatsResponse = await api.get(`/zonas/${zonaId}/estadisticas/jugadores`);
+        if (playerStatsResponse.status === 200 && playerStatsResponse.data) {
+          setGoleadores(playerStatsResponse.data.goleadores || []);
+          setAmonestados(playerStatsResponse.data.amonestados || []);
+          setExpulsados(playerStatsResponse.data.expulsados || []);
+        } else {
+          console.warn('Respuesta inválida para estadísticas de jugadores.');
+          setGoleadores([]);
+          setAmonestados([]);
+          setExpulsados([]);
+          toast.error('No se pudieron cargar las estadísticas de jugadores.');
+        }
 
-        // Traer todos los jugadores de la zona
-        const jugadoresResponse = await api.get(`/jugadores/zona/${zonaId}`);
-        const jugadores = jugadoresResponse.data;
-
-        // Crear un mapa para relacionar IDs de jugadores con sus nombres y equipos
-        const jugadoresMap = {};
-        jugadores.forEach((jugador) => {
-          jugadoresMap[jugador.id] = {
-            nombre: jugador.nombre,
-            apellido: jugador.apellido,
-            equipo: jugador.equipo.nombre,
-          };
-        });
-
-        // Traer las estadísticas de la zona
-        const estadisticasResponse = await api.get(`/zonas/${zonaId}/estadisticas`);
-        const estadisticas = estadisticasResponse.data;
-
-        // Crear mapas para goleadores, amonestados y expulsados
-        const goleadoresMap = {};
-        const amonestadosMap = {};
-        const expulsadosMap = {};
-
-        estadisticas.forEach((estadistica) => {
-          const { jugador_id, goles, amarillas, rojas } = estadistica;
-
-          // Obtener el jugador del mapa
-          const jugador = jugadoresMap[jugador_id];
-          if (!jugador) return; // Si no se encuentra el jugador, ignorar
-
-          // Inicializar jugador en los mapas si no existe
-          if (!goleadoresMap[jugador_id]) {
-            goleadoresMap[jugador_id] = {
-              nombre: jugador.nombre,
-              apellido: jugador.apellido,
-              equipo: jugador.equipo,
-              cantidad: 0,
-            };
-          }
-          if (!amonestadosMap[jugador_id]) {
-            amonestadosMap[jugador_id] = {
-              nombre: jugador.nombre,
-              apellido: jugador.apellido,
-              equipo: jugador.equipo,
-              cantidad: 0,
-            };
-          }
-          if (!expulsadosMap[jugador_id]) {
-            expulsadosMap[jugador_id] = {
-              nombre: jugador.nombre,
-              apellido: jugador.apellido,
-              equipo: jugador.equipo,
-              cantidad: 0,
-            };
-          }
-
-          // Sumar estadísticas
-          goleadoresMap[jugador_id].cantidad += goles || 0;
-          amonestadosMap[jugador_id].cantidad += amarillas || 0;
-          expulsadosMap[jugador_id].cantidad += rojas || 0;
-        });
-
-        // Convertir los mapas en arrays, filtrar jugadores con estadísticas y limitar a 10 jugadores
-        const goleadoresArray = Object.values(goleadoresMap)
-          .filter((jugador) => jugador.cantidad > 0) // Solo jugadores con goles
-          .sort((a, b) => b.cantidad - a.cantidad) // Ordenar por cantidad descendente
-          .slice(0, 10); // Limitar a 10 jugadores
-
-        const amonestadosArray = Object.values(amonestadosMap)
-          .filter((jugador) => jugador.cantidad > 0) // Solo jugadores con amarillas
-          .sort((a, b) => b.cantidad - a.cantidad) // Ordenar por cantidad descendente
-          .slice(0, 10); // Limitar a 10 jugadores
-
-        const expulsadosArray = Object.values(expulsadosMap)
-          .filter((jugador) => jugador.cantidad > 0) // Solo jugadores con rojas
-          .sort((a, b) => b.cantidad - a.cantidad) // Ordenar por cantidad descendente
-          .slice(0, 10); // Limitar a 10 jugadores
-
-        setGoleadores(goleadoresArray);
-        setAmonestados(amonestadosArray);
-        setExpulsados(expulsadosArray);
-
-        // Traer las fechas de la zona
+        // 4. Fetch Next Matchday (Common for all formats)
         const fechasResponse = await api.get(`/zonas/${zonaId}/fechas`);
-        const fechas = fechasResponse.data;
-
-        // Filtrar la próxima fecha (por estado o fecha de inicio)
+        const fechas = Array.isArray(fechasResponse.data) ? fechasResponse.data : [];
         const fechaProxima = fechas.find((fecha) => fecha.estado === 'Pendiente');
         setProximaFecha(fechaProxima);
 
-        if (fechaProxima) {
-          // Traer los partidos de la próxima fecha
-          const partidosResponse = await api.get(`/fechas/${fechaProxima.id}/partidos`);
-          setPartidosProximaFecha(partidosResponse.data);
+        if (fechaProxima && Array.isArray(fechaProxima.partidos)) {
+          setPartidosProximaFecha(fechaProxima.partidos);
+        } else {
+          setPartidosProximaFecha([]);
         }
+
       } catch (error) {
         console.error('Error fetching data:', error);
+        toast.error('Error al cargar los datos de las tablas.');
+        // Clear state on error
+        setZonaInfo(null);
+        setTablaPuntaje([]);
+        setEstadisticasGrupos([]);
+        setGoleadores([]);
+        setAmonestados([]);
+        setExpulsados([]);
+        setProximaFecha(null);
+        setPartidosProximaFecha([]);
       } finally {
         setLoading(false);
       }
@@ -226,54 +118,109 @@ export default function VerTablas() {
     );
   }
 
+  // Handle case where zone info couldn't be loaded
+  if (!zonaInfo) {
+     return (
+      <div className="min-h-screen flex flex-col font-inter">
+        <Header />
+        <main className="flex-1 p-6 bg-gray-100">
+           <div className="w-full flex mb-2">
+             <button onClick={() => navigate(-1)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
+               <ChevronLeft className="w-5" /> Atrás
+             </button>
+           </div>
+          <p className="text-center text-red-500">No se pudo cargar la información de la zona.</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
-        <div className="w-full flex mb-2">
-          <button onClick={() => navigate(-1)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
-            <ChevronLeft className="w-5" /> Atrás
+        <div className="w-full flex mb-4"> {/* Increased margin-bottom */}
+          <button onClick={() => navigate(-1)} className="bg-black rounded-xl text-white px-4 py-2 text-sm flex items-center justify-center hover:bg-gray-800 transition-colors">
+            <ChevronLeft className="w-5 mr-1" /> Atrás
           </button>
         </div>
-        <div className="flex flex-col justify-center items-center h-full">
-          <h1 className="text-center text-2xl font-sans font-semibold">Tablas</h1>
+        <div className="flex flex-col items-center w-full space-y-8"> {/* Use space-y for consistent spacing */}
+          <h1 className="text-center text-3xl font-bold  mb-4">Tablas <span className='text-orange-600'> {zonaInfo.torneo.nombre} - {zonaInfo.nombre}</span></h1> {/* Larger title */}
 
-          <div className="flex flex-col w-3/4 mt-4">
-            <TablaPuntaje data={tablaPuntaje} />
-          </div>
+          {/* Render Standings based on format */}
+          {zonaInfo.formato === 'Grupos' ? (
+            // --- GRUPOS FORMAT ---
+            estadisticasGrupos.length > 0 ? (
+              <div className="w-full max-w-6xl"> {/* Constrain width */}
+                <h2 className="text-2xl font-semibold mb-4 ">Tabla de Posiciones por Grupo</h2>
+                <div className="flex flex-col gap-6">
+                  {estadisticasGrupos.map((grupo) => (
+                    <div key={grupo.id} className="">
+                       <h3 className="text-xl font-semibold mb-3 ">{grupo.nombre}</h3>
+                      <TablaPuntaje data={grupo.equipos} formato="Grupos" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 w-full max-w-4xl">No hay datos de tabla de posiciones disponibles para los grupos.</p>
+            )
+          ) : (zonaInfo.formato === 'Liga' || zonaInfo.formato === 'Liga + Playoff') ? (
+            // --- LIGA or LIGA + PLAYOFF FORMAT ---
+            tablaPuntaje.length > 0 ? (
+              <div className="w-full max-w-6xl"> {/* Constrain width */}
+                <h2 className="text-2xl font-semibold mb-4 ">Tabla de Posiciones</h2>
+                <div className="">
+                  <TablaPuntaje data={tablaPuntaje} formato="Liga" />
+                </div>
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 w-full max-w-4xl">No hay datos de tabla de posiciones disponibles.</p>
+            )
+          ) : null /* Or render a message for other formats if needed */}
 
-          {proximaFecha && (
-            <div className="w-3/4">
-              <TablaProximaFecha 
-                fecha={proximaFecha} 
-                partidos={partidosProximaFecha} 
-                zonaId={zonaId}
-              />
+          {/* Próxima Fecha */}
+          {proximaFecha ? (
+            <div className="w-full max-w-6xl"> {/* Constrain width */}
+               <div className="">
+                 <TablaProximaFecha
+                   fecha={proximaFecha}
+                   partidos={partidosProximaFecha}
+                   zonaId={zonaId}
+                 />
+               </div>
             </div>
+          ) : (
+             <p className="text-center text-gray-500 w-full max-w-4xl">No hay próxima fecha programada.</p>
           )}
 
-          <div className="w-3/4 flex gap-8 justify-between">
-            <div className="flex-1">
-              <TablasEstadisticasJugadores
-                titulo="Goleadores"
-                datos={goleadores}
-                columnaEstadistica="Goles"
-              />
-            </div>
-            
-            <div className="flex-1">
-              <TablasEstadisticasJugadores
-                titulo="Amonestados"
-                datos={amonestados}
-                columnaEstadistica="Amarillas"
-              />
-              
-              <TablasEstadisticasJugadores
-                titulo="Expulsados"
-                datos={expulsados}
-                columnaEstadistica="Rojas"
-              />
-            </div>
+          {/* Estadísticas de Jugadores */}
+          <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-6"> {/* Wider container for stats */}
+            <TablasEstadisticasJugadores
+              titulo="Goleadores"
+              datos={goleadores}
+              columnaEstadistica="Goles"
+              valorKey="goles"
+              nombreKey="nombre_completo"
+              equipoKey="equipo"
+            />
+            <TablasEstadisticasJugadores
+              titulo="Amonestados"
+              datos={amonestados}
+              columnaEstadistica="Amarillas"
+              valorKey="amarillas"
+              nombreKey="nombre_completo"
+              equipoKey="equipo"
+            />
+            <TablasEstadisticasJugadores
+              titulo="Expulsados"
+              datos={expulsados}
+              columnaEstadistica="Rojas"
+              valorKey="rojas"
+              nombreKey="nombre_completo"
+              equipoKey="equipo"
+            />
           </div>
         </div>
       </main>

@@ -16,7 +16,7 @@ export const TablaProximaFecha = ({ fecha, partidos, zonaId }) => {
   return (
     <>
       <div className="flex flex-col w-full mt-4">
-        <h2 className="text-xl font-semibold mb-3 text-gray-800">Próxima Fecha: {fecha.nombre}</h2>
+        <h2 className="text-xl font-semibold mb-3 ">Próxima Fecha: {fecha.nombre}</h2>
         {partidos && partidos.length > 0 ? (
           <table className="min-w-full text-sm">
             <thead>
@@ -46,7 +46,7 @@ export const TablaProximaFecha = ({ fecha, partidos, zonaId }) => {
       </div>
       <button
         onClick={() => navigate(`/ver-fixture/${zonaId}`)}
-        className='justify-start w-full text-sm items-center text-gray-400 flex mt-2 hover:text-gray-600'
+        className='justify-start w-full text-sm items-center text-gray-500 flex mt-2 hover:text-gray-600'
       >
         Ver Fixture Completo <ArrowRight size={16} />
       </button>

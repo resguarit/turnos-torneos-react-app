@@ -114,7 +114,7 @@ export function TabResultados({ zonaId, abortController }) {
       {/* Tabla de Puntaje */}
       {tablaPuntaje.length > 0 ? (
         <div className="w-full">
-          <h2 className="text-xl font-semibold mb-3 text-gray-800">Tabla de Posiciones</h2>
+          <h2 className="text-xl font-semibold mb-3 ">Tabla de Posiciones</h2>
           <TablaPuntaje data={tablaPuntaje} formato="Liga" />
         </div>
       ) : (

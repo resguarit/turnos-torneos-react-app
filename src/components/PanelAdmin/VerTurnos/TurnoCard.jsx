@@ -13,6 +13,17 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
     }
   };
 
+  // Obtener el nombre a mostrar
+  const getNombreTurno = () => {
+    if (booking.tipo === 'torneo' && booking.partido) {
+      const torneoNombre = booking.partido.fecha.zona.torneo.nombre || 'Sin torneo';
+      const zonaNombre = booking.partido.fecha.zona.nombre || 'Sin zona';
+      const fechaNombre = booking.partido.fecha.nombre || 'Sin fecha';
+      return `${torneoNombre} - ${zonaNombre} - ${fechaNombre}`;
+    }
+    return booking.usuario.nombre || 'Sin nombre';
+  };
+
   return (
     <div
       key={booking.id}
@@ -20,7 +31,7 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
     >
       <div className="flex justify-between items-start w-full">
         <div className="flex-1">
-          <h3 className="font-semibold text-lg capitalize">{booking.usuario.nombre}</h3>
+          <h3 className="font-semibold text-lg capitalize">{getNombreTurno()}</h3>
           <p className="text-sm font-medium text-gray-500">{`${booking.horario.hora_inicio} - ${booking.horario.hora_fin}`}</p>
           <p className="text-sm font-medium text-gray-800">{`Monto total: $${booking.monto_total}`}</p>
           <p className="text-sm font-medium text-gray-800">{`Monto seña: $${booking.monto_seña}`}</p>

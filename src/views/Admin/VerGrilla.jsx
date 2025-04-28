@@ -239,7 +239,7 @@ export default function VerGrilla() {
               <span>Turnos únicos</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-3 bg-orange-500 rounded "></div>
+              <div className="w-4 h-3 bg-[#FFA500] rounded "></div>
               <span>Torneos</span>
             </div>
           </div>
@@ -266,21 +266,46 @@ export default function VerGrilla() {
                       return (
                         <td key={key} className="border max-w-14 p-2 h-12">
                           {reservation ? (
-                            <div 
-                            onClick={handleNavigationTurno(reservation.id)}
-                            className=" w-full h-full rounded p-2 hover:cursor-pointer text-white" style={{ backgroundColor: reservation.tipo === "fijo" ? "#1E90FF" : reservation.tipo === "unico" ? "#16a34a" : "#FFA500" }}>
-                              <p className="text-xs lg:text-base font-semibold md:flex items-center hidden ">
-                                <User className="w-4 h-4 mr-1" />
-                                {reservation.usuario.nombre}
-                              </p>
-                              <p className="text-xs lg:text-sm md:flex items-center hidden">
-                                <Phone className="w-4 h-4 mr-1" />
-                                {reservation.usuario.telefono}
-                              </p>
-                              <p className="text-xs lg:text-sm md:flex items-center hidden">
-                                <AlertCircle className="w-4 h-4 mr-1" />
-                                {reservation.estado}
-                              </p>
+                            <div
+                              onClick={handleNavigationTurno(reservation.id)}
+                              className="w-full h-full rounded p-2 hover:cursor-pointer text-white"
+                              style={{
+                                backgroundColor:
+                                  reservation.tipo === "fijo"
+                                    ? "#1E90FF"
+                                    : reservation.tipo === "unico"
+                                    ? "#16a34a"
+                                    : "#FFA500",
+                              }}
+                            >
+                              {reservation.tipo === "torneo" ? (
+                                <>
+                                  <p className="text-xs lg:text-base font-semibold">
+                                    {reservation.partido.torneo} - {reservation.partido.zona}
+                                  </p>
+                                  <p className="text-xs lg:text-sm">
+                                    {reservation.partido.fecha}
+                                  </p>
+                                  <p className="text-xs lg:text-sm">
+                                    {reservation.partido.equipos.local} vs {reservation.partido.equipos.visitante}
+                                  </p>
+                                </>
+                              ) : (
+                                <>
+                                  <p className="text-xs lg:text-base font-semibold md:flex items-center hidden">
+                                    <User className="w-4 h-4 mr-1" />
+                                    {reservation.usuario.nombre}
+                                  </p>
+                                  <p className="text-xs lg:text-sm md:flex items-center hidden">
+                                    <Phone className="w-4 h-4 mr-1" />
+                                    {reservation.usuario.telefono}
+                                  </p>
+                                  <p className="text-xs lg:text-sm md:flex items-center hidden">
+                                    <AlertCircle className="w-4 h-4 mr-1" />
+                                    {reservation.estado}
+                                  </p>
+                                </>
+                              )}
                             </div>
                           ) : null}
                         </td>

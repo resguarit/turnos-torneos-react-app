@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -8,6 +8,7 @@ import BtnLoading from '@/components/BtnLoading';
 import { toast } from 'react-toastify'; // Importar react-toastify
 import ResultadoModal from '../Modals/ResultadoModal';
 import { Info, Trash } from 'lucide-react';
+import { debounce } from 'lodash'; // Import debounce
 
 export default function ResultadoPartido() {
   const { partidoId } = useParams();
@@ -29,6 +30,8 @@ export default function ResultadoPartido() {
     visitante: { goles: 0, amarillas: 0, rojas: 0 }
   });
   const [refreshKey, setRefreshKey] = useState(0); // Estado disparador
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchingDniForId, setSearchingDniForId] = useState(null);
 
   // Mover la definición de fetchPartido fuera del useEffect para poder llamarla desde otros lugares
   const fetchPartido = async () => {
@@ -185,37 +188,59 @@ export default function ResultadoPartido() {
   const handleConfirmAlta = async (jugadorId) => {
     const jugador = jugadoresEnAlta.find((j) => j.id === jugadorId);
 
-    if (!jugador || !jugador.nombre || !jugador.apellido || !jugador.dni || !jugador.fecha_nacimiento) {
+    if (!jugador) {
+      toast.error('Jugador no encontrado.');
+      return;
+    }
+
+    // Validar campos obligatorios
+    if (!jugador.dni || !jugador.nombre || !jugador.apellido || !jugador.fecha_nacimiento) {
       toast.error('Por favor, completa todos los campos del jugador antes de confirmar.');
       return;
     }
 
     try {
-      const response = await api.post(`/equipos/${verEquipo === 1 ? equipoLocal.id : equipoVisitante.id}/jugadores/multiple`, {
-        jugadores: [jugador],
-        equipo_id: verEquipo === 1 ? equipoLocal.id : equipoVisitante.id,
-      });
-
-      if (response.status === 201) {
-        toast.success('Jugador agregado correctamente');
+      if (jugador.seleccionado) {
+        // Si el jugador fue seleccionado desde el buscador, asociarlo al equipo
+        await api.post(`/jugadores/asociar-a-equipo`, {
+          jugador_id: jugador.id,
+          equipo_id: verEquipo === 1 ? equipoLocal.id : equipoVisitante.id,
+        });
+        toast.success('Jugador asociado correctamente al equipo.');
+        setJugadoresEnAlta((prev) => prev.filter((j) => j.id !== jugadorId));
+      } else {
+        // Si el jugador fue ingresado manualmente, crearlo y asociarlo al equipo
+        const response = await api.post(`/jugadores`, {
+          nombre: jugador.nombre,
+          apellido: jugador.apellido,
+          dni: jugador.dni,
+          fecha_nacimiento: jugador.fecha_nacimiento,
+          equipo_ids: [verEquipo === 1 ? equipoLocal.id : equipoVisitante.id],
+        });
+        toast.success('Jugador creado y asociado correctamente al equipo.');
         setJugadoresEnAlta((prev) => prev.filter((j) => j.id !== jugadorId));
 
-        // Actualizar la lista de jugadores del equipo
-        if (verEquipo === 1) {
-          setEquipoLocal((prev) => ({
-            ...prev,
-            jugadores: [...prev.jugadores, ...response.data.jugadores],
-          }));
-        } else {
-          setEquipoVisitante((prev) => ({
-            ...prev,
-            jugadores: [...prev.jugadores, ...response.data.jugadores],
-          }));
-        }
+        // Actualizar el ID del jugador con el ID real devuelto por el backend
+        jugador.id = response.data.jugador.id;
+      }
+
+      // Eliminar el jugador de la lista de alta
+
+      // Actualizar la lista de jugadores del equipo
+      if (verEquipo === 1) {
+        setEquipoLocal((prev) => ({
+          ...prev,
+          jugadores: [...prev.jugadores, jugador],
+        }));
+      } else {
+        setEquipoVisitante((prev) => ({
+          ...prev,
+          jugadores: [...prev.jugadores, jugador],
+        }));
       }
     } catch (error) {
-      console.error('Error al agregar el jugador:', error);
-      toast.error('Error al agregar el jugador. Verifica los datos e inténtalo nuevamente.');
+      console.error('Error al confirmar el alta del jugador:', error);
+      toast.error('Error al confirmar el alta del jugador. Verifica los datos e inténtalo nuevamente.');
     }
   };
 
@@ -269,6 +294,115 @@ export default function ResultadoPartido() {
   
     setResumenPartido(nuevoResumen);
     setShowConfirmationModal(true);
+  };
+
+  // --- Debounced Search Function ---
+  const fetchJugadoresByDni = async (dni, jugadorNuevoId) => {
+    if (!dni || dni.length < 3) {
+      setSearchResults([]);
+      setSearchingDniForId(null);
+      return;
+    }
+
+    const zonaId = localStorage.getItem('zona_id'); // Obtener zona_id desde localStorage
+    if (!zonaId) {
+      console.error('Zona ID no encontrado en localStorage.');
+      setSearchResults([]);
+      setSearchingDniForId(null);
+      return;
+    }
+
+    try {
+      setSearchingDniForId(jugadorNuevoId);
+      const response = await api.get(`/jugadores/search/dni?dni=${dni}&zona_id=${zonaId}`);
+      setSearchResults(response.data);
+    } catch (error) {
+      console.error('Error searching players by DNI:', error);
+      setSearchResults([]);
+    }
+  };
+
+  const debouncedFetchJugadores = useCallback(debounce(fetchJugadoresByDni, 500), []);
+
+  const handleInputChangeNuevo = (e, id, campo) => {
+    const valor = e.target.value;
+    setJugadoresEnAlta((prev) =>
+      prev.map((jugador) => (jugador.id === id ? { ...jugador, [campo]: valor } : jugador))
+    );
+
+    if (campo === 'dni') {
+      debouncedFetchJugadores(valor, id);
+    } else {
+      if (searchingDniForId === id) {
+        setSearchResults([]);
+        setSearchingDniForId(null);
+      }
+    }
+  };
+
+  const handleSelectPlayer = (selectedJugador, jugadorNuevoId) => {
+    setJugadoresEnAlta((prev) =>
+      prev.map((jugador) =>
+        jugador.id === jugadorNuevoId
+          ? {
+              ...jugador,
+              id: selectedJugador.id,
+              dni: selectedJugador.dni || '',
+              nombre: selectedJugador.nombre || '',
+              apellido: selectedJugador.apellido || '',
+              fecha_nacimiento: selectedJugador.fecha_nacimiento || '',
+              equipo_actual: selectedJugador.equipos?.[0]?.nombre || 'Sin equipo',
+              seleccionado: true,
+            }
+          : jugador
+      )
+    );
+    setSearchResults([]);
+    setSearchingDniForId(null);
+  };
+
+  const handleGuardarJugadores = async () => {
+    try {
+      setLoading(true);
+
+      const jugadoresSeleccionados = jugadoresEnAlta.filter((jugador) => jugador.seleccionado);
+      const jugadoresManuales = jugadoresEnAlta.filter((jugador) => !jugador.seleccionado);
+
+      if (jugadoresSeleccionados.length > 0) {
+        for (const jugador of jugadoresSeleccionados) {
+          if (!jugador.id || typeof jugador.id !== 'number') {
+            console.error('Jugador ID no válido:', jugador.id);
+            continue;
+          }
+
+          await api.post(`/jugadores/asociar-a-equipo`, {
+            jugador_id: jugador.id,
+            equipo_id: verEquipo === 1 ? equipoLocal.id : equipoVisitante.id,
+          });
+        }
+      }
+
+      if (jugadoresManuales.length > 0) {
+        for (const jugador of jugadoresManuales) {
+          await api.post(`/jugadores`, {
+            nombre: jugador.nombre,
+            apellido: jugador.apellido,
+            dni: jugador.dni,
+            fecha_nacimiento: jugador.fecha_nacimiento,
+            equipo_ids: [verEquipo === 1 ? equipoLocal.id : equipoVisitante.id],
+          });
+        }
+      }
+
+      toast.success('Jugadores guardados exitosamente.');
+      setJugadoresEnAlta([]);
+      fetchPartido(); // Actualizar la lista de jugadores
+    } catch (error) {
+      console.error('Error al guardar jugadores:', error);
+      toast.error('Ocurrió un error al guardar los jugadores.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) {
@@ -357,6 +491,7 @@ export default function ResultadoPartido() {
             <div>
               <button
                 onClick={handleAddJugador}
+                disabled={jugadoresEnAlta.length > 0}
                 className="rounded-[8px] px-4 py-2.5 bg-black text-white font-medium hover:bg-gray-900 transition-colors shadow-sm flex items-center gap-1"
               >
                 <span className="text-lg">+</span> Agregar Jugador
@@ -395,58 +530,57 @@ export default function ResultadoPartido() {
                 {jugadoresEnAlta.map((jugador) => (
                   <tr key={jugador.id}>
                     <td className="p-2 text-center">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="DNI"
+                          value={jugador.dni}
+                          onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'dni')}
+                          className="w-full text-center border border-gray-300 rounded-[6px] p-1"
+                          autoComplete="off"
+                        />
+                        {searchingDniForId === jugador.id && searchResults.length > 0 && (
+                          <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto shadow-lg">
+                            {searchResults.map((result) => (
+                              <li
+                                key={result.id}
+                                className="p-2 text-sm hover:bg-gray-100 cursor-pointer"
+                                onClick={() => handleSelectPlayer(result, jugador.id)}
+                              >
+                                {result.dni} - {result.nombre} {result.apellido}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-2 text-center">
                       <input
                         type="text"
-                        placeholder="DNI"
-                        value={jugador.dni}
-                        onChange={(e) =>
-                          setJugadoresEnAlta((prev) =>
-                            prev.map((j) => (j.id === jugador.id ? { ...j, dni: e.target.value } : j)),
-                          )
-                        }
+                        placeholder="Nombre"
+                        value={jugador.nombre}
+                        onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'nombre')}
                         className="w-full text-center border border-gray-300 rounded-[6px] p-1"
                       />
                     </td>
                     <td className="p-2 text-center">
-                      <div className="flex space-x-1">
-                        <input
-                          type="text"
-                          placeholder="Nombre"
-                          value={jugador.nombre}
-                          onChange={(e) =>
-                            setJugadoresEnAlta((prev) =>
-                              prev.map((j) => (j.id === jugador.id ? { ...j, nombre: e.target.value } : j)),
-                            )
-                          }
-                          className="w-full text-center border border-gray-300 rounded-[6px] p-1"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Apellido"
-                          value={jugador.apellido}
-                          onChange={(e) =>
-                            setJugadoresEnAlta((prev) =>
-                              prev.map((j) => (j.id === jugador.id ? { ...j, apellido: e.target.value } : j)),
-                            )
-                          }
-                          className="w-full text-center border border-gray-300 rounded-[6px] p-1"
-                        />
-                      </div>
+                      <input
+                        type="text"
+                        placeholder="Apellido"
+                        value={jugador.apellido}
+                        onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'apellido')}
+                        className="w-full text-center border border-gray-300 rounded-[6px] p-1"
+                      />
                     </td>
                     <td className="p-2 text-center">
                       <input
                         type="date"
                         placeholder="Fecha de Nacimiento"
                         value={jugador.fecha_nacimiento}
-                        onChange={(e) =>
-                          setJugadoresEnAlta((prev) =>
-                            prev.map((j) => (j.id === jugador.id ? { ...j, fecha_nacimiento: e.target.value } : j)),
-                          )
-                        }
+                        onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'fecha_nacimiento')}
                         className="w-full text-center border border-gray-300 rounded-[6px] p-1"
                       />
                     </td>
-                    <td className="p-2 text-center">{/* Espacio vacío para mantener la estructura de la tabla */}</td>
                     <td className="p-2 text-center">{/* Espacio vacío para mantener la estructura de la tabla */}</td>
                     <td className="p-2 text-center">{/* Espacio vacío para mantener la estructura de la tabla */}</td>
                     <td className="p-2 text-center">{/* Espacio vacío para mantener la estructura de la tabla */}</td>

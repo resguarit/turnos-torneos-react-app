@@ -31,7 +31,10 @@ export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handl
                       <td className="text-right p-3 items-center flex-row justify-center">
                         <div className='flex items-center w-full justify-end space-x-4'>
                           <button
-                            onClick={() => navigate(`/jugadores/${equipo.id}`)}
+                            onClick={() => {
+                              localStorage.setItem('zona_id', zonaId); 
+                              navigate(`/jugadores/${equipo.id}`); 
+                            }}
                             className="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded-[6px] text-sm"
                           >
                             Ver jugadores

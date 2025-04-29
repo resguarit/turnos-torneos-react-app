@@ -633,7 +633,7 @@ export default function DetalleZona() {
         
         {activeTab === 'resultados' && (
           <>
-          {zona.formato === 'Liga' && <TabResultados zonaId={zonaId} abortController={abortControllerRef.current} />}
+          {(zona.formato === 'Liga' || zona.formato === 'Liga + Playoff') && <TabResultados zonaId={zonaId} abortController={abortControllerRef.current} />}
           {zona.formato === 'Grupos' && (
             <TabResultadosGrupos zonaId={zonaId} grupos={grupos} abortController={abortControllerRef.current} />
           )}

@@ -47,6 +47,7 @@ const Login = () => {
             localStorage.setItem('user_id', response.user_id);
             localStorage.setItem('username', response.username);
             localStorage.setItem('user_role', response.rol);
+            localStorage.setItem('dni', response.dni);
             navigate('/');
         } catch (error) {
             if (error.status === 401) {

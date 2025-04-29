@@ -15,8 +15,6 @@ export default function UserProfile() {
     switch (activeSection) {
       case "appointments":
         return <MisTurnos />;
-      case "teams":
-        return <MisEquipos />;
       case "tournaments":
         return <MisTorneos />;
       default:
@@ -33,10 +31,10 @@ export default function UserProfile() {
             Mi Panel de Usuario
           </h1>
           <div className="flex flex-col items-center justify-center">
-          <div className="grid grid-cols-1 w-[80vw] md:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 w-[80vw] md:grid-cols-2 gap-6 mb-6">
             <Button
               onClick={() => setActiveSection("appointments")}
-              className={`flex lg:text-lg items-center justify-center rounded-[12px] gap-2 p-3  md:p-8 ${
+              className={`flex lg:text-lg font-medium items-center justify-center rounded-[12px] gap-2 p-3  md:p-6 ${
                 activeSection === "appointments"
                   ? "bg-naranja hover:bg-naranja/90 text-white "
                   : "bg-white "
@@ -46,19 +44,8 @@ export default function UserProfile() {
               <span>Mis Turnos</span>
             </Button>
             <Button
-              onClick={() => setActiveSection("teams")}
-              className={`flex lg:text-lg items-center justify-center rounded-[12px] gap-2 p-3  md:p-8  ${
-                activeSection === "teams"
-                  ? "bg-naranja hover:bg-naranja/90 text-white"
-                  : "bg-white "
-              }`}
-            >
-              <Users style={{height: '24px', width:'24px'}} className="h-6 w-6" />
-              <span>Mis Equipos</span>
-            </Button>
-            <Button
               onClick={() => setActiveSection("tournaments")}
-              className={`flex lg:text-lg items-center justify-center rounded-[12px] gap-2 p-3  md:p-8  ${
+              className={`flex lg:text-lg font-medium items-center justify-center rounded-[12px] gap-2 p-3  md:p-6  ${
                 activeSection === "tournaments"
                   ? "bg-naranja hover:bg-naranja/90 text-white"
                   : "bg-white "

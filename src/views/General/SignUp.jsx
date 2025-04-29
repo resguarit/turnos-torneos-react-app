@@ -68,6 +68,7 @@ function SignUp() {
                 localStorage.setItem('user_id', loginResponse.data.user_id);
                 localStorage.setItem('username', loginResponse.data.username);
                 localStorage.setItem('token', loginResponse.data.token);
+                localStorage.setItem('dni', formData.dni);
                 toast.success('Registro exitoso');
                 setTimeout(() => {
                     navigate('/');

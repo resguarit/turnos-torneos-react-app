@@ -16,6 +16,8 @@ export default function AltaTorneo() {
     nombre: '',
     año: new Date().getFullYear(),
     deporte_id: '',
+    precio_inscripcion: '',
+    precio_por_fecha: '',
   });
   const [modalVisible, setModalVisible] = useState(false); // Estado para controlar el modal
   const [nuevoDeporte, setNuevoDeporte] = useState({ nombre: '', jugadores_por_equipo: '' }); // Datos del nuevo deporte
@@ -30,6 +32,8 @@ export default function AltaTorneo() {
             nombre: response.data.nombre,
             año: response.data.año,
             deporte_id: response.data.deporte_id,
+            precio_inscripcion: response.data.precio_inscripcion || '',
+            precio_por_fecha: response.data.precio_por_fecha || '',
           });
         } catch (error) {
           console.error('Error fetching torneo:', error);
@@ -180,6 +184,30 @@ export default function AltaTorneo() {
                 ))}
                 <option value="nuevo">+ Nuevo Deporte</option>
               </select>
+            </div>
+            <div>
+              <label className="font-medium font-sans text-lg">Precio Inscripción:</label>
+              <input
+                type="number"
+                className="border-gray-300 border w-full px-2 rounded-xl"
+                name="precio_inscripcion"
+                value={formData.precio_inscripcion}
+                onChange={handleChange}
+                required
+                min={0}
+              />
+            </div>
+            <div>
+              <label className="font-medium font-sans text-lg">Precio por Fecha:</label>
+              <input
+                type="number"
+                className="border-gray-300 border w-full px-2 rounded-xl"
+                name="precio_por_fecha"
+                value={formData.precio_por_fecha}
+                onChange={handleChange}
+                required
+                min={0}
+              />
             </div>
             <div className="flex justify-end">
               <button

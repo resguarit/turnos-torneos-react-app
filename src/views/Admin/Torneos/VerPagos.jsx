@@ -1,92 +1,89 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Header } from "@/components/Header"
-import { Footer } from "@/components/Footer"
-import { ChevronLeft, Check, X, Plus, Calendar, CreditCard } from "lucide-react"
-import { useNavigate, useParams } from "react-router-dom"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import api from "@/lib/axiosConfig"
+import { useState, useEffect } from "react";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { ChevronLeft, Check, X, Plus, Calendar, CreditCard } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import api from "@/lib/axiosConfig";
 
 export default function VerPagos() {
-  const navigate = useNavigate()
-  const { equipoId } = useParams()
-  const [equipo, setEquipo] = useState({ nombre: "" })
-  const [pagos, setPagos] = useState([])
-  const [fechas, setFechas] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [tipoSeleccionado, setTipoSeleccionado] = useState("inscripcion")
-  const [fechaSeleccionada, setFechaSeleccionada] = useState("")
-
-  // Valores predefinidos
-  const valorInscripcion = 5000
-  const valorFecha = 2500
+  const navigate = useNavigate();
+  const { equipoId } = useParams(); // Obtenemos equipoId de la URL
+  const torneoId = localStorage.getItem("torneo_id"); // Obtenemos torneoId del localStorage
+  const zonaId = localStorage.getItem("zona_id"); // Obtenemos zonaId del localStorage
+  const [equipo, setEquipo] = useState({ nombre: "" });
+  const [fechas, setFechas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [tipoSeleccionado, setTipoSeleccionado] = useState("inscripcion");
+  const [fechaSeleccionada, setFechaSeleccionada] = useState("");
+  const [valorInscripcion, setValorInscripcion] = useState(0);
+  const [valorFecha, setValorFecha] = useState(0);
+  const [inscripcionPagada, setInscripcionPagada] = useState(false);
+  const [estadoPagosPorFecha, setEstadoPagosPorFecha] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true)
-        // Fetch team data
-        const equipoResponse = await api.get(`/equipos/${equipoId}`)
-        setEquipo(equipoResponse.data)
+        setLoading(true);
 
-        // Fetch payment data
-        const pagosResponse = await api.get(`/equipos/${equipoId}/pagos`)
-        setPagos(pagosResponse.data)
+        // Fetch equipo data
+        const equipoResponse = await api.get(`/equipos/${equipoId}`);
+        setEquipo(equipoResponse.data);
 
-        // Fetch match dates
-        const fechasResponse = await api.get(`/fechas`)
-        setFechas(fechasResponse.data)
+        // Fetch torneo data to get precios
+        const torneoResponse = await api.get(`/torneos/${torneoId}`);
+        setValorInscripcion(torneoResponse.data.precio_inscripcion);
+        setValorFecha(torneoResponse.data.precio_por_fecha);
+
+        // Fetch pagos por fecha for the entire zona
+        const pagosPorFechaResponse = await api.get(`/equipos/${equipoId}/zonas/${zonaId}/pago-fecha`);
+        setEstadoPagosPorFecha(pagosPorFechaResponse.data.pagos_por_fecha);
+
+        // Fetch inscripción status
+        const inscripcionResponse = await api.get(`/equipos/${equipoId}/torneos/${torneoId}/pago-inscripcion`);
+        setInscripcionPagada(!!inscripcionResponse.data.transaccion);
       } catch (error) {
-        console.error("Error fetching data:", error)
+        console.error("Error fetching data:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchData()
-  }, [equipoId])
+    fetchData();
+  }, [equipoId, torneoId, zonaId]);
 
   const handleRegistrarPago = async () => {
     try {
-      setLoading(true)
-
-      const pagoData = {
-        equipo_id: equipoId,
-        tipo: tipoSeleccionado,
-        monto: tipoSeleccionado === "inscripcion" ? valorInscripcion : valorFecha,
-        fecha_id: tipoSeleccionado === "fecha" ? fechaSeleccionada : null,
-        estado: "pagado",
+      setLoading(true);
+      if (tipoSeleccionado === "inscripcion") {
+        // Register tournament registration payment
+        await api.post(`/equipos/${equipoId}/torneos/${torneoId}/pagar-inscripcion`);
+        setInscripcionPagada(true);
+      } else if (tipoSeleccionado === "fecha" && fechaSeleccionada) {
+        // Register payment for a specific date
+        await api.post(`/fechas/${fechaSeleccionada}/pagar`);
+        setEstadoPagosPorFecha((prev) =>
+          prev.map((pago) =>
+            pago.fecha_id === parseInt(fechaSeleccionada)
+              ? { ...pago, transaccion: { id: "new", monto: valorFecha } }
+              : pago
+          )
+        );
       }
-
-      await api.post("/pagos", pagoData)
-
-      // Refresh payment data
-      const pagosResponse = await api.get(`/equipos/${equipoId}/pagos`)
-      setPagos(pagosResponse.data)
-
-      setModalOpen(false)
+      setModalOpen(false);
     } catch (error) {
-      console.error("Error registering payment:", error)
+      console.error("Error registering payment:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-
-  // Check if registration is paid
-  const inscripcionPagada = pagos.some((pago) => pago.tipo === "inscripcion" && pago.estado === "pagado")
-
-  // Get payment status for each date
-  const estadoPagosPorFecha = fechas.reduce((acc, fecha) => {
-    const pago = pagos.find((p) => p.fecha_id === fecha.id)
-    acc[fecha.id] = pago ? pago.estado : "pendiente"
-    return acc
-  }, {})
+  };
 
   return (
     <div className="min-h-screen flex flex-col font-inter">
@@ -150,13 +147,13 @@ export default function VerPagos() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {fechas.length > 0 ? (
-                    fechas.map((fecha) => (
-                      <tr key={fecha.id} className="hover:bg-gray-50">
-                        <td className="py-3 px-4 text-sm">{fecha.nombre || `Fecha ${fecha.numero}`}</td>
+                  {estadoPagosPorFecha.length > 0 ? (
+                    estadoPagosPorFecha.map((pago) => (
+                      <tr key={pago.fecha_id} className="hover:bg-gray-50">
+                        <td className="py-3 px-4 text-sm">{pago.fecha_nombre || `Fecha ${pago.fecha_id}`}</td>
                         <td className="py-3 px-4 text-sm">${valorFecha}</td>
                         <td className="py-3 px-4 text-sm">
-                          {estadoPagosPorFecha[fecha.id] === "pagado" ? (
+                          {pago.transaccion ? (
                             <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full flex items-center w-fit">
                               <Check size={16} className="mr-1" /> Pagado
                             </span>
@@ -182,8 +179,6 @@ export default function VerPagos() {
         </div>
       </main>
       <Footer />
-
-      {/* Modal para registrar pago */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -219,9 +214,9 @@ export default function VerPagos() {
                         <SelectValue placeholder="Seleccionar fecha" />
                       </SelectTrigger>
                       <SelectContent>
-                        {fechas.map((fecha) => (
-                          <SelectItem key={fecha.id} value={fecha.id.toString()}>
-                            {fecha.nombre || `Fecha ${fecha.numero}`}
+                        {estadoPagosPorFecha.map((pago) => (
+                          <SelectItem key={pago.fecha_id} value={pago.fecha_id.toString()}>
+                            {pago.fecha_nombre || `Fecha ${pago.fecha_id}`}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -242,5 +237,5 @@ export default function VerPagos() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

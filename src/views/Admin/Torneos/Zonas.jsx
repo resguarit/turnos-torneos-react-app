@@ -24,6 +24,7 @@ export default function Zonas() {
         setLoading(true);
         const response = await api.get(`/torneos/${torneoId}/zonas`);
         console.log('Datos de las zonas:', response.data); // Agrega este log
+        localStorage.setItem('torneo_id', torneoId);
         const zonasConFecha = response.data.map(zona => {
           const siguienteFecha = zona.fechas?.find(fecha => fecha.estado === 'Pendiente');
           return { 

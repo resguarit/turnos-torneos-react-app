@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';;
 import { useNavigate, useLocation } from 'react-router-dom';
-import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays, ActivityIcon, Users, DollarSign, Box } from 'lucide-react';
+import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays, ActivityIcon, Users, DollarSign, Box, LandPlot } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import PestanaDashboard from './PestanaDashboard';
@@ -96,8 +96,8 @@ const NuevoPanelAdmin = () => {
                 activeTab === "courts" ? "bg-naranja text-white" : "bg-gray-200 text-black"
               }`}
             >
-              <Pitch className="inline-block mr-2" size={18} />
-              Canchas
+              <LandPlot className="inline-block mr-2" size={18} />
+              Canchas / Deportes
             </button>
             <button
               onClick={() => setActiveTab("users")}

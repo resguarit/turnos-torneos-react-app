@@ -31,6 +31,7 @@ import AltaTorneo from "@/views/Admin/Torneos/AltaTorneo";
 import DetalleZona from "@/views/Admin/Torneos/DetalleZona";
 import AltaEquipo from "@/views/Admin/Torneos/AltaEquipo";
 import Jugadores from "@/views/Admin/Torneos/Jugadores";
+import SelectDeporteReserva from "@/views/General/SelectDeporteReserva";
 
 const AppRoutes = () => {
   return (
@@ -44,6 +45,7 @@ const AppRoutes = () => {
       <Route path={`/confirmar-login`} element={<ConfirmarLogin />} />
       <Route path={`/nueva-reserva`} element={<NuevaReserva />} />
       <Route path={`/bloqueo-reserva`} element={<ContadorBloqueo />} />
+      <Route path={`/select-deporte`} element={<SelectDeporteReserva />} />
 
       {/* Rutas protegidas para administradores */}
       <Route path={`/torneos-admi`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><Torneos /></ProtectedRoute>} />
@@ -61,7 +63,7 @@ const AppRoutes = () => {
 
       {/* Rutas protegidas para usuarios y administradores */}
       <Route path={`/user-profile`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><UserProfile /></ProtectedRoute>} />
-      <Route path={`/reserva-mobile`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><ReservaMobile /></ProtectedRoute>} />
+      <Route path={`/reserva-mobile/:deporteId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><ReservaMobile /></ProtectedRoute>} />
       <Route path={`/partidos`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Partidos /></ProtectedRoute>} />
       <Route path={`/ver-partidos`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><VerPartidos /></ProtectedRoute>} />
       <Route path={`/cargar-partido`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><CargaPartido /></ProtectedRoute>} />

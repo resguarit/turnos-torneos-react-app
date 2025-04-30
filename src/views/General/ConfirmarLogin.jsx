@@ -83,7 +83,7 @@ export default function ConfirmarLogin() {
             if (!reservaTemp) {
               toast.error('No se encontraron datos de la reserva');
               setLoading(false);
-              navigate('/reserva-mobile');
+              navigate('/select-deporte');
               return;
             }
             
@@ -130,7 +130,7 @@ export default function ConfirmarLogin() {
 
   const handleCancel = () => {
     localStorage.removeItem('reservaTemp');
-    navigate('/reserva-mobile');
+    navigate('/select-deporte');
   };
 
   // Obtener detalles del horario y la cancha

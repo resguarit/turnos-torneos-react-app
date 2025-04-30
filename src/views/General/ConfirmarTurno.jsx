@@ -133,7 +133,7 @@ export default function ConfirmarTurno() {
 
             if (bloqueoResponse.status === 400 || bloqueoResponse.status === 401 || bloqueoResponse.status === 403 || bloqueoResponse.status === 404 || bloqueoResponse.status === 500) {
               toast.error(bloqueoResponse.data.message || 'Error en la creación del turno');
-              navigate('/reserva-mobile');
+              navigate('/select-deporte');
             }
           }
         }
@@ -173,7 +173,7 @@ export default function ConfirmarTurno() {
 
   const handleCancel = () => {
     localStorage.removeItem('reservaTemp');
-    navigate('/reserva-mobile');
+    navigate('/select-deporte');
   };
   
   const señaPercentage = reservationDetails.cancha ? (reservationDetails.cancha.seña / reservationDetails.cancha.precio_por_hora) * 100 : 0;

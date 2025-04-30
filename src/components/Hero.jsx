@@ -89,7 +89,7 @@ function Hero() {
             Descubrí las mejores canchas de fútbol y unite a la comunidad más grande de jugadores
           </h2>
           {!hasActiveReservation && (
-            <Link to="/reserva-mobile">
+            <Link to="/select-deporte">
               <button className="bg-naranja rounded-xl text-white p-2 font-inter font-medium text-xs md:text-sm tracking-wide w-full">
                 QUIERO RESERVAR UN TURNO
               </button>

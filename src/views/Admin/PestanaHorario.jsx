@@ -26,6 +26,8 @@ const PestanaHorario = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false); // Estado de carga
   const [switchLoading, setSwitchLoading] = useState({}); // Estado de carga específico para cada switch
+  const [deportes, setDeportes] = useState([]);
+  const [selectedDeporteId, setSelectedDeporteId] = useState('');
 
   const daysOfWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
   const timeOptions = [
@@ -34,8 +36,27 @@ const PestanaHorario = () => {
 
   // Cargar horarios al montar el componente
   useEffect(() => {
-    fetchActiveScheduleExtremes();
+    const fetchDeportes = async () => {
+      try {
+        const response = await api.get('/deportes');
+        setDeportes(response.data);
+        if (response.data.length > 0) {
+          setSelectedDeporteId(response.data[0].id);
+          fetchActiveScheduleExtremes(response.data[0].id);
+        }
+      } catch (error) {
+        console.error('Error al cargar deportes:', error);
+      }
+    };
+    fetchDeportes();
   }, []);
+
+  useEffect(() => {
+    if (selectedDeporteId) {
+      fetchActiveScheduleExtremes(selectedDeporteId);
+      fetchDisabledRanges(selectedDeporteId);
+    }
+  }, [selectedDeporteId]);
 
   useEffect(() => {
     if (successMessage) {
@@ -51,10 +72,12 @@ const PestanaHorario = () => {
     }
   }, [errorMessage]);
 
-  const fetchActiveScheduleExtremes = async () => {
+  const fetchActiveScheduleExtremes = async (deporteId) => {
     try {
       setIsLoading(true);
-      const response = await api.get("/horarios-extremos-activos");
+      const response = await api.get("/horarios-extremos-activos", { 
+        params: { deporte_id: deporteId } 
+      });
       // Obtener el array de horarios_extremos
       const horarios = response.data.horarios_extremos;
       
@@ -78,10 +101,12 @@ const PestanaHorario = () => {
   };
 
   // Actualiza la función fetchDisabledRanges para mejor manejo de errores y logging
-  const fetchDisabledRanges = async () => {
+  const fetchDisabledRanges = async (deporteId) => {
     setIsLoading(true);
     try {
-      const response = await api.get("/franjas-horarias-no-disponibles");
+      const response = await api.get("/franjas-horarias-no-disponibles", {
+        params: { deporte_id: deporteId }
+      });
 
       if (response.data && Array.isArray(response.data.horarios)) {
         setDisabledRanges(response.data.horarios);
@@ -137,11 +162,13 @@ const PestanaHorario = () => {
     };
 
     try {
-      const response = await api.put("/habilitar-franja-horaria", data);
+      const response = await api.put("/habilitar-franja-horaria", data, {
+        params: { deporte_id: selectedDeporteId }
+      });
       if (response.data.status === 200) {
         setSuccessMessage(response.data.message || 'Franja horaria habilitada correctamente');
-        await fetchDisabledRanges(); // Recargar las franjas deshabilitadas
-        await fetchActiveScheduleExtremes();
+        await fetchDisabledRanges(selectedDeporteId); // Recargar las franjas deshabilitadas
+        await fetchActiveScheduleExtremes(selectedDeporteId);
       }
     } catch (error) {
       setErrorMessage(error.response?.data?.message || 'Error al habilitar franja horaria');
@@ -167,7 +194,8 @@ const PestanaHorario = () => {
         const data = {
           dia: currentSchedule.day,
           hora_inicio: currentSchedule.start,
-          hora_fin: currentSchedule.end
+          hora_fin: currentSchedule.end,
+          deporte_id: selectedDeporteId
         };
 
         const endpoint = newEnabled ? 
@@ -187,11 +215,11 @@ const PestanaHorario = () => {
 
           // Recargar franjas deshabilitadas si el collapsible está abierto
           if (isCollapsibleOpen) {
-            await fetchDisabledRanges();
+            await fetchDisabledRanges(selectedDeporteId);
           }
 
           // Recargar extremos horarios activos
-          await fetchActiveScheduleExtremes();
+          await fetchActiveScheduleExtremes(selectedDeporteId);
         }
       } else {
         // Si no hay horarios, solo actualizar el estado local
@@ -216,12 +244,13 @@ const PestanaHorario = () => {
         dia: disableDay,
         hora_inicio: disableStart,
         hora_fin: disableEnd,
+        deporte_id: selectedDeporteId
       });
 
       if (response.data.status === 200) {
         setSuccessMessage(response.data.message || 'Franja horaria deshabilitada correctamente');
-        await fetchActiveScheduleExtremes();
-        await fetchDisabledRanges(); // Recargar las franjas deshabilitadas
+        await fetchActiveScheduleExtremes(selectedDeporteId);
+        await fetchDisabledRanges(selectedDeporteId); // Recargar las franjas deshabilitadas
         setShowError(false);
         setShowDisableModal(false); // Cerrar el modal
       } else {
@@ -234,7 +263,7 @@ const PestanaHorario = () => {
       setLoading(false); // Finalizar estado de carga
       setShowDisableModal(false);
       if (isCollapsibleOpen) {
-        await fetchDisabledRanges();
+        await fetchDisabledRanges(selectedDeporteId);
       }
     }
   };
@@ -262,7 +291,7 @@ const PestanaHorario = () => {
         };
       }
     });
-    return { dias };
+    return { dias, deporte_id: selectedDeporteId };
   };
 
   const handleSubmitConfig = async () => {
@@ -276,13 +305,13 @@ const PestanaHorario = () => {
       setSuccessMessage(response.data.message || 'Horarios configurados correctamente');
       if (response.data.status === 201) {
         // Recargar horarios
-        await fetchActiveScheduleExtremes();
+        await fetchActiveScheduleExtremes(selectedDeporteId);
         // Recargar franjas horarias deshabilitadas
-        await fetchDisabledRanges();
+        await fetchDisabledRanges(selectedDeporteId);
         // Recargar extremos activos
-        await fetchActiveScheduleExtremes();
+        await fetchActiveScheduleExtremes(selectedDeporteId);
         if (isCollapsibleOpen) {
-          await fetchDisabledRanges();
+          await fetchDisabledRanges(selectedDeporteId);
         }
       }
     } catch (error) {
@@ -301,7 +330,7 @@ const PestanaHorario = () => {
   const handleCollapsibleOpen = (open) => {
     setIsCollapsibleOpen(open);
     if (open) {
-      fetchDisabledRanges();
+      fetchDisabledRanges(selectedDeporteId);
     }
   };
 
@@ -309,34 +338,48 @@ const PestanaHorario = () => {
     <div>
       <ToastContainer position="top-right" />
       {/* Botones arriba */}
-      <div className="flex justify-end mb-4 mt-4">
-        <div className="">
-          {showError ? (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4 flex flex-col">
-              <p className="text-red-700 font-medium">Error al deshabilitar franja horaria</p>
-              <p className="text-red-600 text-sm">
-                Ya existe una franja horaria deshabilitada en ese rango para el día especificado
-              </p>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowDisableModal(true)}
-              className="px-3 sm:text-base text-sm py-2 bg-red-600 hover:bg-red-600 text-white rounded-[10px]  transition-colors mr-2"
-              disabled={loading} // Deshabilitar botón si está cargando
-            >
-              Deshabilitar franja horaria
-            </button>
-          )}
+      <div className="flex justify-between mb-4 mt-4">
+          <div className="flex justify-start items-center">
+            <select 
+            value={selectedDeporteId}
+            onChange={(e) => setSelectedDeporteId(e.target.value)}
+            className="border rounded-[8px] px-2 py-1 min-w-[200px] w-full">
+              {deportes.map((deporte) => (
+                <option key={deporte.id} value={deporte.id}>
+                  {`${deporte.nombre} ${deporte.jugadores_por_equipo}`}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex justify-center items-center">
+            <div className="">
+            {showError ? (
+              <div className="bg-red-50 border-l-4 border-red-500 p-4 flex flex-col">
+                <p className="text-red-700 font-medium">Error al deshabilitar franja horaria</p>
+                <p className="text-red-600 text-sm">
+                  Ya existe una franja horaria deshabilitada en ese rango para el día especificado
+                </p>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowDisableModal(true)}
+                className="px-3 sm:text-base text-sm py-2 bg-red-600 hover:bg-red-600 text-white rounded-[10px]  transition-colors mr-2"
+                disabled={loading} // Deshabilitar botón si está cargando
+              >
+                Deshabilitar franja horaria
+              </button>
+            )}
+          </div>
+          <button
+            onClick={hasChanges ? handleSubmitConfig : () => setShowConfigModal(true)}
+            className={`px-3 sm:text-base text-sm py-2 ${
+              hasChanges ? "bg-green-600  hover:bg-green-600" : "bg-blue-600 hover:bg-blue-700"
+            } text-white  rounded-[10px] transition-colors`}
+            disabled={loading} // Deshabilitar botón si está cargando
+          >
+            {hasChanges ? "Aplicar cambios" : "Configurar Horarios"}
+          </button>
         </div>
-        <button
-          onClick={hasChanges ? handleSubmitConfig : () => setShowConfigModal(true)}
-          className={`px-3 sm:text-base text-sm py-2 ${
-            hasChanges ? "bg-green-600  hover:bg-green-600" : "bg-blue-600 hover:bg-blue-700"
-          } text-white  rounded-[10px] transition-colors`}
-          disabled={loading} // Deshabilitar botón si está cargando
-        >
-          {hasChanges ? "Aplicar cambios" : "Configurar Horarios"}
-        </button>
       </div>
 
       {/* Tabla de horarios */}

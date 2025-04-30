@@ -36,7 +36,7 @@ export default function ContadorBloqueo() {
     // Cargar datos de la reserva
     const reservaTempString = localStorage.getItem('reservaTemp');
     if (!reservaTempString) {
-      navigate('/reserva-mobile');
+      navigate('/select-deporte');
       return;
     }
 
@@ -64,7 +64,7 @@ export default function ContadorBloqueo() {
       } catch (error) {
         console.error('Error al cargar detalles:', error);
         toast.error('Error al cargar los detalles de la reserva');
-        setTimeout(() => navigate('/reserva-mobile'), 2000);
+        setTimeout(() => navigate('/select-deporte'), 2000);
       } finally {
         setLoadingDetails(false);
         // Iniciar el contador solo cuando se hayan cargado los detalles
@@ -122,7 +122,7 @@ export default function ContadorBloqueo() {
       
       // Solo navegamos si estamos en la página del contador
       if (location.pathname === '/bloqueo-reserva') {
-        navigate('/reserva-mobile');
+        navigate('/select-deporte');
       }
       return;
     }
@@ -140,7 +140,7 @@ export default function ContadorBloqueo() {
     
     // Redireccionamos SOLO si estamos en la página del contador
     if (location.pathname === '/bloqueo-reserva') {
-      setTimeout(() => navigate('/reserva-mobile'), 2000);
+      setTimeout(() => navigate('/select-deporte'), 2000);
     }
   };
 
@@ -150,7 +150,7 @@ export default function ContadorBloqueo() {
       if (!reservaData) {
         toast.error('No se encontraron datos de la reserva.');
         cleanupStorage();
-        setTimeout(() => navigate('/reserva-mobile'), 2000);
+        setTimeout(() => navigate('/select-deporte'), 2000);
         return;
       }
       
@@ -184,7 +184,7 @@ export default function ContadorBloqueo() {
       if (!reservaData) {
         toast.error('No se encontraron datos de la reserva.');
         cleanupStorage();
-        navigate('/reserva-mobile');
+        navigate('/select-deporte');
         return;
       }
       
@@ -196,13 +196,13 @@ export default function ContadorBloqueo() {
       
       toast.success('Reserva cancelada exitosamente');
       cleanupStorage();
-      navigate('/reserva-mobile');
+      navigate('/select-deporte');
     } catch (error) {
       console.error('Error al cancelar la reserva:', error);
       toast.error(error.response?.data?.message || 'Error al cancelar la reserva');
       // En caso de error al cancelar, redirigimos de todas formas
       cleanupStorage();
-      setTimeout(() => navigate('/reserva-mobile'), 2000);
+      setTimeout(() => navigate('/select-deporte'), 2000);
     } finally {
       setIsCancelling(false);
     }

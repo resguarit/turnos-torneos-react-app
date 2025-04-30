@@ -37,7 +37,15 @@ export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handl
                             }}
                             className="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded-[6px] text-sm"
                           >
-                            Ver jugadores
+                            Ver Jugadores
+                          </button>
+                          <button
+                            onClick={() => {
+                              navigate(`/pagos/${equipo.id}`); 
+                            }}
+                            className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-[6px] text-sm"
+                          >
+                            Ver Pagos
                           </button>
                           <button
                             onClick={() => handleReemplazarEquipo(equipo.id)}

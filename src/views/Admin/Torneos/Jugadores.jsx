@@ -155,15 +155,18 @@ export default function Jugadores() {
       // Crear jugadores manuales y asociarlos al equipo
       if (jugadoresManuales.length > 0) {
         for (const jugador of jugadoresManuales) {
-          console.log('Creando jugador manual:', jugador);
-
           const response = await api.post(`/jugadores`, {
             nombre: jugador.nombre,
             apellido: jugador.apellido,
             dni: jugador.dni,
             telefono: jugador.telefono,
             fecha_nacimiento: jugador.fecha_nacimiento,
-            equipo_ids: [equipoId], // Asociar al equipo actual
+            equipos: [
+              {
+                id: Number(equipoId),
+                capitan: !!jugador.capitan, // true o false
+              }
+            ],
           });
 
           if (response.status !== 201) {
@@ -254,6 +257,7 @@ export default function Jugadores() {
                   <th className="py-2 text-left text-sm">Apellido</th>
                   <th className="py-2 text-left text-sm">Teléfono</th>
                   <th className="py-2 text-left text-sm">Fecha de Nacimiento</th>
+                  <th className="py-2 text-center text-sm">Capitán</th> {/* Nueva columna */}
                   <th className="py-2 text-center text-sm">Acciones</th>
                 </tr>
               </thead>
@@ -328,6 +332,17 @@ export default function Jugadores() {
                           ) : (
                             jugador.fecha_nacimiento
                           )}
+                        </td>
+                        <td className="py-2 text-center">
+                          <input
+                            type="checkbox"
+                            checked={!!(jugador.pivot && jugador.pivot.capitan)}
+                            readOnly
+                            disabled
+                            className={
+                              "accent-blue-600" + (jugador.pivot && jugador.pivot.capitan ? " bg-blue-600" : "")
+                            }
+                          />
                         </td>
                         <td className="py-2 text-center">
                           {jugadorEditando === jugador.id ? (
@@ -420,6 +435,14 @@ export default function Jugadores() {
                           onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'fecha_nacimiento')}
                           placeholder="Fecha de Nacimiento"
                           className="p-1 text-sm border border-black w-full rounded-[6px]"
+                        />
+                      </td>
+                      {/* Checkbox Capitán */}
+                      <td className="py-2 text-center">
+                        <input
+                          type="checkbox"
+                          checked={jugador.capitan || false}
+                          onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'capitan')}
                         />
                       </td>
                       {/* Acciones */}

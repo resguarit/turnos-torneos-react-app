@@ -8,8 +8,7 @@ import Zonas from "@/views/Admin/Torneos/Zonas";
 import AltaZona from "@/views/Admin/Torneos/AltaZona";
 import VerTurnos from "@/views/Admin/VerTurnos";
 import Partidos from "@/views/Admin/Partidos";
-import VerPartidos from "@/views/Admin/VerPartidos";
-import CargaPartido from "@/views/Admin/CargaPartido";
+import CargaPartido from "@/views/Admin/Torneos/CargaPartido";
 import Reglamento from "@/views/Admin/Reglamento";
 import Premios from "@/views/Admin/Premios";
 import VerGrilla from "@/views/Admin/VerGrilla";
@@ -31,6 +30,14 @@ import AltaTorneo from "@/views/Admin/Torneos/AltaTorneo";
 import DetalleZona from "@/views/Admin/Torneos/DetalleZona";
 import AltaEquipo from "@/views/Admin/Torneos/AltaEquipo";
 import Jugadores from "@/views/Admin/Torneos/Jugadores";
+import ResultadoPartido from "@/views/Admin/Torneos/ResultadoPartido";
+import VerTorneos from "@/views/Admin/Torneos/VerTorneos";
+import VerZonas from "@/views/Admin/Torneos/VerZonas";
+import VerTablas from "@/views/Admin/Torneos/VerTablas";
+import VerFixture from "@/views/Admin/Torneos/VerFixture";
+import EditarEquipo from '@/views/Admin/Torneos/EditarEquipo';
+import VerPagos from "@/views/Admin/Torneos/VerPagos";
+
 
 const AppRoutes = () => {
   return (
@@ -44,6 +51,10 @@ const AppRoutes = () => {
       <Route path={`/confirmar-login`} element={<ConfirmarLogin />} />
       <Route path={`/nueva-reserva`} element={<NuevaReserva />} />
       <Route path={`/bloqueo-reserva`} element={<ContadorBloqueo />} />
+      <Route path={`/torneos-user`} element={<VerTorneos />} />
+      <Route path={`/zonas-user/:torneoId`} element={<VerZonas />} />
+      <Route path={`/tablas/:zonaId`} element={<VerTablas />} />
+      <Route path={`/ver-fixture/:zonaId`} element={<VerFixture />} />
 
       {/* Rutas protegidas para administradores */}
       <Route path={`/torneos-admi`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><Torneos /></ProtectedRoute>} />
@@ -58,12 +69,17 @@ const AppRoutes = () => {
       <Route path={`/detalle-zona/:zonaId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><DetalleZona /></ProtectedRoute>} />
       <Route path={`/alta-equipo/:zonaId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><AltaEquipo /></ProtectedRoute>} />
       <Route path={`/jugadores/:equipoId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><Jugadores /></ProtectedRoute>} />
+      <Route path={`/resultado-partido/:partidoId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><ResultadoPartido /></ProtectedRoute>} />
+      <Route path={`/editar-torneo/:id`}element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaTorneo /></ProtectedRoute>}/>
+      <Route path="/editar-zona/:id" element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaZona /></ProtectedRoute>} />
+      <Route path="/editar-partido/:partidoId" element={<ProtectedRoute requiredRole={ROLES.ADMIN}><CargaPartido /></ProtectedRoute>} />
+      <Route path="/editar-equipo/:equipoId" element={<ProtectedRoute requiredRole={ROLES.ADMIN}><EditarEquipo /></ProtectedRoute>} />
+      <Route path={`/pagos/:equipoId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><VerPagos /></ProtectedRoute>} />
 
       {/* Rutas protegidas para usuarios y administradores */}
       <Route path={`/user-profile`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><UserProfile /></ProtectedRoute>} />
       <Route path={`/reserva-mobile`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><ReservaMobile /></ProtectedRoute>} />
       <Route path={`/partidos`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Partidos /></ProtectedRoute>} />
-      <Route path={`/ver-partidos`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><VerPartidos /></ProtectedRoute>} />
       <Route path={`/cargar-partido`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><CargaPartido /></ProtectedRoute>} />
       <Route path={`/reglamento`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Reglamento /></ProtectedRoute>} />
       <Route path={`/premios`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Premios /></ProtectedRoute>} />

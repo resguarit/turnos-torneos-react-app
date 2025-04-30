@@ -96,7 +96,12 @@ export default function Torneos() {
                   <p className="w-full flex gap-2 items-center "><List size={24} className="text-gray-600" /> {zonasCount[torneo.id] || 0} zonas</p>
                   <div className="flex mt-4 gap-3 text-sm justify-center">
                     <button onClick={() => handleVerZonas(torneo.id)} className="flex-1 border text-center border-gray-300 p-1 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Ver Zonas</button>
-                    <button className="flex-1 border p-1 border-gray-300 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Editar</button>
+                    <button
+                      onClick={() => navigate(`/editar-torneo/${torneo.id}`)}
+                      className="bg-blue-500 text-white px-4 py-2 rounded"
+                    >
+                      Editar
+                    </button>
                   </div>
                 </CardContent>
               </Card>

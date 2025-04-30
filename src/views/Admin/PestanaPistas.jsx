@@ -8,7 +8,7 @@ import BtnLoading from '@/components/BtnLoading';
 
 const PestanaPistas = () => {
   const [pistas, setPistas] = useState([]);
-  const [deportes, setDeportes] = useState([]);
+  const [deportes, setDeportes] = useState([]); // Lista de deportes
   const [agregando, setAgregando] = useState(false);
   const [editando, setEditando] = useState(null);
   const [pistaToDelete, setPistaToDelete] = useState(null);
@@ -18,7 +18,9 @@ const PestanaPistas = () => {
     precio_por_hora: '',
     seña: '',
     descripcion: '',
+    descripcion: '',
     activa: true,
+    deporte_id: '', // Nuevo campo para el deporte
   });
   const [loading, setLoading] = useState(true);
   const [loadingDeportes, setLoadingDeportes] = useState(true);
@@ -37,6 +39,7 @@ const PestanaPistas = () => {
       setLoadingDeportes(false);
     }
   };
+  const [isSaving, setIsSaving] = useState(false);
 
   const fetchPistas = async (signal) => {
     setLoading(true);
@@ -49,9 +52,27 @@ const PestanaPistas = () => {
       if (error.name !== 'AbortError' && error.name !== 'CanceledError') {
         console.error('Error fetching canchas:', error);
         toast.error('Error al cargar las canchas');
+        setLoading(false);
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDeportes = async () => {
+    try {
+      const response = await api.get('/deportes');
+      if (response.status === 200) {
+        console.log('Deportes cargados:', response.data); // Log para verificar la respuesta
+        setDeportes(response.data); // Asigna directamente el array de deportes
+      } else {
+        console.error('Error al cargar deportes: Respuesta inesperada', response);
+        setDeportes([]); // Maneja respuestas inesperadas
+      }
+    } catch (error) {
+      console.error('Error fetching deportes:', error);
+      toast.error('Error al cargar los deportes');
+      setDeportes([]); // Maneja errores de red
     }
   };
 
@@ -59,6 +80,8 @@ const PestanaPistas = () => {
     const controller = new AbortController();
     fetchPistas(controller.signal);
     fetchDeportes();
+    fetchDeportes(); // Cargar la lista de deportes
+
     return () => {
       controller.abort();
     };
@@ -67,9 +90,11 @@ const PestanaPistas = () => {
   const handleAddPista = async (e) => {
     e.preventDefault();
     setIsSaving(true);
+    setIsSaving(true);
     try {
       const response = await api.post('/canchas', newPista);
       if (response.status === 201) {
+        setPistas([response.data.cancha, ...pistas]);
         setPistas([response.data.cancha, ...pistas]);
         setNewPista({
           nro: '',
@@ -77,7 +102,9 @@ const PestanaPistas = () => {
           precio_por_hora: '',
           seña: '',
           descripcion: '',
+          descripcion: '',
           activa: true,
+          deporte_id: '', // Resetear el deporte
         });
         setAgregando(false);
         toast.success('Cancha añadida correctamente');
@@ -87,16 +114,18 @@ const PestanaPistas = () => {
       toast.error('Error al añadir la cancha');
     } finally {
       setIsSaving(false);
+      setIsSaving(false);
     }
   };
 
   const handleEditPista = async (e) => {
     e.preventDefault();
     setIsSaving(true);
+    setIsSaving(true);
     try {
       const response = await api.patch(`/canchas/${editando.id}`, newPista);
       if (response.status === 200) {
-        const updatedPistas = pistas.map(pista => 
+        const updatedPistas = pistas.map((pista) =>
           pista.id === editando.id ? { ...pista, ...newPista } : pista
         );
         setPistas(updatedPistas);
@@ -106,7 +135,9 @@ const PestanaPistas = () => {
           precio_por_hora: '',
           seña: '',
           descripcion: '',
+          descripcion: '',
           activa: true,
+          deporte_id: '', // Resetear el deporte
         });
         setEditando(null);
         setAgregando(false);
@@ -116,6 +147,7 @@ const PestanaPistas = () => {
       console.error('Error editing cancha:', error);
       toast.error('Error al editar la cancha');
     } finally {
+      setIsSaving(false);
       setIsSaving(false);
     }
   };
@@ -156,7 +188,8 @@ const PestanaPistas = () => {
               deporte_id: '',
               precio_por_hora: '',
               seña: '',
-              descripcion: '',
+              descripcion: '', // Resetear campo de descripción
+              deporte_id: '',
               activa: true,
             });
           }}
@@ -231,6 +264,23 @@ const PestanaPistas = () => {
                     onChange={(e) => setNewPista({ ...newPista, descripcion: e.target.value })}
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Deporte</label>
+                  <select
+                    value={newPista.deporte_id}
+                    onChange={(e) => setNewPista({ ...newPista, deporte_id: e.target.value })}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    required
+                  >
+                    <option value="">{loading ? 'Cargando deportes...' : 'Seleccionar Deporte'}</option>
+                    {Array.isArray(deportes) &&
+                      deportes.map((deporte) => (
+                        <option key={deporte.id} value={deporte.id}>
+                          {deporte.nombre} {deporte.jugadores_por_equipo}
+                        </option>
+                      ))}
+                  </select>
                 </div>
                 <div className="flex items-center">
                   <input

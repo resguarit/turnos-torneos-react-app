@@ -18,6 +18,17 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
     }
   };
 
+  // Obtener el nombre a mostrar
+  const getNombreTurno = () => {
+    if (booking.tipo === 'torneo' && booking.partido) {
+      const torneoNombre = booking.partido.fecha.zona.torneo.nombre || 'Sin torneo';
+      const zonaNombre = booking.partido.fecha.zona.nombre || 'Sin zona';
+      const fechaNombre = booking.partido.fecha.nombre || 'Sin fecha';
+      return `${torneoNombre} - ${zonaNombre} - ${fechaNombre}`;
+    }
+    return booking.usuario.nombre || 'Sin nombre';
+  };
+
   const verificarCajaAbierta = async () => {
     setVerificandoCaja(true);
     setCajaError(false);
@@ -46,7 +57,7 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
     >
       <div className="flex justify-between items-start w-full">
         <div className="flex-1">
-          <h3 className="font-semibold text-lg capitalize">{booking.usuario.nombre}</h3>
+          <h3 className="font-semibold text-lg capitalize">{getNombreTurno()}</h3>
           <p className="text-sm font-medium text-gray-500">{`${booking.horario.hora_inicio} - ${booking.horario.hora_fin}`}</p>
           <p className="text-sm font-medium text-gray-800">{`Monto total: $${booking.monto_total}`}</p>
           <p className="text-sm font-medium text-gray-800">{`Monto seña: $${booking.monto_seña}`}</p>
@@ -84,7 +95,7 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
           <button
             onClick={() => handleDeleteSubmit(booking)}
             size="icon"
-            className="bg-red-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
+            className="bg-red-600 rounded-[4px] hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
             disabled={verificandoCaja}
           >
             <Trash2 className="h-4 w-4" />
@@ -92,20 +103,22 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
         )}
         <button
           size="icon"
-          className="bg-blue-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
+          className="bg-blue-600 rounded-[4px] hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
           onClick={() => navigate(`/editar-turno/${booking.id}`)}
           disabled={verificandoCaja}
         >
           <PenSquare className="h-4 w-4" />
         </button>
-        <button
-          onClick={() => window.open(`https://api.whatsapp.com/send?phone=549${booking.usuario.telefono}`, '_blank')}
-          size="icon"
-          className="bg-green-500 hover:bg-green-600 text-white p-2 transition-colors duration-200"
-          disabled={verificandoCaja}
+        {booking.tipo !== 'torneo' && (
+          <button
+            onClick={() => window.open(`https://api.whatsapp.com/send?phone=549${booking.usuario.telefono}`, '_blank')}
+            size="icon"
+            className="bg-green-500 rounded-[4px] hover:bg-green-600 text-white p-2 transition-colors duration-200"
+            disabled={verificandoCaja}
         >
-          <Phone className="h-4 w-4" />
-        </button>
+            <Phone className="h-4 w-4" />
+          </button>
+        )}
         {booking.estado !== 'Pagado' && booking.estado !== 'Cancelado' && fecha_turno > fecha_modificacion && booking.tipo !== 'fijo' && (
           <button
             onClick={verificarCajaAbierta}

@@ -61,24 +61,26 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
         <button
           onClick={() => handleDeleteSubmit(booking)}
           size="icon"
-          className="bg-red-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
+          className="bg-red-600 rounded-[4px] hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
         >
           <Trash2 className="h-4 w-4" />
         </button>
         <button
           size="icon"
-          className="bg-blue-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
+          className="bg-blue-600 rounded-[4px] hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
           onClick={() => navigate(`/editar-turno/${booking.id}`)}
         >
           <PenSquare className="h-4 w-4" />
         </button>
-        <button
-          onClick={() => window.open(`https://api.whatsapp.com/send?phone=549${booking.usuario.telefono}`, '_blank')}
-          size="icon"
-          className="bg-green-500 hover:bg-green-600 text-white p-2 transition-colors duration-200"
-        >
-          <Phone className="h-4 w-4" />
-        </button>
+        {booking.tipo !== 'torneo' && (
+          <button
+            onClick={() => window.open(`https://api.whatsapp.com/send?phone=549${booking.usuario.telefono}`, '_blank')}
+            size="icon"
+            className="bg-green-500 rounded-[4px] hover:bg-green-600 text-white p-2 transition-colors duration-200"
+          >
+            <Phone className="h-4 w-4" />
+          </button>
+        )}
         {booking.estado !== 'Pagado' && booking.estado !== 'Cancelado' && (
           <button
             onClick={() => setShowPaymentModal(true)}

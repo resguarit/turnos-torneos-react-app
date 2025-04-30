@@ -283,7 +283,7 @@ export default function VerGrilla() {
                                   <p className="text-xs lg:text-base font-semibold">
                                     {reservation.partido.torneo} - {reservation.partido.zona}
                                   </p>
-                                  <p className="text-xs lg:text-sm">
+                                  <p className="text-xs lg:text-sm font-semibold">
                                     {reservation.partido.fecha}
                                   </p>
                                   <p className="text-xs lg:text-sm">

@@ -26,21 +26,6 @@ const PestanaPistas = () => {
   const [loadingDeportes, setLoadingDeportes] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  const fetchDeportes = async () => {
-    try {
-      const response = await api.get('/deportes');
-      if (response.data) {
-        setDeportes(response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching deportes:', error);
-      toast.error('Error al cargar los deportes');
-    } finally {
-      setLoadingDeportes(false);
-    }
-  };
-  const [isSaving, setIsSaving] = useState(false);
-
   const fetchPistas = async (signal) => {
     setLoading(true);
     try {
@@ -80,7 +65,6 @@ const PestanaPistas = () => {
     const controller = new AbortController();
     fetchPistas(controller.signal);
     fetchDeportes();
-    fetchDeportes(); // Cargar la lista de deportes
 
     return () => {
       controller.abort();
@@ -90,11 +74,9 @@ const PestanaPistas = () => {
   const handleAddPista = async (e) => {
     e.preventDefault();
     setIsSaving(true);
-    setIsSaving(true);
     try {
       const response = await api.post('/canchas', newPista);
       if (response.status === 201) {
-        setPistas([response.data.cancha, ...pistas]);
         setPistas([response.data.cancha, ...pistas]);
         setNewPista({
           nro: '',
@@ -114,13 +96,11 @@ const PestanaPistas = () => {
       toast.error('Error al añadir la cancha');
     } finally {
       setIsSaving(false);
-      setIsSaving(false);
     }
   };
 
   const handleEditPista = async (e) => {
     e.preventDefault();
-    setIsSaving(true);
     setIsSaving(true);
     try {
       const response = await api.patch(`/canchas/${editando.id}`, newPista);
@@ -147,7 +127,6 @@ const PestanaPistas = () => {
       console.error('Error editing cancha:', error);
       toast.error('Error al editar la cancha');
     } finally {
-      setIsSaving(false);
       setIsSaving(false);
     }
   };

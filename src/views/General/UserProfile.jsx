@@ -54,7 +54,7 @@ export default function UserProfile() {
             >
               <Trophy style={{height: '24px', width:'24px'}} className="h-6 w-6" />
               <span>Mis Torneos</span>
-            </Button>*/}
+            </Button>
           </div>
           </div>
           <div className="border-0 shadow-none">

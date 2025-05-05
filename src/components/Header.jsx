@@ -148,7 +148,6 @@ export function Header() {
             <Link to="/premios" className="hover:opacity-80">
               Premios
             </Link>
-            */} 
 
             {username ? (
               <div className="relative">

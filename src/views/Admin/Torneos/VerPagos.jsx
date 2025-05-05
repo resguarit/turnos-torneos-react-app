@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { ChevronLeft, Check, X, Plus, Calendar, CreditCard } from "lucide-react";
+import { ChevronLeft, Check, X, Plus, Calendar, CreditCard, Banknote } from "lucide-react"; // Added Banknote icon
 import { useNavigate, useParams } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -14,11 +14,10 @@ import api from "@/lib/axiosConfig";
 
 export default function VerPagos() {
   const navigate = useNavigate();
-  const { equipoId } = useParams(); // Obtenemos equipoId de la URL
-  const torneoId = localStorage.getItem("torneo_id"); // Obtenemos torneoId del localStorage
-  const zonaId = localStorage.getItem("zona_id"); // Obtenemos zonaId del localStorage
+  const { equipoId } = useParams();
+  const torneoId = localStorage.getItem("torneo_id");
+  const zonaId = localStorage.getItem("zona_id");
   const [equipo, setEquipo] = useState({ nombre: "" });
-  const [fechas, setFechas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [tipoSeleccionado, setTipoSeleccionado] = useState("inscripcion");
@@ -27,6 +26,8 @@ export default function VerPagos() {
   const [valorFecha, setValorFecha] = useState(0);
   const [inscripcionPagada, setInscripcionPagada] = useState(false);
   const [estadoPagosPorFecha, setEstadoPagosPorFecha] = useState([]);
+  const [metodosPago, setMetodosPago] = useState([]); // State for payment methods
+  const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState(""); // State for selected payment method
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,8 +50,14 @@ export default function VerPagos() {
         // Fetch inscripción status
         const inscripcionResponse = await api.get(`/equipos/${equipoId}/torneos/${torneoId}/pago-inscripcion`);
         setInscripcionPagada(!!inscripcionResponse.data.transaccion);
+
+        // Fetch payment methods
+        const metodosPagoResponse = await api.get('/metodos-pago'); // Adjust endpoint if needed
+        setMetodosPago(metodosPagoResponse.data);
+
       } catch (error) {
         console.error("Error fetching data:", error);
+        // Handle specific errors if needed (e.g., show toast notification)
       } finally {
         setLoading(false);
       }
@@ -60,35 +67,54 @@ export default function VerPagos() {
   }, [equipoId, torneoId, zonaId]);
 
   const handleRegistrarPago = async () => {
+    // Ensure a payment method is selected
+    if (!metodoPagoSeleccionado) {
+      console.error("Por favor, selecciona un método de pago."); // Or show a toast
+      return;
+    }
+
     try {
-      setLoading(true);
+      setLoading(true); // Consider a different loading state for the modal action
+
       if (tipoSeleccionado === "inscripcion") {
-        // Register tournament registration payment
-        await api.post(`/equipos/${equipoId}/torneos/${torneoId}/pagar-inscripcion`);
-        setInscripcionPagada(true);
+        // Use the new route for registration payment
+        await api.post(`/pago/inscripcion/${equipoId}/${torneoId}/${metodoPagoSeleccionado}`);
+        setInscripcionPagada(true); // Update UI immediately
       } else if (tipoSeleccionado === "fecha" && fechaSeleccionada) {
-        // Register payment for a specific date
-        await api.post(`/fechas/${fechaSeleccionada}/pagar`);
+        // Use the new route for date payment
+        await api.post(`/pago/fecha/${fechaSeleccionada}/${metodoPagoSeleccionado}`);
+        // Update the local state to reflect the payment
         setEstadoPagosPorFecha((prev) =>
           prev.map((pago) =>
             pago.fecha_id === parseInt(fechaSeleccionada)
-              ? { ...pago, transaccion: { id: "new", monto: valorFecha } }
+              ? { ...pago, transaccion: { id: "new", monto: valorFecha } } // Simulate transaction object
               : pago
           )
         );
       }
-      setModalOpen(false);
+
+      setModalOpen(false); // Close modal on success
+      setMetodoPagoSeleccionado(""); // Reset selected payment method
+      // Optionally: Refetch data or show success message
     } catch (error) {
       console.error("Error registering payment:", error);
+      // Show error message to the user (e.g., using toast)
     } finally {
-      setLoading(false);
+      setLoading(false); // Reset loading state
     }
+  };
+
+  // Helper to get fecha name from estadoPagosPorFecha
+  const getFechaNombre = (fechaId) => {
+    const pagoInfo = estadoPagosPorFecha.find(p => p.fecha_id === fechaId);
+    return pagoInfo?.fecha_nombre || `Fecha ${fechaId}`;
   };
 
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
       <main className="flex-1 grow p-6 bg-gray-100">
+        {/* ... Botón Atrás y Título ... */}
         <div className="w-full flex mb-2">
           <button
             onClick={() => navigate(-1)}
@@ -109,6 +135,7 @@ export default function VerPagos() {
           </div>
 
           <div className="bg-white w-full rounded-[8px] shadow-md p-6 mb-6">
+            {/* ... Info Equipo, Inscripción, Pagos por Fecha ... */}
             <h2 className="text-2xl font-medium mb-4">
               Equipo: <span className="bg-blue-500 bg-opacity-30 rounded-3xl p-1">{equipo.nombre}</span>
             </h2>
@@ -147,7 +174,7 @@ export default function VerPagos() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {estadoPagosPorFecha.length > 0 ? (
+                  {estadoPagosPorFecha?.length > 0 ? (
                     estadoPagosPorFecha.map((pago) => (
                       <tr key={pago.fecha_id} className="hover:bg-gray-50">
                         <td className="py-3 px-4 text-sm">{pago.fecha_nombre || `Fecha ${pago.fecha_id}`}</td>
@@ -168,7 +195,7 @@ export default function VerPagos() {
                   ) : (
                     <tr>
                       <td colSpan={3} className="py-4 px-4 text-center text-gray-500">
-                        No hay fechas programadas
+                        {loading ? 'Cargando...' : 'No hay fechas programadas o pagos registrados.'}
                       </td>
                     </tr>
                   )}
@@ -179,18 +206,22 @@ export default function VerPagos() {
         </div>
       </main>
       <Footer />
+
+      {/* Modal para registrar pago */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Registrar Pago</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
+          <div className="py-4 space-y-4"> {/* Added space-y-4 */}
+            {/* Payment Type Selection */}
             <RadioGroup value={tipoSeleccionado} onValueChange={setTipoSeleccionado} className="space-y-4">
+              {/* Inscripción Option */}
               <div className="flex items-start space-x-3 space-y-0">
-                <RadioGroupItem value="inscripcion" id="inscripcion" />
+                <RadioGroupItem value="inscripcion" id="inscripcion" disabled={inscripcionPagada} /> {/* Disable if already paid */}
                 <div className="grid gap-1.5">
-                  <Label htmlFor="inscripcion" className="font-medium">
-                    Inscripción
+                  <Label htmlFor="inscripcion" className={`font-medium ${inscripcionPagada ? 'text-gray-400' : ''}`}>
+                    Inscripción {inscripcionPagada ? '(Pagada)' : ''}
                   </Label>
                   <div className="flex items-center">
                     <CreditCard className="mr-2 h-4 w-4 text-gray-500" />
@@ -198,6 +229,7 @@ export default function VerPagos() {
                   </div>
                 </div>
               </div>
+              {/* Fecha Option */}
               <div className="flex items-start space-x-3 space-y-0">
                 <RadioGroupItem value="fecha" id="fecha" />
                 <div className="grid gap-1.5 w-full">
@@ -208,13 +240,15 @@ export default function VerPagos() {
                     <Calendar className="mr-2 h-4 w-4 text-gray-500" />
                     <p className="text-sm text-gray-500">Valor: ${valorFecha}</p>
                   </div>
+                  {/* Date Selection Dropdown (only if 'fecha' is selected) */}
                   {tipoSeleccionado === "fecha" && (
                     <Select value={fechaSeleccionada} onValueChange={setFechaSeleccionada}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Seleccionar fecha" />
                       </SelectTrigger>
                       <SelectContent>
-                        {estadoPagosPorFecha.map((pago) => (
+                        {/* Filter out already paid dates */}
+                        {estadoPagosPorFecha.filter(p => !p.transaccion).map((pago) => (
                           <SelectItem key={pago.fecha_id} value={pago.fecha_id.toString()}>
                             {pago.fecha_nombre || `Fecha ${pago.fecha_id}`}
                           </SelectItem>
@@ -225,12 +259,41 @@ export default function VerPagos() {
                 </div>
               </div>
             </RadioGroup>
+
+            {/* Payment Method Selection */}
+            <div className="grid gap-1.5 w-full">
+              <Label htmlFor="metodo-pago" className="font-medium">
+                Método de Pago
+              </Label>
+              <div className="flex items-center">
+                 <Banknote className="mr-2 h-4 w-4 text-gray-500" /> {/* Icon for payment method */}
+                 <Select value={metodoPagoSeleccionado} onValueChange={setMetodoPagoSeleccionado}>
+                    <SelectTrigger id="metodo-pago" className="w-full">
+                       <SelectValue placeholder="Seleccionar método" />
+                    </SelectTrigger>
+                    <SelectContent>
+                       {metodosPago.map((metodo) => (
+                          <SelectItem key={metodo.id} value={metodo.id.toString()}>
+                             {metodo.nombre}
+                          </SelectItem>
+                       ))}
+                    </SelectContent>
+                 </Select>
+              </div>
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
+            <Button variant="outline" onClick={() => { setModalOpen(false); setMetodoPagoSeleccionado(""); }}> {/* Reset on cancel */}
               Cancelar
             </Button>
-            <Button onClick={handleRegistrarPago} disabled={tipoSeleccionado === "fecha" && !fechaSeleccionada}>
+            <Button
+              onClick={handleRegistrarPago}
+              disabled={
+                !metodoPagoSeleccionado || // Disabled if no payment method selected
+                (tipoSeleccionado === "inscripcion" && inscripcionPagada) || // Disabled if inscription already paid
+                (tipoSeleccionado === "fecha" && !fechaSeleccionada) // Disabled if 'fecha' selected but no date chosen
+              }
+            >
               Confirmar Pago
             </Button>
           </DialogFooter>

@@ -18,6 +18,7 @@ function NuevoTurnoAdmi() {
     cancha_id: '',
     horario_id: '',
     estado: 'Pendiente',
+    deporte_id: '', // Agregado deporte_id
   });
   
   // Cambiado de users a personas
@@ -31,6 +32,9 @@ function NuevoTurnoAdmi() {
   const [fetchingCanchas, setFetchingCanchas] = useState(false);
   const navigate = useNavigate();
   const [isTurnoFijo, setIsTurnoFijo] = useState(false);
+  // Estado para deportes
+  const [deportes, setDeportes] = useState([]);
+  const [loadingDeportes, setLoadingDeportes] = useState(false);
   
   // Estados para el modal de nueva persona
   const [showModal, setShowModal] = useState(false);
@@ -65,7 +69,27 @@ function NuevoTurnoAdmi() {
     };
 
     fetchPersonas();
+    fetchDeportes();
   }, []);
+
+  // Función para cargar los deportes
+  const fetchDeportes = async () => {
+    try {
+      setLoadingDeportes(true);
+      const response = await api.get('/deportes');
+      
+      if (response.data) {
+        setDeportes(response.data);
+      } else {
+        console.error('Estructura de respuesta inesperada en deportes:', response.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar deportes:', error);
+      setError('Error al cargar deportes');
+    } finally {
+      setLoadingDeportes(false);
+    }
+  };
 
   useEffect(() => {
     if (searchTerm.trim()) {
@@ -81,7 +105,7 @@ function NuevoTurnoAdmi() {
   // useEffect para cargar los horarios cuando cambia la fecha
   useEffect(() => {
     const fetchHorarios = async () => {
-      if (!formData.fecha_turno) return;
+      if (!formData.fecha_turno || !formData.deporte_id) return;
       
       setFetchingHorarios(true);
       setHorarios([]);
@@ -95,8 +119,8 @@ function NuevoTurnoAdmi() {
       try {
         const endpoint = isTurnoFijo ? '/disponibilidad/turnos-fijos' : '/disponibilidad/fecha';
         const params = isTurnoFijo 
-          ? { fecha_inicio: formData.fecha_turno } 
-          : { fecha: formData.fecha_turno };
+          ? { fecha_inicio: formData.fecha_turno, deporte_id: formData.deporte_id } 
+          : { fecha: formData.fecha_turno, deporte_id: formData.deporte_id };
         
         const response = await api.get(endpoint, { params });
         
@@ -121,15 +145,15 @@ function NuevoTurnoAdmi() {
       }
     };
 
-    if (formData.fecha_turno) {
+    if (formData.fecha_turno && formData.deporte_id) {
       fetchHorarios();
     }
-  }, [formData.fecha_turno, isTurnoFijo]);
+  }, [formData.fecha_turno, formData.deporte_id, isTurnoFijo]);
 
   // useEffect para cargar canchas cuando cambia el horario
   useEffect(() => {
     const fetchCanchas = async () => {
-      if (!formData.fecha_turno || !formData.horario_id) return;
+      if (!formData.fecha_turno || !formData.horario_id || !formData.deporte_id) return;
       
       // En caso de turno fijo, no necesitamos cargar canchas específicas
       if (isTurnoFijo) return;
@@ -145,7 +169,8 @@ function NuevoTurnoAdmi() {
         const response = await api.get('/disponibilidad/cancha', {
           params: {
             fecha: formData.fecha_turno,
-            horario_id: formData.horario_id
+            horario_id: formData.horario_id,
+            deporte_id: formData.deporte_id
           }
         });
         
@@ -165,11 +190,11 @@ function NuevoTurnoAdmi() {
     if (formData.horario_id) {
       fetchCanchas();
     }
-  }, [formData.horario_id, formData.fecha_turno, isTurnoFijo]);
+  }, [formData.horario_id, formData.fecha_turno, formData.deporte_id, isTurnoFijo]);
 
   // Función para verificar si el formulario es válido
   const isFormValid = () => {
-    if (!formData.persona_id || !formData.fecha_turno || !formData.horario_id) {
+    if (!formData.persona_id || !formData.fecha_turno || !formData.horario_id || !formData.deporte_id) {
       return false;
     }
     
@@ -188,6 +213,20 @@ function NuevoTurnoAdmi() {
       persona_nombre: persona.name,
     }));
     setSearchTerm(persona.dni);
+  };
+
+  // Función para manejar el cambio de deporte
+  const handleDeporteChange = (e) => {
+    setError(null);
+    setFormData({
+      ...formData,
+      deporte_id: e.target.value,
+      fecha_turno: '',
+      horario_id: '',
+      cancha_id: ''
+    });
+    setHorarios([]);
+    setCanchas([]);
   };
 
   // Función para abrir el modal
@@ -311,7 +350,7 @@ function NuevoTurnoAdmi() {
       return;
     }
     
-    if (!formData.persona_id) {  // Cambiado de usuario_id a persona_id
+    if (!formData.persona_id) {
       toast.error('No se ha seleccionado una persona válida');
       return;
     }
@@ -319,7 +358,10 @@ function NuevoTurnoAdmi() {
     setLoading(true);
     try {
       const disponibilidadEndpoint = isTurnoFijo ? '/disponibilidad/turnos-fijos' : '/disponibilidad/fecha';
-      const params = isTurnoFijo ? { fecha_inicio: formData.fecha_turno } : { fecha: formData.fecha_turno };
+      const params = isTurnoFijo 
+        ? { fecha_inicio: formData.fecha_turno, deporte_id: formData.deporte_id } 
+        : { fecha: formData.fecha_turno, deporte_id: formData.deporte_id };
+        
       const disponibilidadResponse = await api.get(disponibilidadEndpoint, { params });
 
       const canchaDisponible = disponibilidadResponse.data.horarios.some(
@@ -332,13 +374,14 @@ function NuevoTurnoAdmi() {
         return;
       }
 
-      // Crear el objeto con los datos del turno - cambiado usuario_id a persona_id
+      // Crear el objeto con los datos del turno
       const turnoData = {
         persona_id: parseInt(formData.persona_id),
         fecha_turno: formData.fecha_turno,
         horario_id: parseInt(formData.horario_id),
         cancha_id: parseInt(formData.cancha_id),
-        estado: formData.estado
+        estado: formData.estado,
+        deporte_id: parseInt(formData.deporte_id)
       };
 
       const storeEndpoint = isTurnoFijo ? '/turnos/turnofijo' : '/turnos/turnounico';
@@ -354,6 +397,13 @@ function NuevoTurnoAdmi() {
       setLoading(false);
     }
   };
+
+  const formatDeporteName = (deporte) => {
+    if (deporte.nombre.toLowerCase().includes("futbol") || deporte.nombre.toLowerCase().includes("fútbol")) {
+      return `${deporte.nombre} ${deporte.jugadores_por_equipo}`
+    }
+    return deporte.nombre
+  }
           
   return (
     <div className="min-h-screen flex flex-col font-inter">
@@ -436,6 +486,30 @@ function NuevoTurnoAdmi() {
                 )}
               </div>
 
+              {/* Selector de deportes */}
+              <div>
+                <label className="block text-sm font-medium">Deporte</label>
+                {loadingDeportes ? (
+                  <div className="w-full border rounded p-2 border-gray-300 bg-gray-50 cursor-not-allowed text-gray-500">
+                    Deportes cargando...
+                  </div>
+                ) : (
+                  <select
+                    className="w-full border rounded p-2 border-gray-300"
+                    value={formData.deporte_id}
+                    onChange={handleDeporteChange}
+                    disabled={loadingDeportes}
+                  >
+                    <option value="">Seleccionar deporte</option>
+                    {deportes.map(deporte => (
+                      <option key={deporte.id} value={deporte.id}>
+                        {formatDeporteName(deporte)}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
               <div>
                 <label className="block text-sm font-medium">Fecha</label>
                 <input
@@ -443,7 +517,13 @@ function NuevoTurnoAdmi() {
                   className="w-full border rounded p-2"
                   value={formData.fecha_turno}
                   onChange={handleFechaChange}
+                  disabled={!formData.deporte_id}
                 />
+                {!formData.deporte_id && (
+                  <p className="text-red-500 text-sm mt-1">
+                    Primero seleccione un deporte
+                  </p>
+                )}
               </div>
 
               {/* El resto de los campos (horario, cancha, estado) sin cambios */}
@@ -462,7 +542,7 @@ function NuevoTurnoAdmi() {
                     }`}
                     value={formData.horario_id}
                     onChange={(e) => setFormData({ ...formData, horario_id: e.target.value, cancha_id: '' })}
-                    disabled={!formData.fecha_turno || horarios.length === 0 || fetchingHorarios || fetchingCanchas}
+                    disabled={!formData.fecha_turno || horarios.length === 0 || fetchingHorarios || fetchingCanchas || !formData.deporte_id}
                   >
                     <option value="">
                       {formData.fecha_turno && horarios.length === 0 

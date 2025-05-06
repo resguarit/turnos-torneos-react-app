@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import BtnLoading from "@/components/BtnLoading";
 
 const PestanaHorario = () => {
   const [schedules, setSchedules] = useState([]);
@@ -28,6 +29,8 @@ const PestanaHorario = () => {
   const [switchLoading, setSwitchLoading] = useState({}); // Estado de carga específico para cada switch
   const [deportes, setDeportes] = useState([]);
   const [selectedDeporteId, setSelectedDeporteId] = useState('');
+  const [loadingHorarios, setLoadingHorarios] = useState(false);
+  const [loadingDeportes, setLoadingDeportes] = useState(false);
 
   const daysOfWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
   const timeOptions = [
@@ -36,6 +39,7 @@ const PestanaHorario = () => {
 
   // Cargar horarios al montar el componente
   useEffect(() => {
+    setLoadingDeportes(true);
     const fetchDeportes = async () => {
       try {
         const response = await api.get('/deportes');
@@ -46,6 +50,8 @@ const PestanaHorario = () => {
         }
       } catch (error) {
         console.error('Error al cargar deportes:', error);
+      } finally {
+        setLoadingDeportes(false);
       }
     };
     fetchDeportes();
@@ -73,6 +79,7 @@ const PestanaHorario = () => {
   }, [errorMessage]);
 
   const fetchActiveScheduleExtremes = async (deporteId) => {
+    setLoadingHorarios(true);
     try {
       setIsLoading(true);
       const response = await api.get("/horarios-extremos-activos", { 
@@ -97,6 +104,7 @@ const PestanaHorario = () => {
       setErrorMessage(error.response?.data?.message || 'Error al cargar horarios extremos');
     } finally {
       setIsLoading(false);
+      setLoadingHorarios(false);
     }
   };
 
@@ -340,16 +348,24 @@ const PestanaHorario = () => {
       {/* Botones arriba */}
       <div className="flex justify-between mb-4 mt-4">
           <div className="flex justify-start items-center">
-            <select 
-            value={selectedDeporteId}
-            onChange={(e) => setSelectedDeporteId(e.target.value)}
-            className="border rounded-[8px] px-2 py-1 min-w-[200px] w-full">
-              {deportes.map((deporte) => (
-                <option key={deporte.id} value={deporte.id}>
-                  {`${deporte.nombre} ${deporte.jugadores_por_equipo}`}
-                </option>
-              ))}
-            </select>
+            {loadingDeportes ? (
+              <div className="flex items-center space-x-2">
+                <span className="text-gray-500">Cargando deportes...</span>
+              </div>
+            ) : deportes.length > 0 ? (
+              <select 
+                value={selectedDeporteId}
+                onChange={(e) => setSelectedDeporteId(e.target.value)}
+                className="border rounded-[8px] px-2 py-1 min-w-[200px] w-full">
+                {deportes.map((deporte) => (
+                  <option key={deporte.id} value={deporte.id}>
+                    {`${deporte.nombre} ${deporte.jugadores_por_equipo}`}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-gray-500">No hay deportes disponibles</span>
+            )}
           </div>
           <div className="flex justify-center items-center">
             <div className="">
@@ -363,8 +379,8 @@ const PestanaHorario = () => {
             ) : (
               <button
                 onClick={() => setShowDisableModal(true)}
-                className="px-3 sm:text-base text-sm py-2 bg-red-600 hover:bg-red-600 text-white rounded-[10px]  transition-colors mr-2"
-                disabled={loading} // Deshabilitar botón si está cargando
+                className="px-3 sm:text-base text-sm py-2 bg-red-600 hover:bg-red-600 text-white rounded-[10px] transition-colors mr-2"
+                disabled={loading || loadingHorarios || loadingDeportes || !selectedDeporteId}
               >
                 Deshabilitar franja horaria
               </button>
@@ -374,8 +390,8 @@ const PestanaHorario = () => {
             onClick={hasChanges ? handleSubmitConfig : () => setShowConfigModal(true)}
             className={`px-3 sm:text-base text-sm py-2 ${
               hasChanges ? "bg-green-600  hover:bg-green-600" : "bg-blue-600 hover:bg-blue-700"
-            } text-white  rounded-[10px] transition-colors`}
-            disabled={loading} // Deshabilitar botón si está cargando
+            } text-white rounded-[10px] transition-colors`}
+            disabled={loading || loadingHorarios || loadingDeportes || !selectedDeporteId}
           >
             {hasChanges ? "Aplicar cambios" : "Configurar Horarios"}
           </button>
@@ -383,6 +399,11 @@ const PestanaHorario = () => {
       </div>
 
       {/* Tabla de horarios */}
+      {loadingHorarios || loadingDeportes ? (
+        <div className="flex flex-col justify-center items-center py-12">
+          <BtnLoading />
+        </div>
+      ) : (
       <div className="overflow-x-auto rounded-[8px]">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -451,72 +472,80 @@ const PestanaHorario = () => {
           </tbody>
         </table>
       </div>
-      <Collapsible className="mt-4" open={isCollapsibleOpen} onOpenChange={handleCollapsibleOpen}>
-        <CollapsibleTrigger className="flex w-full items-center justify-between rounded-t-xl text-sm md:text-base border p-4 font-medium">
-          Franjas horarias deshabilitadas
-          <ChevronDown className="h-5 w-5" />
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="min-w-full divide-y">
-            {isLoading ? (
-              <p>Cargando franjas horarias deshabilitadas...</p>
-            ) : disabledRanges && disabledRanges.length > 0 ? (
-              // Agrupar franjas horarias por día
-              Object.entries(
-                disabledRanges.reduce((acc, range) => {
-                  if (!acc[range.dia]) {
-                    acc[range.dia] = [];
-                  }
-                  acc[range.dia].push(range);
-                  return acc;
-                }, {})
-              ).map(([dia, franjas]) => (
-                <Collapsible key={dia} className="mb-4">
-                  <CollapsibleTrigger className="flex w-full items-center justify-between rounded-b-xl text-sm md:text-base border p-4 bg-red-50">
-                    {dia}
-                    <ChevronDown className="h-5 w-5" />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 overflow-x-auto">
-                      <thead>
-                        <tr>
-                          <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/3">Hora Inicio</th>
-                          <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/3">Hora Fin</th>
-                          <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/3">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {franjas.map((range, index) => (
-                          <tr key={index} className="bg-red-50">
-                            <td className="px-4 sm:px-6 py-4 text-sm sm:text-base whitespace-nowrap w-1/3">
-                              {range.hora_inicio ? range.hora_inicio.slice(0, 5) : ''}
-                            </td>
-                            <td className="px-4 sm:px-6 py-4 text-sm sm:text-base whitespace-nowrap w-1/3">
-                              {range.hora_fin ? range.hora_fin.slice(0, 5) : ''}
-                            </td>
-                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap w-1/3">
-                              <button
-                                className="px-4 py-2 text-sm sm:text-base bg-green-500 text-white rounded-[10px] hover:bg-green-600"
-                                onClick={() => handleEnableRange(range)}
-                                disabled={loading} // Deshabilitar botón si está cargando
-                              >
-                                Habilitar Franja 
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </CollapsibleContent>
-                </Collapsible>
-              ))
-            ) : (
-              <p>No hay franjas horarias deshabilitadas</p>
-            )}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+      )}
 
+      {/* Collapsible de franjas deshabilitadas (solo mostrar si no está cargando) */}
+      {(!loadingHorarios && !loadingDeportes) && (
+        <Collapsible className="mt-4" open={isCollapsibleOpen} onOpenChange={handleCollapsibleOpen}>
+          <CollapsibleTrigger className="flex w-full items-center justify-between rounded-t-xl text-sm md:text-base border p-4 font-medium">
+            Franjas horarias deshabilitadas
+            <ChevronDown className="h-5 w-5" />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="min-w-full divide-y">
+              {isLoading ? (
+                <div className="flex justify-center items-center py-4">
+                  <BtnLoading />
+                  <span className="text-gray-500 ml-2">Cargando franjas deshabilitadas...</span>
+                </div>
+              ) : disabledRanges && disabledRanges.length > 0 ? (
+                // Agrupar franjas horarias por día
+                Object.entries(
+                  disabledRanges.reduce((acc, range) => {
+                    if (!acc[range.dia]) {
+                      acc[range.dia] = [];
+                    }
+                    acc[range.dia].push(range);
+                    return acc;
+                  }, {})
+                ).map(([dia, franjas]) => (
+                  <Collapsible key={dia} className="mb-4">
+                    <CollapsibleTrigger className="flex w-full items-center justify-between rounded-b-xl text-sm md:text-base border p-4 bg-red-50">
+                      {dia}
+                      <ChevronDown className="h-5 w-5" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200 overflow-x-auto">
+                        <thead>
+                          <tr>
+                            <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/3">Hora Inicio</th>
+                            <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/3">Hora Fin</th>
+                            <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-red-500 uppercase tracking-wider w-1/3">Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {franjas.map((range, index) => (
+                            <tr key={index} className="bg-red-50">
+                              <td className="px-4 sm:px-6 py-4 text-sm sm:text-base whitespace-nowrap w-1/3">
+                                {range.hora_inicio ? range.hora_inicio.slice(0, 5) : ''}
+                              </td>
+                              <td className="px-4 sm:px-6 py-4 text-sm sm:text-base whitespace-nowrap w-1/3">
+                                {range.hora_fin ? range.hora_fin.slice(0, 5) : ''}
+                              </td>
+                              <td className="px-4 sm:px-6 py-4 whitespace-nowrap w-1/3">
+                                <button
+                                  className="px-4 py-2 text-sm sm:text-base bg-green-500 text-white rounded-[10px] hover:bg-green-600"
+                                  onClick={() => handleEnableRange(range)}
+                                  disabled={loading}
+                                >
+                                  {loading ? <BtnLoading /> : "Habilitar Franja"}
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </CollapsibleContent>
+                  </Collapsible>
+                ))
+              ) : (
+                <p className="p-4 text-center text-gray-500">No hay franjas horarias deshabilitadas</p>
+              )}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+      
       {/* Modal para deshabilitar franja específica */}
       {showDisableModal && (
         <div className="fixed inset-0 flex items-center justify-center z-10 bg-gray-900 bg-opacity-50">

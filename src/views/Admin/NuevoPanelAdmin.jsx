@@ -69,7 +69,7 @@ const NuevoPanelAdmin = () => {
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
         <div className="max-w-full mx-auto">
-          <div className="grid grid-cols-2  sm:flex sm:flex-row gap-2 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-2 sm:gap-4">
             {isAdmin && (
               <button
                 onClick={() => setActiveTab("dashboard")}

@@ -25,27 +25,77 @@ export default function VerGrilla() {
   const [loading, setLoading] = useState(true);
   const [selectedTurno, setSelectedTurno] = useState(null);
   const [showTurnoModal, setShowTurnoModal] = useState(false);
+  // Estados para deportes
+  const [deportes, setDeportes] = useState([]);
+  const [selectedDeporte, setSelectedDeporte] = useState('');
+  const [loadingDeportes, setLoadingDeportes] = useState(true); // Cambiado a true por defecto
   const navigate = useNavigate();
 
-
+  // Cargar deportes al montar el componente
   useEffect(() => {
+    const fetchDeportes = async () => {
+      try {
+        setLoadingDeportes(true);
+        const response = await api.get('/deportes');
+        
+        if (response.data && response.data.length > 0) {
+          setDeportes(response.data);
+          // Seleccionar automáticamente el primer deporte
+          setSelectedDeporte(response.data[0].id.toString());
+        } else {
+          console.error('No se encontraron deportes o estructura de respuesta inesperada:', response.data);
+        }
+      } catch (error) {
+        console.error('Error al cargar deportes:', error);
+      } finally {
+        setLoadingDeportes(false);
+      }
+    };
+
+    fetchDeportes();
+  }, []);
+
+  // Cargar la grilla solo cuando hay un deporte seleccionado
+  useEffect(() => {
+    // No cargar la grilla si no hay deporte seleccionado
+    if (!selectedDeporte) {
+      return;
+    }
+    
     const controller = new AbortController();
     const signal = controller.signal;
 
     const fetchGrid = async (signal) => {
       try {
         const formattedDate = currentDate.toISOString().split('T')[0];
-        const response = await api.get(`/grilla?fecha=${formattedDate}`, {signal});
+        // Siempre incluir el deporte_id
+        const url = `/grilla?fecha=${formattedDate}&deporte_id=${selectedDeporte}`;
+        
+        const response = await api.get(url, {signal});
         setGrid(response.data.grid);
 
-        const times = Object.keys(response.data.grid);
-        const courts = Object.keys(response.data.grid[times[0]]).map(court => ({
-          nro: court,
-          tipo: response.data.grid[times[0]][court].tipo
-        }));
+        // Verificar si hay datos en la grilla
+        if (Object.keys(response.data.grid).length === 0) {
+          setTimeSlots([]);
+          setCourts([]);
+        } else {
+          const times = Object.keys(response.data.grid);
+          // Verificar si hay datos para el primer horario
+          if (times.length > 0 && response.data.grid[times[0]]) {
+            const courts = Object.keys(response.data.grid[times[0]]).map(court => ({
+              nro: court,
+              tipo: response.data.grid[times[0]][court].tipo,
+              deporte: response.data.grid[times[0]][court].deporte
+            }));
+            
+            setTimeSlots(times);
+            setCourts(courts);
+          } else {
+            setTimeSlots([]);
+            setCourts([]);
+          }
+        }
         
-        setTimeSlots(times);
-        setCourts(courts);
         setLoading(false);
       } catch (error) {
         if (!signal?.aborted) {
@@ -63,7 +113,7 @@ export default function VerGrilla() {
     return () => {
       controller.abort();
     };
-  }, [currentDate]);
+  }, [currentDate, selectedDeporte]);
 
   /* useTimeout(() => {
     if (loading) {
@@ -71,9 +121,15 @@ export default function VerGrilla() {
     }
   }, 20000); */
 
+  if (loadingDeportes) {
+    return (<div className='flex justify-center items-center h-[50vh]'>
+      <BtnLoading />
+    </div>)
+  }
+
   if (loading) {
     return (<div className='flex justify-center items-center h-[50vh]'>
-    <BtnLoading />
+      <BtnLoading />
     </div>)
   }
 
@@ -112,6 +168,12 @@ export default function VerGrilla() {
     setSelectedTurno(null);
   };
 
+  // Manejar cambio de deporte
+  const handleDeporteChange = (e) => {
+    setSelectedDeporte(e.target.value);
+    setLoading(true);
+  };
+
   const exportToPDF = () => {
     const input = document.getElementById('grilla-table');
     html2canvas(input, { scale: 2 }).then((canvas) => {
@@ -143,7 +205,7 @@ export default function VerGrilla() {
   
     // Construir las filas de datos
     const rows = courts.map((court) => {
-      const row = [`Cancha ${court.nro} - ${court.tipo}`]; // Primera celda con la cancha
+      const row = [`Cancha ${court.nro} - ${formatDeporteName(court.deporte)}`]; // Primera celda con la cancha
       timeSlots.forEach((time) => {
         const reservation = grid[time]?.[court.nro]?.turno;
         row.push(
@@ -194,40 +256,65 @@ export default function VerGrilla() {
     XLSX.writeFile(workbook, `grilla-${dateStr}.xlsx`);
   };
 
+  const formatDeporteName = (deporte) => {
+    if (!deporte) return '';
+    
+    if (deporte.nombre.toLowerCase().includes("futbol") || deporte.nombre.toLowerCase().includes("fútbol")) {
+      return `${deporte.nombre} ${deporte.jugadores_por_equipo}`;
+    }
+    return deporte.nombre;
+  };
+  
+
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <main className="flex-1 p-6 bg-gray-100">
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-4 mb-4 ">
             <div className="flex gap-2 items-center">
-            <button onClick={handlePrevDay} className="p-1 hover:bg-gray-100 rounded ">
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={toggleCalendar}
-              className="px-4 py-2 bg-white rounded-[6px] text-xs sm:text-sm  font-medium text-black"
-            >
-              {currentDate ? format(currentDate, 'PPP', { locale: es }) : <CalendarDays className='w-48' />}
-            </button>
-            <button onClick={handleNextDay} className="p-1 hover:bg-gray-100 rounded">
-              <ChevronRight className="w-4 h-4" />
-            </button>
+              <button onClick={handlePrevDay} className="p-1 hover:bg-gray-100 rounded ">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={toggleCalendar}
+                className="px-4 py-2 bg-white rounded-[6px] text-xs sm:text-sm  font-medium text-black"
+              >
+                {currentDate ? format(currentDate, 'PPP', { locale: es }) : <CalendarDays className='w-48' />}
+              </button>
+              <button onClick={handleNextDay} className="p-1 hover:bg-gray-100 rounded">
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
-            <div className="flex gap-4">
-              <button
-                onClick={exportToPDF}
-                
-                className=" p-2 bg-blue-500 text-white text-xs sm:text-sm rounded-[6px]  hover:bg-blue-600  "
+            
+            {/* Selector de deportes */}
+            <div className="flex items-center">
+              <select 
+                className="px-4 py-2 bg-white rounded-[6px] text-xs sm:text-sm font-medium text-black mr-4"
+                value={selectedDeporte}
+                onChange={handleDeporteChange}
+                disabled={loadingDeportes}
               >
-                Exportar a PDF
-              </button>
-              <button
-                onClick={exportToExcel}
-                
-                className="p-2 bg-green-600 text-white text-xs sm:text-sm rounded-[6px] hover:bg-green-600"
-              >
-                Exportar a Excel
-              </button>
+                {deportes.map(deporte => (
+                  <option key={deporte.id} value={deporte.id}>
+                    {formatDeporteName(deporte)}
+                  </option>
+                ))}
+              </select>
+              
+              <div className="flex gap-4">
+                <button
+                  onClick={exportToPDF}
+                  className="p-2 bg-blue-500 text-white text-xs sm:text-sm rounded-[6px] hover:bg-blue-600"
+                >
+                  Exportar a PDF
+                </button>
+                <button
+                  onClick={exportToExcel}
+                  className="p-2 bg-green-600 text-white text-xs sm:text-sm rounded-[6px] hover:bg-green-600"
+                >
+                  Exportar a Excel
+                </button>
+              </div>
             </div>
           </div>
 
@@ -252,55 +339,65 @@ export default function VerGrilla() {
             </div>
           </div>
 
-          <div className="overflow-x-auto bg-white" id="grilla-table">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className="border p-2 "></th>
-                  {timeSlots.map((time) => (
-                    <th key={time} className="border p-2 sm:text-base text-sm">
-                      {time}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {courts.map((court, courtIndex) => (
-                  <tr key={court.nro}>
-                    <td className="border p-1 font-medium sm:text-base text-sm">{`Cancha ${court.nro} - ${court.tipo.toUpperCase()}`}</td>
-                    {timeSlots.map((time) => {
-                      const key = `${time}-${court.nro}`;
-                      const reservation = grid[time]?.[court.nro]?.turno;
-                      return (
-                        <td key={key} className="border max-w-14 p-2 h-12">
-                          {reservation ? (
-                            <div 
-                              onClick={() => handleTurnoClick(reservation)}
-                              className="w-full h-full rounded p-2 hover:cursor-pointer text-white" 
-                              style={{ backgroundColor: reservation.tipo === "fijo" ? "#1E90FF" : reservation.tipo === "unico" ? "#16a34a" : "#FFA500" }}
-                            >
-                              <p className="text-xs lg:text-base font-semibold md:flex items-center hidden ">
-                                <User className="w-4 h-4 mr-1" />
-                                {reservation.usuario.nombre}
-                              </p>
-                              <p className="text-xs lg:text-sm md:flex items-center hidden">
-                                <Phone className="w-4 h-4 mr-1" />
-                                {reservation.usuario.telefono}
-                              </p>
-                              <p className="text-xs lg:text-sm md:flex items-center hidden">
-                                <AlertCircle className="w-4 h-4 mr-1" />
-                                {reservation.estado}
-                              </p>
-                            </div>
-                          ) : null}
-                        </td>
-                      );
-                    })}
+          {/* Mensaje cuando no hay datos */}
+          {(timeSlots.length === 0 || courts.length === 0) ? (
+            <div className="bg-white p-6 rounded-lg text-center">
+              <p className="text-lg text-gray-600">No hay datos disponibles para la selección actual.</p>
+              <p className="text-sm text-gray-500 mt-2">
+                Prueba seleccionando otro deporte o cambiando la fecha.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto bg-white" id="grilla-table">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr>
+                    <th className="border p-2 "></th>
+                    {timeSlots.map((time) => (
+                      <th key={time} className="border p-2 sm:text-base text-sm">
+                        {time}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {courts.map((court, courtIndex) => (
+                    <tr key={court.nro}>
+                      <td className="border p-1 font-medium sm:text-base text-sm">{`Cancha ${court.nro} - ${formatDeporteName(court.deporte)}`}</td>
+                      {timeSlots.map((time) => {
+                        const key = `${time}-${court.nro}`;
+                        const reservation = grid[time]?.[court.nro]?.turno;
+                        return (
+                          <td key={key} className="border max-w-14 p-2 h-12">
+                            {reservation ? (
+                              <div 
+                                onClick={() => handleTurnoClick(reservation)}
+                                className="w-full h-full rounded p-2 hover:cursor-pointer text-white" 
+                                style={{ backgroundColor: reservation.tipo === "fijo" ? "#1E90FF" : reservation.tipo === "unico" ? "#16a34a" : "#FFA500" }}
+                              >
+                                <p className="text-xs lg:text-base font-semibold md:flex items-center hidden ">
+                                  <User className="w-4 h-4 mr-1" />
+                                  {reservation.usuario.nombre}
+                                </p>
+                                <p className="text-xs lg:text-sm md:flex items-center hidden">
+                                  <Phone className="w-4 h-4 mr-1" />
+                                  {reservation.usuario.telefono}
+                                </p>
+                                <p className="text-xs lg:text-sm md:flex items-center hidden">
+                                  <AlertCircle className="w-4 h-4 mr-1" />
+                                  {reservation.estado}
+                                </p>
+                              </div>
+                            ) : null}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Modal de Turno */}

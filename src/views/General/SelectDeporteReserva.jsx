@@ -29,7 +29,8 @@ const SelectDeporteReserva = () => {
             try {
                 setLoading(true);
                 const response = await api.get('/deportes');
-                setDeportes(response.data);
+                const filteredDeportes = response.data.filter(deporte => deporte.canchas.length > 0);
+                setDeportes(filteredDeportes);
             } catch (error) {
                 console.error('Error fetching deportes:', error);
             } finally {

@@ -28,6 +28,9 @@ function EditarTurno() {
   const [fetching, setFetching] = useState(false);
   const [canchaOptions, setCanchaOptions] = useState([]);
   const [horarioOptions, setHorarioOptions] = useState([]);
+  // Estado para deportes
+  const [deportes, setDeportes] = useState([]);
+  const [loadingDeportes, setLoadingDeportes] = useState(false);
   const [turnoData, setTurnoData] = useState({
     fecha_reserva: '',
     usuario_nombre: '',
@@ -42,7 +45,8 @@ function EditarTurno() {
     horario_id: '',
     monto_total: '',
     monto_seña: '',
-    estado: ''
+    estado: '',
+    deporte_id: '' // Agregar deporte_id
   });
   const [isOpen, setIsOpen] = useState(false);
   const calendarRef = useRef(null); // Add ref for calendar container
@@ -53,14 +57,21 @@ function EditarTurno() {
         const response = await api.get(`/turnos/${id}`);
         const turno = response.data.turno;
         setBooking(turno);
+        
+        // Extraer correctamente el ID del deporte del objeto cancha.deporte
+        const deporteId = turno.cancha?.deporte?.id || '';
+        
         setFormData({
-          fecha_turno: turno.fecha_turno,
-          cancha_id: response.data.cancha_id,
-          horario_id: response.data.horario_id,
+          // No autoseleccionar fecha_turno, cancha_id ni horario_id
+          fecha_turno: '',
+          cancha_id: '',
+          horario_id: '',
           monto_total: turno.monto_total,
           monto_seña: turno.monto_seña,
           estado: turno.estado,
+          deporte_id: deporteId.toString() // Asignar deporte_id
         });
+        
         setTurnoData({
           fecha_reserva: turno.fecha_reserva,
           usuario_nombre: turno.usuario.nombre,
@@ -69,8 +80,9 @@ function EditarTurno() {
           usuario_email: turno.usuario.email,
           tipo_turno: turno.tipo
         });
-        await fetchHorarios(turno.fecha_turno);
-        await fetchCanchas(turno.fecha_turno, response.data.horario_id);
+        
+        await fetchDeportes();
+        // No cargar horarios y canchas automáticamente
         setLoading(false);
       } catch (error) {
         if (error.response && error.response.status === 404) {
@@ -86,9 +98,35 @@ function EditarTurno() {
     fetchTurno();
   }, [id, navigate]);
 
-  const fetchHorarios = async (fecha) => {
+  // Función para cargar los deportes
+  const fetchDeportes = async () => {
     try {
-      const response = await api.get(`/disponibilidad/fecha?fecha=${fecha}`);
+      setLoadingDeportes(true);
+      const response = await api.get('/deportes');
+      
+      if (response.data) {
+        setDeportes(response.data);
+      } else {
+        console.error('Estructura de respuesta inesperada en deportes:', response.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar deportes:', error);
+      toast.error('Error al cargar deportes');
+    } finally {
+      setLoadingDeportes(false);
+    }
+  };
+
+  const fetchHorarios = async (fecha, deporteId) => {
+    if (!fecha || !deporteId) return;
+    
+    try {
+      const response = await api.get(`/disponibilidad/fecha`, {
+        params: {
+          fecha,
+          deporte_id: deporteId
+        }
+      });
       const horariosDisponibles = response.data.horarios.filter(horario => horario.disponible);
       setHorarioOptions(horariosDisponibles);
     } catch (error) {
@@ -96,9 +134,17 @@ function EditarTurno() {
     }
   };
 
-  const fetchCanchas = async (fecha, horarioId) => {
+  const fetchCanchas = async (fecha, horarioId, deporteId) => {
+    if (!fecha || !horarioId || !deporteId) return;
+    
     try {
-      const response = await api.get(`/disponibilidad/cancha?fecha=${fecha}&horario_id=${horarioId}`);
+      const response = await api.get(`/disponibilidad/cancha`, {
+        params: {
+          fecha,
+          horario_id: horarioId,
+          deporte_id: deporteId
+        }
+      });
       const canchasDisponibles = response.data.canchas.filter(cancha => cancha.disponible);
       setCanchaOptions(canchasDisponibles);
     } catch (error) { 
@@ -113,6 +159,20 @@ function EditarTurno() {
     });
   };
 
+  const handleDeporteChange = (value) => {
+    setFormData({
+      ...formData,
+      deporte_id: value,
+      horario_id: '',
+      cancha_id: '',
+      fecha_turno: '' // Resetear también la fecha al cambiar de deporte
+    });
+    
+    // Resetear horarios y canchas
+    setHorarioOptions([]);
+    setCanchaOptions([]);
+  };
+
   const handleDateChange = async (date) => {
     const formattedDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().split('T')[0];
     setFormData({
@@ -121,7 +181,11 @@ function EditarTurno() {
       horario_id: '', // Deseleccionar la hora
       cancha_id: '' // Deseleccionar la cancha
     });
-    await fetchHorarios(formattedDate);
+    
+    if (formData.deporte_id) {
+      await fetchHorarios(formattedDate, formData.deporte_id);
+    }
+    
     setIsOpen(false); // Cerrar el calendario después de seleccionar una fecha
   };
 
@@ -131,7 +195,10 @@ function EditarTurno() {
       horario_id: value,
       cancha_id: '' // Deseleccionar la cancha
     });
-    await fetchCanchas(formData.fecha_turno, value);
+    
+    if (formData.fecha_turno && formData.deporte_id) {
+      await fetchCanchas(formData.fecha_turno, value, formData.deporte_id);
+    }
   };
 
   const toggleCalendar = () => {
@@ -175,6 +242,16 @@ function EditarTurno() {
       style: 'currency',
       currency: 'ARS'
     });
+  };
+  
+  // Función formatDeporteName igual a la de otros componentes
+  const formatDeporteName = (deporte) => {
+    if (!deporte) return '';
+    
+    if (deporte.nombre.toLowerCase().includes("futbol") || deporte.nombre.toLowerCase().includes("fútbol")) {
+      return `${deporte.nombre} ${deporte.jugadores_por_equipo}`;
+    }
+    return deporte.nombre;
   };
 
   // Add click outside listener
@@ -257,7 +334,7 @@ function EditarTurno() {
                   <div className="p-1 text-sm md:text-base bg-white rounded-[8px] border">{turnoData.usuario_dni}</div>
                 </div>
                 <div>
-                  <Label className="text-sm md:text-lg  font-bold mb-1 block">Fecha de Reserva:</Label>
+                  <Label className="text-sm md:text-lg  font-bold mb-1 block">Fecha en que fue reservado:</Label>
                   <div className="p-1 text-sm md:text-base bg-white rounded-[8px] border">
                     {format(parseISO(turnoData.fecha_reserva), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
                   </div>
@@ -291,12 +368,51 @@ function EditarTurno() {
                     Cancha {booking.cancha.nro} - {booking.cancha.tipo_cancha}
                   </div>
                 </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">Deporte Original</Label>
+                  <div className="p-2 bg-gray-50 rounded-lg mt-1">
+                    {booking.cancha?.deporte ? formatDeporteName(booking.cancha.deporte) : 'No especificado'}
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Formulario editable */}
             <form onSubmit={handleSubmit} className="space-y-4 bg-white rounded-2xl shadow-lg p-4">
+              <div>
+                <h1 className='text-lg font-semibold text-gray-900 mb-3'>Editar Información del Turno</h1>  
+              </div>
               <div className="space-y-4">
+                {/* Selector de deportes */}
+                <div>
+                  <Label className="text-sm md:text-lg font-semibold mb-1 block">Deporte</Label>
+                  {loadingDeportes ? (
+                    <div className="p-2 bg-gray-50 rounded-lg mt-1">Cargando deportes...</div>
+                  ) : (
+                    <Select 
+                      value={formData.deporte_id?.toString()}
+                      onValueChange={handleDeporteChange}
+                    >
+                      <SelectTrigger className="w-full text-sm md:text-base bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja">
+                        <SelectValue placeholder="Seleccionar deporte" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border shadow-lg text-sm md:text-base">
+                        <ScrollArea className="h-[200px]">
+                          {deportes.map((deporte) => (
+                            <SelectItem 
+                              key={deporte.id} 
+                              value={deporte.id.toString()}
+                              className="hover:bg-gray-100 text-sm md:text-base"
+                            >
+                              {formatDeporteName(deporte)}
+                            </SelectItem>
+                          ))}
+                        </ScrollArea>
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+
                 <div>
                   <Label className="text-sm md:text-lg font-semibold mb-1 block">Fecha del Turno</Label>
                   <div className="relative" ref={calendarRef}>
@@ -304,15 +420,21 @@ function EditarTurno() {
                       type="button"
                       onClick={toggleCalendar}
                       className="w-full text-sm md:text-base p-1 border rounded-[8px] pl-10 bg-white text-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-naranja focus:border-naranja"
+                      disabled={!formData.deporte_id}
                     >
                       {formData.fecha_turno ? format(parseISO(formData.fecha_turno), 'PPP', { locale: es }) : 'Seleccionar Fecha'}
                     </button>
                     <Calendar className="absolute left-3 top-2 h-5 w-5 text-gray-500" />
+                    {!formData.deporte_id && (
+                      <p className="text-red-500 text-sm mt-1">
+                        Primero seleccione un deporte
+                      </p>
+                    )}
                     {isOpen && (
                       <div className="absolute mt-2 z-10">
                         <div className="bg-white  border rounded-xl shadow-lg p-4">
                           <DayPicker
-                            selected={parseISO(formData.fecha_turno)}
+                            selected={formData.fecha_turno ? parseISO(formData.fecha_turno) : undefined}
                             onDayClick={handleDateChange}
                             locale={es}
                           />
@@ -325,9 +447,9 @@ function EditarTurno() {
                 <div>
                   <Label className="text-sm md:text-lg font-semibold mb-1 block">Horario</Label>
                   <Select 
-                    value={formData.horario_id.toString()}
+                    value={formData.horario_id?.toString()}
                     onValueChange={handleHorarioChange}
-                    disabled={!formData.fecha_turno}
+                    disabled={!formData.fecha_turno || !formData.deporte_id}
                   >
                     <SelectTrigger className="w-full text-sm md:text-base bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja">
                       <SelectValue placeholder="Seleccionar horario"/>
@@ -351,9 +473,9 @@ function EditarTurno() {
                 <div>
                   <Label className="text-sm md:text-lg font-semibold mb-1 block">Cancha</Label>
                   <Select 
-                    value={formData.cancha_id.toString()}
+                    value={formData.cancha_id?.toString()}
                     onValueChange={(value) => setFormData({...formData, cancha_id: value})}
-                    disabled={!formData.horario_id}
+                    disabled={!formData.horario_id || !formData.deporte_id}
                   >
                     <SelectTrigger className="w-full text-sm md:text-base bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja">
                       <SelectValue placeholder="Seleccionar cancha" />

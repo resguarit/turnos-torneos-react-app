@@ -91,20 +91,20 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
           </button>
         )}
         <button
-          size="icon"
-          className="bg-blue-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
-          onClick={() => navigate(`/editar-turno/${booking.id}`)}
-          disabled={verificandoCaja}
-        >
-          <PenSquare className="h-4 w-4" />
-        </button>
-        <button
           onClick={() => window.open(`https://api.whatsapp.com/send?phone=549${booking.usuario.telefono}`, '_blank')}
           size="icon"
           className="bg-green-500 hover:bg-green-600 text-white p-2 transition-colors duration-200"
           disabled={verificandoCaja}
         >
           <Phone className="h-4 w-4" />
+        </button>
+        <button
+          size="icon"
+          className="flex flex-row gap-2 items-center bg-blue-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
+          onClick={() => navigate(`/editar-turno/${booking.id}`)}
+          disabled={verificandoCaja}
+        >
+          <PenSquare className="h-4 w-4" /> Ficha del Turno
         </button>
         {booking.estado !== 'Pagado' && booking.estado !== 'Cancelado' && fecha_turno > fecha_modificacion && booking.tipo !== 'fijo' && (
           <button

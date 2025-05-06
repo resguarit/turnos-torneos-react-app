@@ -93,7 +93,7 @@ const SelectDeporteReserva = () => {
           <BackButton />
         </div>
 
-        <div className="mb-8 text-center">
+        <div className="mb-8 text-center font-[Poppins]">
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-emerald-600">
             ¡Elegí tu deporte!
           </h1>
@@ -106,7 +106,7 @@ const SelectDeporteReserva = () => {
           </div>
         ) : (
           <div className="perspective-1000">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 font-[Poppins]">
               {deportes.map((deporte) => (
                 <button
                   key={deporte.id}

@@ -247,9 +247,9 @@ export default function Jugadores() {
               <span className='bg-blue-500 bg-opacity-20 rounded-3xl px-3 py-1 ml-2 text-blue-700'>{equipoNombre}</span>
             </h2>
             <div className="bg-white">
-              <div className="overflow-x-auto">
-                <table className="w-full bg-white table-fixed border-collapse">
-                  <thead>
+            <div className="overflow-visible">
+              <table className="w-full bg-white table-fixed border-collapse">
+                <thead>
                     <tr className="bg-gray-50 border-b-2 border-gray-200">
                       <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 w-1/7">DNI</th>
                       <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 w-1/7">Nombre</th>
@@ -385,18 +385,18 @@ export default function Jugadores() {
                                   autoComplete="off"
                                 />
                                 {searchingDniForId === jugador.id && searchResults.length > 0 && (
-                                  <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto shadow-lg">
-                                    {searchResults.map((result) => (
-                                      <li
-                                        key={result.id}
-                                        className="p-2 text-sm hover:bg-gray-100 cursor-pointer"
-                                        onClick={() => handleSelectPlayer(result, jugador.id)}
-                                      >
-                                        {result.dni} - {result.nombre} {result.apellido}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                )}
+                          <ul className="absolute z-50 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-48 overflow-y-auto shadow-xl">
+                            {searchResults.map((result) => (
+                              <li
+                                key={result.id}
+                                className="p-2 text-sm hover:bg-gray-100 cursor-pointer"
+                                onClick={() => handleSelectPlayer(result, jugador.id)}
+                              >
+                                {result.dni} - {result.nombre} {result.apellido}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                               </div>
                             </td>
                             <td className="py-3 px-4">
@@ -470,7 +470,13 @@ export default function Jugadores() {
               </div>
             </div>
             {jugadoresNuevos.length > 0 && (
-              <div className="flex justify-end mt-4">
+              <div className="flex justify-end mt-4 gap-4">
+                <button
+                  onClick={() => setJugadoresNuevos([])} // Acción para cancelar la carga de nuevos jugadores
+                  className="bg-red-500 hover:bg-red-600 text-white py-2 px-6 rounded-[6px] text-sm flex items-center gap-2 transition-colors shadow-sm"
+                >
+                  Cancelar
+                </button>
                 <button
                   onClick={handleGuardarJugadores}
                   disabled={loading}

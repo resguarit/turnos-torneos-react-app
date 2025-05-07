@@ -226,13 +226,13 @@ export default function AltaTorneo() {
       {/* Modal para crear un nuevo deporte */}
       {modalVisible && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
+          <div className="bg-white p-6 rounded-[8px] shadow-lg w-[400px]">
             <h2 className="text-xl font-bold mb-4">Crear Nuevo Deporte</h2>
             <div className="mb-4">
               <label className="block font-medium mb-1">Nombre del Deporte:</label>
               <input
                 type="text"
-                className="border border-gray-300 rounded-md p-2 w-full"
+                className="border border-gray-300 rounded-[6px] p-1 w-full"
                 value={nuevoDeporte.nombre}
                 onChange={(e) => setNuevoDeporte({ ...nuevoDeporte, nombre: e.target.value })}
                 required
@@ -242,7 +242,7 @@ export default function AltaTorneo() {
               <label className="block font-medium mb-1">Jugadores por Equipo:</label>
               <input
                 type="number"
-                className="border border-gray-300 rounded-md p-2 w-full"
+                className="border border-gray-300 rounded-[6px] p-1 w-full"
                 value={nuevoDeporte.jugadores_por_equipo}
                 onChange={(e) => setNuevoDeporte({ ...nuevoDeporte, jugadores_por_equipo: e.target.value })}
               />
@@ -250,13 +250,13 @@ export default function AltaTorneo() {
             <div className="flex justify-end space-x-4">
               <button
                 onClick={() => setModalVisible(false)}
-                className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md"
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-[6px] hover:bg-gray-400"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleNuevoDeporteSubmit}
-                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md"
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-[6px]"
               >
                 Crear
               </button>

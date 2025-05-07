@@ -70,6 +70,7 @@ export default function DetalleZona() {
         }
         
         setZona(response.data);
+        localStorage.setItem('zona_id', zonaId);
         console.log('Datos de la zona:', response.data);
   
         if (response.data.formato === 'Grupos') {

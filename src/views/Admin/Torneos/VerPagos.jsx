@@ -127,7 +127,7 @@ export default function VerPagos() {
         </div>
         <div className="px-4 md:px-40 justify-center">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold">Historial de Pagos</h1>
+            <h1 className="text-2xl font-bold">Historial de Pagos</h1>
             <button
               onClick={() => setModalOpen(true)}
               className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white flex items-center gap-1"
@@ -247,7 +247,7 @@ export default function VerPagos() {
                       value={fechaSeleccionada}
                       onChange={(e) => setFechaSeleccionada(e.target.value)}
                       disabled={!estadoPagosPorFecha.some(p => !p.transaccion)}
-                      className="w-full border border-gray-300 rounded-md p-2"
+                      className="w-full border border-gray-300 rounded-[6px] p-2"
                     >
                       <option value="">Seleccionar fecha pendiente</option>
                       {estadoPagosPorFecha
@@ -275,7 +275,7 @@ export default function VerPagos() {
                     id="metodo-pago"
                     value={metodoPagoSeleccionado}
                     onChange={(e) => setMetodoPagoSeleccionado(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md p-2"
+                    className="w-full border border-gray-300 rounded-[6px] p-2"
                   >
                     <option value="">Seleccionar método</option>
                     {metodosPago.length > 0 ? (
@@ -296,10 +296,11 @@ export default function VerPagos() {
 
             </div>
             <div className="w-full justify-end flex gap-2 mt-4"> {/* Increased mt-4 */}
-              <Button variant="outline" onClick={() => { setModalOpen(false); setMetodoPagoSeleccionado(""); setFechaSeleccionada(""); setTipoSeleccionado("inscripcion"); }}> {/* Use Button component */}
+              <button className="bg-gray-300 text-gray-800 px-4 py-2 rounded-[6px] hover:bg-gray-400" onClick={() => { setModalOpen(false); setMetodoPagoSeleccionado(""); setFechaSeleccionada(""); setTipoSeleccionado("inscripcion"); }}> {/* Use Button component */}
                 Cancelar
-              </Button>
-              <Button // Use Button component
+              </button>
+              <button // Use Button component
+                className="bg-green-500 text-white px-4 py-2 rounded-[6px] hover:bg-green-600"
                 onClick={handleRegistrarPago}
                 disabled={
                   loading || // Disable while any loading is active
@@ -309,7 +310,7 @@ export default function VerPagos() {
                 }
               >
                 {loading ? 'Registrando...' : 'Confirmar Pago'}
-              </Button>
+              </button>
             </div>
           </div>
         </div>

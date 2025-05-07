@@ -265,6 +265,18 @@ export default function DetalleZona() {
     fetchZona(); 
   };
 
+  const handleNavigateToVerPagos = (equipoId) => {
+    const equipo = zona.equipos.find((e) => e.id === equipoId);
+    navigate(`/pagos/${equipoId}`, {
+      state: {
+        equipoNombre: equipo?.nombre,
+        torneoNombre: zona.torneo.nombre,
+        torneoId: zona.torneo_id,
+        zonaId: zona.id,
+      },
+    });
+  };
+
   const confirmarEliminarEquipo = async (id) => {
     try {
       setLoading(true);
@@ -585,6 +597,7 @@ export default function DetalleZona() {
             handleEliminarEquipo={handleEliminarEquipo}
             handleReemplazarEquipo={handleReemplazarEquipo}
             abortController={abortControllerRef.current}
+            handleNavigateToVerPagos={handleNavigateToVerPagos}
           />
         )}
         

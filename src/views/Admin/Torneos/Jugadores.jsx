@@ -9,14 +9,19 @@ import BtnLoading from '@/components/BtnLoading';
 import { debounce } from 'lodash'; // Import debounce
 import { toast, ToastContainer } from 'react-toastify'; // Import ToastContainer
 import 'react-toastify/dist/ReactToastify.css';
+import { useLocation } from 'react-router-dom';
+
 
 export default function Jugadores() {
-  const { equipoId } = useParams();
   const [jugadores, setJugadores] = useState([]);
   const [loading, setLoading] = useState(false);
   const [jugadoresNuevos, setJugadoresNuevos] = useState([]);
   const [jugadorEditando, setJugadorEditando] = useState(null);
   const [equipo, setEquipo] = useState({});
+  const { equipoId } = useParams();
+  const location = useLocation();
+  const equipoNombre = location.state?.equipoNombre || 'Equipo desconocido'; 
+  const zonaId = location.state?.zonaId;
   const [searchResults, setSearchResults] = useState([]);
   const [searchingDniForId, setSearchingDniForId] = useState(null); // ID of the new player row being searched
   const [equipoCargado, setEquipoCargado] = useState(false); // Nuevo estado para verificar si el equipo está cargado
@@ -31,15 +36,6 @@ export default function Jugadores() {
         const responseJugadores = await api.get(`/equipos/${equipoId}/jugadores`);
         setJugadores(responseJugadores.data);
 
-        // Obtener datos del equipo
-        const responseEquipo = await api.get(`/equipos/${equipoId}`);
-        setEquipo(responseEquipo.data); // Actualizar el estado del equipo
-
-        // Obtener zona_id desde localStorage
-        const zonaId = localStorage.getItem('zona_id');
-        if (!zonaId) {
-          console.warn('Zona ID no encontrado en localStorage.');
-        }
       } catch (error) {
         console.error('Error fetching players or team:', error);
       } finally {
@@ -58,7 +54,6 @@ export default function Jugadores() {
       return;
     }
 
-    const zonaId = localStorage.getItem('zona_id'); // Obtener zona_id desde localStorage
     if (!zonaId) {
       console.error('Zona ID no encontrado en localStorage.');
       setSearchResults([]);
@@ -242,242 +237,244 @@ export default function Jugadores() {
           <button onClick={() => navigate(-1)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
             <ChevronLeft className="w-5" /> Atrás
           </button>
-        </div>
-        <div className="px-40 justify-center">
+        </div> 
+        <div className="justify-center"> 
           <div className="flex justify-end items-center mb-6">
-           
           </div>
-          <div className="bg-white w-full rounded-[8px] shadow-md p-4">
-            <h2 className="text-2xl font-medium mb-4">Lista de Jugadores de <span className='bg-blue-500 bg-opacity-30 rounded-3xl p-1'>{equipo.nombre}</span></h2>
-            <table className="min-w-full bg-white">
-              <thead>
-                <tr>
-                  <th className="py-2 text-left text-sm">DNI</th>
-                  <th className="py-2 text-left text-sm">Nombre</th>
-                  <th className="py-2 text-left text-sm">Apellido</th>
-                  <th className="py-2 text-left text-sm">Teléfono</th>
-                  <th className="py-2 text-left text-sm">Fecha de Nacimiento</th>
-                  <th className="py-2 text-center text-sm">Capitán</th> {/* Nueva columna */}
-                  <th className="py-2 text-center text-sm">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {jugadores.length === 0 && jugadoresNuevos.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" className="text-center text-gray-500 py-4">
-                      No hay jugadores en este equipo.
-                    </td>
-                  </tr>
-                ) : (
-                  <>
-                    {jugadores.map((jugador) => (
-                      <tr key={jugador.id} className="border-b">
-                                                <td className="py-2">
-                          {jugadorEditando === jugador.id ? (
-                            <input
-                              value={jugador.dni}
-                              onChange={(e) => handleInputChange(e, jugador.id, 'dni')}
-                              placeholder="DNI"
-                              className="p-1 text-sm border border-black w-full rounded-[6px]"
-                            />
-                          ) : (
-                            jugador.dni
-                          )}
-                        </td>
-                        <td className="py-2">
-                          {jugadorEditando === jugador.id ? (
-                            <input
-                              value={jugador.nombre}
-                              onChange={(e) => handleInputChange(e, jugador.id, 'nombre')}
-                              placeholder="Nombre"
-                              className="p-1 text-sm border border-black w-full rounded-[6px]"
-                            />
-                          ) : (
-                            jugador.nombre
-                          )}
-                        </td>
-                        <td className="py-2">
-                          {jugadorEditando === jugador.id ? (
-                            <input
-                              value={jugador.apellido}
-                              onChange={(e) => handleInputChange(e, jugador.id, 'apellido')}
-                              placeholder="Apellido"
-                              className="p-1 text-sm border border-black w-full rounded-[6px]"
-                            />
-                          ) : (
-                            jugador.apellido
-                          )}
-                        </td>
-                        <td className="py-2">
-                          {jugadorEditando === jugador.id ? (
-                            <input
-                              value={jugador.telefono}
-                              onChange={(e) => handleInputChange(e, jugador.id, 'telefono')}
-                              placeholder="Teléfono"
-                              className="p-1 text-sm border border-black w-full rounded-[6px]"
-                            />
-                          ) : (
-                            jugador.telefono
-                          )}
-                        </td>
-                        <td className="py-2">
-                          {jugadorEditando === jugador.id ? (
-                            <input
-                              type="date"
-                              value={jugador.fecha_nacimiento}
-                              onChange={(e) => handleInputChange(e, jugador.id, 'fecha_nacimiento')}
-                              placeholder="Fecha de Nacimiento"
-                              className="p-1 text-sm border border-black w-full rounded-[6px]"
-                            />
-                          ) : (
-                            jugador.fecha_nacimiento
-                          )}
-                        </td>
-                        <td className="py-2 text-center">
-                          <input
-                            type="checkbox"
-                            checked={!!(jugador.pivot && jugador.pivot.capitan)}
-                            readOnly
-                            disabled
-                            className={
-                              "accent-blue-600" + (jugador.pivot && jugador.pivot.capitan ? " bg-blue-600" : "")
-                            }
-                          />
-                        </td>
-                        <td className="py-2 text-center">
-                          {jugadorEditando === jugador.id ? (
-                            <button
-                              onClick={() => handleActualizarJugador(jugador.id)}
-                              className="p-1 text-green-600 hover:text-green-800 mr-2"
-                              title="Confirmar"
-                            >
-                              <Check className="h-5 w-5" />
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleEditarJugador(jugador.id)}
-                              className="p-1 text-blue-600 hover:text-blue-800 mr-2"
-                              title="Editar"
-                            >
-                              <Edit3 className="h-5 w-5" />
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleEliminarJugador(jugador.id)}
-                            className="p-1 text-red-600 hover:text-red-800"
-                            title="Eliminar"
-                          >
-                            <Trash2 className="h-5 w-5" />
-                          </button>
+          <div className="bg-white w-full rounded-[12px] shadow-lg p-6 border border-gray-100">
+            <h2 className="text-2xl font-medium mb-6 flex items-center">
+              Lista de Jugadores de 
+              <span className='bg-blue-500 bg-opacity-20 rounded-3xl px-3 py-1 ml-2 text-blue-700'>{equipoNombre}</span>
+            </h2>
+            <div className="bg-white">
+              <div className="overflow-x-auto">
+                <table className="w-full bg-white table-fixed border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50 border-b-2 border-gray-200">
+                      <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 w-1/7">DNI</th>
+                      <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 w-1/7">Nombre</th>
+                      <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 w-1/7">Apellido</th>
+                      <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 w-1/7">Teléfono</th>
+                      <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 w-1/7">Fecha de Nacimiento</th>
+                      <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700 w-1/7">Capitán</th>
+                      <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700 w-1/7">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {jugadores.length === 0 && jugadoresNuevos.length === 0 ? (
+                      <tr>
+                        <td colSpan="7" className="text-center text-gray-500 py-8 italic">
+                          No hay jugadores en este equipo.
                         </td>
                       </tr>
-                    ))}
-                    {jugadoresNuevos.map((jugador) => (
-                      <tr key={jugador.id} className="border-b relative"> {/* Add relative positioning */}
-                      {/* DNI with Search */}
-                      <td className="py-2">
-                        <div className="relative"> {/* Wrapper for positioning dropdown */}
-                          <input
-                            value={jugador.dni}
-                            onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'dni')}
-                            placeholder="DNI"
-                            className="p-1 text-sm border border-black w-full rounded-[6px]"
-                            autoComplete="off" // Prevent browser autocomplete interference
-                          />
-                          {/* Search Results Dropdown */}
-                          {searchingDniForId === jugador.id && searchResults.length > 0 && (
-                            <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto shadow-lg">
-                              {searchResults.map((result) => (
-                                <li
-                                  key={result.id}
-                                  className="p-2 text-sm hover:bg-gray-100 cursor-pointer"
-                                  onClick={() => handleSelectPlayer(result, jugador.id)}
+                    ) : (
+                      <>
+                        {jugadores.map((jugador) => (
+                          <tr key={jugador.id} className="border-b hover:bg-gray-50 transition-colors">
+                            <td className="py-3 px-4">
+                              {jugadorEditando === jugador.id ? (
+                                <input
+                                  value={jugador.dni}
+                                  onChange={(e) => handleInputChange(e, jugador.id, 'dni')}
+                                  placeholder="DNI"
+                                  className="p-2 text-sm border border-gray-300 w-full rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                />
+                              ) : (
+                                <span className="font-mono">{jugador.dni}</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              {jugadorEditando === jugador.id ? (
+                                <input
+                                  value={jugador.nombre}
+                                  onChange={(e) => handleInputChange(e, jugador.id, 'nombre')}
+                                  placeholder="Nombre"
+                                  className="p-2 text-sm border border-gray-300 w-full rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                />
+                              ) : (
+                                jugador.nombre
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              {jugadorEditando === jugador.id ? (
+                                <input
+                                  value={jugador.apellido}
+                                  onChange={(e) => handleInputChange(e, jugador.id, 'apellido')}
+                                  placeholder="Apellido"
+                                  className="p-2 text-sm border border-gray-300 w-full rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                />
+                              ) : (
+                                jugador.apellido
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              {jugadorEditando === jugador.id ? (
+                                <input
+                                  value={jugador.telefono}
+                                  onChange={(e) => handleInputChange(e, jugador.id, 'telefono')}
+                                  placeholder="Teléfono"
+                                  className="p-2 text-sm border border-gray-300 w-full rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                />
+                              ) : (
+                                jugador.telefono
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              {jugadorEditando === jugador.id ? (
+                                <input
+                                  type="date"
+                                  value={jugador.fecha_nacimiento}
+                                  onChange={(e) => handleInputChange(e, jugador.id, 'fecha_nacimiento')}
+                                  placeholder="Fecha de Nacimiento"
+                                  className="p-2 text-sm border border-gray-300 w-full rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                />
+                              ) : (
+                                jugador.fecha_nacimiento
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <div className="flex justify-center">
+                                <input
+                                  type="checkbox"
+                                  checked={!!(jugador.pivot && jugador.pivot.capitan)}
+                                  readOnly
+                                  disabled
+                                  className="h-5 w-5 accent-blue-600 rounded"
+                                />
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex justify-center space-x-2">
+                                {jugadorEditando === jugador.id ? (
+                                  <button
+                                    onClick={() => handleActualizarJugador(jugador.id)}
+                                    className="p-1.5 bg-green-100 text-green-600 hover:bg-green-200 rounded-full transition-colors"
+                                    title="Confirmar"
+                                  >
+                                    <Check className="h-5 w-5" />
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => handleEditarJugador(jugador.id)}
+                                    className="p-1.5 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-full transition-colors"
+                                    title="Editar"
+                                  >
+                                    <Edit3 className="h-5 w-5" />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => handleEliminarJugador(jugador.id)}
+                                  className="p-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-full transition-colors"
+                                  title="Eliminar"
                                 >
-                                  {result.dni} - {result.nombre} {result.apellido}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      </td>
-                      {/* Nombre */}
-                      <td className="py-2">
-                        <input
-                          value={jugador.nombre}
-                          onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'nombre')}
-                          placeholder="Nombre"
-                          className="p-1 text-sm border border-black w-full rounded-[6px]"
-                        />
-                      </td>
-                      {/* Apellido */}
-                      <td className="py-2">
-                        <input
-                          value={jugador.apellido}
-                          onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'apellido')}
-                          placeholder="Apellido"
-                          className="p-1 text-sm border border-black w-full rounded-[6px]"
-                        />
-                      </td>
-                      {/* Telefono */}
-                      <td className="py-2">
-                        <input
-                          value={jugador.telefono}
-                          onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'telefono')}
-                          placeholder="Teléfono"
-                          className="p-1 text-sm border border-black w-full rounded-[6px]"
-                        />
-                      </td>
-                      {/* Fecha Nacimiento */}
-                      <td className="py-2">
-                        <input
-                          type="date"
-                          value={jugador.fecha_nacimiento}
-                          onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'fecha_nacimiento')}
-                          placeholder="Fecha de Nacimiento"
-                          className="p-1 text-sm border border-black w-full rounded-[6px]"
-                        />
-                      </td>
-                      {/* Checkbox Capitán */}
-                      <td className="py-2 text-center">
-                        <input
-                          type="checkbox"
-                          checked={jugador.capitan || false}
-                          onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'capitan')}
-                        />
-                      </td>
-                      {/* Acciones */}
-                      <td className="py-2 text-center">
-                        <button
-                          onClick={() => setJugadoresNuevos(jugadoresNuevos.filter((j) => j.id !== jugador.id))}
-                          className="p-1 text-red-600 hover:text-red-800"
-                          title="Eliminar Fila"
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </button>
-                      </td>
-                    </tr>
-                    ))}
-                    
-                  </>
-                )}
-                <tr>
-                      <td colSpan="6" className="text-end py-4"> {/* Increased padding */}
-                        <button
-                          onClick={handleAddFilaJugador}
-                          className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white flex items-center gap-1 ml-auto" // Use flex for icon alignment
-                        >
-                          <PlusCircle size={16}/> Agregar Jugador
-                        </button>
-                      </td>
-                    </tr>
-              </tbody>
-            </table>
+                                  <Trash2 className="h-5 w-5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {jugadoresNuevos.map((jugador) => (
+                          <tr key={jugador.id} className="border-b hover:bg-blue-50 bg-blue-50/30 transition-colors relative">
+                            <td className="py-3 px-4">
+                              <div className="relative">
+                                <input
+                                  value={jugador.dni}
+                                  onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'dni')}
+                                  placeholder="DNI"
+                                  className="p-2 text-sm border border-gray-300 w-full rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                  autoComplete="off"
+                                />
+                                {searchingDniForId === jugador.id && searchResults.length > 0 && (
+                                  <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto shadow-lg">
+                                    {searchResults.map((result) => (
+                                      <li
+                                        key={result.id}
+                                        className="p-2 text-sm hover:bg-gray-100 cursor-pointer"
+                                        onClick={() => handleSelectPlayer(result, jugador.id)}
+                                      >
+                                        {result.dni} - {result.nombre} {result.apellido}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <input
+                                value={jugador.nombre}
+                                onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'nombre')}
+                                placeholder="Nombre"
+                                className="p-2 text-sm border border-gray-300 w-full rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                              />
+                            </td>
+                            <td className="py-3 px-4">
+                              <input
+                                value={jugador.apellido}
+                                onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'apellido')}
+                                placeholder="Apellido"
+                                className="p-2 text-sm border border-gray-300 w-full rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                              />
+                            </td>
+                            <td className="py-3 px-4">
+                              <input
+                                value={jugador.telefono}
+                                onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'telefono')}
+                                placeholder="Teléfono"
+                                className="p-2 text-sm border border-gray-300 w-full rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                              />
+                            </td>
+                            <td className="py-3 px-4">
+                              <input
+                                type="date"
+                                value={jugador.fecha_nacimiento}
+                                onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'fecha_nacimiento')}
+                                placeholder="Fecha de Nacimiento"
+                                className="p-2 text-sm border border-gray-300 w-full rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                              />
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <div className="flex justify-center">
+                                <input
+                                  type="checkbox"
+                                  checked={jugador.capitan || false}
+                                  onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'capitan')}
+                                  className="h-5 w-5 accent-blue-600 rounded"
+                                />
+                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex justify-center">
+                                <button
+                                  onClick={() => setJugadoresNuevos(jugadoresNuevos.filter((j) => j.id !== jugador.id))}
+                                  className="p-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-full transition-colors"
+                                  title="Eliminar Fila"
+                                >
+                                  <Trash2 className="h-5 w-5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div className='w-full flex justify-end p-4'>
+                <button
+                  onClick={handleAddFilaJugador}
+                  className="bg-black hover:bg-black/80 p-2 px-4 text-sm font-medium rounded-[6px] text-white flex items-center transition-colors shadow-sm" 
+                >
+                  + Agregar Jugador
+                </button>
+              </div>
+            </div>
             {jugadoresNuevos.length > 0 && (
               <div className="flex justify-end mt-4">
                 <button
                   onClick={handleGuardarJugadores}
-                  disabled={loading} // Disable button while loading
-                  className={`bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-[6px] text-sm flex items-center gap-1 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={loading}
+                  className={`bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-[6px] text-sm flex items-center gap-2 transition-colors shadow-sm ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {loading ? <BtnLoading/> : <Check size={16}/>} Guardar Nuevos
                 </button>

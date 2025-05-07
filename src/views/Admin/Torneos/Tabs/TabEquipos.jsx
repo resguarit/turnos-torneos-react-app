@@ -1,6 +1,6 @@
 import { Users, Edit3, Trash2 } from 'lucide-react';
 
-export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handleReemplazarEquipo }) {
+export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handleReemplazarEquipo, handleNavigateToVerPagos }) {
   return (
     <div className="bg-white rounded-[8px] shadow-md p-4">
       <div className="w-full flex items-center justify-between mb-4">
@@ -33,16 +33,19 @@ export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handl
                           <button
                             onClick={() => {
                               localStorage.setItem('zona_id', zonaId); 
-                              navigate(`/jugadores/${equipo.id}`); 
+                              navigate(`/jugadores/${equipo.id}`, {
+                                state: {
+                                  equipoNombre: equipo.nombre, 
+                                  zonaId: zonaId,
+                                },
+                              }); 
                             }}
                             className="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded-[6px] text-sm"
                           >
                             Ver Jugadores
                           </button>
                           <button
-                            onClick={() => {
-                              navigate(`/pagos/${equipo.id}`); 
-                            }}
+                            onClick={() => handleNavigateToVerPagos(equipo.id)}
                             className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-[6px] text-sm"
                           >
                             Ver Pagos
@@ -55,13 +58,13 @@ export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handl
                           </button>
                           <button
                             onClick={() => navigate(`/editar-equipo/${equipo.id}`)}
-                            className="items-center flex-row text-blue-500 py-1 text-sm"
+                            className="items-center flex-row  py-1 text-sm"
                           >
                             <Edit3 className="w-5" />
                           </button>
                           <button
                             onClick={() => handleEliminarEquipo(equipo.id)}
-                            className="text-red-500 py-1 rounded-[6px] text-sm"
+                            className=" py-1 rounded-[6px] text-sm"
                           >
                             <Trash2 className="w-5" />
                           </button>

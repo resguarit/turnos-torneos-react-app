@@ -11,13 +11,13 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import api from "@/lib/axiosConfig";
+import { useLocation } from "react-router-dom";
 
 export default function VerPagos() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { equipoId } = useParams();
-  const torneoId = localStorage.getItem("torneo_id");
-  const zonaId = localStorage.getItem("zona_id");
-  const [equipo, setEquipo] = useState({ nombre: "" });
+  const { equipoNombre, torneoNombre, torneoId, zonaId } = location.state || {};
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [tipoSeleccionado, setTipoSeleccionado] = useState("inscripcion");
@@ -34,14 +34,11 @@ export default function VerPagos() {
       try {
         setLoading(true);
 
-        // Fetch equipo data
-        const equipoResponse = await api.get(`/equipos/${equipoId}`);
-        setEquipo(equipoResponse.data);
-
-        // Fetch torneo data to get precios
-        const torneoResponse = await api.get(`/torneos/${torneoId}`);
-        setValorInscripcion(torneoResponse.data.precio_inscripcion);
-        setValorFecha(torneoResponse.data.precio_por_fecha);
+        if (!torneoNombre || !zonaId) {
+          const torneoResponse = await api.get(`/torneos/${torneoId}`);
+          setValorInscripcion(torneoResponse.data.precio_inscripcion);
+          setValorFecha(torneoResponse.data.precio_por_fecha);
+        }
 
         // Fetch pagos por fecha for the entire zona
         const pagosPorFechaResponse = await api.get(`/equipos/${equipoId}/zonas/${zonaId}/pago-fecha`);
@@ -64,7 +61,7 @@ export default function VerPagos() {
     };
 
     fetchData();
-  }, [equipoId, torneoId, zonaId]);
+  }, [equipoId, torneoId, zonaId, torneoNombre]);
 
   const handleRegistrarPago = async () => {
     // Ensure a payment method is selected
@@ -139,7 +136,7 @@ export default function VerPagos() {
           <div className="bg-white w-full rounded-[8px] shadow-md p-6 mb-6">
             {/* ... Info Equipo, Inscripción, Pagos por Fecha ... */}
             <h2 className="text-2xl font-medium mb-4">
-              Equipo: <span className="bg-blue-500 bg-opacity-30 rounded-3xl p-1">{equipo.nombre}</span>
+              Equipo: <span className="bg-blue-500 bg-opacity-30 rounded-3xl p-1">{equipoNombre}</span>
             </h2>
 
             {/* Inscripción */}

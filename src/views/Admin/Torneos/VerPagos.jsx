@@ -12,12 +12,13 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import api from "@/lib/axiosConfig";
 import { useLocation } from "react-router-dom";
+import BtnLoading from "@/components/BtnLoading";
 
 export default function VerPagos() {
   const navigate = useNavigate();
   const location = useLocation();
   const { equipoId } = useParams();
-  const { equipoNombre, torneoNombre, torneoId, zonaId } = location.state || {};
+  const { equipoNombre, torneoNombre, torneoId, zonaId, precioInscripcion, precioFecha } = location.state || {};
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [tipoSeleccionado, setTipoSeleccionado] = useState("inscripcion");
@@ -34,11 +35,8 @@ export default function VerPagos() {
       try {
         setLoading(true);
 
-        if (!torneoNombre || !zonaId) {
-          const torneoResponse = await api.get(`/torneos/${torneoId}`);
-          setValorInscripcion(torneoResponse.data.precio_inscripcion);
-          setValorFecha(torneoResponse.data.precio_por_fecha);
-        }
+        setValorInscripcion(precioInscripcion || 0);
+        setValorFecha(precioFecha || 0);
 
         // Fetch pagos por fecha for the entire zona
         const pagosPorFechaResponse = await api.get(`/equipos/${equipoId}/zonas/${zonaId}/pago-fecha`);
@@ -108,6 +106,20 @@ export default function VerPagos() {
     const pagoInfo = estadoPagosPorFecha.find(p => p.fecha_id === fechaId);
     return pagoInfo?.fecha_nombre || `Fecha ${fechaId}`;
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col font-inter">
+        <Header />
+        <main className="flex-1 p-6 bg-gray-100">
+          <div className="flex justify-center items-center h-full">
+            <BtnLoading />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col font-inter">

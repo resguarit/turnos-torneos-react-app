@@ -273,6 +273,8 @@ export default function DetalleZona() {
         torneoNombre: zona.torneo.nombre,
         torneoId: zona.torneo_id,
         zonaId: zona.id,
+        precioInscripcion: zona.torneo.precio_inscripcion,
+        precioFecha: zona.torneo.precio_por_fecha
       },
     });
   };

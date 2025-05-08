@@ -42,6 +42,14 @@ function VerTurnos() {
 
     const queryParams = new URLSearchParams(location.search);
     const usuarioDni = queryParams.get('usuario');
+    const idTurno = queryParams.get('id');
+
+    if (idTurno) {
+      setSearchType('id');
+      setSearchTerm(idTurno);
+      handleSearch('id', idTurno, signal);
+    }
+
     if (usuarioDni) {
       setSearchType('dni');
       setSearchTerm(usuarioDni);

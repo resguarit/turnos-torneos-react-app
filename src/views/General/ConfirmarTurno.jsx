@@ -104,7 +104,7 @@ export default function ConfirmarTurno() {
         if (registerResponse.status === 201) {
           // Login automático
           const loginResponse = await api.post('/login', {
-            dni: formData.dni,
+            email: formData.email,
             password: formData.password
           });
 

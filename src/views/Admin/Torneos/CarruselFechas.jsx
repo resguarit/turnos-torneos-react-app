@@ -335,7 +335,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
               <div 
                 key={partido.id} 
                 className="p-3 bg-gray-200 rounded-lg my-2 cursor-pointer hover:bg-gray-300 transition-colors"
-                onClick={() => navigate(`/resultado-partido/${partido.id}`)}
+                onClick={() => navigate(`/resultado-partido/${zonaId}/${partido.id}`)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2 flex-1">

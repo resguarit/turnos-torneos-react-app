@@ -210,7 +210,7 @@ export default function CargaPartido() {
                     <div
                       key={partido.id}
                       className="p-3 bg-gray-200 rounded-lg my-2 cursor-pointer"
-                      onClick={() => navigate(`/resultado-partido/${partido.id}`)}
+                      onClick={() => navigate(`/resultado-partido/${selectedZona}/${partido.id}`)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2 flex-1">

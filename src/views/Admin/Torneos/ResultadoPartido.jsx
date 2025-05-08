@@ -9,9 +9,10 @@ import { toast } from 'react-toastify'; // Importar react-toastify
 import ResultadoModal from '../Modals/ResultadoModal';
 import { Info, Trash } from 'lucide-react';
 import { debounce } from 'lodash'; // Import debounce
+import  SancionesModal  from '../Modals/SancionesModal';
 
 export default function ResultadoPartido() {
-  const { partidoId } = useParams();
+  const { zonaId, partidoId } = useParams();
   const navigate = useNavigate();
   const [partido, setPartido] = useState(null);
   const [equipoLocal, setEquipoLocal] = useState(null);
@@ -25,6 +26,7 @@ export default function ResultadoPartido() {
   const [jugadoresEnAlta, setJugadoresEnAlta] = useState([]); // Estado para jugadores en alta
   const [loadingApply, setLoadingApply] = useState(false); // Estado para el botón de aplicar cambios
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [modalSanciones, setModalSanciones] = useState(false); // Estado para el modal de sanciones
   const [resumenPartido, setResumenPartido] = useState({
     local: { goles: 0, amarillas: 0, rojas: 0 },
     visitante: { goles: 0, amarillas: 0, rojas: 0 }
@@ -173,6 +175,12 @@ export default function ResultadoPartido() {
     setEstadisticas(originalEstadisticas);
     setChangesDetected(false);
   };
+
+  const handleConfirmSanciones = () => {
+    setModalSanciones(false);
+    // Aquí puedes manejar la lógica para guardar las sanciones
+    toast.success('Sanciones guardadas correctamente.');
+  }
 
   const handleAddJugador = () => {
     const nuevoJugador = {
@@ -441,7 +449,7 @@ export default function ResultadoPartido() {
         <h1 className=" font-bold mb-4 text-2xl">Resultado Partido</h1>
         <div className='w-full  flex gap-4'>
         <div className="bg-white w-1/2 rounded-[8px] shadow-md p-4 mb-6">
-          <h2 className="text-2xl font-bold text-center mb-3 text-blue-600">
+          <h2 className="text-xl font-bold text-center mb-3 text-black">
             {partido.equipos[0].nombre} <span className="text-gray-500">vs</span> {partido.equipos[1].nombre}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
@@ -465,7 +473,7 @@ export default function ResultadoPartido() {
         </div>
         {/* Aca se muestra el marcador */}
         <div className="bg-white w-1/2 rounded-[8px] shadow-md p-4 mb-6">
-         <h1 className="text-2xl font-bold text-center mb-3 text-blue-600">
+         <h1 className="text-xl font-bold text-center mb-3 text-black">
           Marcador
          </h1>
         </div>
@@ -475,7 +483,7 @@ export default function ResultadoPartido() {
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => setVerEquipo(1)}
-                className={`rounded-[8px] px-4 py-2.5 font-medium transition-colors shadow-sm ${
+                className={`rounded-[8px] px-3 py-2 font-medium transition-colors shadow-sm ${
                   verEquipo === 1
                     ? "bg-blue-600 text-white hover:bg-blue-700"
                     : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
@@ -485,7 +493,7 @@ export default function ResultadoPartido() {
               </button>
               <button
                 onClick={() => setVerEquipo(2)}
-                className={`rounded-[8px] px-4 py-2.5 font-medium transition-colors shadow-sm ${
+                className={`rounded-[8px] px-3 py-2 font-medium transition-colors shadow-sm ${
                   verEquipo === 2
                     ? "bg-blue-600 text-white hover:bg-blue-700"
                     : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
@@ -494,11 +502,17 @@ export default function ResultadoPartido() {
                 {equipoVisitante.nombre}
               </button>
             </div>
-            <div>
+            <div className='flex gap-3'>
+              <button
+                onClick={() => setModalSanciones(true)}
+                className="rounded-[8px] px-3 py-2 bg-red-500 text-white font-medium hover:bg-red-600 transition-colors shadow-sm flex items-center gap-1"
+              >
+                <span className="text-lg">+</span> Cargar Sanciones
+              </button>
               <button
                 onClick={handleAddJugador}
                 disabled={jugadoresEnAlta.length > 0}
-                className="rounded-[8px] px-4 py-2.5 bg-black text-white font-medium hover:bg-gray-900 transition-colors shadow-sm flex items-center gap-1"
+                className="rounded-[8px] px-3 py-2 bg-black text-white font-medium hover:bg-gray-900 transition-colors shadow-sm flex items-center gap-1"
               >
                 <span className="text-lg">+</span> Agregar Jugador
               </button>
@@ -899,6 +913,18 @@ export default function ResultadoPartido() {
           equipoVisitanteNombre={equipoVisitante?.nombre || ''}
           loading={loadingApply}
         />
+        <SancionesModal
+          isOpen={modalSanciones}
+          onClose={() => setModalSanciones(false)}
+          onConfirm={handleConfirmSanciones}
+          partidoId={partidoId}
+          equipoLocalId={equipoLocal.id}
+          equipoVisitanteId={equipoVisitante.id}
+          jugadores={jugadoresEnAlta}
+          equipoLocal={equipoLocal}
+          equipoVisitante={equipoVisitante}
+          zonaId={zonaId}
+          />
       </main>
       <Footer />
     </div>

@@ -86,11 +86,21 @@ export default function SancionesModal({
 
   const handleEnviarSancion = async () => {
     try {
-      const equipoId = activeTab === 'local' ? equipoLocalId : equipoVisitanteId;
-  
-      // Recorrer todas las sanciones guardadas
       for (const jugadorId in sancionesAplicadas) {
         const sancion = sancionesAplicadas[jugadorId];
+  
+        // Buscar en qué equipo está el jugador
+        let equipoId = null;
+        if (equipoLocal?.jugadores?.some(j => j.id === Number(jugadorId))) {
+          equipoId = equipoLocalId;
+        } else if (equipoVisitante?.jugadores?.some(j => j.id === Number(jugadorId))) {
+          equipoId = equipoVisitanteId;
+        }
+  
+        if (!equipoId) {
+          toast.error(`No se pudo determinar el equipo para el jugador ${jugadorId}.`);
+          continue;
+        }
   
         // Obtener el equipo_jugador_id usando api.get
         const responseEquipoJugador = await api.get(
@@ -145,19 +155,19 @@ export default function SancionesModal({
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="bg-white p-6 rounded-[8px] shadow-lg  max-w-3xl max-h-[90vh] flex flex-col"
+        className="bg-white p-6 rounded-[8px] shadow-lg  w-[40%] max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl text-red-600 font-semibold flex items-center gap-2">
-            <Shield className="h-5 w-5" /> Cargar Sanciones
+          <h1 className="text-xl  font-semibold flex items-center ">
+            Cargar Sanciones
           </h1>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 ">
           {showSancionForm ? (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
@@ -180,6 +190,9 @@ export default function SancionesModal({
                     onChange={(e) => handleSancionChange('tipo', e.target.value)}
                     className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   >
+                    <option value="" disabled>
+                        Seleccionar Tipo
+                    </option>
                     <option value="expulsión">Expulsión</option>
                     <option value="advertencia">Advertencia</option>
                     <option value="suspensión">Suspensión</option>
@@ -197,6 +210,9 @@ export default function SancionesModal({
                     onChange={(e) => handleSancionChange('estado', e.target.value)}
                     className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   >
+                    <option value="" disabled>
+                        Seleccionar Estado
+                    </option>
                     <option value="activa">Activa</option>
                     <option value="cumplida">Cumplida</option>
                     <option value="apelada">Apelada</option>
@@ -273,11 +289,11 @@ export default function SancionesModal({
                 </div>
               </div>
 
-              <div className="flex justify-end pt-4">
+              <div className="flex justify-end  ">
                 <button
                   onClick={handleGuardarSancion}
                   disabled={!sancion.tipo || !sancion.motivo || !sancion.fechaDesde || !sancion.fechaHasta}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed"
+                  className="px-4 py-2 mb-4 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed"
                 >
                   Guardar Sanción
                 </button>
@@ -285,10 +301,10 @@ export default function SancionesModal({
             </div>
           ) : (
             <div>
-              <div className="flex justify-between mb-4">
+              <div className="flex gap-2 mb-4">
                 <button
                   onClick={() => setActiveTab('local')}
-                  className={`px-4 py-2 rounded ${
+                  className={`px-3 py-2 rounded text-sm ${
                     activeTab === 'local' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
                   }`}
                 >
@@ -296,7 +312,7 @@ export default function SancionesModal({
                 </button>
                 <button
                   onClick={() => setActiveTab('visitante')}
-                  className={`px-4 py-2 rounded ${
+                  className={`px-3 py-2 rounded text-sm ${
                     activeTab === 'visitante' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
                   }`}
                 >
@@ -304,7 +320,7 @@ export default function SancionesModal({
                 </button>
               </div>
 
-              <div className="overflow-y-auto max-h-[400px]">
+              <div className="overflow-y-auto max-h-[60vh]">
                 {(activeTab === 'local' ? equipoLocal.jugadores : equipoVisitante.jugadores)?.map((jugador) => (
                   <div key={jugador.id} className="flex justify-between items-center py-2 border-b">
                     <div>

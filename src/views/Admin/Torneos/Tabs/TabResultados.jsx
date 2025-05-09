@@ -5,15 +5,17 @@ import { TablasEstadisticasJugadores } from '../Tablas/TablasEstadisticasJugador
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { toast } from 'react-toastify';
+import { TablaSanciones } from '../Tablas/TablaSanciones';
 
 export function TabResultados({ zonaId, abortController }) {
   const [tablaPuntaje, setTablaPuntaje] = useState([]);
   const [goleadores, setGoleadores] = useState([]);
   const [amonestados, setAmonestados] = useState([]);
-  const [expulsados, setExpulsados] = useState([]);
+  const [sanciones, setSanciones] = useState([]);
   const [proximaFecha, setProximaFecha] = useState(null);
   const [partidosProximaFecha, setPartidosProximaFecha] = useState([]);
   const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,13 +43,20 @@ export function TabResultados({ zonaId, abortController }) {
           // Directly set state from the response
           setGoleadores(playerStatsResponse.data.goleadores || []);
           setAmonestados(playerStatsResponse.data.amonestados || []);
-          setExpulsados(playerStatsResponse.data.expulsados || []);
         } else {
           console.warn('Respuesta inválida para estadísticas de jugadores.');
           setGoleadores([]);
           setAmonestados([]);
-          setExpulsados([]);
           // Keep showing toast only if it's not an abort error later
+        }
+
+        const sancionesResponse = await api.get(`/zonas/${zonaId}/sanciones`, {
+          signal: abortController?.signal
+        });
+        if (sancionesResponse.status === 200 && sancionesResponse.data?.sanciones) {
+          setSanciones(sancionesResponse.data.sanciones);
+        } else {
+          setSanciones([]);
         }
 
 
@@ -76,7 +85,7 @@ export function TabResultados({ zonaId, abortController }) {
           setTablaPuntaje([]);
           setGoleadores([]);
           setAmonestados([]);
-          setExpulsados([]);
+          setSanciones([]);
           setProximaFecha(null);
           setPartidosProximaFecha([]);
           return; // Don't treat cancellation as an error to show toast
@@ -87,7 +96,7 @@ export function TabResultados({ zonaId, abortController }) {
         setTablaPuntaje([]);
         setGoleadores([]);
         setAmonestados([]);
-        setExpulsados([]);
+        setSanciones([]);
         setProximaFecha(null);
         setPartidosProximaFecha([]);
       } finally {
@@ -136,7 +145,7 @@ export function TabResultados({ zonaId, abortController }) {
       )}
 
       {/* Estadísticas de Jugadores */}
-      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <TablasEstadisticasJugadores
             titulo="Goleadores"
@@ -157,17 +166,10 @@ export function TabResultados({ zonaId, abortController }) {
             equipoKey="equipo"
           />
         </div>
-        <div>
-          <TablasEstadisticasJugadores
-            titulo="Expulsados"
-            datos={expulsados} // Pass the fetched expulsados
-            columnaEstadistica="Rojas"
-            valorKey="rojas" // Key for the value
-            nombreKey="nombre_completo"
-            equipoKey="equipo"
-          />
-        </div>
       </div>
+      <div className="w-full">
+          <TablaSanciones sanciones={sanciones} />
+        </div>
     </div>
   );
 }

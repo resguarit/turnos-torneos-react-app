@@ -26,15 +26,15 @@ export const TablasEstadisticasJugadores = ({
           <tbody>
             {statsData.map((item, index) => (
               <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                <td className="py-2 px-3 text-gray-600">{item[nombreKey]}</td>
-                <td className="py-2 px-3 text-gray-600">{item[equipoKey]}</td>
-                <td className="py-2 px-3 text-center font-semibold text-gray-600">{item[valorKey]}</td>
+                <td className="py-2 px-3 text-gray-700">{item[nombreKey]}</td>
+                <td className="py-2 px-3 text-gray-700">{item[equipoKey]}</td>
+                <td className="py-2 px-3 text-center font-semibold text-gray-700">{item[valorKey]}</td>
               </tr>
             ))}
           </tbody>
         </table>
       ) : (
-        <p className="text-gray-500 text-center py-4 bg-white">No hay datos disponibles.</p>
+        <p className="text-gray-600 text-center py-4 bg-white">No hay datos disponibles.</p>
       )}
     </div>
   );

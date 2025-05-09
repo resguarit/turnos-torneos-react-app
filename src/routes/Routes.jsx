@@ -32,6 +32,9 @@ import DetalleZona from "@/views/Admin/Torneos/DetalleZona";
 import AltaEquipo from "@/views/Admin/Torneos/AltaEquipo";
 import Jugadores from "@/views/Admin/Torneos/Jugadores";
 import SelectDeporteReserva from "@/views/General/SelectDeporteReserva";
+import ForgotPassword from "@/views/User/ForgotPassword";
+import ResetPassword from "@/views/User/ResetPassword";
+import VerifyEmail from "@/views/User/VerifyEmail";
 
 const AppRoutes = () => {
   return (
@@ -46,6 +49,9 @@ const AppRoutes = () => {
       <Route path={`/nueva-reserva`} element={<NuevaReserva />} />
       <Route path={`/bloqueo-reserva`} element={<ContadorBloqueo />} />
       <Route path={`/select-deporte`} element={<SelectDeporteReserva />} />
+      <Route path={`/forgot-password`} element={<ForgotPassword />} />
+      <Route path={`/reset-password`} element={<ResetPassword />} />
+      <Route path={`/verify-email`} element={<VerifyEmail />} />
 
       {/* Rutas protegidas para administradores */}
       <Route path={`/torneos-admi`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><Torneos /></ProtectedRoute>} />
@@ -63,7 +69,7 @@ const AppRoutes = () => {
 
       {/* Rutas protegidas para usuarios y administradores */}
       <Route path={`/user-profile`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><UserProfile /></ProtectedRoute>} />
-      <Route path={`/reserva-mobile/:deporteId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><ReservaMobile /></ProtectedRoute>} />
+      <Route path={`/reserva-mobile/:deporteId`} element={<ReservaMobile />} />
       <Route path={`/partidos`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Partidos /></ProtectedRoute>} />
       <Route path={`/ver-partidos`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><VerPartidos /></ProtectedRoute>} />
       <Route path={`/cargar-partido`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><CargaPartido /></ProtectedRoute>} />

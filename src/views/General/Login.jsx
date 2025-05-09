@@ -1,5 +1,4 @@
-import rngBlack from '../../assets/rngBlack.mp4';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from 'react-router-dom';
 import { login } from '@/services/authService';
@@ -7,7 +6,6 @@ import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Eye, EyeOff, ChevronLeft } from 'lucide-react';
-import Volver from '@/components/Reserva/Volver';
 import { Button } from '@/components/ui/button';
 
 const Login = () => {
@@ -64,46 +62,17 @@ const Login = () => {
         setShowPassword(!showPassword);
     };
 
-    useEffect(() => {
-        const videoElement = document.querySelector("video");
-    
-        if (videoElement) {
-          videoElement.addEventListener("contextmenu", (e) => e.preventDefault());
-          videoElement.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          });
-    
-          // Prevenir la interacción en iOS
-          videoElement.addEventListener("touchstart", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          });
-        }
-      }, []);
-
     return (
-        <div className="min-h-screen w-full relative font-inter">
-            <div className="absolute inset-0">
-                <video
-                    className="pointer-events-none select-none absolute inset-0 w-full h-full object-cover "
-                    src={rngBlack}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="auto"
-                ></video>
-                {/* Div para bloquear interacción en iPhone */}
-                <div className="absolute inset-0 bg-transparent pointer-events-auto"></div>
-            </div>
-
+        <div className="min-h-screen w-full relative font-inter bg-black">
             <ToastContainer position="top-right" />
-            <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50 z-20"></div>
             <div className="relative z-30 min-h-screen">
-                {/* Add Volver button here */}
                 <div className="absolute top-4 left-4">
-                    <button onClick={() => navigate('/')} className="hover:bg-naranja rounded-2xl text-white p-2 text-sm flex items-center"><ChevronLeft className="w-5"/> Volver Al Inicio</button>
+                    <button 
+                        onClick={() => navigate('/')} 
+                        className="hover:bg-naranja rounded-2xl text-white p-2 text-sm flex items-center"
+                    >
+                        <ChevronLeft className="w-5"/> Volver Al Inicio
+                    </button>
                 </div>
                 
                 <div className="flex justify-center items-center min-h-screen text-center px-4">
@@ -147,12 +116,17 @@ const Login = () => {
                                 {error && (
                                     <p className="text-red-500 text-sm mt-1">{error}</p>
                                 )}
-                                <button type="submit" className="w-full bg-naranja text-lg font-medium rounded-xl p-2 hover:bg-naranja/90 text-white" disabled={loading}>
+                                <button 
+                                    type="submit" 
+                                    className="w-full bg-naranja text-lg font-medium rounded-xl p-2 hover:bg-naranja/90 text-white transition-colors" 
+                                    disabled={loading}
+                                >
                                     {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                                 </button>
                             </form>
                         </div>
-                        <div className="text-center pt-4 mt-6 border-t text-sm">
+                        <div className="text-center pt-4 mt-6 border-t text-sm gap-4">
+                            <p><Link to="/forgot-password" className="text-naranja py-3 hover:underline ml-1">¿Olvidaste tu contraseña?</Link></p>
                             <p>¿No tienes una cuenta? 
                                 <Link to="/signup" className="text-naranja hover:underline ml-1">
                                     Regístrate

@@ -7,6 +7,7 @@ import BtnLoading from '@/components/BtnLoading';
 import { TablaPuntaje } from './Tablas/TablaPuntaje';
 import { TablaProximaFecha } from './Tablas/TablaProximaFecha';
 import { TablasEstadisticasJugadores } from './Tablas/TablasEstadisticasJugadores';
+import { TablaSanciones } from './Tablas/TablaSanciones';
 import api from '@/lib/axiosConfig';
 import { toast } from 'react-toastify'; // Import toast for error messages
 
@@ -20,6 +21,7 @@ export default function VerTablas() {
   const [expulsados, setExpulsados] = useState([]);
   const [proximaFecha, setProximaFecha] = useState(null);
   const [partidosProximaFecha, setPartidosProximaFecha] = useState([]);
+  const [sanciones, setSanciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -63,13 +65,19 @@ export default function VerTablas() {
         if (playerStatsResponse.status === 200 && playerStatsResponse.data) {
           setGoleadores(playerStatsResponse.data.goleadores || []);
           setAmonestados(playerStatsResponse.data.amonestados || []);
-          setExpulsados(playerStatsResponse.data.expulsados || []);
         } else {
           console.warn('Respuesta inválida para estadísticas de jugadores.');
           setGoleadores([]);
           setAmonestados([]);
-          setExpulsados([]);
           toast.error('No se pudieron cargar las estadísticas de jugadores.');
+        }
+
+        // --- Fetch Sanciones ---
+        const sancionesResponse = await api.get(`/zonas/${zonaId}/sanciones`);
+        if (sancionesResponse.status === 200 && sancionesResponse.data?.sanciones) {
+          setSanciones(sancionesResponse.data.sanciones);
+        } else {
+          setSanciones([]);
         }
 
         // 4. Fetch Next Matchday (Common for all formats)
@@ -93,9 +101,9 @@ export default function VerTablas() {
         setEstadisticasGrupos([]);
         setGoleadores([]);
         setAmonestados([]);
-        setExpulsados([]);
         setProximaFecha(null);
         setPartidosProximaFecha([]);
+        setSanciones([]);
       } finally {
         setLoading(false);
       }
@@ -125,9 +133,9 @@ export default function VerTablas() {
         <Header />
         <main className="flex-1 p-6 bg-gray-100">
            <div className="w-full flex mb-2">
-             <button onClick={() => navigate(-1)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
-               <ChevronLeft className="w-5" /> Atrás
-             </button>
+            <button onClick={() => navigate(-1)} className="bg-black rounded-xl text-white px-4 py-2 text-sm flex items-center justify-center hover:bg-gray-800 transition-colors">
+              <ChevronLeft className="w-5 mr-1" /> Atrás
+            </button>
            </div>
           <p className="text-center text-red-500">No se pudo cargar la información de la zona.</p>
         </main>
@@ -196,7 +204,7 @@ export default function VerTablas() {
           )}
 
           {/* Estadísticas de Jugadores */}
-          <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-6"> {/* Wider container for stats */}
+          <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Wider container for stats */}
             <TablasEstadisticasJugadores
               titulo="Goleadores"
               datos={goleadores}
@@ -213,14 +221,9 @@ export default function VerTablas() {
               nombreKey="nombre_completo"
               equipoKey="equipo"
             />
-            <TablasEstadisticasJugadores
-              titulo="Expulsados"
-              datos={expulsados}
-              columnaEstadistica="Rojas"
-              valorKey="rojas"
-              nombreKey="nombre_completo"
-              equipoKey="equipo"
-            />
+          </div>
+          <div className="w-full max-w-6xl mt-8">
+            <TablaSanciones sanciones={sanciones} />
           </div>
         </div>
       </main>

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
-import api from '@/lib/axiosConfig';
+import { useTorneos } from "@/context/TorneosContext";
 
 export default function TorneosDropdown({ anchorRef, closeMenuTorneos }) {
     const [style, setStyle] = useState({});
     const navigate = useNavigate();
-    const [torneos, setTorneos] = useState([]);
+    const { torneos } = useTorneos();
     const [openTorneo, setOpenTorneo] = useState(null);
 
   useEffect(() => {
@@ -20,17 +20,7 @@ export default function TorneosDropdown({ anchorRef, closeMenuTorneos }) {
         minWidth: 192,
       });
     }
-    fetchTorneos();
   }, [anchorRef]);
-
-  const fetchTorneos = async () => {
-    try {
-      const response = await api.get("/torneos");
-      setTorneos(response.data);
-    } catch (error) {
-      console.error("Error fetching torneos:", error);
-    }
-  };
 
    const handleTorneoClick = (torneoId) => {
     setOpenTorneo(openTorneo === torneoId ? null : torneoId);
@@ -63,10 +53,10 @@ export default function TorneosDropdown({ anchorRef, closeMenuTorneos }) {
               {/* Submenu de zonas */}
               {openTorneo === torneo.id && (
                 <div
-                  className="absolute top-0 left-full ml-2 bg-white rounded-xl shadow-lg py-2 px-4 min-w-[180px] z-50"
+                  className="absolute top-0 left-full ml-7 bg-white rounded-xl shadow-lg py-2 px-4 min-w-[200px] z-50"
                 >
                   <button
-                    className="w-full text-left font-semibold text-blue-600 hover:underline mb-2"
+                    className="w-full text-left font-semibold  hover:underline "
                     onClick={() => {
                       navigate(`/zonas-admi/${torneo.id}`);
                       closeMenuTorneos();
@@ -79,13 +69,13 @@ export default function TorneosDropdown({ anchorRef, closeMenuTorneos }) {
                     torneo.zonas.map((zona) => (
                       <button
                         key={zona.id}
-                        className="w-full text-left hover:bg-gray-100 px-2 py-1 rounded"
+                        className="w-full flex justify-between hover:bg-gray-100 px-2 py-1 rounded"
                         onClick={() => {
                           navigate(`/detalle-zona/${zona.id}`);
                           closeMenuTorneos();
                         }}
                       >
-                        {zona.nombre}
+                        {zona.nombre} <ChevronRight className=" w-5"/>
                       </button>
                     ))
                   ) : (

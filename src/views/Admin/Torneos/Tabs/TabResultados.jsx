@@ -15,9 +15,9 @@ export function TabResultados({ zonaId, abortController }) {
   const [proximaFecha, setProximaFecha] = useState(null);
   const [partidosProximaFecha, setPartidosProximaFecha] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fechas, setFechas] = useState([]); // Added to store fechas for the sanciones table
 
 
-  useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -66,6 +66,7 @@ export function TabResultados({ zonaId, abortController }) {
         });
         // Ensure response.data is an array before finding
         const fechas = Array.isArray(fechasResponse.data) ? fechasResponse.data : [];
+        setFechas(fechas);
         // Find the next pending fecha
         const fechaProxima = fechas.find((fecha) => fecha.estado === 'Pendiente');
         setProximaFecha(fechaProxima);
@@ -104,11 +105,11 @@ export function TabResultados({ zonaId, abortController }) {
       }
     };
 
+  useEffect(() => {
     fetchData();
-
-    // Cleanup function provided by parent (DetalleZona)
-
+    // eslint-disable-next-line
   }, [zonaId, abortController]);
+
 
   if (loading) {
     return (
@@ -168,7 +169,7 @@ export function TabResultados({ zonaId, abortController }) {
         </div>
       </div>
       <div className="w-full">
-          <TablaSanciones sanciones={sanciones} />
+          <TablaSanciones sanciones={sanciones} fechas={fechas} onRefresh={fetchData} />
         </div>
     </div>
   );

@@ -2,59 +2,30 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Trophy, List } from 'lucide-react';
-import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
+import { useTorneos } from '@/context/TorneosContext';
 
 export default function Torneos() {
-  const [torneos, setTorneos] = useState([]);
-  const [zonasCount, setZonasCount] = useState({});
+  const { torneos } = useTorneos();
   const [loadingTorneos, setLoadingTorneos] = useState(false);
   const [loadingZonas, setLoadingZonas] = useState(false);
-  const [deportes, setDeportes] = useState([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoadingTorneos(true);
-        setLoadingZonas(true);
-
-        const [torneosResponse, deportesResponse, zonasResponse] = await Promise.all([
-          api.get('/torneos'),
-          api.get('/deportes'),
-          api.get('/zonas')
-        ]);
-
-        setTorneos(torneosResponse.data);
-        setDeportes(deportesResponse.data);
-
-        // Contar la cantidad de zonas por torneo
-        const zonasCountMap = zonasResponse.data.reduce((acc, zona) => {
-          acc[zona.torneo_id] = (acc[zona.torneo_id] || 0) + 1;
-          return acc;
-        }, {});
-
-        setZonasCount(zonasCountMap);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoadingTorneos(false);
-        setLoadingZonas(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  // Calcular la cantidad de zonas por torneo (siempre que torneos ya tiene las zonas)
+  const zonasCount = torneos.reduce((acc, torneo) => {
+    acc[torneo.id] = torneo.zonas ? torneo.zonas.length : 0;
+    return acc;
+  }, {});
 
   const handleNuevoTorneo = (e) => {
     e.preventDefault();
-    navigate('/alta-torneo'); // Navegar a la pantalla de creación de torneos
+    navigate('/alta-torneo');
   };
 
   const handleVerZonas = (torneoId) => {
-    navigate(`/zonas-admi/${torneoId}`); // Navegar a la pantalla de zonas con el ID del torneo
+    navigate(`/zonas-admi/${torneoId}`);
   };
 
   if (loadingTorneos || loadingZonas) {
@@ -90,7 +61,7 @@ export default function Torneos() {
                     <h2 className="text-2xl font-medium">{torneo.nombre} {torneo.año}</h2>
                     <span className="text-gray-500 lg:text-lg"> <Trophy /></span>
                   </div>
-                  <p className="text-sm text-gray-500">{torneo.deporte.nombre} {torneo.deporte.jugadores_por_equipo}</p>
+                  <p className="text-sm text-gray-500">{torneo.deporte?.nombre} {torneo.deporte?.jugadores_por_equipo}</p>
                 </CardHeader>
                 <CardContent className="p-4 ">
                   <p className="w-full flex gap-2 items-center "><List size={24} className="text-gray-600" /> {zonasCount[torneo.id] || 0} zonas</p>

@@ -17,7 +17,11 @@ export function TablaSanciones({ sanciones, onEdit, fechas = [], onRefresh }) {
       if (response.data?.status === 200) {
         toast.success('Sanción eliminada correctamente');
         setModalDeleteOpen(false);
-        window.location.reload(); // O usar un callback para actualizar el listado sin recargar
+        if (onRefresh) {
+        onRefresh(); 
+      } else {
+        window.location.reload();
+      }
       } else {
         toast.error(response.data?.message || 'Error al eliminar la sanción');
       }

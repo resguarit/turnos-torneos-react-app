@@ -1,57 +1,55 @@
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Star, Users, ChevronLeft, CalendarDays } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'react-toastify';
+import { useTorneos } from '@/context/TorneosContext';
 
 export default function Zonas() {
   const { torneoId } = useParams();
-  const [zonas, setZonas] = useState([]);
+  const { torneos, setTorneos } = useTorneos();
   const [loading, setLoading] = useState(false);
   const [zonaToDelete, setZonaToDelete] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchZonas = async () => {
-      try {
-        setLoading(true);
-        const response = await api.get(`/torneos/${torneoId}/zonas`);
-        console.log('Datos de las zonas:', response.data); // Agrega este log
-        localStorage.setItem('torneo_id', torneoId);
-        const zonasConFecha = response.data.map(zona => {
-          const siguienteFecha = zona.fechas?.find(fecha => fecha.estado === 'Pendiente');
-          return { 
-            ...zona, 
-            siguienteFecha: siguienteFecha 
-              ? format(parseISO(siguienteFecha.fecha_inicio), "EEE, dd/MM/yyyy", { locale: es }) 
-              : 'No disponible' 
-          };
-        });
-        setZonas(zonasConFecha);
-      } catch (error) {
-        console.error('Error fetching zones:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Buscar el torneo y sus zonas desde el contexto
+  const torneo = torneos.find(t => String(t.id) === String(torneoId));
+  const zonas = torneo?.zonas || [];
 
-    fetchZonas();
-  }, [torneoId]);
+  // Procesar zonas para agregar siguienteFecha (como antes)
+  const zonasConFecha = zonas.map(zona => {
+    const siguienteFecha = zona.fechas?.find(fecha => fecha.estado === 'Pendiente');
+    return { 
+      ...zona, 
+      siguienteFecha: siguienteFecha 
+        ? format(parseISO(siguienteFecha.fecha_inicio), "EEE, dd/MM/yyyy", { locale: es }) 
+        : 'No disponible' 
+    };
+  });
 
   const handleDeleteZona = async (zonaId) => {
     try {
       setLoading(true);
+      // Aquí sí haces el delete al backend
       const response = await api.delete(`/zonas/${zonaId}`);
-      
       if (response.status === 200) {
-        setZonas(zonas.filter(zona => zona.id !== zonaId));
+        // Actualiza el contexto eliminando la zona del torneo correspondiente
+        const nuevosTorneos = torneos.map(t => {
+          if (String(t.id) === String(torneoId)) {
+            return {
+              ...t,
+              zonas: t.zonas.filter(z => z.id !== zonaId)
+            };
+          }
+          return t;
+        });
+        setTorneos(nuevosTorneos);
         setShowDeleteModal(false);
         toast.success('Zona eliminada correctamente');
       }
@@ -98,11 +96,11 @@ export default function Zonas() {
               + Nueva Zona
             </button>
           </div>
-          {zonas.length === 0 ? (
+          {zonasConFecha.length === 0 ? (
             <p className="text-center text-gray-500">No hay zonas disponibles.</p>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {zonas.map((zona) => (
+              {zonasConFecha.map((zona) => (
                 <Card className="bg-white rounded-[8px] shadow-md" key={zona.id} >
                   <CardHeader className="w-full p-4 bg-gray-200 rounded-t-[8px]">
                     <div className="flex justify-between items-center">
@@ -110,18 +108,16 @@ export default function Zonas() {
                       <span className="text-gray-500 lg:text-lg"> <Star /></span>
                     </div>
                     {zona.formato !== 'Grupos' && (
-                    <p className="text-sm text-gray-500">{zona.formato} </p>
-                      )
-                    }
+                      <p className="text-sm text-gray-500">{zona.formato} </p>
+                    )}
                     {zona.formato === 'Grupos' && (
                       <p className="text-sm text-gray-500">{zona.formato} ({zona.grupos.length})</p>
-                    )
-                    }
+                    )}
                   </CardHeader>
                   <CardContent className="p-4 ">
                     <div className='flex flex-col gap-2'>
-                    <p className="w-full flex gap-2 items-center "><Users size={18}/> Equipos: {zona.equipos.length}</p>
-                    <p className="w-full flex gap-2 items-center "><CalendarDays size={18} />Siguiente Fecha: {zona.siguienteFecha}</p>
+                      <p className="w-full flex gap-2 items-center "><Users size={18}/> Equipos: {zona.equipos.length}</p>
+                      <p className="w-full flex gap-2 items-center "><CalendarDays size={18} />Siguiente Fecha: {zona.siguienteFecha}</p>
                     </div>
                     <div className="flex mt-4 gap-3 text-sm justify-center">
                       <button onClick={() => navigate(`/detalle-zona/${zona.id}`)} className="flex-1 border text-center border-gray-300 p-1 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Ver Detalles</button>

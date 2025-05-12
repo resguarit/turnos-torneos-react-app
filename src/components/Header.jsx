@@ -154,11 +154,6 @@ export function Header() {
                 Reservar
               </Link>
             )}
-            {userRole === "admin" && (
-            <Link to="/partidos" className="hover:opacity-80">
-              Partidos
-            </Link>
-            )}
             <Link to="/reglamento" className="hover:opacity-80">
               Reglamento
             </Link>

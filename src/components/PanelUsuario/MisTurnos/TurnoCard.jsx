@@ -81,6 +81,15 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
     }
   };
 
+  const obtenerDuracion = (horaInicio, horaFin) => {
+    // Convert HH:MM:SS format to minutes
+    const horaInicioMinutos = horaInicio.split(':')[0] * 60 + parseInt(horaInicio.split(':')[1]);
+    const horaFinMinutos = horaFin.split(':')[0] * 60 + parseInt(horaFin.split(':')[1]);
+    const duracionMinutos = horaFinMinutos - horaInicioMinutos;
+    
+    return `${duracionMinutos} min`;
+  };
+
   return (
     <div className="flex justify-center">
       <Card className="mb-4 p-4 border rounded-[8px] shadow w-full md:w-1/2 bg-white">
@@ -104,7 +113,7 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
                 <Clock className="w-4 h-4" />
                 <p className="text-xs md:text-sm font-semibold">Duración y Cancha</p>
               </div>
-              <p className="text-xs md:text-sm">60 min | {turno.cancha.tipo_cancha} #{turno.cancha.nro}</p>
+              <p className="text-xs md:text-sm">{obtenerDuracion(turno.horario.hora_inicio, turno.horario.hora_fin)} | {turno.cancha.tipo_cancha} #{turno.cancha.nro}</p>
             </div>
           </div>
 

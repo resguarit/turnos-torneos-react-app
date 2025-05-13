@@ -35,6 +35,7 @@ import SelectDeporteReserva from "@/views/General/SelectDeporteReserva";
 import ForgotPassword from "@/views/User/ForgotPassword";
 import ResetPassword from "@/views/User/ResetPassword";
 import VerifyEmail from "@/views/User/VerifyEmail";
+import Checkout from "@/views/User/Checkout";
 
 const AppRoutes = () => {
   return (
@@ -76,6 +77,7 @@ const AppRoutes = () => {
       <Route path={`/reglamento`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Reglamento /></ProtectedRoute>} />
       <Route path={`/premios`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Premios /></ProtectedRoute>} />
       <Route path={`/editar-perfil`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><EditProfile /></ProtectedRoute>} />
+      <Route path={`/checkout`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR, ROLES.USER]}><Checkout /></ProtectedRoute>} />
     </Routes>
   );
 };

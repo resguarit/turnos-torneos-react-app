@@ -15,7 +15,7 @@ import AgregarPartidoModal from "../Modals/AgregarPartidoModal"; // Importar el 
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
-export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortController }) {
+export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortController, deporteId }) {
   const [fechas, setFechas] = useState([]);
   const [currentFechaIndex, setCurrentFechaIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -71,9 +71,9 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
         setHorarios(horariosResponse.data.horarios);
 
         const primeraFecha = fetchedFechas[0]?.fecha_inicio;
-        if (primeraFecha) {
+        if (primeraFecha && deporteId) {
           const responseHorariosModal = await api.get('/horarios-dia', { 
-            params: { fecha: primeraFecha },
+            params: { fecha: primeraFecha, deporte_id: deporteId },
             signal: abortController?.signal
           });
           if (responseHorariosModal.status === 200) {
@@ -92,7 +92,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
     };
 
     fetchFechas();
-  }, [zonaId, abortController]);
+  }, [zonaId, abortController, deporteId]);
 
   const handleEditFecha = async (updatedFecha) => {
     try {

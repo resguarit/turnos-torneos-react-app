@@ -14,7 +14,7 @@ export function TabFechas({
   calendarRef, 
   handleSortearFechas, 
   loading, 
-  zonaId, 
+  zonaId,
   setFechasSorteadas, 
   setFechas, 
   fechasSorteadas,
@@ -79,6 +79,7 @@ export function TabFechas({
                   fechas={fechas} 
                   onFechasDeleted={onFechasDeleted}
                   abortController={abortController}
+                  deporteId={zona.torneo.deporte_id}
                 />
           </div>
       )

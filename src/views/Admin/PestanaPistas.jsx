@@ -286,7 +286,7 @@ const PestanaPistas = () => {
         </div>
       </div>
 
-      {loading || loadingDeportes ? (
+      {loading ? (
         <div className='flex justify-center items-center h-[50vh]'>
           <BtnLoading />
         </div>

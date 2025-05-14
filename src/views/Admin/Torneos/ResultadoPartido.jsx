@@ -473,9 +473,36 @@ export default function ResultadoPartido() {
         </div>
         {/* Aca se muestra el marcador */}
         <div className="bg-white w-1/2 rounded-[8px] shadow-md p-4 mb-6">
-         <h1 className="text-xl font-bold text-center mb-3 text-black">
-          Marcador
-         </h1>
+          <h1 className="text-xl font-bold text-center mb-3 text-black">
+            Marcador
+          </h1>
+          <div className="flex flex-col items-center justify-center">
+            {partido.estado !== "Finalizado" ? (
+              <p className="text-gray-500 text-lg  mt-2">
+                Partido no finalizado
+              </p>
+            ) : (
+              <div className="flex flex-col items-center">
+                <div className="flex items-center gap-4 text-2xl font-bold mb-2">
+                  <span className="text-blue-700 text-base">{partido.equipos[0].nombre}</span>
+                  <span className="text-black">{partido.marcador_local ?? 0}</span>
+                  <span className="text-gray-600">-</span>
+                  <span className="text-black">{partido.marcador_visitante ?? 0}</span>
+                  <span className="text-blue-700 text-base">{partido.equipos[1].nombre}</span>
+                </div>
+                {partido.marcador_local === partido.marcador_visitante ? (
+                  <span className="text-gray-700 font-medium">Empate</span>
+                ) : (
+                  <span className="text-green-700 font-medium">
+                    Ganador:{" "}
+                    {partido.marcador_local > partido.marcador_visitante
+                      ? partido.equipos[0].nombre
+                      : partido.equipos[1].nombre}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
         </div>
         <div className="mt-2">

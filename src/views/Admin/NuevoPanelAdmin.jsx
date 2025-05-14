@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';;
 import { useNavigate, useLocation } from 'react-router-dom';
-import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays, ActivityIcon, Users, DollarSign, Box } from 'lucide-react';
+import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays, ActivityIcon, Users, DollarSign, Box, LandPlot } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import PestanaDashboard from './PestanaDashboard';
@@ -69,7 +69,7 @@ const NuevoPanelAdmin = () => {
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
         <div className="max-w-full mx-auto">
-          <div className="grid grid-cols-2  sm:flex sm:flex-row gap-2 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-9 gap-2 sm:gap-4">
             {isAdmin && (
               <button
                 onClick={() => setActiveTab("dashboard")}
@@ -96,8 +96,8 @@ const NuevoPanelAdmin = () => {
                 activeTab === "courts" ? "bg-naranja text-white" : "bg-gray-200 text-black"
               }`}
             >
-              <Pitch className="inline-block mr-2" size={18} />
-              Canchas
+              <LandPlot className="inline-block mr-2" size={18} />
+              Canchas / Deportes
             </button>
             <button
               onClick={() => setActiveTab("users")}

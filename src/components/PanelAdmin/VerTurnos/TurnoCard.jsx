@@ -118,6 +118,14 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
         >
             <Phone className="h-4 w-4" />
           </button>
+        <button
+          size="icon"
+          className="flex flex-row gap-2 items-center bg-blue-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
+          onClick={() => navigate(`/editar-turno/${booking.id}`)}
+          disabled={verificandoCaja}
+        >
+          <PenSquare className="h-4 w-4" /> Ficha del Turno
+        </button>
         )}
         {booking.estado !== 'Pagado' && booking.estado !== 'Cancelado' && fecha_turno > fecha_modificacion && booking.tipo !== 'fijo' && (
           <button

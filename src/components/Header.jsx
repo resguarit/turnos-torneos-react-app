@@ -150,7 +150,7 @@ export function Header() {
                 Continuar Reserva
               </button>
             ) : (
-              <Link to="/reserva-mobile" className="hover:opacity-80">
+              <Link to="/select-deporte" className="hover:opacity-80">
                 Reservar
               </Link>
             )}

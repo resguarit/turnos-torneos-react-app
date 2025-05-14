@@ -15,6 +15,7 @@ const SearchBar = ({ searchType, setSearchType, searchTerm, setSearchTerm, handl
           <option value="dni">DNI</option>
           <option value="telefono">Teléfono</option>
           <option value="email">Email</option>
+          <option value="id">ID</option>
         </select>
       </div>
 

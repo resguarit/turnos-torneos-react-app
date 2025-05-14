@@ -16,6 +16,15 @@ const FilterControls = ({ selectedCourt, setSelectedCourt, selectedStatus, setSe
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
+  const formatDeporteName = (deporte) => {
+    if (!deporte) return '';
+    
+    if (deporte.nombre.toLowerCase().includes("futbol") || deporte.nombre.toLowerCase().includes("fútbol")) {
+      return `${deporte.nombre} ${deporte.jugadores_por_equipo}`;
+    }
+    return deporte.nombre;
+  };
+
   return (
     <div 
       ref={filterRef} 
@@ -31,7 +40,7 @@ const FilterControls = ({ selectedCourt, setSelectedCourt, selectedStatus, setSe
           >
             <option value="">Todas las canchas</option>
             {courts.map(court => (
-              <option key={court.id} value={court.nro}>Cancha {court.nro} - {court.tipo_cancha}</option>
+              <option key={court.id} value={court.nro}>Cancha {court.nro} - {formatDeporteName(court.deporte)}</option>
             ))}
           </select>
         </div>

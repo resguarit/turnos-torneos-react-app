@@ -25,6 +25,14 @@ const PestanaPistas = () => {
   const [loading, setLoading] = useState(true);
   const [loadingDeportes, setLoadingDeportes] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [agregandoDeporte, setAgregandoDeporte] = useState(false);
+  const [editandoDeporte, setEditandoDeporte] = useState(null); 
+  const [deporteToDelete, setDeporteToDelete] = useState(null);
+  const [newDeporte, setNewDeporte] = useState({
+    nombre: '',
+    jugadores_por_equipo: '',
+    duracion_turno: ''
+  });
 
   const fetchPistas = async (signal) => {
     setLoading(true);
@@ -77,7 +85,7 @@ const PestanaPistas = () => {
     try {
       const response = await api.post('/canchas', newPista);
       if (response.status === 201) {
-        setPistas([response.data.cancha, ...pistas]);
+        setPistas([...pistas, response.data.cancha]);
         setNewPista({
           nro: '',
           deporte_id: '',
@@ -151,16 +159,94 @@ const PestanaPistas = () => {
       deporte_id: pista.deporte_id || ''
     });
     setEditando(pista);
+    setAgregandoDeporte(false);
     setAgregando(true);
   };
+
+  const handleDeleteDeporte = async () => {
+    try {
+      const response = await api.delete(`/deportes/${deporteToDelete.id}`);
+      if (response.status === 200) {
+        setDeportes(deportes.filter(deporte => deporte.id !== deporteToDelete.id));
+        setDeporteToDelete(null);
+        toast.success('Deporte eliminado correctamente');
+      }
+    } catch (error) {
+      console.error('Error deleting deporte:', error);
+      toast.error('Error al eliminar el deporte');
+    }
+  };
+
+  const handleEditDeporteClick = (deporte) => {
+    setNewDeporte({
+      ...deporte,
+      duracion_turno: deporte.duracion_turno
+    });
+    setEditandoDeporte(deporte);
+    setAgregandoDeporte(true);
+    setAgregando(false);
+    setEditando(null);
+  }
+
+  const handleEditDeporte = async (e) => {
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      const response = await api.put(`/deportes/${editandoDeporte.id}`, newDeporte);
+      if (response.status === 200) {
+        const updatedDeportes = deportes.map(deporte => 
+          deporte.id === editandoDeporte.id ? { ...deporte, ...newDeporte } : deporte
+        );
+        setDeportes(updatedDeportes);
+        setNewDeporte({
+          nombre: '',
+          jugadores_por_equipo: '',
+          duracion_turno: ''
+        });
+        setEditandoDeporte(null);
+        setAgregandoDeporte(false);
+        toast.success('Deporte editado correctamente');
+      }
+    } catch (error) {
+      console.error('Error editing deporte:', error);
+      toast.error('Error al editar el deporte');
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  const handleAddDeporte = async (e) => {
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      const response = await api.post('/deportes', newDeporte);
+      if (response.status === 201) {
+        setDeportes([...deportes, response.data.deporte]);
+        setNewDeporte({
+          nombre: '',
+          jugadores_por_equipo: '',
+          duracion_turno: ''
+        });
+        setAgregandoDeporte(false);
+        toast.success('Deporte añadido correctamente');
+      }
+    } catch (error) {
+      console.error('Error adding deporte:', error);
+      toast.error('Error al añadir el deporte');
+    } finally {
+      setIsSaving(false);
+    }
+  }
 
   return (
     <div className="max-w-7xl mx-auto mt-4">
       <ToastContainer position="top-right" />
-      <div className="flex justify-end items-center mb-4">
+      <div className="flex justify-end gap-4 mb-4">
+        <div className="flex justify-center items-center">
         <button
           onClick={() => {
             setAgregando(true);
+            setAgregandoDeporte(false);
             setEditando(null);
             setNewPista({
               nro: '',
@@ -178,6 +264,26 @@ const PestanaPistas = () => {
           <Plus className="h-5 w-5 mr-2" />
           Añadir Cancha
         </button>
+        </div>
+        <div className="flex justify-center items-center">
+        <button
+          onClick={() => {
+            setAgregando(false);
+            setAgregandoDeporte(true);
+            setEditandoDeporte(null);  
+            setNewDeporte({
+              nombre: '',
+              jugadores_por_equipo: '',
+              duracion_turno: ''
+            });
+          }}
+          className="inline-flex items-center text-sm sm:text-base px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-[10px] shadow transition-colors duration-200 transform hover:scale-105"
+          disabled={isSaving}
+        >
+          <Plus className="h-5 w-5 mr-2" />
+          Añadir Deporte
+        </button>
+        </div>
       </div>
 
       {loading || loadingDeportes ? (
@@ -186,11 +292,11 @@ const PestanaPistas = () => {
         </div>
       ) : (
         <>
-          {agregando && (
+          {agregando && !agregandoDeporte && (
             <form onSubmit={editando ? handleEditPista : handleAddPista} className="mb-6 bg-white p-4 rounded-xl shadow">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Número</label>
+                  <label className="block text-sm font-medium text-gray-700">Número <span className="text-xs text-gray-500">Para identificar la cancha</span></label>
                   <input
                     type="text"
                     value={newPista.nro}
@@ -216,7 +322,7 @@ const PestanaPistas = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Precio por Hora</label>
+                  <label className="block text-sm font-medium text-gray-700">Precio por Hora <span className="text-xs text-gray-500">ej. 60000 sin , ni .</span></label>
                   <input
                     type="number"
                     value={newPista.precio_por_hora}
@@ -226,7 +332,7 @@ const PestanaPistas = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Seña</label>
+                  <label className="block text-sm font-medium text-gray-700">Seña <span className="text-xs text-gray-500">ej. 10000 sin , ni .</span></label>
                   <input
                     type="number"
                     value={newPista.seña}
@@ -236,7 +342,7 @@ const PestanaPistas = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                  <label className="block text-sm font-medium text-gray-700">Descripción <span className="text-xs text-gray-500">ej: Al aire libre, Techada, etc.</span></label>
                   <input
                     type="text"
                     value={newPista.descripcion}
@@ -291,13 +397,72 @@ const PestanaPistas = () => {
             </form>
           )}
 
+          {agregandoDeporte && !agregando && (
+            <form onSubmit={editandoDeporte ? handleEditDeporte : handleAddDeporte} className="mb-6 bg-white p-4 rounded-xl shadow">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                  <input
+                    type="text"
+                    value={newDeporte.nombre}
+                    onChange={(e) => setNewDeporte({ ...newDeporte, nombre: e.target.value })}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Jugadores por Equipo</label>
+                  <input
+                    type="number"
+                    value={newDeporte.jugadores_por_equipo}
+                    onChange={(e) => setNewDeporte({ ...newDeporte, jugadores_por_equipo: e.target.value })}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Duración Turno <span className="text-xs text-gray-500">(en minutos)</span></label>
+                  <input
+                    type="number"
+                    value={newDeporte.duracion_turno}
+                    onChange={(e) => setNewDeporte({ ...newDeporte, duracion_turno: e.target.value })}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    required  
+                  />
+                </div>
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setAgregandoDeporte(false)}
+                  className="mr-4 inline-flex items-center px-4 py-2 border border-gray-300 rounded-[8px] shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  disabled={isSaving}
+                >
+                  Cancelar
+                </button> 
+                <button
+                  type="submit"
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-[8px] shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                  disabled={isSaving}
+                >
+                  {isSaving ? 'Guardando...' : 'Guardar'} 
+                </button>
+              </div>
+            </form>
+          )}
+
+          <div className="text-2xl font-bold mb-4">
+            Canchas
+          </div>
+
           <div className="bg-white w-full rounded-xl shadow-lg border border-gray-100 overflow-x-auto">
+            <div className="max-h-[40vh] overflow-y-auto">
             <ul className="divide-y divide-gray-100 w-full">
               {pistas.map((pista) => (
                 <li key={pista.id} className="hover:bg-gray-50 transition-colors duration-150 w-full">
                   <div className="p-6 flex justify-between items-center space-x-8 sm:space-x-3">
                     <div className="flex items-center space-x-8">
-                      <div className="bg-naranja text-center rounded-[8px] p-2">
+                      <div className="bg-blue-600 text-center rounded-[8px] p-2">
                         <span className="text-sm sm:text-base font-semibold text-white">
                           {`Cancha ${pista.nro} - ${pista.tipo_cancha}`}
                         </span>
@@ -336,7 +501,52 @@ const PestanaPistas = () => {
                 </li>
               ))}
             </ul>
+            </div>
           </div>
+          
+          <div className="text-2xl font-bold mb-4 pt-4">
+            Deportes
+          </div>
+
+          <div className="bg-white w-1/2 rounded-xl shadow-lg border border-gray-100 overflow-x-auto">
+            <div className="max-h-[40vh] overflow-y-auto">
+            <ul className="divide-y divide-gray-100 w-full">
+              {deportes.map((deporte) => (
+                <li key={deporte.id} className="hover:bg-gray-50 transition-colors duration-150 w-full">
+                  <div className="p-6 flex justify-between items-center space-x-8 sm:space-x-3">
+                    <div className="flex items-center space-x-8">
+                      <div className="bg-green-600 text-center rounded-[8px] p-2">
+                        <span className="text-sm sm:text-base font-semibold text-white">
+                          {`${deporte.nombre} - ${deporte.jugadores_por_equipo}`}
+                        </span>
+                      </div>
+                      <span className="text-sm sm:text-base font-bold text-gray-700">
+                        Duración Turno: <span className="font-normal">{deporte.duracion_turno} min.</span>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center space-x-3 sm:space-x-3">
+                      <button 
+                        onClick={() => handleEditDeporteClick(deporte)} 
+                        className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200" 
+                        disabled={isSaving}
+                      >
+                        <Edit2 className="h-5 w-5" />
+                      </button>
+                      <button 
+                        onClick={() => setDeporteToDelete(deporte)} 
+                        className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" 
+                        disabled={isSaving}
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            </div>
+          </div> 
 
           {pistaToDelete && (
             <ModalConfirmation
@@ -344,6 +554,17 @@ const PestanaPistas = () => {
               onCancel={() => setPistaToDelete(null)}
               title="Eliminar Cancha"
               subtitle={`¿Estás seguro de que deseas eliminar la cancha ${pistaToDelete.nro}?`}
+              botonText1="Cancelar"
+              botonText2="Eliminar"
+            />
+          )}
+
+          {deporteToDelete && (
+            <ModalConfirmation
+              onConfirm={handleDeleteDeporte}
+              onCancel={() => setDeporteToDelete(null)}
+              title="Eliminar Deporte"
+              subtitle={`¿Estás seguro de que deseas eliminar el deporte ${deporteToDelete.nombre}?`}
               botonText1="Cancelar"
               botonText2="Eliminar"
             />

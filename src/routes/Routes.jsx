@@ -38,6 +38,10 @@ import VerFixture from "@/views/Admin/Torneos/VerFixture";
 import EditarEquipo from '@/views/Admin/Torneos/EditarEquipo';
 import VerPagos from "@/views/Admin/Torneos/VerPagos";
 
+import SelectDeporteReserva from "@/views/General/SelectDeporteReserva";
+import ForgotPassword from "@/views/User/ForgotPassword";
+import ResetPassword from "@/views/User/ResetPassword";
+import VerifyEmail from "@/views/User/VerifyEmail";
 
 const AppRoutes = () => {
   return (
@@ -55,6 +59,10 @@ const AppRoutes = () => {
       <Route path={`/zonas-user/:torneoId`} element={<VerZonas />} />
       <Route path={`/tablas/:zonaId`} element={<VerTablas />} />
       <Route path={`/ver-fixture/:zonaId`} element={<VerFixture />} />
+      <Route path={`/select-deporte`} element={<SelectDeporteReserva />} />
+      <Route path={`/forgot-password`} element={<ForgotPassword />} />
+      <Route path={`/reset-password`} element={<ResetPassword />} />
+      <Route path={`/verify-email`} element={<VerifyEmail />} />
 
       {/* Rutas protegidas para administradores */}
       <Route path={`/torneos-admi`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><Torneos /></ProtectedRoute>} />
@@ -78,7 +86,7 @@ const AppRoutes = () => {
 
       {/* Rutas protegidas para usuarios y administradores */}
       <Route path={`/user-profile`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><UserProfile /></ProtectedRoute>} />
-      <Route path={`/reserva-mobile`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><ReservaMobile /></ProtectedRoute>} />
+      <Route path={`/reserva-mobile/:deporteId`} element={<ReservaMobile />} />
       <Route path={`/partidos`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Partidos /></ProtectedRoute>} />
       <Route path={`/cargar-partido`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><CargaPartido /></ProtectedRoute>} />
       <Route path={`/reglamento`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Reglamento /></ProtectedRoute>} />

@@ -62,12 +62,13 @@ function SignUp() {
             });
             if (registerResponse.status === 201) {
                 const loginResponse = await api.post('/login', {
-                    dni: formData.dni,
+                    email: formData.email,
                     password: formData.password
                 });
                 localStorage.setItem('user_id', loginResponse.data.user_id);
                 localStorage.setItem('username', loginResponse.data.username);
                 localStorage.setItem('token', loginResponse.data.token);
+                localStorage.setItem('user_role', loginResponse.data.rol);
                 localStorage.setItem('dni', formData.dni);
                 toast.success('Registro exitoso');
                 setTimeout(() => {

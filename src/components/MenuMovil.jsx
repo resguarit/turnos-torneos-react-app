@@ -192,7 +192,7 @@ const MenuMovil = ({ setMenuOpen }) => {
               // Reemplazar "Reservas" por "Continuar Reserva" cuando hay una reserva activa
               ...(hasActiveReservation && !isReservationPage
                 ? [{ label: "Continuar Reserva", path: "/bloqueo-reserva", onClick: handleReturnToReservation }]
-                : [{ label: "Reservas", path: "/reserva-mobile" }]),
+                : [{ label: "Reservas", path: "/select-deporte" }]),
               //{ label: "Partidos", path: "/partidos" },
               //{ label: "Reglamento", path: "/reglamento" },
               //{ label: "Premios", path: "/premios" },

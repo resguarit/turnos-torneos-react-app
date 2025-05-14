@@ -10,6 +10,8 @@ import { Footer } from '@/components/Footer';
 import { ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; 
 import BtnLoading from '@/components/BtnLoading';
+import { useParams } from 'react-router-dom';
+import BackButton from '@/components/BackButton';
 
 const ReservaMobile = () => {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -25,6 +27,9 @@ const ReservaMobile = () => {
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [loadingCancha, setLoadingCancha] = useState(false);
   const [expandedCourt, setExpandedCourt] = useState(null);
+  const { deporteId } = useParams();
+  const [deporte, setDeporte] = useState(null);
+  const [loadingDeporte, setLoadingDeporte] = useState(false);
 
   const navigate = useNavigate(); // Inicializa useNavigate
 
@@ -59,7 +64,21 @@ const ReservaMobile = () => {
         }
       }
     };
+    const fetchDeporte = async () => {
+      setLoadingDeporte(true);
+      try {
+        const response = await api.get(`/deportes/${deporteId}`);
+        setDeporte(response.data);
+        console.log(response.data);
+      } catch (error) {
+        console.error('Error fetching sport details:', error);
+      } finally {
+        setLoadingDeporte(false);
+      }
+    };
+
     fetchUserDetails();
+    fetchDeporte();
   }, []);
 
   // Estado para las fechas del calendario
@@ -73,7 +92,11 @@ const ReservaMobile = () => {
     
     try {
       setLoadingHorario(true);
-      const response = await api.get(`/disponibilidad/fecha?fecha=${date.full}`);
+      const response = await api.get(`/disponibilidad/fecha?fecha=${date.full}`, {
+        params: {
+          deporte_id: deporteId
+        }
+      });
       const horarios = response.data.horarios
         .filter(horario => horario.disponible)
         .map((horario) => ({
@@ -87,7 +110,11 @@ const ReservaMobile = () => {
       if (horarios.length > 0) {
         setSelectedTime(horarios[0].id);
         // Buscar canchas disponibles para el primer horario
-        const canchasResponse = await api.get(`/disponibilidad/cancha?fecha=${date.full}&horario_id=${horarios[0].id}`);
+        const canchasResponse = await api.get(`/disponibilidad/cancha?fecha=${date.full}&horario_id=${horarios[0].id}`, {
+          params: {
+            deporte_id: deporteId
+          }
+        });
         const canchasDisponibles = canchasResponse.data.canchas.filter(court => court.disponible);
         setCourts(canchasDisponibles);
         
@@ -115,7 +142,11 @@ const ReservaMobile = () => {
       setLoadingCancha(true);
       // Ensure selectedDate is not null before accessing its properties
       if (selectedDate) {
-        const response = await api.get(`/disponibilidad/cancha?fecha=${selectedDate.full}&horario_id=${timeId}`);
+        const response = await api.get(`/disponibilidad/cancha?fecha=${selectedDate.full}&horario_id=${timeId}`, {
+          params: {
+            deporte_id: deporteId
+          }
+        });
         const canchasDisponibles = response.data.canchas.filter(court => court.disponible);
         setCourts(canchasDisponibles);
         
@@ -206,13 +237,27 @@ const ReservaMobile = () => {
   // Obtener el nombre del tiempo seleccionado
   const selectedTimeName = availability.find(time => time.id === selectedTime)?.time || '';
 
+  const formatDeporteName = (deporte) => {
+    if (!deporte) {
+      return 'Cargando...'
+    }
+
+    if (deporte.nombre.toLowerCase().includes("futbol") || deporte.nombre.toLowerCase().includes("fútbol")) {
+      return `${deporte.nombre} ${deporte.jugadores_por_equipo}`
+    }
+    return deporte.nombre
+  }
+
   return (
     <div className="flex min-h-screen bg-gray-100 flex-col">
       <Header />
+      <div className='flex items-start justify-start p-4'>
+        <BackButton />
+      </div>
       <main className="flex-grow p-6 bg-gray-100">
         {/* Selector de Fechas */}
         <div className="bg-white md:mx-40 lg:mx-60 p-4 mb-4 shadow-sm rounded-[8px]">
-          <h1 className="text-xl md:text-2xl text-center font-semibold mb-4">Reserva tu cancha</h1>
+          <h1 className="text-xl md:text-2xl text-center font-semibold mb-4">Reserva tu cancha para <span className='text-green-600'>{formatDeporteName(deporte)}</span></h1>
           <div className="flex flex-col items-start justify-start mb-3">
             <div className="flex items-center">
               <Calendar size={18} className="text-naranja mr-2" />

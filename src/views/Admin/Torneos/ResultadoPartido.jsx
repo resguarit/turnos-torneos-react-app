@@ -482,13 +482,13 @@ export default function ResultadoPartido() {
                 Partido no finalizado
               </p>
             ) : (
-              <div className="flex flex-col items-center">
-                <div className="flex items-center gap-4 text-2xl font-bold mb-2">
-                  <span className="text-blue-700 text-base">{partido.equipos[0].nombre}</span>
+              <div className="flex flex-col items-center w-full">
+                <div className="flex w-full items-center justify-between gap-4 text-2xl font-bold mb-2">
+                  <span className="text-gray-700 text-base text-left">{partido.equipos[0].nombre}</span>
                   <span className="text-black">{partido.marcador_local ?? 0}</span>
                   <span className="text-gray-600">-</span>
                   <span className="text-black">{partido.marcador_visitante ?? 0}</span>
-                  <span className="text-blue-700 text-base">{partido.equipos[1].nombre}</span>
+                  <span className="text-gray-700 text-base text-right">{partido.equipos[1].nombre}</span>
                 </div>
                 {partido.marcador_local === partido.marcador_visitante ? (
                   <span className="text-gray-700 font-medium">Empate</span>

@@ -112,6 +112,10 @@ export default function VerGrilla() {
     setSelectedTurno(null);
   };
 
+  const handleNavigationTurno = (turnoId) => () => {
+    navigate(`/editar-turno/${turnoId}`);
+  };
+
   const exportToPDF = () => {
     const input = document.getElementById('grilla-table');
     html2canvas(input, { scale: 2 }).then((canvas) => {

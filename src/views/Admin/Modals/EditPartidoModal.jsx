@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import api from "@/lib/axiosConfig";
 import { toast } from "react-toastify";
 
-export default function EditPartidoModal({ partido, onClose, onSave, equipos }) {
+export default function EditPartidoModal({ partido, onClose, onSave, equipos, deporteId }) {
   const [horarios, setHorarios] = useState([]);
   const [canchas, setCanchas] = useState([]);
   const [formData, setFormData] = useState({
@@ -22,7 +22,7 @@ export default function EditPartidoModal({ partido, onClose, onSave, equipos }) 
         if (!formData.fecha) return; // No cargar si no hay fecha seleccionada
 
         const response = await api.get(`/disponibilidad/fecha`, {
-          params: { fecha: formData.fecha },
+          params: { fecha: formData.fecha, deporte_id: deporteId },
         });
         const horariosDisponibles = response.data.horarios.filter((horario) => horario.disponible);
         setHorarios(horariosDisponibles);
@@ -41,7 +41,7 @@ export default function EditPartidoModal({ partido, onClose, onSave, equipos }) 
         if (!formData.fecha || !formData.horario_id) return; // No cargar si no hay fecha u horario seleccionado
 
         const response = await api.get(`/disponibilidad/cancha`, {
-          params: { fecha: formData.fecha, horario_id: formData.horario_id },
+          params: { fecha: formData.fecha, horario_id: formData.horario_id, deporte_id: deporteId },
         });
         const canchasDisponibles = response.data.canchas.filter((cancha) => cancha.disponible);
         setCanchas(canchasDisponibles);

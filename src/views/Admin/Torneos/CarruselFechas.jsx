@@ -547,6 +547,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
           equipos={equipos} // Asegúrate de pasar equipos aquí
           onClose={() => setModalEditPartidoVisible(false)}
           onSave={handlePartidoUpdated}
+          deporteId={deporteId} // Pasa el deporteId al modal
         />
       )}
 

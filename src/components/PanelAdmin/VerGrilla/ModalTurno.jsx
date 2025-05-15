@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Edit, Calendar, Clock, User, CreditCard, DollarSign, Phone, Mail, CalendarDays } from 'lucide-react';
+import { X, Edit, Calendar, Clock, User, CreditCard, DollarSign, Phone, Mail, CalendarDays, Trophy, CalendarClock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -93,31 +93,26 @@ const ModalTurno = ({ isOpen, onClose, turno: turnoInicial }) => {
       <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <div>
+          <div className="flex justify-between items-center ">
               <h2 className="text-xl font-bold text-gray-900">
                 Turno #{turno.id}
               </h2>
-              <span className={`mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getEstadoColor(turno.estado)}`}>
-                {turno.estado}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleEditClick}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
-              >
-                <Edit className="h-5 w-5" />
-                Editar Turno
-              </button>
+              {console.log(turno)}
+              <div className="flex items-center gap-6">
+              <span className={`capitalize px-2 py-2 text-sm rounded-[8px] text-white ${turno.tipo === 'torneo' ? 'bg-[#FFA500]' : turno.tipo === 'fijo' ? 'bg-[#1E90FF]' : 'bg-[#16a34a]'}`}>{turno.tipo}</span>
               <button
                 onClick={onClose}
                 className="text-gray-500 hover:text-gray-700"
               >
                 <X className="h-6 w-6" />
               </button>
-            </div>
+              </div>
           </div>
+          <div className="flex justify-between items-center mb-6">
+              <span className={`mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getEstadoColor(turno.estado)}`}>
+                {turno.estado}
+              </span>
+              </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Detalles del Turno */}
@@ -169,9 +164,45 @@ const ModalTurno = ({ isOpen, onClose, turno: turnoInicial }) => {
 
             {/* Información del Cliente */}
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Información del Cliente</h3>
+              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Información del {turno.tipo !== 'torneo' ? 'Cliente' : 'Partido'}</h3>
               
-              <div className="space-y-4">
+                {turno.tipo === 'torneo' && (
+                  <div className='space-y-4'>
+                  <div className="flex items-center gap-3">
+                  <Trophy className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <span className="font-semibold block text-gray-700">Torneo</span>
+                    <span>{turno.partido.fecha.zona.torneo.nombre}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <CalendarClock  className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <span className="font-semibold block text-gray-700">Zona</span>
+                    <span>{turno.partido.fecha.zona.nombre}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <CalendarClock  className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <span className="font-semibold block text-gray-700">Fecha</span>
+                    <span>{turno.partido.fecha.nombre}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <CreditCard className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <span className="font-semibold block text-gray-700">Equipos</span>
+                    <span>{turno.partido.equipos.local.nombre} vs {turno.partido.equipos.visitante.nombre}</span>
+                  </div>
+                </div>
+                </div>
+                )}
+                {turno.tipo !== 'torneo' && (
+                  <div className='space-y-4'>
                 <div className="flex items-center gap-3">
                   <User className="h-5 w-5 text-blue-600" />
                   <div>
@@ -203,9 +234,19 @@ const ModalTurno = ({ isOpen, onClose, turno: turnoInicial }) => {
                     <span>{turno.usuario?.dni}</span>
                   </div>
                 </div>
-              </div>
+                </div>
+                )}
             </div>
           </div>
+          <div className=" flex justify-end">
+          <button
+                onClick={handleEditClick}
+                className="flex items-center text-sm gap-2 px-3 py-2 bg-blue-600 text-white rounded-[8px] hover:bg-blue-700 transition-colors duration-200"
+              >
+                <Edit className="h-4 w-4" />
+                Editar Turno
+              </button>
+              </div>
         </div>
       </div>
     </div>

@@ -42,6 +42,11 @@ import SelectDeporteReserva from "@/views/General/SelectDeporteReserva";
 import ForgotPassword from "@/views/User/ForgotPassword";
 import ResetPassword from "@/views/User/ResetPassword";
 import VerifyEmail from "@/views/User/VerifyEmail";
+import Checkout from "@/views/Checkout/Checkout";
+import CheckoutSuccess from "@/views/Checkout/CheckoutSuccess";
+import CheckoutFailure from "@/views/Checkout/CheckoutFailure";
+import CheckoutPending from "@/views/Checkout/CheckoutPending";
+
 
 const AppRoutes = () => {
   return (
@@ -92,6 +97,10 @@ const AppRoutes = () => {
       <Route path={`/reglamento`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Reglamento /></ProtectedRoute>} />
       <Route path={`/premios`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Premios /></ProtectedRoute>} />
       <Route path={`/editar-perfil`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><EditProfile /></ProtectedRoute>} />
+      <Route path={`/checkout`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR, ROLES.USER]}><Checkout /></ProtectedRoute>} />
+      <Route path={`/checkout/success/:turnoId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR, ROLES.USER]}><CheckoutSuccess /></ProtectedRoute>} />
+      <Route path={`/checkout/failure/:turnoId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR, ROLES.USER]}><CheckoutFailure /></ProtectedRoute>} />
+      <Route path={`/checkout/pending/:turnoId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR, ROLES.USER]}><CheckoutPending /></ProtectedRoute>} />
     </Routes>
   );
 };

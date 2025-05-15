@@ -167,7 +167,7 @@ export default function ContadorBloqueo() {
       if (response.status === 201) {
         toast.success('Reserva creada exitosamente');
         cleanupStorage();
-        setTimeout(() => navigate('/user-profile'), 2000);
+        navigate('/checkout', { state: { turno: response.data.turno } });
       }
     } catch (error) {
       console.error('Error al crear la reserva:', error);
@@ -324,10 +324,9 @@ export default function ContadorBloqueo() {
                       <span>Cómo realizar el pago</span>
                     </div>
                     <ul className="text-sm text-green-700 space-y-1">
-                      <li>1. Al confirmar, el pago se coordina por WhatsApp. 2215607115</li>
-                      <li>2. Puedes pagar con transferencia o MercadoPago</li>
-                      <li>3. Envía el comprobante para confirmar tu reserva</li>
-                      <li>4. El saldo restante se abona al momento de jugar</li>
+                      <li>1. Al confirmar, el pago se realiza en la siguiente ventana a traves de Mercado Pago</li>
+                      <li>2. Una vez pagada la seña el turno estará confirmado</li>
+                      <li>3. El saldo restante se abona al momento de jugar</li>
                     </ul>
                   </div>
                 </div>
@@ -350,10 +349,9 @@ export default function ContadorBloqueo() {
                 <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mt-auto">
                   <p className="font-semibold text-orange-800">Información importante:</p>
                   <ul className="text-sm text-orange-700 space-y-2 mt-2">
-                    <li>• El pago de la seña se hace a través de WhatsApp, una vez se confirme el pago la reserva estará señada.</li>
-                    <li>• Tienes 30 minutos después de hacer la reserva para cancelarla sin costo.</li>
-                    <li>• Pasados los 30 minutos hay un cargo por cancelación del 10% del total.</li>
-                    <li>• La seña debe ser pagada para confirmar la reserva.</li>
+                    <li>• Si <span className="font-bold">NO </span>se señó la reserva, tienes 30 minutos para cancelarla sin costo.</li>
+                    <li>• Si <span className="font-bold">NO </span>se señó la reserva, pasados los 30 minutos la reserva se libera automaticamente.</li>
+                    <li>• Si se señó la reserva, podes cancelarla 24hs antes del turno y se te reembolsará el monto de la seña, si se cancela en el mismo dia del turno se pierde la seña.</li>
                   </ul>
                 </div>
               </div>

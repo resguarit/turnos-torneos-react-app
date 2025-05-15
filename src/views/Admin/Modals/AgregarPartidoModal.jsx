@@ -15,7 +15,7 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
     const fetchHorariosDisponibles = async () => {
       try {
         const response = await api.get("/disponibilidad/fecha", {
-          params: { fecha: fecha.fecha_inicio },
+          params: { fecha: fecha.fecha_inicio, deporte_id: fecha.zona.torneo.deporte_id },
         });
 
         if (response.status === 200) {
@@ -29,7 +29,6 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
     fetchHorariosDisponibles();
   }, [fecha]);
 
-  // Obtener canchas disponibles según el horario seleccionado
   useEffect(() => {
     if (!horario) {
       setCanchas([]);
@@ -39,7 +38,7 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
     const fetchCanchasDisponibles = async () => {
       try {
         const response = await api.get("/disponibilidad/cancha", {
-          params: { fecha: fecha.fecha_inicio, horario_id: horario },
+          params: { fecha: fecha.fecha_inicio, horario_id: horario, deporte_id: fecha.zona.torneo.deporte_id },
         });
 
         if (response.status === 200) {

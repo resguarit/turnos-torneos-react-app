@@ -59,17 +59,6 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
         const firstPendingIndex = fetchedFechas.findIndex(fecha => fecha.estado === 'Pendiente');
         setCurrentFechaIndex(firstPendingIndex !== -1 ? firstPendingIndex : 0);
 
-        const canchasResponse = await api.get(`/canchas`, {
-          signal: abortController?.signal
-        });
-        setCanchas(canchasResponse.data.canchas);
-
-        // Obtener horarios
-        const horariosResponse = await api.get(`/horarios`, {
-          signal: abortController?.signal
-        });
-        setHorarios(horariosResponse.data.horarios);
-
         const primeraFecha = fetchedFechas[0]?.fecha_inicio;
         if (primeraFecha && deporteId) {
           const responseHorariosModal = await api.get('/horarios-dia', { 
@@ -328,8 +317,6 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
       <div className="divide-y divide-gray-200">
         {currentFecha.partidos && currentFecha.partidos.length > 0 ? (
           currentFecha.partidos.map((partido) => {
-            const cancha = canchas.find((c) => c.id === partido.cancha_id);
-            const horario = horarios.find((h) => h.id === partido.horario_id);
 
             return (
               <div 
@@ -367,9 +354,9 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
                   </div>
                 </div>
                 <div className="flex justify-between mt-2 text-sm text-gray-600">
-                  <span>Cancha: {cancha?.nro || 'No Definido'}</span>
+                  <span>Cancha: {partido.cancha?.nro || 'No Definido'}</span>
                   <span>
-                    Hora: {horario?.hora_inicio || 'No Definido'} - {horario?.hora_fin || 'No Definido'}
+                    Hora: {partido.horario?.hora_inicio || 'No Definido'} - {partido.horario?.hora_fin || 'No Definido'}
                   </span>
                 </div>
                 <div className="flex justify-between mt-2">
@@ -577,8 +564,6 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
         <AgregarPartidoModal
           fecha={selectedFecha}
           equipos={equipos}
-          canchas={canchas}
-          horarios={horarios}
           onClose={() => setModalAgregarPartidoVisible(false)}
           onPartidoAgregado={handlePartidoAgregado}
         />

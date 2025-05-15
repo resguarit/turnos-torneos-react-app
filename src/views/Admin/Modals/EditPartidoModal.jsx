@@ -14,7 +14,7 @@ export default function EditPartidoModal({ partido, onClose, onSave, equipos, de
     equipo_visitante_id: partido.equipo_visitante_id || "",
   });
   const [loading, setLoading] = useState(false);
-  console.log("Partido:", partido);
+  const [canchaDisabled, setCanchaDisabled] = useState(true); // Controla si el select de cancha está deshabilitado
 
   useEffect(() => {
     const fetchHorarios = async () => {
@@ -45,13 +45,16 @@ export default function EditPartidoModal({ partido, onClose, onSave, equipos, de
         });
         const canchasDisponibles = response.data.canchas.filter((cancha) => cancha.disponible);
         setCanchas(canchasDisponibles);
+        setCanchaDisabled(false); // Habilitar el select de cancha
       } catch (error) {
         console.error("Error fetching canchas:", error);
         toast.error("Error al cargar las canchas disponibles");
       }
     };
 
-    fetchCanchas();
+    if (formData.horario_id) {
+      fetchCanchas();
+    }
   }, [formData.fecha, formData.horario_id]);
 
   const handleChange = (e) => {
@@ -60,9 +63,18 @@ export default function EditPartidoModal({ partido, onClose, onSave, equipos, de
 
     // Reset dependent fields
     if (name === "fecha") {
-      setFormData((prev) => ({ ...prev, horario_id: partido.horario?.id || null, cancha_id: partido.cancha?.id || null }));
+      setFormData((prev) => ({
+        ...prev,
+        horario_id: null,
+        cancha_id: null,
+      }));
+      setCanchaDisabled(true); // Deshabilitar el select de cancha hasta que se seleccione un horario
     } else if (name === "horario_id") {
-      setFormData((prev) => ({ ...prev, cancha_id: partido.cancha?.id || null }));
+      setFormData((prev) => ({
+        ...prev,
+        cancha_id: null,
+      }));
+      setCanchaDisabled(true); // Deshabilitar el select de cancha hasta que se carguen las canchas
     }
   };
 
@@ -122,6 +134,7 @@ export default function EditPartidoModal({ partido, onClose, onSave, equipos, de
             value={formData.cancha_id || ""}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-[6px] p-2"
+            disabled={canchaDisabled} // Deshabilitar si no se ha seleccionado un horario
           >
             <option value="" disabled>
               Seleccionar cancha
@@ -191,7 +204,7 @@ export default function EditPartidoModal({ partido, onClose, onSave, equipos, de
             </select>
           </div>
         </div>
-        
+
         <div className="flex justify-end space-x-4">
           <button
             onClick={onClose}

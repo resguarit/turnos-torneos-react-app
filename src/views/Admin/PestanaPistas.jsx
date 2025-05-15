@@ -350,23 +350,7 @@ const PestanaPistas = () => {
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Deporte</label>
-                  <select
-                    value={newPista.deporte_id}
-                    onChange={(e) => setNewPista({ ...newPista, deporte_id: e.target.value })}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                    required
-                  >
-                    <option value="">{loading ? 'Cargando deportes...' : 'Seleccionar Deporte'}</option>
-                    {Array.isArray(deportes) &&
-                      deportes.map((deporte) => (
-                        <option key={deporte.id} value={deporte.id}>
-                          {deporte.nombre} {deporte.jugadores_por_equipo}
-                        </option>
-                      ))}
-                  </select>
-                </div>
+                
                 <div className="flex items-center">
                   <input
                     type="checkbox"

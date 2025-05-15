@@ -5,7 +5,7 @@ export default function ConfirmDeleteModal({ isOpen, onClose, onConfirm, loading
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md">
+      <div className="bg-white p-6 rounded-[8px] shadow-lg w-[90%] max-w-md">
         <h2 className="text-lg font-bold text-gray-800 mb-4">Confirmar Eliminación</h2>
         <p className="text-gray-600 mb-6">¿Estás seguro de que deseas eliminar {pronombre} {entidad}? Esta acción no se puede deshacer.</p>
         <div className="flex justify-end gap-3">

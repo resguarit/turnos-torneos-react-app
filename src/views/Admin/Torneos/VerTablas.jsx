@@ -74,10 +74,11 @@ export default function VerTablas() {
 
         // --- Fetch Sanciones ---
         const sancionesResponse = await api.get(`/zonas/${zonaId}/sanciones`);
-        if (sancionesResponse.status === 200 && sancionesResponse.data?.sanciones) {
-          setSanciones(sancionesResponse.data.sanciones);
+        const userRole = localStorage.getItem('user_role');
+        if (userRole !== 'admin') {
+          setSanciones(sancionesResponse.data?.sanciones?.filter(s => s.sancion?.estado === 'activa') || []);
         } else {
-          setSanciones([]);
+          setSanciones([]); // No mostrar sanciones para otros roles o usuarios no logueados
         }
 
         // 4. Fetch Next Matchday (Common for all formats)

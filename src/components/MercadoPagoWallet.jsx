@@ -4,12 +4,13 @@ import api from '@/lib/axiosConfig';
 import BtnLoading from "./BtnLoading";
 import { Loader2 } from "lucide-react";
 
-const PUBLIC_KEY = 'APP_USR-ea10856b-f68f-4e56-a05b-a2621a1f2ff1';
+const PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY;
 
 const MercadoPagoWallet = ({ turnoId, onReady }) => {
     const [preferenceId, setPreferenceId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
 
     useEffect(() => {
         // Solo inicializar MercadoPago una vez
@@ -27,6 +28,7 @@ const MercadoPagoWallet = ({ turnoId, onReady }) => {
             try {
                 const response = await api.post('/mercadopago/create-preference', {
                     turno_id: turnoId,
+                    binary_mode: true,
                 });
 
                 if (response && response.data && isMounted) {

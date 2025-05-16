@@ -94,7 +94,7 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
     <div className="flex justify-center">
       <Card className="mb-4 p-4 border rounded-[8px] shadow w-full md:w-1/2 bg-white">
         <CardContent className="p-2 md:p-6">
-          <h2 className="md:text-lg font-bold text-center md:text-left">Detalles de la Reserva</h2>
+          <h2 className="md:text-lg font-bold text-center md:text-left">Detalles de la Reserva #{turno.id}</h2>
           <p className="text-sm text-center text-gray-600 mb-4">{turno.ubicacion}</p>
 
           <hr className="my-2" />

@@ -316,8 +316,6 @@ const PestanaHorario = () => {
         await fetchActiveScheduleExtremes(selectedDeporteId);
         // Recargar franjas horarias deshabilitadas
         await fetchDisabledRanges(selectedDeporteId);
-        // Recargar extremos activos
-        await fetchActiveScheduleExtremes(selectedDeporteId);
         if (isCollapsibleOpen) {
           await fetchDisabledRanges(selectedDeporteId);
         }

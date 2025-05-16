@@ -1,10 +1,105 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { XCircle, AlertTriangle } from "lucide-react"
 import CheckoutLayout from './layout';
-
-const motivo = "Pago rechazado"
+import { useNavigate, useParams } from 'react-router-dom';
+import api from '@/lib/axiosConfig';
 
 const CheckoutFailure = () => {
+  const [estado, setEstado] = useState(null);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
+  
+  const navigate = useNavigate();
+
+  const turnoId = window.location.pathname.split('/').pop();
+
+  const query = new URLSearchParams(window.location.search);
+
+  const payment_id = query.get('payment_id') ? query.get('payment_id') == "null" ? null : query.get('payment_id') : null;
+  const preference_id = query.get('preference_id') ? query.get('preference_id') == "null" ? null : query.get('preference_id') : null;
+
+  useEffect(() => {
+    setLoading(true);
+
+    if(payment_id){
+
+      const verifyPayment = async () => {
+        try {
+          const response = await api.post(`/mercadopago/verify-payment`, {
+            external_reference: turnoId,
+            payment_id: payment_id,
+          });
+
+          setEstado(response.data.estado);
+
+          if(response.data.estado != "rejected"){
+            setError(true);
+          }
+
+        } catch (error) {
+          console.log(error);
+          setError(true);
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      verifyPayment();
+
+    } else if(preference_id){
+
+      const verifyPayment = async () => {
+        try {
+          const response = await api.post(`/mercadopago/verify-payment-by-preference`, {
+            preference_id: preference_id,
+            external_reference: turnoId,
+          });
+        } catch (error) {
+          console.log(error);
+          setError(true);
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      verifyPayment();
+
+    } else {
+      setError(true);
+      setLoading(false);
+    }
+
+
+  }, []);
+
+  if(loading){
+    return (
+      <CheckoutLayout status="failure">
+        <div className="flex items-center justify-center h-32">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-100"></div>
+        </div>
+      </CheckoutLayout>
+    )
+  }
+
+  if (error) {
+    return (
+    <div className="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+        <p className="font-bold">Error</p>
+        <p>Error al obtener verificacion del pago del turno #{turnoId}. Por favor vuelve e intenta nuevamente.</p>
+        <button 
+          onClick={() => navigate('/')}
+          className="mt-2 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+        >
+          Volver
+        </button>
+      </div>
+    </div>
+    )
+  }
+
+
   return (
     <CheckoutLayout status="failure">
     <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-sm overflow-hidden">
@@ -28,7 +123,7 @@ const CheckoutFailure = () => {
             <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-red-800">Motivo de la cancelación:</p>
-              <p className="text-sm text-red-700 mt-1">{motivo}</p>
+              <p className="text-sm text-red-700 mt-1">Pago rechazado o no completado</p>
             </div>
           </div>
         </div>
@@ -45,19 +140,12 @@ const CheckoutFailure = () => {
               <span className="font-bold text-black">2.</span>
               <span>Verificar la disponibilidad de canchas para la fecha deseada.</span>
             </li>
-            <li className="flex gap-2">
-              <span className="font-bold text-black">3.</span>
-              <span>Si crees que esto es un error, por favor contacta con soporte.</span>
-            </li>
           </ul>
         </div>
       </div>
 
       <div className="p-4 flex justify-center space-x-4">
-        <button className="border border-gray-300 text-gray-700 px-6 py-2 rounded-md font-medium hover:bg-gray-50 transition-colors">
-          Contactar Soporte
-        </button>
-        <button className="bg-black text-white px-6 py-2 rounded-md font-medium hover:bg-gray-800 transition-colors">
+        <button className="bg-black text-white px-6 py-2 rounded-[8px] font-medium hover:bg-gray-800 transition-colors" onClick={() => navigate('/select-deporte')}>
           Realizar Nueva Reserva
         </button>
       </div>

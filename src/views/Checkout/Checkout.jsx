@@ -4,11 +4,14 @@ import { parseISO, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import MercadoPagoWallet from '@/components/MercadoPagoWallet';
 import { Loader2 } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
+
 export default function MercadoPagoCheckout() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const { turno } = useLocation().state || {};
   const [walletReady, setWalletReady] = useState(false);
+  const navigate = useNavigate();
   
   const formatFecha = (fechaStr) => {
     if (!fechaStr) return '';
@@ -33,7 +36,7 @@ export default function MercadoPagoCheckout() {
         <p className="font-bold">Error</p>
         <p>No se encontró información del turno. Por favor vuelve e intenta nuevamente.</p>
         <button 
-          onClick={() => window.history.back()}
+          onClick={() => navigate('/')}
           className="mt-2 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
         >
           Volver
@@ -96,7 +99,7 @@ export default function MercadoPagoCheckout() {
         </div>
         
         {/* Métodos de pago permitidos */}
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-6 py-4 hidden md:block border-b border-gray-200">
           <h2 className="text-lg font-medium mb-4">Métodos de pago disponibles</h2>
           
           <div className="grid grid-cols-3 gap-3 mb-4">
@@ -125,7 +128,7 @@ export default function MercadoPagoCheckout() {
             </div>
           </div>
           
-          <div className="bg-green-50 border-l-4 border-green-400 p-3 text-sm text-green-700">
+          <div className="flex bg-green-50 border-l-4 border-green-400 p-3 text-sm text-green-700">
             <p className="font-medium">Pago seguro con Mercado Pago</p>
           </div>
         </div>

@@ -57,6 +57,9 @@ const AppRoutes = () => {
       <Route path={`/forgot-password`} element={<ForgotPassword />} />
       <Route path={`/reset-password`} element={<ResetPassword />} />
       <Route path={`/verify-email`} element={<VerifyEmail />} />
+      <Route path={`/checkout/success/:turnoId`} element={<CheckoutSuccess />} />
+      <Route path={`/checkout/failure/:turnoId`} element={<CheckoutFailure />} />
+      <Route path={`/checkout/pending/:turnoId`} element={<CheckoutPending />} />
 
       {/* Rutas protegidas para administradores */}
       <Route path={`/torneos-admi`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><Torneos /></ProtectedRoute>} />
@@ -82,9 +85,6 @@ const AppRoutes = () => {
       <Route path={`/premios`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Premios /></ProtectedRoute>} />
       <Route path={`/editar-perfil`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><EditProfile /></ProtectedRoute>} />
       <Route path={`/checkout`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR, ROLES.USER]}><Checkout /></ProtectedRoute>} />
-      <Route path={`/checkout/success/:turnoId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR, ROLES.USER]}><CheckoutSuccess /></ProtectedRoute>} />
-      <Route path={`/checkout/failure/:turnoId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR, ROLES.USER]}><CheckoutFailure /></ProtectedRoute>} />
-      <Route path={`/checkout/pending/:turnoId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR, ROLES.USER]}><CheckoutPending /></ProtectedRoute>} />
     </Routes>
   );
 };

@@ -7,6 +7,7 @@ import { parseISO, format } from 'date-fns';
 import es from 'date-fns/locale/es';
 import { DollarSign, MapPin, Calendar } from "lucide-react"
 
+
 const CheckoutPending = () => {
   const [turno, setTurno] = useState(null);
   const [estado, setEstado] = useState(null);
@@ -50,6 +51,7 @@ const CheckoutPending = () => {
 
   useEffect(() => {
     setLoading(true);
+    window.history.replaceState(null, "", window.location.pathname);
 
     const verifyPayment = async () => {
       try {

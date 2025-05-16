@@ -20,6 +20,7 @@ const CheckoutSuccess = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    window.history.replaceState(null, "", window.location.pathname);
 
     const verifyPayment = async () => {
       try {

@@ -51,7 +51,6 @@ const CheckoutPending = () => {
 
   useEffect(() => {
     setLoading(true);
-    window.history.replaceState(null, "", window.location.pathname);
 
     const verifyPayment = async () => {
       try {

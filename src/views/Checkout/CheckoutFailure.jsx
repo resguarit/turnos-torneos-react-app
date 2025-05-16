@@ -20,7 +20,6 @@ const CheckoutFailure = () => {
 
   useEffect(() => {
     setLoading(true);
-    window.history.replaceState(null, "", window.location.pathname);
 
     if(payment_id){
 

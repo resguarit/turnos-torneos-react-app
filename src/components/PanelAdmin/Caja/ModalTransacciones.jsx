@@ -57,10 +57,12 @@ const ModalTransacciones = ({ showModal, setShowModal, transacciones, loading })
                     {transaction.metodo_pago?.nombre === 'efectivo' && <Banknote className="h-4 w-4" />}
                     {transaction.metodo_pago?.nombre === 'transferencia' && <ArrowDownToLine className="h-4 w-4" />}
                     {transaction.metodo_pago?.nombre === 'tarjeta' && <CreditCard className="h-4 w-4" />}
+                    {transaction.metodo_pago?.nombre === 'mercadopago' && <CreditCard className="h-4 w-4" />}
                     <span className="text-sm">
                       {transaction.metodo_pago?.nombre === 'efectivo' ? 'Efectivo' : 
                        transaction.metodo_pago?.nombre === 'transferencia' ? 'Transferencia' : 
-                       transaction.metodo_pago?.nombre === 'tarjeta' ? 'Tarjeta' : 'Otro'}
+                       transaction.metodo_pago?.nombre === 'tarjeta' ? 'Tarjeta' : 
+                       transaction.metodo_pago?.nombre === 'mercadopago' ? 'Mercado Pago' : 'Otro'}
                     </span>
                   </div>
                 </div>

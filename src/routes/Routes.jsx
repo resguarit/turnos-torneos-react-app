@@ -37,6 +37,7 @@ import VerTablas from "@/views/Admin/Torneos/VerTablas";
 import VerFixture from "@/views/Admin/Torneos/VerFixture";
 import EditarEquipo from '@/views/Admin/Torneos/EditarEquipo';
 import VerPagos from "@/views/Admin/Torneos/VerPagos";
+import CrearEvento from "@/views/Admin/CrearEvento";
 
 import SelectDeporteReserva from "@/views/General/SelectDeporteReserva";
 import ForgotPassword from "@/views/User/ForgotPassword";
@@ -88,6 +89,7 @@ const AppRoutes = () => {
       <Route path="/editar-partido/:partidoId" element={<ProtectedRoute requiredRole={ROLES.ADMIN}><CargaPartido /></ProtectedRoute>} />
       <Route path="/editar-equipo/:equipoId" element={<ProtectedRoute requiredRole={ROLES.ADMIN}><EditarEquipo /></ProtectedRoute>} />
       <Route path={`/pagos/:equipoId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><VerPagos /></ProtectedRoute>} />
+      <Route path={`/crear-evento`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><CrearEvento /></ProtectedRoute>} />
 
       {/* Rutas protegidas para usuarios y administradores */}
       <Route path={`/user-profile`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><UserProfile /></ProtectedRoute>} />

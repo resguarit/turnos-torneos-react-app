@@ -301,15 +301,21 @@ function VerTurnos() {
     <>
       <div className="min-h-screen flex flex-col font-inter">
         <ToastContainer position="top-right" />
-        <main className="flex-1 mt-4 bg-gray-100">
+        <main className="flex-1  bg-gray-100">
           <div className="mb-8">
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
+              <div className="flex gap-6 items-center">
                 <button
                   onClick={() => navigate('/nuevo-turno-admi')}
                   className="p-2 text-sm rounded-[6px] bg-naranja hover:bg-naranja/90 text-white"
                 >
                   Crear Turno 
+                </button>
+                <button
+                  onClick={() => navigate('/nuevo-turno-admi')}
+                  className="p-2 text-sm rounded-[6px] bg-naranja hover:bg-naranja/90 text-white"
+                >
+                  Crear Evento 
                 </button>
               </div>
               <div className='flex w-full gap-4 flex-col sm:flex-row items-center sm:items-start relative'>

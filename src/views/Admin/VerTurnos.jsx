@@ -312,7 +312,7 @@ function VerTurnos() {
                   Crear Turno 
                 </button>
                 <button
-                  onClick={() => navigate('/nuevo-turno-admi')}
+                  onClick={() => navigate('/crear-evento')}
                   className="p-2 text-sm rounded-[6px] bg-naranja hover:bg-naranja/90 text-white"
                 >
                   Crear Evento 

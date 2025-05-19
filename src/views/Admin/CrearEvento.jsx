@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Trash2, Plus } from 'lucide-react';
+import { Calendar, Trash2, Plus, ChevronLeft } from 'lucide-react';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import CrearPersonaModal from './Modals/CrearPersonaModal';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 export default function CrearEvento() {
   const [formEventoData, setFormEventoData] = useState({
@@ -25,6 +27,8 @@ export default function CrearEvento() {
   const [personaQuery, setPersonaQuery] = useState('');
   const [personas, setPersonas] = useState([]);
   const [showPersonas, setShowPersonas] = useState(false);
+  const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
   useEffect(() => {
     api.get('/deportes')
@@ -132,12 +136,13 @@ export default function CrearEvento() {
   }
 
     try {
+        setLoading(true);
     await api.post('/eventos', {
       ...formEventoData,
       combinaciones: unicas, // Envía solo las combinaciones únicas
     });
     toast.success('Evento creado correctamente');
-    // Limpiar formulario...
+    navigate('/panel-admin?tab=turnos');
   } catch {
     toast.error('Error al crear el evento');
   }
@@ -172,8 +177,19 @@ export default function CrearEvento() {
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
       <ToastContainer position="top-right" />
-      <main className="flex-1 flex items-center justify-center p-6">
-        <div className="bg-white shadow rounded-lg p-6 w-full max-w-2xl">
+      <div className="flex items-center px-4 py-2">
+                <Button 
+                  onClick={() => navigate('/panel-admin?tab=turnos')} 
+                  variant="ghost" 
+                  className="flex items-center gap-2 hover:bg-naranja hover:text-white rounded-xl"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span>Volver a Turnos</span>
+                </Button>
+              </div>
+      <main className="flex-1 flex items-center justify-center pb-4">
+        
+        <div className="bg-white shadow rounded-[8px] p-4 w-full max-w-2xl">
           <h2 className="text-xl font-bold flex items-center gap-2 mb-6">
             <Calendar className="w-5 h-5" /> Crear Evento
           </h2>
@@ -341,9 +357,10 @@ export default function CrearEvento() {
             <div className="justify-end flex w-full">
               <button
                 type="submit"
+                disabled={loading}
                 className="bg-blue-500 text-white py-2 px-4 rounded-[6px] hover:bg-blue-700 transition duration-200"
               >
-                Crear Evento
+                {loading ? 'Creando Evento' : 'Crear Evento'}
               </button>
             </div>
           </form>

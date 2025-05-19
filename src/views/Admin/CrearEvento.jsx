@@ -22,6 +22,9 @@ export default function CrearEvento() {
   const [showCrearPersonaModal, setShowCrearPersonaModal] = useState(false);
   const [deportes, setDeportes] = useState([]);
   const [deporteId, setDeporteId] = useState(''); // Agrega esto a tu estado
+  const [personaQuery, setPersonaQuery] = useState('');
+  const [personas, setPersonas] = useState([]);
+  const [showPersonas, setShowPersonas] = useState(false);
 
   useEffect(() => {
     api.get('/deportes')
@@ -140,6 +143,31 @@ export default function CrearEvento() {
   }
 };
 
+  // Buscador de personas
+  useEffect(() => {
+    const fetchPersonas = async () => {
+      if (personaQuery.length < 3) {
+        setPersonas([]);
+        return;
+      }
+      try {
+        const params = {};
+        if (/^\d+$/.test(personaQuery)) {
+          params.dni = personaQuery;
+        } else {
+          params.name = personaQuery;
+        }
+        const res = await api.get('/personas', { params });
+        setPersonas(res.data.data || []);
+        setShowPersonas(true);
+      } catch {
+        setPersonas([]);
+      }
+    };
+    const timeout = setTimeout(fetchPersonas, 300); // debounce
+    return () => clearTimeout(timeout);
+  }, [personaQuery]);
+
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
@@ -195,17 +223,38 @@ export default function CrearEvento() {
               </div>
             <div>
               <label className="block text-sm font-medium">Persona asociada</label>
-              <div className="flex w-full gap-2">
+              <div className="relative w-full gap-2">
                 <input
                   type="search"
-                  className="w-full text-sm border rounded-s-[6px] p-2"
-                  placeholder="Búsqueda por DNI: 12345678"
-                  value={formEventoData.persona_id}
-                  onChange={e => setFormEventoData(f => ({ ...f, persona_id: e.target.value }))}
+                  className="w-full text-sm border rounded-[6px] p-2"
+                  placeholder="Buscar por DNI o nombre"
+                  value={personaQuery}
+                  onChange={e => {
+                    setPersonaQuery(e.target.value);
+                    setShowPersonas(true);
+                  }}
+                  autoComplete="off"
                 />
+                {showPersonas && personas.length > 0 && (
+                  <ul className="absolute z-10 bg-white border w-full max-h-40 overflow-y-auto rounded shadow">
+                    {personas.map(persona => (
+                      <li
+                        key={persona.id}
+                        className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
+                        onClick={() => {
+                          setFormEventoData(f => ({ ...f, persona_id: persona.id }));
+                          setPersonaQuery(`${persona.name} (${persona.dni})`);
+                          setShowPersonas(false);
+                        }}
+                      >
+                        {persona.name} - DNI: {persona.dni} - Tel: {persona.telefono}
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 <button
                   type="button"
-                  className="bg-verde py-2 px-3 rounded-e-[6px] text-white"
+                  className="absolute right-2 top-2 bg-verde py-1 px-2 rounded text-white"
                   onClick={() => setShowCrearPersonaModal(true)}
                 >
                   <Plus size={16} />
@@ -304,6 +353,11 @@ export default function CrearEvento() {
       {showCrearPersonaModal && (
         <CrearPersonaModal
           onClose={() => setShowCrearPersonaModal(false)}
+          onPersonaCreada={persona => {
+            setFormEventoData(f => ({ ...f, persona_id: persona.id }));
+            setPersonaQuery(`${persona.name} (${persona.dni})`);
+            setShowCrearPersonaModal(false);
+          }}
         />
       )}
     </div>

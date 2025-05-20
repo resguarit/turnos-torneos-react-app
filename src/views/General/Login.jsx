@@ -7,6 +7,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Eye, EyeOff, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { encryptRole } from '@/lib/getRole';
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -44,7 +45,7 @@ const Login = () => {
             const response = await login(loginData);
             localStorage.setItem('user_id', response.user_id);
             localStorage.setItem('username', response.username);
-            localStorage.setItem('user_role', response.rol);
+            saveUserRole(response.rol);
             navigate('/');
         } catch (error) {
             setError('Credenciales incorrectas');
@@ -60,6 +61,11 @@ const Login = () => {
 
     const toggleShowPassword = () => {
         setShowPassword(!showPassword);
+    };
+
+    const saveUserRole = (rol) => {
+        const rolEncriptado = encryptRole(rol);
+        localStorage.setItem('user_role', rolEncriptado);
     };
 
     return (

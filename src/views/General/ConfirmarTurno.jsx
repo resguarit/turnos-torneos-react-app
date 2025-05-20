@@ -13,6 +13,7 @@ import { MapPin, Calendar, Clock, CreditCard, Eye, EyeOff } from 'lucide-react';
 import Loading from '@/components/BtnLoading';
 import { format, parseISO, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { encryptRole } from '@/lib/getRole';
 
 export default function ConfirmarTurno() {
   const [formData, setFormData] = useState({
@@ -113,7 +114,8 @@ export default function ConfirmarTurno() {
             localStorage.setItem('user_id', loginResponse.data.user_id);
             localStorage.setItem('username', loginResponse.data.username);
             localStorage.setItem('token', loginResponse.data.token);
-            localStorage.setItem('user_role', loginResponse.data.rol);
+            const rolEncriptado = encryptRole(loginResponse.data.rol);
+            localStorage.setItem('user_role', rolEncriptado);
 
             // Configurar token
             api.defaults.headers.common['Authorization'] = `Bearer ${loginResponse.data.token}`;

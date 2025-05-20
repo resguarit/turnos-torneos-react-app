@@ -7,6 +7,7 @@ import { UserCog } from "lucide-react"
 import { LogOut } from "lucide-react"
 import ModalConfirmation from "./ModalConfirmation"
 import { Pencil } from "lucide-react"
+import { decryptRole } from "@/lib/getRole"
 
 export function Header() {
   const navigate = useNavigate()
@@ -14,7 +15,8 @@ export function Header() {
   const [username, setUserName] = useState(null)
   const [isOpen, setIsOpen] = useState(false)
   const [showModal, setShowModal] = useState(false)
-  const userRole = localStorage.getItem("user_role")
+  const userRoleEncrypted = localStorage.getItem("user_role")
+  const userRole = userRoleEncrypted ? decryptRole(userRoleEncrypted) : null
   const [hasActiveReservation, setHasActiveReservation] = useState(false)
   const isReservationPage = location.pathname === "/contador-bloqueo" || location.pathname === "/bloqueo-reserva" || location.pathname === "/confirmar-turno" || location.pathname === "/confirmar-login"
 

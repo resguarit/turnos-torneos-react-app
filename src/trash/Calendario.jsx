@@ -7,7 +7,7 @@ import api from '@/lib/axiosConfig';
 import Loading from '@/components/Loading';
 import BtnNegro from '@/components/BtnNegro';
 import useTimeout from '@/components/useTimeout';
-
+import { decryptRole } from '@/lib/getRole';
 const DAYS_OF_WEEK = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 const combineConsecutiveTimeSlots = (horarios) => {
@@ -52,7 +52,8 @@ export default function Calendar() {
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [reservations, setReservations] = useState({});
-  const userRole = localStorage.getItem('user_role');
+  const userRoleEncrypted = localStorage.getItem('user_role');
+  const userRole = decryptRole(userRoleEncrypted);
 
   useEffect(() => {
     api.get('/disponibilidad')

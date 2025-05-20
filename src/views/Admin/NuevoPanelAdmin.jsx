@@ -12,7 +12,7 @@ import PestanaAuditoria from './PestanaAuditoria';
 import PestanaPersonas from './PestanaPersonas';
 import PestanaCuentasCorrientes from './PestanaCuentasCorrientes';
 import PestanaCaja from './PestanaCaja';
-
+import { decryptRole } from '@/lib/getRole';
 const NuevoPanelAdmin = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,8 +22,9 @@ const NuevoPanelAdmin = () => {
   const [activeTab, setActiveTab] = useState(initialTab);
 
   useEffect(() => {
-    const role = localStorage.getItem('user_role');
-    setUserRole(role);
+    const userRoleEncrypted = localStorage.getItem('user_role');
+    const userRole = decryptRole(userRoleEncrypted);
+    setUserRole(userRole);
   }, []);
 
   useEffect(() => {

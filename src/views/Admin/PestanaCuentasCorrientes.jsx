@@ -6,7 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import BtnLoading from '@/components/BtnLoading';
 import { useLocation } from 'react-router-dom';
 import AgregarTransaccionModal from '@/components/AgregarTransaccionModal';
-
+import { decryptRole } from '@/lib/getRole';
 const MontoInput = React.memo(({ value, onChange, label, placeholder }) => {
   return (
     <div>
@@ -56,8 +56,9 @@ const PestanaCuentasCorrientes = () => {
   const [userRole, setUserRole] = useState('');
 
   useEffect(() => {
-    const role = localStorage.getItem('user_role');
-    setUserRole(role);
+    const userRoleEncrypted = localStorage.getItem('user_role');
+    const userRole = decryptRole(userRoleEncrypted);
+    setUserRole(userRole);
   }, []);
 
   const isAdmin = userRole === 'admin';

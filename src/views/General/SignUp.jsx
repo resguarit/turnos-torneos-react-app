@@ -7,6 +7,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Eye, EyeOff } from 'lucide-react';
 import { ChevronLeft } from 'lucide-react';
+import { encryptRole } from '@/lib/getRole';
 
 function SignUp() {
     const [formData, setFormData] = useState({
@@ -68,7 +69,8 @@ function SignUp() {
                 localStorage.setItem('user_id', loginResponse.data.user_id);
                 localStorage.setItem('username', loginResponse.data.username);
                 localStorage.setItem('token', loginResponse.data.token);
-                localStorage.setItem('user_role', loginResponse.data.rol);
+                const rolEncriptado = encryptRole(loginResponse.data.rol);
+                localStorage.setItem('user_role', rolEncriptado);
                 toast.success('Registro exitoso');
                 setTimeout(() => {
                     navigate('/');

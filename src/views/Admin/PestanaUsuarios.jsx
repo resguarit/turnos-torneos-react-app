@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import BtnLoading from '@/components/BtnLoading';
 import ModalConfirmation from '@/components/ModalConfirmation';
 import { useNavigate } from 'react-router-dom';
+import { decryptRole } from '@/lib/getRole';
 
 const PestanaUsuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -42,8 +43,9 @@ const PestanaUsuarios = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const role = localStorage.getItem('user_role');
-    setUserRole(role);
+    const userRoleEncrypted = localStorage.getItem('user_role');
+    const userRole = decryptRole(userRoleEncrypted);
+    setUserRole(userRole);
   }, []);
 
   const isAdmin = userRole === 'admin';

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { UserCog, LogOut, Pencil, CircleUserRound, ArrowLeftCircle } from "lucide-react"
 import ModalConfirmation from "./ModalConfirmation"
+import { decryptRole } from "@/lib/getRole"
 
 const MenuMovil = ({ setMenuOpen }) => {
   const [isOpen, setIsOpen] = useState(false)
@@ -9,7 +10,9 @@ const MenuMovil = ({ setMenuOpen }) => {
   const [showModal, setShowModal] = useState(false)
   const [username, setUserName] = useState(null)
   const [hasActiveReservation, setHasActiveReservation] = useState(false)
-  const userRole = localStorage.getItem("user_role")
+  const userRoleEncrypted = localStorage.getItem("user_role")
+  const userRole = decryptRole(userRoleEncrypted)
+
   const navigate = useNavigate()
   const location = useLocation()
   const isReservationPage = location.pathname === "/contador-bloqueo" || location.pathname === "/bloqueo-reserva" || location.pathname === "/confirmar-turno" || location.pathname === "/confirmar-login"

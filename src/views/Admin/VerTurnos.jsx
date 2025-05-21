@@ -75,7 +75,7 @@ function VerTurnos() {
       url += `?fecha=${formattedDate}`;
     } else if (viewOption === 'range' && startDate && endDate) {
       const formattedStartDate = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-      const formattedEndDate = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString().split('T')[0];endDate.toISOString().split('T')[0];
+      const formattedEndDate = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString().split('T')[0];
       url += `?fecha_inicio=${formattedStartDate}&fecha_fin=${formattedEndDate}`;
     }
 
@@ -85,12 +85,35 @@ function VerTurnos() {
     }
 
     try {
+      // 1. Traer turnos normales
       const response = await api.get(url, { params, signal });
-      const grouped = response.data.turnos.reduce((acc, booking) => {
+      let bookings = response.data.turnos || [];
+
+      // 2. Traer eventos como turnos
+      const eventosResponse = await api.get('/eventosComoTurnos', { signal });
+      const eventosTurnos = eventosResponse.data.eventos_turnos || [];
+
+      // 3. Adaptar eventosTurnos al formato de booking y agregarlos
+      const eventosAdaptados = eventosTurnos.map(ev => ({
+        id: `evento-${ev.evento_id}-${ev.horario.id}`,
+        tipo: 'evento',
+        evento_id: ev.evento_id,
+        nombre: ev.nombre,
+        descripcion: ev.descripcion,
+        fecha_turno: ev.fecha,
+        horario: ev.horario,
+        canchas: ev.canchas,
+        persona: ev.persona,
+        estado: 'Reservado',
+      }));
+
+      // 4. Unir bookings y eventosAdaptados
+      const allBookings = [...bookings, ...eventosAdaptados];
+
+      // 5. Agrupar por fecha
+      const grouped = allBookings.reduce((acc, booking) => {
         const date = booking.fecha_turno.split('T')[0];
-        if (!acc[date]) {
-          acc[date] = [];
-        }
+        if (!acc[date]) acc[date] = [];
         acc[date].push(booking);
         return acc;
       }, {});

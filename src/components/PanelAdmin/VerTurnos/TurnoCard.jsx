@@ -20,13 +20,16 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
 
   // Obtener el nombre a mostrar
   const getNombreTurno = () => {
+    if (booking.tipo === 'evento') {
+      return `Evento: ${booking.nombre} (${booking.descripcion})`;
+    }
     if (booking.tipo === 'torneo' && booking.partido) {
       const torneoNombre = booking.partido.fecha.zona.torneo.nombre || 'Sin torneo';
       const zonaNombre = booking.partido.fecha.zona.nombre || 'Sin zona';
       const fechaNombre = booking.partido.fecha.nombre || 'Sin fecha';
       return `${torneoNombre} - ${zonaNombre} - ${fechaNombre}`;
     }
-    return booking.usuario.nombre || 'Sin nombre';
+    return booking.usuario?.nombre || booking.persona?.name || 'Sin nombre';
   };
 
   const verificarCajaAbierta = async () => {
@@ -74,20 +77,29 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
           <span
             className={`text-center px-3 py-1 rounded-xl text-sm ${
               booking.estado === 'Pendiente'
-              ? 'bg-yellow-300'
-              : booking.estado === 'Señado'
-              ? 'bg-blue-300'
-              : booking.estado === 'Pagado'
-              ? 'bg-green-300'
-              : 'bg-red-300'
-          }`}
-        >
-          {`Estado: ${booking.estado}`}
+                ? 'bg-yellow-300'
+                : booking.estado === 'Señado'
+                ? 'bg-blue-300'
+                : booking.estado === 'Pagado'
+                ? 'bg-green-300'
+                : 'bg-red-300'
+            }`}
+          >
+            {`Estado: ${booking.estado}`}
           </span>
         )}
-        <span className="text-center px-3 py-1 bg-gray-300 rounded-xl text-sm">
-          {`Cancha ${booking.cancha.nro} - ${booking.cancha.tipo_cancha}`}
-        </span>
+        {/* Mostrar canchas para eventos o para turnos normales */}
+        {booking.tipo === 'evento' && booking.canchas && booking.canchas.length > 0 ? (
+          booking.canchas.map(c => (
+            <span key={c.id} className="text-center px-3 py-1 bg-gray-300 rounded-xl text-sm">
+              {`Cancha ${c.nro} - ${c.tipo || c.tipo_cancha}`}
+            </span>
+          ))
+        ) : booking.cancha ? (
+          <span className="text-center px-3 py-1 bg-gray-300 rounded-xl text-sm">
+            {`Cancha ${booking.cancha.nro} - ${booking.cancha.tipo_cancha}`}
+          </span>
+        ) : null}
       </div>
 
       <div className="flex gap-2 justify-center w-full">
@@ -172,6 +184,25 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Detalles adicionales para eventos */}
+      {booking.tipo === 'evento' && (
+        <div className="mt-2">
+          <div className="text-sm font-medium text-gray-700">
+            <span>Organizador: {booking.persona?.name} (DNI: {booking.persona?.dni})</span>
+          </div>
+          <div className="text-sm font-medium text-gray-700">
+            <span>Horario: {booking.horario.hora_inicio} - {booking.horario.hora_fin}</span>
+          </div>
+          <div className="text-sm font-medium text-gray-700">
+            <span>
+              Canchas: {booking.canchas && booking.canchas.length > 0
+                ? booking.canchas.map(c => `Cancha ${c.nro} - ${c.tipo || c.tipo_cancha}`).join(', ')
+                : 'Sin canchas'}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

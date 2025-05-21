@@ -32,6 +32,15 @@ export default function ContadorBloqueo() {
     localStorage.removeItem('reservaTemp');
   };
 
+  const obtenerDuracion = (horaInicio, horaFin) => {
+    // Convert HH:MM:SS format to minutes
+    const horaInicioMinutos = horaInicio.split(':')[0] * 60 + parseInt(horaInicio.split(':')[1]);
+    const horaFinMinutos = horaFin.split(':')[0] * 60 + parseInt(horaFin.split(':')[1]);
+    const duracionMinutos = horaFinMinutos - horaInicioMinutos;
+    
+    return `${duracionMinutos} min`;
+  };
+
   useEffect(() => {
     // Cargar datos de la reserva
     const reservaTempString = localStorage.getItem('reservaTemp');
@@ -275,7 +284,7 @@ export default function ContadorBloqueo() {
                     <div className="w-full">
                       <p className="text-sm text-gray-500">Duración y Cancha</p>
                       <div className="flex justify-between items-center">
-                        <p className="font-medium text-sm">60 min</p>
+                        <p className="font-medium text-sm">{obtenerDuracion(horarioDetails?.hora_inicio, horarioDetails?.hora_fin)}</p>
                         <p className="font-medium text-sm">
                           Cancha {canchaDetails?.nro} - {canchaDetails?.tipo_cancha}
                         </p>

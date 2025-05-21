@@ -100,6 +100,7 @@ function VerTurnos() {
         evento_id: ev.evento_id,
         nombre: ev.nombre,
         descripcion: ev.descripcion,
+        monto: ev.monto,
         fecha_turno: ev.fecha,
         horario: ev.horario,
         canchas: ev.canchas,
@@ -232,6 +233,7 @@ function VerTurnos() {
   const filteredBookings = Object.keys(groupedBookings).reduce((acc, date) => {
     const dateObj = new Date(date);
     let includeDate = true;
+    console.log("FIltered bookings", groupedBookings)
 
     if (isFilteringByDate) {
       if (viewOption === 'day' && selectedDate) {

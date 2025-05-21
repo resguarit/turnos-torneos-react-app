@@ -1,16 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Trash2, PenSquare, Phone, DollarSign, AlertCircle, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import RegistrarPagoTurnoDialog from './RegistrarPagoTurnoDialog';
 import api from '@/lib/axiosConfig';
 import { toast } from 'react-toastify';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import RegistrarPagoEventoDialog from './RegistrarPagoEventoDialog';
 
 const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
   const navigate = useNavigate();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [verificandoCaja, setVerificandoCaja] = useState(false);
   const [cajaError, setCajaError] = useState(false);
+  const [showPagoEvento, setShowPagoEvento] = useState(false);
+  const [eventoPagado, setEventoPagado] = useState(false);
+
+  useEffect(() => {
+    const fetchEstadoPago = async () => {
+      if (booking.tipo === 'evento') {
+        try {
+          const res = await api.get(`/estadoPago/evento/${booking.evento_id}`);
+          setEventoPagado(res.data?.estado_pago === true);
+        } catch {
+          setEventoPagado(false);
+        }
+      }
+    };
+    fetchEstadoPago();
+  }, [booking]);
 
   const handlePagoRegistrado = (data) => {
     if (onPagoRegistrado) {
@@ -120,7 +137,16 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
         {booking.tipo !== 'torneo' && (
           <div className="flex gap-2 justify-center ">
             <button
-              onClick={() => window.open(`https://api.whatsapp.com/send?phone=549${booking.usuario.telefono}`, '_blank')}
+              onClick={() => {
+                const telefono = booking.tipo === 'evento'
+                  ? booking.persona?.telefono
+                  : booking.usuario?.telefono;
+                if (telefono) {
+                  window.open(`https://api.whatsapp.com/send?phone=549${telefono}`, '_blank');
+                } else {
+                  toast.error('No se encontró un teléfono para este turno');
+                }
+              }}
               size="icon"
               className="bg-green-500 rounded-[4px] hover:bg-green-600 text-white p-2 transition-colors duration-200"
               disabled={verificandoCaja}
@@ -137,15 +163,26 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
             </button>
           </div>
         )}
-        {booking.estado !== 'Pagado' && booking.estado !== 'Cancelado' && fecha_turno > fecha_modificacion && booking.tipo !== 'fijo' && (
-          <button
-            onClick={verificarCajaAbierta}
-            disabled={verificandoCaja}
-            className="flex rounded-[4px] flex-row gap-2 items-center bg-emerald-500 hover:bg-emerald-600 text-white p-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <DollarSign className="h-4 w-4" />
-            {verificandoCaja ? 'Verificando caja...' : 'Registrar Pago'}
-          </button>
+        {/* SOLO mostrar el botón si NO está pagado (para eventos) */}
+        {booking.estado !== 'Pagado' &&
+          booking.estado !== 'Cancelado' &&
+          fecha_turno > fecha_modificacion &&
+          booking.tipo !== 'fijo' &&
+          (!eventoPagado || booking.tipo !== 'evento') && (
+            <button
+              onClick={() => {
+                if (booking.tipo === 'evento') {
+                  setShowPagoEvento(true);
+                } else {
+                  verificarCajaAbierta();
+                }
+              }}
+              disabled={verificandoCaja}
+              className="flex rounded-[4px] flex-row gap-2 items-center bg-emerald-500 hover:bg-emerald-600 text-white p-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <DollarSign className="h-4 w-4" />
+              {verificandoCaja ? 'Verificando caja...' : 'Registrar Pago'}
+            </button>
         )}
       </div>
 
@@ -189,6 +226,12 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
         </DialogContent>
       </Dialog>
 
+      <RegistrarPagoEventoDialog
+        isOpen={showPagoEvento}
+        onClose={() => setShowPagoEvento(false)}
+        evento={booking}
+        onPagoRegistrado={handlePagoRegistrado}
+      />
     </div>
   );
 };

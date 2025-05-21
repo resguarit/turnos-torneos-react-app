@@ -18,6 +18,20 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
     }
   };
 
+  // Obtener el nombre a mostrar
+  const getNombreTurno = () => {
+    if (booking.tipo === 'evento') {
+      return `Evento: ${booking.nombre} (${booking.persona.name})`;
+    }
+    if (booking.tipo === 'torneo' && booking.partido) {
+      const torneoNombre = booking.partido.fecha.zona.torneo.nombre || 'Sin torneo';
+      const zonaNombre = booking.partido.fecha.zona.nombre || 'Sin zona';
+      const fechaNombre = booking.partido.fecha.nombre || 'Sin fecha';
+      return `${torneoNombre} - ${zonaNombre} - ${fechaNombre}`;
+    }
+    return booking.usuario?.nombre || booking.persona?.name || 'Sin nombre';
+  };
+
   const verificarCajaAbierta = async () => {
     setVerificandoCaja(true);
     setCajaError(false);
@@ -46,10 +60,14 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
     >
       <div className="flex justify-between items-start w-full">
         <div className="flex-1">
-          <h3 className="font-semibold text-lg capitalize">{booking.usuario.nombre}</h3>
+          <h3 className="font-semibold text-lg capitalize">{getNombreTurno()}</h3>
           <p className="text-sm font-medium text-gray-500">{`${booking.horario.hora_inicio} - ${booking.horario.hora_fin}`}</p>
-          <p className="text-sm font-medium text-gray-800">{`Monto total: $${booking.monto_total}`}</p>
-          <p className="text-sm font-medium text-gray-800">{`Monto seña: $${booking.monto_seña}`}</p>
+          <p className="text-sm font-medium text-gray-800">
+            {`Monto total: ${booking.monto_total !== undefined && booking.monto_total !== null ? `$${booking.monto_total}` : 'No definido'}`}
+          </p>
+          <p className="text-sm font-medium text-gray-800">
+            {`Monto seña: ${booking.monto_seña !== undefined && booking.monto_seña !== null ? `$${booking.monto_seña}` : 'No definido'}`}
+          </p>
         </div>
       </div>
 
@@ -61,22 +79,31 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
         )}
         {booking.tipo !== 'fijo' && (
           <span
-            className={`text-center px-3 py-1 rounded-xl text-sm ${
+            className={`text-center px-3 py-1 rounded-xl capitalize text-sm ${
               booking.estado === 'Pendiente'
-              ? 'bg-yellow-300'
-              : booking.estado === 'Señado'
-              ? 'bg-blue-300'
-              : booking.estado === 'Pagado'
-              ? 'bg-green-300'
-              : 'bg-red-300'
-          }`}
-        >
-          {`Estado: ${booking.estado}`}
+                ? 'bg-yellow-300'
+                : booking.estado === 'Señado'
+                ? 'bg-blue-300'
+                : booking.estado === 'Pagado'
+                ? 'bg-green-300'
+                : 'bg-red-300'
+            }`}
+          >
+            {`Estado: ${booking.estado}`}
           </span>
         )}
-        <span className="text-center px-3 py-1 bg-gray-300 rounded-xl text-sm">
-          {`Cancha ${booking.cancha.nro} - ${booking.cancha.tipo_cancha}`}
-        </span>
+        {/* Mostrar canchas para eventos o para turnos normales */}
+        {booking.tipo === 'evento' && booking.canchas && booking.canchas.length > 0 ? (
+          booking.canchas.map(c => (
+            <span key={c.id} className="text-center px-3 py-1 bg-gray-300 rounded-xl text-sm">
+              {`Cancha ${c.nro} - ${c.tipo || c.tipo_cancha}`}
+            </span>
+          ))
+        ) : booking.cancha ? (
+          <span className="text-center px-3 py-1 bg-gray-300 rounded-xl text-sm">
+            {`Cancha ${booking.cancha.nro} - ${booking.cancha.tipo_cancha}`}
+          </span>
+        ) : null}
       </div>
 
       <div className="flex gap-2 justify-center w-full">
@@ -84,33 +111,37 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
           <button
             onClick={() => handleDeleteSubmit(booking)}
             size="icon"
-            className="bg-red-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
+            className="bg-red-600 rounded-[4px] hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
             disabled={verificandoCaja}
           >
             <Trash2 className="h-4 w-4" />
           </button>
         )}
-        <button
-          onClick={() => window.open(`https://api.whatsapp.com/send?phone=549${booking.usuario.telefono}`, '_blank')}
-          size="icon"
-          className="bg-green-500 hover:bg-green-600 text-white p-2 transition-colors duration-200"
-          disabled={verificandoCaja}
-        >
-          <Phone className="h-4 w-4" />
-        </button>
-        <button
-          size="icon"
-          className="flex flex-row gap-2 items-center bg-blue-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
-          onClick={() => navigate(`/editar-turno/${booking.id}`)}
-          disabled={verificandoCaja}
-        >
-          <PenSquare className="h-4 w-4" /> Ficha del Turno
-        </button>
+        {booking.tipo !== 'torneo' && (
+          <div className="flex gap-2 justify-center ">
+            <button
+              onClick={() => window.open(`https://api.whatsapp.com/send?phone=549${booking.usuario.telefono}`, '_blank')}
+              size="icon"
+              className="bg-green-500 rounded-[4px] hover:bg-green-600 text-white p-2 transition-colors duration-200"
+              disabled={verificandoCaja}
+            >
+              <Phone className="h-4 w-4" />
+            </button>
+            <button
+              size="icon"
+              className="rounded-[4px] bg-blue-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
+              onClick={() => navigate(`/editar-turno/${booking.id}`)}
+              disabled={verificandoCaja}
+            >
+              <PenSquare className="h-4 w-4" /> 
+            </button>
+          </div>
+        )}
         {booking.estado !== 'Pagado' && booking.estado !== 'Cancelado' && fecha_turno > fecha_modificacion && booking.tipo !== 'fijo' && (
           <button
             onClick={verificarCajaAbierta}
             disabled={verificandoCaja}
-            className="flex flex-row gap-2 items-center bg-emerald-500 hover:bg-emerald-600 text-white p-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex rounded-[4px] flex-row gap-2 items-center bg-emerald-500 hover:bg-emerald-600 text-white p-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <DollarSign className="h-4 w-4" />
             {verificandoCaja ? 'Verificando caja...' : 'Registrar Pago'}
@@ -157,6 +188,7 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
           </div>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 };

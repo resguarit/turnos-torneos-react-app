@@ -1,34 +1,70 @@
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Star, Users, ChevronLeft } from 'lucide-react';
+import { Star, Users, ChevronLeft, CalendarDays } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { toast } from 'react-toastify';
+import { useTorneos } from '@/context/TorneosContext';
 
 export default function Zonas() {
   const { torneoId } = useParams();
-  const [zonas, setZonas] = useState([]);
+  const { torneos, setTorneos } = useTorneos();
   const [loading, setLoading] = useState(false);
+  const [zonaToDelete, setZonaToDelete] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchZonas = async () => {
-      try {
-        setLoading(true);
-        const response = await api.get(`/torneos/${torneoId}/zonas`);
-        setZonas(response.data);
-        console.log(response.data);
-      } catch (error) {
-        console.error('Error fetching zones:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Buscar el torneo y sus zonas desde el contexto
+  const torneo = torneos.find(t => String(t.id) === String(torneoId));
+  const zonas = torneo?.zonas || [];
 
-    fetchZonas();
-  }, [torneoId]);
+  // Procesar zonas para agregar siguienteFecha (como antes)
+  const zonasConFecha = zonas.map(zona => {
+    const siguienteFecha = zona.fechas?.find(fecha => fecha.estado === 'Pendiente');
+    return { 
+      ...zona, 
+      siguienteFecha: siguienteFecha 
+        ? format(parseISO(siguienteFecha.fecha_inicio), "EEE, dd/MM/yyyy", { locale: es }) 
+        : 'No disponible' 
+    };
+  });
+
+  const handleDeleteZona = async (zonaId) => {
+    try {
+      setLoading(true);
+      // Aquí sí haces el delete al backend
+      const response = await api.delete(`/zonas/${zonaId}`);
+      if (response.status === 200) {
+        // Actualiza el contexto eliminando la zona del torneo correspondiente
+        const nuevosTorneos = torneos.map(t => {
+          if (String(t.id) === String(torneoId)) {
+            return {
+              ...t,
+              zonas: t.zonas.filter(z => z.id !== zonaId)
+            };
+          }
+          return t;
+        });
+        setTorneos(nuevosTorneos);
+        setShowDeleteModal(false);
+        toast.success('Zona eliminada correctamente');
+      }
+    } catch (error) {
+      console.error('Error al eliminar la zona:', error);
+      toast.error('Error al eliminar la zona');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openDeleteModal = (zona) => {
+    setZonaToDelete(zona);
+    setShowDeleteModal(true);
+  };
 
   if (loading) {
     return (
@@ -48,7 +84,7 @@ export default function Zonas() {
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
-        <div className="w-full flex mb-2">
+        <div className="w-full flex mb-4">
           <button onClick={() => navigate('/torneos-admi')} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
             <ChevronLeft className="w-5" /> Atrás
           </button>
@@ -60,25 +96,43 @@ export default function Zonas() {
               + Nueva Zona
             </button>
           </div>
-          {zonas.length === 0 ? (
+          {zonasConFecha.length === 0 ? (
             <p className="text-center text-gray-500">No hay zonas disponibles.</p>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {zonas.map((zona) => (
+              {zonasConFecha.map((zona) => (
                 <Card className="bg-white rounded-[8px] shadow-md" key={zona.id} >
                   <CardHeader className="w-full p-4 bg-gray-200 rounded-t-[8px]">
                     <div className="flex justify-between items-center">
                       <h2 className="text-2xl font-medium">{zona.nombre} {zona.año}</h2>
                       <span className="text-gray-500 lg:text-lg"> <Star /></span>
                     </div>
-                    <p className="text-sm text-gray-500">{zona.formato}</p>
+                    {zona.formato !== 'Grupos' && (
+                      <p className="text-sm text-gray-500">{zona.formato} </p>
+                    )}
+                    {zona.formato === 'Grupos' && (
+                      <p className="text-sm text-gray-500">{zona.formato} ({zona.grupos.length})</p>
+                    )}
                   </CardHeader>
                   <CardContent className="p-4 ">
-                    <p className="w-full flex gap-2 items-center "><Users size={18}/> Equipos: {zona.equipos.length}</p>
-{/* ------- mostrar la siguiente fecha cuando esten hechas las fechas --------- */}
+                    <div className='flex flex-col gap-2'>
+                      <p className="w-full flex gap-2 items-center "><Users size={18}/> Equipos: {zona.equipos.length}</p>
+                      <p className="w-full flex gap-2 items-center "><CalendarDays size={18} />Siguiente Fecha: {zona.siguienteFecha}</p>
+                    </div>
                     <div className="flex mt-4 gap-3 text-sm justify-center">
                       <button onClick={() => navigate(`/detalle-zona/${zona.id}`)} className="flex-1 border text-center border-gray-300 p-1 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Ver Detalles</button>
-                      <button className="flex-1 border p-1 border-gray-300 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Editar</button>
+                      <button
+                        onClick={() => navigate(`/editar-zona/${zona.id}`)}
+                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => openDeleteModal(zona)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                      >
+                        Eliminar
+                      </button>
                     </div>
                   </CardContent>
                 </Card>
@@ -87,6 +141,33 @@ export default function Zonas() {
           )}
         </div>
       </main>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Confirmar Eliminación</h3>
+            <p className="mb-4">
+              ¿Estás seguro de que deseas eliminar la zona <strong>{zonaToDelete?.nombre}</strong>? 
+              Esta acción eliminará todos los equipos, grupos y fechas asociados a esta zona.
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => handleDeleteZona(zonaToDelete.id)}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                disabled={loading}
+              >
+                {loading ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <Footer />
     </div>
   );

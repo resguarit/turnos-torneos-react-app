@@ -8,7 +8,7 @@ import BtnLoading from '@/components/BtnLoading';
 
 const PestanaPistas = () => {
   const [pistas, setPistas] = useState([]);
-  const [deportes, setDeportes] = useState([]);
+  const [deportes, setDeportes] = useState([]); // Lista de deportes
   const [agregando, setAgregando] = useState(false);
   const [editando, setEditando] = useState(null);
   const [pistaToDelete, setPistaToDelete] = useState(null);
@@ -18,7 +18,9 @@ const PestanaPistas = () => {
     precio_por_hora: '',
     seña: '',
     descripcion: '',
+    descripcion: '',
     activa: true,
+    deporte_id: '', // Nuevo campo para el deporte
   });
   const [loading, setLoading] = useState(true);
   const [loadingDeportes, setLoadingDeportes] = useState(true);
@@ -32,20 +34,6 @@ const PestanaPistas = () => {
     duracion_turno: ''
   });
 
-  const fetchDeportes = async () => {
-    try {
-      const response = await api.get('/deportes');
-      if (response.data) {
-        setDeportes(response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching deportes:', error);
-      toast.error('Error al cargar los deportes');
-    } finally {
-      setLoadingDeportes(false);
-    }
-  };
-
   const fetchPistas = async (signal) => {
     setLoading(true);
     try {
@@ -57,9 +45,27 @@ const PestanaPistas = () => {
       if (error.name !== 'AbortError' && error.name !== 'CanceledError') {
         console.error('Error fetching canchas:', error);
         toast.error('Error al cargar las canchas');
+        setLoading(false);
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDeportes = async () => {
+    try {
+      const response = await api.get('/deportes');
+      if (response.status === 200) {
+        console.log('Deportes cargados:', response.data); // Log para verificar la respuesta
+        setDeportes(response.data); // Asigna directamente el array de deportes
+      } else {
+        console.error('Error al cargar deportes: Respuesta inesperada', response);
+        setDeportes([]); // Maneja respuestas inesperadas
+      }
+    } catch (error) {
+      console.error('Error fetching deportes:', error);
+      toast.error('Error al cargar los deportes');
+      setDeportes([]); // Maneja errores de red
     }
   };
 
@@ -67,6 +73,7 @@ const PestanaPistas = () => {
     const controller = new AbortController();
     fetchPistas(controller.signal);
     fetchDeportes();
+
     return () => {
       controller.abort();
     };
@@ -85,7 +92,9 @@ const PestanaPistas = () => {
           precio_por_hora: '',
           seña: '',
           descripcion: '',
+          descripcion: '',
           activa: true,
+          deporte_id: '', // Resetear el deporte
         });
         setAgregando(false);
         toast.success('Cancha añadida correctamente');
@@ -104,7 +113,7 @@ const PestanaPistas = () => {
     try {
       const response = await api.patch(`/canchas/${editando.id}`, newPista);
       if (response.status === 200) {
-        const updatedPistas = pistas.map(pista => 
+        const updatedPistas = pistas.map((pista) =>
           pista.id === editando.id ? { ...pista, ...newPista } : pista
         );
         setPistas(updatedPistas);
@@ -114,7 +123,9 @@ const PestanaPistas = () => {
           precio_por_hora: '',
           seña: '',
           descripcion: '',
+          descripcion: '',
           activa: true,
+          deporte_id: '', // Resetear el deporte
         });
         setEditando(null);
         setAgregando(false);
@@ -242,7 +253,8 @@ const PestanaPistas = () => {
               deporte_id: '',
               precio_por_hora: '',
               seña: '',
-              descripcion: '',
+              descripcion: '', // Resetear campo de descripción
+              deporte_id: '',
               activa: true,
             });
           }}
@@ -274,7 +286,7 @@ const PestanaPistas = () => {
         </div>
       </div>
 
-      {loading || loadingDeportes ? (
+      {loading ? (
         <div className='flex justify-center items-center h-[50vh]'>
           <BtnLoading />
         </div>
@@ -338,6 +350,7 @@ const PestanaPistas = () => {
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                   />
                 </div>
+                
                 <div className="flex items-center">
                   <input
                     type="checkbox"

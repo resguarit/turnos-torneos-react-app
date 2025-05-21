@@ -345,7 +345,7 @@ const PestanaAuditoria = () => {
                         {format(new Date(auditoria.created_at), "dd/MM/yyyy HH:mm", {locale: es})}
                       </TableCell>
                       <TableCell>
-                        {auditoria.usuario ? auditoria.usuario.name : 'Sistema'}
+                        {auditoria.usuario.persona.name ?? auditoria.usuario.dni}
                       </TableCell>
                       <TableCell>
                         <Badge variant={getBadgeVariant(auditoria.accion)}>{auditoria.accion}</Badge>

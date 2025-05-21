@@ -174,6 +174,10 @@ export default function VerGrilla() {
     setLoading(true);
   };
 
+  const handleNavigationTurno = (turnoId) => () => {
+    navigate(`/editar-turno/${turnoId}`);
+  };
+
   const exportToPDF = () => {
     const input = document.getElementById('grilla-table');
     html2canvas(input, { scale: 2 }).then((canvas) => {
@@ -334,7 +338,7 @@ export default function VerGrilla() {
               <span>Turnos únicos</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-3 bg-orange-500 rounded "></div>
+              <div className="w-4 h-3 bg-[#FFA500] rounded "></div>
               <span>Torneos</span>
             </div>
           </div>
@@ -375,6 +379,8 @@ export default function VerGrilla() {
                                 className="w-full h-full rounded p-2 hover:cursor-pointer text-white" 
                                 style={{ backgroundColor: reservation.tipo === "fijo" ? "#1E90FF" : reservation.tipo === "unico" ? "#16a34a" : "#FFA500" }}
                               >
+                                {reservation.tipo !== "torneo" && (
+                                  <div>
                                 <p className="text-xs lg:text-base font-semibold md:flex items-center hidden ">
                                   <User className="w-4 h-4 mr-1" />
                                   {reservation.usuario.nombre}
@@ -387,6 +393,21 @@ export default function VerGrilla() {
                                   <AlertCircle className="w-4 h-4 mr-1" />
                                   {reservation.estado}
                                 </p>
+                                </div>
+                                )}
+                                {reservation.tipo === "torneo" && (
+                                  <div>
+                                    <p className="text-xs lg:text-base font-semibold md:flex items-center hidden ">
+                                      {reservation.partido.torneo} - {reservation.partido.zona}
+                                    </p>
+                                    <p className="text-xs lg:text-sm md:flex items-center hidden">
+                                      {reservation.partido.fecha}
+                                    </p>
+                                    <p className="text-xs  md:flex items-center hidden">
+                                      {reservation.partido.equipos.local} vs {reservation.partido.equipos.visitante}
+                                    </p>
+                                  </div>
+                                )}
                               </div>
                             ) : null}
                           </td>

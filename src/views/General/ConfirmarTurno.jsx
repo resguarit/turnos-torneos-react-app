@@ -116,6 +116,7 @@ export default function ConfirmarTurno() {
             localStorage.setItem('token', loginResponse.data.token);
             const rolEncriptado = encryptRole(loginResponse.data.rol);
             localStorage.setItem('user_role', rolEncriptado);
+            localStorage.setItem('dni', formData.dni);
 
             // Configurar token
             api.defaults.headers.common['Authorization'] = `Bearer ${loginResponse.data.token}`;

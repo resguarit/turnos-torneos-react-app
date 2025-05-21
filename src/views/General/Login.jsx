@@ -8,12 +8,14 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Eye, EyeOff, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { encryptRole } from '@/lib/getRole';
+import { useTorneos } from "@/context/TorneosContext";
 
 const Login = () => {
     const [formData, setFormData] = useState({
         identifier: '',
         password: ''
     });
+    const { setTorneos } = useTorneos();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [inputErrors, setInputErrors] = useState({
@@ -46,6 +48,13 @@ const Login = () => {
             localStorage.setItem('user_id', response.user_id);
             localStorage.setItem('username', response.username);
             saveUserRole(response.rol);
+            localStorage.setItem('dni', response.dni);
+
+            if (response.rol === "admin") { // Si es admin, cargar torneos y setear en contexto
+                const torneosResponse = await api.get("/torneos");
+                setTorneos(torneosResponse.data);
+            }
+
             navigate('/');
         } catch (error) {
             setError('Credenciales incorrectas');

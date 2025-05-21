@@ -2,18 +2,22 @@ import Resguarit from "@/assets/logoresguarit.png"
 import MenuMovil from "./MenuMovil"
 import { CircleUserRound } from "lucide-react"
 import { useNavigate, Link, useLocation } from "react-router-dom"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { UserCog } from "lucide-react"
 import { LogOut } from "lucide-react"
 import ModalConfirmation from "./ModalConfirmation"
 import { Pencil } from "lucide-react"
 import { decryptRole } from "@/lib/getRole"
+import TorneosDropdown from "./TorneosDropdown"
+
 
 export function Header() {
   const navigate = useNavigate()
   const location = useLocation()
   const [username, setUserName] = useState(null)
   const [isOpen, setIsOpen] = useState(false)
+  const [MenuTorneos, setMenuTorneos] = useState(false)
+  const torneosBtnRef = useRef(null);
   const [showModal, setShowModal] = useState(false)
   const userRoleEncrypted = localStorage.getItem("user_role")
   const userRole = userRoleEncrypted ? decryptRole(userRoleEncrypted) : null
@@ -22,10 +26,20 @@ export function Header() {
 
   const toggleMenu = () => {
     setIsOpen(!isOpen)
+    setMenuTorneos(false)
+  }
+
+  const toggleMenuTorneos = () => {
+    setMenuTorneos(!MenuTorneos)
+    setIsOpen(false)
   }
 
   const closeMenu = () => {
     setIsOpen(false)
+  }
+
+  const closeMenuTorneos = () => {
+    setMenuTorneos(false)
   }
 
   useEffect(() => {
@@ -64,6 +78,7 @@ export function Header() {
       clearInterval(interval)
     }
   }, [])
+
 
   const handleModal = () => {
     setShowModal(true)
@@ -118,12 +133,19 @@ export function Header() {
                 {userRole === "admin" ? "Administrador" : "Moderador"}
               </Link>
             )}
-            {/*
-            <Link to="/torneos-admi" className="hover:opacity-80">
+            {userRole === "admin" && (
+              <button 
+              onClick={toggleMenuTorneos}
+              ref={torneosBtnRef}
+              className="hover:opacity-80">
+                Torneos
+            </button>
+            )}
+            {userRole !== "admin" && (
+            <Link to="/torneos-user" className="hover:opacity-80">
               Torneos
             </Link>
-            */}
-
+            )}
             {/* Reemplazar "Reservar" por "Continuar Reserva" cuando hay una reserva activa */}
             {hasActiveReservation && !isReservationPage ? (
               <button onClick={handleReturnToReservation} className="hover:opacity-80 bg-green-600 px-2 rounded-xl">
@@ -134,11 +156,6 @@ export function Header() {
                 Reservar
               </Link>
             )}
-
-            {/*
-            <Link to="/partidos" className="hover:opacity-80">
-              Partidos
-            </Link>
             <Link to="/reglamento" className="hover:opacity-80">
               Reglamento
             </Link>
@@ -146,7 +163,6 @@ export function Header() {
             <Link to="/premios" className="hover:opacity-80">
               Premios
             </Link>
-            */} 
 
             {username ? (
               <div className="relative">
@@ -207,6 +223,9 @@ export function Header() {
           botonText1={"Cancelar"}
           botonText2={"Cerrar Sesión"}
         />
+      )}
+      {MenuTorneos && (
+        <TorneosDropdown anchorRef={torneosBtnRef} closeMenuTorneos={closeMenuTorneos}/>
       )}
     </header>
   )

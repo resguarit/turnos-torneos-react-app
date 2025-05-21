@@ -75,7 +75,7 @@ function VerTurnos() {
       url += `?fecha=${formattedDate}`;
     } else if (viewOption === 'range' && startDate && endDate) {
       const formattedStartDate = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-      const formattedEndDate = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString().split('T')[0];endDate.toISOString().split('T')[0];
+      const formattedEndDate = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString().split('T')[0];
       url += `?fecha_inicio=${formattedStartDate}&fecha_fin=${formattedEndDate}`;
     }
 
@@ -85,12 +85,36 @@ function VerTurnos() {
     }
 
     try {
+      // 1. Traer turnos normales
       const response = await api.get(url, { params, signal });
-      const grouped = response.data.turnos.reduce((acc, booking) => {
+      let bookings = response.data.turnos || [];
+
+      // 2. Traer eventos como turnos
+      const eventosResponse = await api.get('/eventosComoTurnos', { signal });
+      const eventosTurnos = eventosResponse.data.eventos_turnos || [];
+
+      // 3. Adaptar eventosTurnos al formato de booking y agregarlos
+      const eventosAdaptados = eventosTurnos.map(ev => ({
+        id: `evento-${ev.evento_id}-${ev.horario.id}`,
+        tipo: 'evento',
+        evento_id: ev.evento_id,
+        nombre: ev.nombre,
+        descripcion: ev.descripcion,
+        fecha_turno: ev.fecha,
+        horario: ev.horario,
+        canchas: ev.canchas,
+        persona: ev.persona,
+        estado: ev.estado_combinacion,
+      }));
+      console.log("Eventos adaptados:", eventosAdaptados);
+
+      // 4. Unir bookings y eventosAdaptados
+      const allBookings = [...bookings, ...eventosAdaptados];
+
+      // 5. Agrupar por fecha
+      const grouped = allBookings.reduce((acc, booking) => {
         const date = booking.fecha_turno.split('T')[0];
-        if (!acc[date]) {
-          acc[date] = [];
-        }
+        if (!acc[date]) acc[date] = [];
         acc[date].push(booking);
         return acc;
       }, {});
@@ -198,9 +222,37 @@ function VerTurnos() {
     });
   };
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Ignora la hora
+
+  const isFilteringByDate =
+    (viewOption === 'day' && selectedDate) ||
+    (viewOption === 'range' && startDate && endDate);
+
   const filteredBookings = Object.keys(groupedBookings).reduce((acc, date) => {
+    const dateObj = new Date(date);
+    let includeDate = true;
+
+    if (isFilteringByDate) {
+      if (viewOption === 'day' && selectedDate) {
+        // Solo la fecha seleccionada
+        includeDate = dateObj.toISOString().split('T')[0] === selectedDate.toISOString().split('T')[0];
+      } else if (viewOption === 'range' && startDate && endDate) {
+        // Rango de fechas (inclusive)
+        includeDate = dateObj >= new Date(startDate.setHours(0,0,0,0)) && dateObj <= new Date(endDate.setHours(0,0,0,0));
+      }
+    } else {
+      // Si no se filtra por fecha, solo mostrar turnos/eventos a partir de hoy
+      includeDate = dateObj >= today;
+    }
+
+    if (!includeDate) return acc;
+
     const filtered = groupedBookings[date].filter(booking => {
-      const matchesCourt = selectedCourt ? booking.cancha.nro === selectedCourt : true;
+      const matchesCourt = selectedCourt
+        ? (booking.cancha?.nro === selectedCourt ||
+           (booking.canchas && booking.canchas.some(c => c.nro === selectedCourt)))
+        : true;
       const matchesStatus = selectedStatus.length > 0 ? selectedStatus.includes(booking.estado) : true;
       return matchesCourt && matchesStatus;
     });
@@ -301,15 +353,21 @@ function VerTurnos() {
     <>
       <div className="min-h-screen flex flex-col font-inter">
         <ToastContainer position="top-right" />
-        <main className="flex-1 mt-4 bg-gray-100">
+        <main className="flex-1  bg-gray-100">
           <div className="mb-8">
             <div className="space-y-4">
-              <div className="flex items-center gap-4">
+              <div className="flex gap-6 items-center">
                 <button
                   onClick={() => navigate('/nuevo-turno-admi')}
                   className="p-2 text-sm rounded-[6px] bg-naranja hover:bg-naranja/90 text-white"
                 >
                   Crear Turno 
+                </button>
+                <button
+                  onClick={() => navigate('/crear-evento')}
+                  className="p-2 text-sm rounded-[6px] bg-naranja hover:bg-naranja/90 text-white"
+                >
+                  Crear Evento 
                 </button>
                 <button
                   onClick={() => navigate('/bloquear-turnos')}

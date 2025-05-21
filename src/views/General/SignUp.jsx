@@ -70,6 +70,7 @@ function SignUp() {
                 localStorage.setItem('username', loginResponse.data.username);
                 localStorage.setItem('token', loginResponse.data.token);
                 const rolEncriptado = encryptRole(loginResponse.data.rol);
+                localStorage.setItem('user_role', rolEncriptado);
                 localStorage.setItem('dni', formData.dni);
                 toast.success('Registro exitoso');
                 setTimeout(() => {

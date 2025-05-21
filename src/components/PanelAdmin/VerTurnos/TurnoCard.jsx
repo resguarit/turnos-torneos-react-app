@@ -73,57 +73,60 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
   return (
     <div
       key={booking.id}
-      className="bg-white rounded-[8px] shadow-sm p-4 space-y-4 w-full"
+      className="bg-white rounded-[8px] shadow-sm p-4 w-full h-full flex flex-col"
     >
-      <div className="flex justify-between items-start w-full">
-        <div className="flex-1">
-          <h3 className="font-semibold text-lg capitalize">{getNombreTurno()}</h3>
-          <p className="text-sm font-medium text-gray-500">{`${booking.horario.hora_inicio} - ${booking.horario.hora_fin}`}</p>
-          <p className="text-sm font-medium text-gray-800">
-            {`Monto total: ${booking.monto_total !== undefined && booking.monto_total !== null ? `$${booking.monto_total}` : 'No definido'}`}
-          </p>
-          <p className="text-sm font-medium text-gray-800">
-            {`Monto seña: ${booking.monto_seña !== undefined && booking.monto_seña !== null ? `$${booking.monto_seña}` : 'No definido'}`}
-          </p>
+      {/* INFORMACIÓN ARRIBA */}
+      <div>
+        <div className="flex justify-between items-start w-full">
+          <div className="flex-1">
+            <h3 className="font-semibold text-lg capitalize">{getNombreTurno()}</h3>
+            <p className="text-sm font-medium text-gray-500">{`${booking.horario.hora_inicio} - ${booking.horario.hora_fin}`}</p>
+            <p className="text-sm font-medium text-gray-800">
+              {`Monto total: ${booking.monto_total !== undefined && booking.monto_total !== null ? `$${booking.monto_total}` : 'No definido'}`}
+            </p>
+            <p className="text-sm font-medium text-gray-800">
+              {`Monto seña: ${booking.monto_seña !== undefined && booking.monto_seña !== null ? `$${booking.monto_seña}` : 'No definido'}`}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 w-full mt-2 mb-2">
+          {booking.tipo === 'fijo' && (
+            <span className="text-center px-3 py-1 bg-blue-400 rounded-xl text-sm">
+              {`Turno fijo`}
+            </span>
+          )}
+          {booking.tipo !== 'fijo' && (
+            <span
+              className={`text-center px-3 py-1 rounded-xl capitalize text-sm ${
+                booking.estado === 'Pendiente'
+                  ? 'bg-yellow-300'
+                  : booking.estado === 'Señado'
+                  ? 'bg-blue-300'
+                  : booking.estado === 'Pagado'
+                  ? 'bg-green-300'
+                  : 'bg-red-300'
+              }`}
+            >
+              {`Estado: ${booking.estado}`}
+            </span>
+          )}
+          {/* Mostrar canchas para eventos o para turnos normales */}
+          {booking.tipo === 'evento' && booking.canchas && booking.canchas.length > 0 ? (
+            booking.canchas.map(c => (
+              <span key={c.id} className="text-center px-3 py-1 bg-gray-300 rounded-xl text-sm">
+                {`Cancha ${c.nro} - ${c.tipo || c.tipo_cancha}`}
+              </span>
+            ))
+          ) : booking.cancha ? (
+            <span className="text-center px-3 py-1 bg-gray-300 rounded-xl text-sm">
+              {`Cancha ${booking.cancha.nro} - ${booking.cancha.tipo_cancha}`}
+            </span>
+          ) : null}
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 w-full">
-        {booking.tipo === 'fijo' && (
-          <span className="text-center px-3 py-1 bg-blue-400 rounded-xl text-sm">
-            {`Turno fijo`}
-          </span>
-        )}
-        {booking.tipo !== 'fijo' && (
-          <span
-            className={`text-center px-3 py-1 rounded-xl capitalize text-sm ${
-              booking.estado === 'Pendiente'
-                ? 'bg-yellow-300'
-                : booking.estado === 'Señado'
-                ? 'bg-blue-300'
-                : booking.estado === 'Pagado'
-                ? 'bg-green-300'
-                : 'bg-red-300'
-            }`}
-          >
-            {`Estado: ${booking.estado}`}
-          </span>
-        )}
-        {/* Mostrar canchas para eventos o para turnos normales */}
-        {booking.tipo === 'evento' && booking.canchas && booking.canchas.length > 0 ? (
-          booking.canchas.map(c => (
-            <span key={c.id} className="text-center px-3 py-1 bg-gray-300 rounded-xl text-sm">
-              {`Cancha ${c.nro} - ${c.tipo || c.tipo_cancha}`}
-            </span>
-          ))
-        ) : booking.cancha ? (
-          <span className="text-center px-3 py-1 bg-gray-300 rounded-xl text-sm">
-            {`Cancha ${booking.cancha.nro} - ${booking.cancha.tipo_cancha}`}
-          </span>
-        ) : null}
-      </div>
-
-      <div className="flex gap-2 justify-center w-full">
+      {/* BOTONES SIEMPRE ABAJO */}
+      <div className="flex gap-2 justify-center w-full mt-auto">
         {booking.estado !== 'Cancelado' && (
           <button
             onClick={() => handleDeleteSubmit(booking)}

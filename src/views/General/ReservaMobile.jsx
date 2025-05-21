@@ -36,7 +36,7 @@ const ReservaMobile = () => {
   // Generar fechas para el próximo mes
   const generateCalendarDates = () => {
     const today = startOfToday();
-    const nextMonth = Array(30)
+    const nextMonth = Array(15)
       .fill(null)
       .map((_, index) => {
         const date = addDays(today, index);

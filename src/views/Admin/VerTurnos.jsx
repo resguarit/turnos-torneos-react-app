@@ -304,12 +304,18 @@ function VerTurnos() {
         <main className="flex-1 mt-4 bg-gray-100">
           <div className="mb-8">
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
+              <div className="flex items-center gap-4">
                 <button
                   onClick={() => navigate('/nuevo-turno-admi')}
                   className="p-2 text-sm rounded-[6px] bg-naranja hover:bg-naranja/90 text-white"
                 >
                   Crear Turno 
+                </button>
+                <button
+                  onClick={() => navigate('/bloquear-turnos')}
+                  className="p-2 text-sm rounded-[6px] bg-red-600 hover:bg-red-600/90 text-white"
+                >
+                  Bloquear Turnos
                 </button>
               </div>
               <div className='flex w-full gap-4 flex-col sm:flex-row items-center sm:items-start relative'>

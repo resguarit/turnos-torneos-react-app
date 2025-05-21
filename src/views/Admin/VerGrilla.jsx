@@ -284,10 +284,6 @@ export default function VerGrilla() {
               <button onClick={handleNextDay} className="p-1 hover:bg-gray-100 rounded">
                 <ChevronRight className="w-4 h-4" />
               </button>
-            </div>
-            
-            {/* Selector de deportes */}
-            <div className="flex items-center">
               <select 
                 className="px-4 py-2 bg-white rounded-[6px] text-xs sm:text-sm font-medium text-black mr-4"
                 value={selectedDeporte}
@@ -300,6 +296,10 @@ export default function VerGrilla() {
                   </option>
                 ))}
               </select>
+            </div>
+            
+            {/* Selector de deportes */}
+            <div className="flex items-center">
               
               <div className="flex gap-4">
                 <button

@@ -21,7 +21,7 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
   // Obtener el nombre a mostrar
   const getNombreTurno = () => {
     if (booking.tipo === 'evento') {
-      return `Evento: ${booking.nombre} (${booking.descripcion})`;
+      return `Evento: ${booking.nombre} (${booking.persona.name})`;
     }
     if (booking.tipo === 'torneo' && booking.partido) {
       const torneoNombre = booking.partido.fecha.zona.torneo.nombre || 'Sin torneo';
@@ -62,8 +62,12 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
         <div className="flex-1">
           <h3 className="font-semibold text-lg capitalize">{getNombreTurno()}</h3>
           <p className="text-sm font-medium text-gray-500">{`${booking.horario.hora_inicio} - ${booking.horario.hora_fin}`}</p>
-          <p className="text-sm font-medium text-gray-800">{`Monto total: $${booking.monto_total}`}</p>
-          <p className="text-sm font-medium text-gray-800">{`Monto seña: $${booking.monto_seña}`}</p>
+          <p className="text-sm font-medium text-gray-800">
+            {`Monto total: ${booking.monto_total !== undefined && booking.monto_total !== null ? `$${booking.monto_total}` : 'No definido'}`}
+          </p>
+          <p className="text-sm font-medium text-gray-800">
+            {`Monto seña: ${booking.monto_seña !== undefined && booking.monto_seña !== null ? `$${booking.monto_seña}` : 'No definido'}`}
+          </p>
         </div>
       </div>
 
@@ -75,7 +79,7 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
         )}
         {booking.tipo !== 'fijo' && (
           <span
-            className={`text-center px-3 py-1 rounded-xl text-sm ${
+            className={`text-center px-3 py-1 rounded-xl capitalize text-sm ${
               booking.estado === 'Pendiente'
                 ? 'bg-yellow-300'
                 : booking.estado === 'Señado'
@@ -114,7 +118,7 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
           </button>
         )}
         {booking.tipo !== 'torneo' && (
-          <div>
+          <div className="flex gap-2 justify-center ">
             <button
               onClick={() => window.open(`https://api.whatsapp.com/send?phone=549${booking.usuario.telefono}`, '_blank')}
               size="icon"
@@ -125,11 +129,11 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
             </button>
             <button
               size="icon"
-              className="flex flex-row gap-2 items-center bg-blue-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
+              className="rounded-[4px] bg-blue-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
               onClick={() => navigate(`/editar-turno/${booking.id}`)}
               disabled={verificandoCaja}
             >
-              <PenSquare className="h-4 w-4" /> Ficha del Turno
+              <PenSquare className="h-4 w-4" /> 
             </button>
           </div>
         )}
@@ -137,7 +141,7 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
           <button
             onClick={verificarCajaAbierta}
             disabled={verificandoCaja}
-            className="flex flex-row gap-2 items-center bg-emerald-500 hover:bg-emerald-600 text-white p-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex rounded-[4px] flex-row gap-2 items-center bg-emerald-500 hover:bg-emerald-600 text-white p-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <DollarSign className="h-4 w-4" />
             {verificandoCaja ? 'Verificando caja...' : 'Registrar Pago'}
@@ -185,24 +189,6 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
         </DialogContent>
       </Dialog>
 
-      {/* Detalles adicionales para eventos */}
-      {booking.tipo === 'evento' && (
-        <div className="mt-2">
-          <div className="text-sm font-medium text-gray-700">
-            <span>Organizador: {booking.persona?.name} (DNI: {booking.persona?.dni})</span>
-          </div>
-          <div className="text-sm font-medium text-gray-700">
-            <span>Horario: {booking.horario.hora_inicio} - {booking.horario.hora_fin}</span>
-          </div>
-          <div className="text-sm font-medium text-gray-700">
-            <span>
-              Canchas: {booking.canchas && booking.canchas.length > 0
-                ? booking.canchas.map(c => `Cancha ${c.nro} - ${c.tipo || c.tipo_cancha}`).join(', ')
-                : 'Sin canchas'}
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

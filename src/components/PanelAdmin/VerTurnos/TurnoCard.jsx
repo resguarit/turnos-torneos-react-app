@@ -7,27 +7,17 @@ import { toast } from 'react-toastify';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import RegistrarPagoEventoDialog from './RegistrarPagoEventoDialog';
 
-const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
+const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagados }) => {
   const navigate = useNavigate();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [verificandoCaja, setVerificandoCaja] = useState(false);
   const [cajaError, setCajaError] = useState(false);
   const [showPagoEvento, setShowPagoEvento] = useState(false);
-  const [eventoPagado, setEventoPagado] = useState(false);
 
-  useEffect(() => {
-    const fetchEstadoPago = async () => {
-      if (booking.tipo === 'evento') {
-        try {
-          const res = await api.get(`/estadoPago/evento/${booking.evento_id}`);
-          setEventoPagado(res.data?.estado_pago === true);
-        } catch {
-          setEventoPagado(false);
-        }
-      }
-    };
-    fetchEstadoPago();
-  }, [booking]);
+  // Ya no necesitas eventoPagado en el estado ni el useEffect
+  const eventoPagado = booking.tipo === 'evento'
+    ? eventosPagados?.[booking.evento_id] === true
+    : false;
 
   const handlePagoRegistrado = (data) => {
     if (onPagoRegistrado) {
@@ -89,7 +79,7 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 w-full mt-2 mb-2">
+        <div className="flex flex-wrap gap-2 w-full mt-2 mb-4">
           {booking.tipo === 'fijo' && (
             <span className="text-center px-3 py-1 bg-blue-400 rounded-xl text-sm">
               {`Turno fijo`}

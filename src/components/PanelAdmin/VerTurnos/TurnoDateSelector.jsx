@@ -10,7 +10,7 @@ const DateSelector = ({ viewOption, selectedDate, startDate, endDate, isOpen, to
       <>
         <button
           onClick={toggleCalendar}
-          className="w-full rounded-[4px] justify-center flex p-1  bg-white  text-xs sm:h-8 h-7 font-medium text-black  "
+          className="w-full rounded-[4px] justify-center flex p-1  bg-white  text-xs font-medium text-black  "
         >
           {selectedDate ? format(selectedDate, 'PPP', { locale: es }) : <CalendarDays className="w-5 h-5" />}
         </button>
@@ -24,7 +24,7 @@ const DateSelector = ({ viewOption, selectedDate, startDate, endDate, isOpen, to
       <>
         <button
           onClick={toggleCalendar}
-          className="w-full rounded-[4px] justify-center flex p-1  bg-white  text-xs sm:h-8 h-7 font-medium text-black "
+          className="w-full rounded-[4px] justify-center flex p-1  bg-white  text-xs  font-medium text-black "
         >
           {startDate && endDate ? `${format(startDate, 'PPP', { locale: es })} - ${format(endDate, 'PPP', { locale: es })}` : <CalendarDays className="w-5 h-5" />}
         </button>

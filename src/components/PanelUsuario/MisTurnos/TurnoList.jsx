@@ -4,7 +4,7 @@ import footballImage from "@/assets/football.svg"; // Asegúrate de tener una im
 import previousTurnImage from "@/assets/previousTurn.svg"; // Asegúrate de tener una imagen para turnos anteriores
 import canceledTurnImage from "@/assets/canceledTurn.svg"; // Asegúrate de tener una imagen para turnos cancelados
 
-const TurnoList = ({ turnos, onTurnoCanceled, showCancelButton, showModifyButton, emptyMessage, secondaryMessage, image }) => {
+const TurnoList = ({ turnos, onTurnoCanceled, showCancelButton, showModifyButton, emptyMessage, secondaryMessage, image, handleDeleteSubmit, onPagoRegistrado, eventosPagados }) => {
   if (turnos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center mt-8">
@@ -24,6 +24,9 @@ const TurnoList = ({ turnos, onTurnoCanceled, showCancelButton, showModifyButton
           onTurnoCanceled={onTurnoCanceled}
           showCancelButton={showCancelButton}
           showModifyButton={showModifyButton}
+          handleDeleteSubmit={handleDeleteSubmit}
+          onPagoRegistrado={onPagoRegistrado}
+          eventosPagados={eventosPagados}
         />
       ))}
     </div>

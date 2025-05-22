@@ -9,7 +9,7 @@ const SearchBar = ({ searchType, setSearchType, searchTerm, setSearchTerm, handl
         <select
           value={searchType}
           onChange={(e) => setSearchType(e.target.value)}
-          className="w-full text-sm sm:text-base px-2 py-1 border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full text-gray-600 text-sm px-2 py-1 border  rounded-[6px] "
         >
           <option value="name">Nombre</option>
           <option value="dni">DNI</option>
@@ -21,39 +21,38 @@ const SearchBar = ({ searchType, setSearchType, searchTerm, setSearchTerm, handl
 
       {/* Input de búsqueda y botones */}
       <div className="relative flex flex-col sm:flex-row w-full gap-2">
-        <div className="relative flex-1">
+        <div className="relative flex-1 ">
           <input
             type="text"
             placeholder={`Buscar por ${searchType === 'name' ? 'nombre' : searchType}`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full py-1 pl-8 text-sm sm:text-base border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="text-gray-600 placeholder-gray-600 w-full py-1 pl-2 text-sm border rounded-[6px]"
           />
-          <Search className="absolute left-2 top-2 h-5 w-5 text-gray-400" />
+          <Search className="absolute right-2 top-2 h-4 w-4 text-gray-600" />
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2">
           <button
-            onClick={handleFilterToggle}
-            className="flex-1 sm:flex-none flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-blue-600 border border-blue-600 rounded-[10px] shadow hover:bg-white hover:text-blue-600"
-          >
-            <span className="text-sm sm:text-base">Filtros</span>
-          </button>
-
-          <button
             onClick={() => handleSearch(searchType, searchTerm)}
-            className="flex-1 sm:flex-none flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-green-600 border border-green-600 rounded-[10px] shadow hover:bg-white hover:text-green-600"
+            className="flex-1 sm:flex-none flex items-center justify-center px-3 sm:px-4 text-white bg-green-600 border border-green-600 rounded-[6px] shadow hover:bg-white hover:text-green-600"
           >
             <Search className="w-5 h-5 sm:hidden" />
-            <span className="hidden sm:block text-sm sm:text-base">Buscar</span>
+            <span className="hidden sm:block text-sm ">Buscar</span>
           </button>
 
           <button
             onClick={clearFilters}
-            className="flex-1 sm:flex-none flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-red-600 border border-red-600 rounded-[10px] shadow hover:bg-white hover:text-red-600"
+            className="flex-1 sm:flex-none flex items-center justify-center  px-3 sm:px-4 text-white bg-red-600 border border-red-600 rounded-[6px] shadow hover:bg-white hover:text-red-600"
           >
             <Eraser className="w-5 h-5 sm:hidden"/>
-            <span className="hidden sm:block text-sm sm:text-base">Limpiar</span>
+            <span className="hidden sm:block text-sm ">Limpiar</span>
+          </button>
+                    <button
+            onClick={handleFilterToggle}
+            className="flex-1 sm:flex-none flex items-center justify-center px-3 sm:px-4 text-white bg-blue-600 border border-blue-600 rounded-[6px] shadow hover:bg-white hover:text-blue-600"
+          >
+            <span className="text-sm ">Filtros</span>
           </button>
         </div>
       </div>

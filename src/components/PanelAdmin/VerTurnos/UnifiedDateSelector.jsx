@@ -55,8 +55,8 @@ const UnifiedDateSelector = ({ onDateSelect, reset }) => {
     if (!selectedRange || !selectedRange.from) {
       return (
         <div className="flex items-center justify-between w-full px-2">
-          <span className="text-gray-500 ">Seleccione una fecha</span>
-          <CalendarDays className="w-5 h-5 text-gray-400" />
+          <span className="text-gray-600 text-sm ">Seleccione una fecha</span>
+          <CalendarDays className="w-5 h-5 text-gray-600" />
         </div>
       );
     }
@@ -72,7 +72,7 @@ const UnifiedDateSelector = ({ onDateSelect, reset }) => {
     <div className="relative w-1/2" ref={calendarRef}>
       <button
         onClick={toggleCalendar}
-        className="w-full rounded-[4px] justify-center flex p-1 bg-white text-xs items-center sm:h-8 h-7 font-medium text-black"
+        className="w-full rounded-[6px] justify-center flex p-1 bg-white border items-center   text-black"
       >
         {getDisplayText()}
       </button>

@@ -89,7 +89,7 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado }) => {
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 w-full mt-2 mb-2">
+        <div className="flex flex-wrap gap-2 w-full mt-2 mb-4">
           {booking.tipo === 'fijo' && (
             <span className="text-center px-3 py-1 bg-blue-400 rounded-xl text-sm">
               {`Turno fijo`}

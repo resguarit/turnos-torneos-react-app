@@ -35,6 +35,8 @@ function VerTurnos() {
   const [dateReset, setDateReset] = useState(false);
   const [showTurnoFijoModal, setShowTurnoFijoModal] = useState(false);
   const filterRef = useRef(null);
+  const [selectedTipos, setSelectedTipos] = useState([]);
+  const [eventosPagados, setEventosPagados] = useState({});
 
   useEffect(() => {
     const controller = new AbortController();
@@ -245,7 +247,6 @@ function VerTurnos() {
         includeDate = dateObj >= new Date(startDate.setHours(0,0,0,0)) && dateObj <= new Date(endDate.setHours(0,0,0,0));
       }
     } else {
-      // Mostrar turnos/eventos a partir de hoy (ajustado)
       includeDate = dateObj >= todayMinusOne;
     }
 
@@ -254,10 +255,11 @@ function VerTurnos() {
     const filtered = groupedBookings[date].filter(booking => {
       const matchesCourt = selectedCourt
         ? (booking.cancha?.nro === selectedCourt ||
-           (booking.canchas && booking.canchas.some(c => c.nro === selectedCourt)))
+          (booking.canchas && booking.canchas.some(c => c.nro === selectedCourt)))
         : true;
       const matchesStatus = selectedStatus.length > 0 ? selectedStatus.includes(booking.estado) : true;
-      return matchesCourt && matchesStatus;
+      const matchesTipo = selectedTipos.length > 0 ? selectedTipos.includes(booking.tipo) : true;
+      return matchesCourt && matchesStatus && matchesTipo;
     });
     if (filtered.length > 0) {
       acc[date] = filtered;
@@ -352,6 +354,31 @@ function VerTurnos() {
     };
   }, [isFilterOpen]);
 
+  // Fetch de estados de pago de eventos
+  useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    const fetchEstadosPagoEventos = async () => {
+      try {
+        const res = await api.get('/estadoPago/eventos', { signal });
+        if (res.data && res.data.eventos) {
+          const pagos = {};
+          res.data.eventos.forEach(ev => {
+            pagos[ev.evento_id] = ev.estado_pago;
+          });
+          setEventosPagados(pagos);
+        }
+      } catch (err) {
+        setEventosPagados({});
+      }
+    };
+
+    fetchEstadosPagoEventos();
+
+    return () => controller.abort();
+  }, []);
+
   return (
     <>
       <div className="min-h-screen flex flex-col font-inter">
@@ -402,6 +429,8 @@ function VerTurnos() {
                       courts={courts}
                       handleStatusChange={handleStatusChange}
                       onClose={() => setIsFilterOpen(false)}
+                      selectedTipos={selectedTipos}
+                      setSelectedTipos={setSelectedTipos}
                     />
                   </div>
                 )}
@@ -414,6 +443,7 @@ function VerTurnos() {
                 filteredBookings={filteredBookings}
                 handleDeleteSubmit={handleDeleteSubmit}
                 onPagoRegistrado={handlePagoRegistrado}
+                eventosPagados={eventosPagados} // <-- PASA EL OBJETO AQUÍ
               />
               )}
             </div>

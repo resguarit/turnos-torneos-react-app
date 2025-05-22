@@ -3,7 +3,7 @@ import TurnoCard from '@/components/PanelAdmin/VerTurnos/TurnoCard';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-const TurnoList = ({ filteredBookings, handleDeleteSubmit, onPagoRegistrado }) => {
+const TurnoList = ({ filteredBookings, handleDeleteSubmit, onPagoRegistrado, eventosPagados }) => {
   // Verificar si hay turnos para mostrar
   const hasBookings = Object.keys(filteredBookings).length > 0;
 
@@ -29,6 +29,7 @@ const TurnoList = ({ filteredBookings, handleDeleteSubmit, onPagoRegistrado }) =
                   booking={booking}
                   handleDeleteSubmit={handleDeleteSubmit}
                   onPagoRegistrado={onPagoRegistrado}
+                  eventosPagados={eventosPagados} // <-- PASA EL OBJETO AQUÍ
                 />
               ))}
             </div>

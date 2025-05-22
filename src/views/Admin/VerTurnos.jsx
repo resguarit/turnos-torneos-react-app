@@ -100,6 +100,7 @@ function VerTurnos() {
         evento_id: ev.evento_id,
         nombre: ev.nombre,
         descripcion: ev.descripcion,
+        monto: ev.monto,
         fecha_turno: ev.fecha,
         horario: ev.horario,
         canchas: ev.canchas,
@@ -225,6 +226,10 @@ function VerTurnos() {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Ignora la hora
 
+  // Ajuste: restar un día para evitar desfase por zona horaria
+  const todayMinusOne = new Date(today);
+  todayMinusOne.setDate(todayMinusOne.getDate() - 1);
+
   const isFilteringByDate =
     (viewOption === 'day' && selectedDate) ||
     (viewOption === 'range' && startDate && endDate);
@@ -235,15 +240,13 @@ function VerTurnos() {
 
     if (isFilteringByDate) {
       if (viewOption === 'day' && selectedDate) {
-        // Solo la fecha seleccionada
         includeDate = dateObj.toISOString().split('T')[0] === selectedDate.toISOString().split('T')[0];
       } else if (viewOption === 'range' && startDate && endDate) {
-        // Rango de fechas (inclusive)
         includeDate = dateObj >= new Date(startDate.setHours(0,0,0,0)) && dateObj <= new Date(endDate.setHours(0,0,0,0));
       }
     } else {
-      // Si no se filtra por fecha, solo mostrar turnos/eventos a partir de hoy
-      includeDate = dateObj >= today;
+      // Mostrar turnos/eventos a partir de hoy (ajustado)
+      includeDate = dateObj >= todayMinusOne;
     }
 
     if (!includeDate) return acc;

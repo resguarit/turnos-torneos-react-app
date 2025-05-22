@@ -19,8 +19,7 @@ export function Header() {
   const [MenuTorneos, setMenuTorneos] = useState(false)
   const torneosBtnRef = useRef(null);
   const [showModal, setShowModal] = useState(false)
-  const userRoleEncrypted = localStorage.getItem("user_role")
-  const userRole = userRoleEncrypted ? decryptRole(userRoleEncrypted) : null
+  const [userRole, setUserRole] = useState(null);
   const [hasActiveReservation, setHasActiveReservation] = useState(false)
   const isReservationPage = location.pathname === "/contador-bloqueo" || location.pathname === "/bloqueo-reserva" || location.pathname === "/confirmar-turno" || location.pathname === "/confirmar-login"
 
@@ -79,6 +78,10 @@ export function Header() {
     }
   }, [])
 
+  useEffect(() => {
+    const userRoleEncrypted = localStorage.getItem("user_role");
+    setUserRole(userRoleEncrypted ? decryptRole(userRoleEncrypted) : null);
+  }, []);
 
   const handleModal = () => {
     setShowModal(true)
@@ -125,14 +128,16 @@ export function Header() {
 
         <div className="hidden md:flex items-center">
           <div className="flex gap-8 lg:gap-12 font-inter text-sm xl:text-lg">
-            <Link to="/" className="hover:opacity-80">
+            <Link
+              to={
+                userRole === "admin" || userRole === "moderador"
+                  ? "/panel-admin"
+                  : "/"
+              }
+              className="hover:opacity-80"
+            >
               Inicio
             </Link>
-            {(userRole === "admin" || userRole === "moderador") && (
-              <Link to="/panel-admin" className="hover:opacity-80 flex items-center gap-1">
-                {userRole === "admin" ? "Administrador" : "Moderador"}
-              </Link>
-            )}
             {userRole === "admin" && (
               <button 
               onClick={toggleMenuTorneos}

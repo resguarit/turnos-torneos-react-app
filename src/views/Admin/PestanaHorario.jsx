@@ -6,8 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import BtnLoading from "@/components/BtnLoading";
-import { useDeportes } from "@/context/DeportesContext"; // Usa el contexto
-
+import { useDeportes } from "@/context/DeportesContext";
 const PestanaHorario = () => {
   const [schedules, setSchedules] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,7 +27,7 @@ const PestanaHorario = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false); // Estado de carga
   const [switchLoading, setSwitchLoading] = useState({}); // Estado de carga específico para cada switch
-  const { deportes } = useDeportes(); // Usa el contexto
+  const { deportes, setDeportes } = useDeportes(); // Usa el contexto
   const [selectedDeporteId, setSelectedDeporteId] = useState('');
   const [loadingHorarios, setLoadingHorarios] = useState(false);
 
@@ -293,27 +292,26 @@ const PestanaHorario = () => {
   };
 
   const handleSubmitConfig = async () => {
-    setLoading(true); // Iniciar estado de carga
+    setLoading(true);
     try {
       const data = buildRequestData();
-      console.log("Datos a enviar:", data); // Para debug
-      
       const response = await api.post("/configurar-horarios", data);
       setHasChanges(false);
       setSuccessMessage(response.data.message || 'Horarios configurados correctamente');
       if (response.data.status === 201) {
-        // Recargar horarios
         await fetchActiveScheduleExtremes(selectedDeporteId);
-        // Recargar franjas horarias deshabilitadas
         await fetchDisabledRanges(selectedDeporteId);
         if (isCollapsibleOpen) {
           await fetchDisabledRanges(selectedDeporteId);
         }
+        // Actualiza deportes/contexto/localStorage
+        const deportesResp = await api.get('/deportes');
+        setDeportes(deportesResp.data.deportes || deportesResp.data);
       }
     } catch (error) {
       setErrorMessage(error.response?.data?.message || 'Error al cargar configurar los horarios');
     } finally {
-      setLoading(false); // Finalizar estado de carga
+      setLoading(false);
     }
   };
 

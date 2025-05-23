@@ -8,11 +8,12 @@ import BtnLoading from '@/components/BtnLoading';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useTorneos } from '@/context/TorneosContext';
+import { useDeportes } from '@/context/DeportesContext'; // <-- Importa el contexto
 
 export default function AltaTorneo() {
   const { id } = useParams();
-  const [deportes, setDeportes] = useState([]);
   const { setTorneos } = useTorneos();
+  const { deportes, setDeportes } = useDeportes(); // <-- Usa el contexto
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     nombre: '',
@@ -21,8 +22,8 @@ export default function AltaTorneo() {
     precio_inscripcion: '',
     precio_por_fecha: '',
   });
-  const [modalVisible, setModalVisible] = useState(false); // Estado para controlar el modal
-  const [nuevoDeporte, setNuevoDeporte] = useState({ nombre: '', jugadores_por_equipo: '' }); // Datos del nuevo deporte
+  const [modalVisible, setModalVisible] = useState(false);
+  const [nuevoDeporte, setNuevoDeporte] = useState({ nombre: '', jugadores_por_equipo: '' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,17 +46,9 @@ export default function AltaTorneo() {
       }
     };
 
-    const fetchDeportes = async () => {
-      try {
-        const response = await api.get('/deportes');
-        setDeportes(response.data);
-      } catch (error) {
-        console.error('Error fetching deportes:', error);
-      }
-    };
-
+    // Ya no necesitas fetchDeportes ni fetchData
     const fetchData = async () => {
-      await Promise.all([fetchTorneo(), fetchDeportes()]);
+      await fetchTorneo();
       setLoading(false);
     };
 
@@ -99,10 +92,10 @@ export default function AltaTorneo() {
     try {
       const response = await api.post('/deportes', nuevoDeporte);
       const deporteCreado = response.data.deporte;
-      setDeportes([...deportes, deporteCreado]); // Agregar el nuevo deporte a la lista
-      setFormData({ ...formData, deporte_id: deporteCreado.id }); // Seleccionar el nuevo deporte
+      setDeportes([...deportes, deporteCreado]); // Actualiza el contexto
+      setFormData({ ...formData, deporte_id: deporteCreado.id });
       toast.success('Deporte creado correctamente');
-      setModalVisible(false); // Cerrar el modal
+      setModalVisible(false);
     } catch (error) {
       console.error('Error creando deporte:', error);
       toast.error('Error al crear el deporte');
@@ -171,7 +164,7 @@ export default function AltaTorneo() {
                 value={formData.deporte_id}
                 onChange={(e) => {
                   if (e.target.value === 'nuevo') {
-                    setModalVisible(true); // Abrir el modal si se selecciona "Nuevo Deporte"
+                    setModalVisible(true);
                   } else {
                     handleChange(e);
                   }

@@ -7,6 +7,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import CrearPersonaModal from './Modals/CrearPersonaModal';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useDeportes } from '@/context/DeportesContext';
 
 export default function CrearEvento() {
   const [formEventoData, setFormEventoData] = useState({
@@ -22,20 +23,13 @@ export default function CrearEvento() {
   const [canchaSeleccionada, setCanchaSeleccionada] = useState('');
   const [detalles, setDetalles] = useState([]); // [{horarioIds: [], canchaId}]
   const [showCrearPersonaModal, setShowCrearPersonaModal] = useState(false);
-  const [deportes, setDeportes] = useState([]);
+  const { deportes } = useDeportes(); // Usa el contexto
   const [deporteId, setDeporteId] = useState(''); // Agrega esto a tu estado
   const [personaQuery, setPersonaQuery] = useState('');
   const [personas, setPersonas] = useState([]);
   const [showPersonas, setShowPersonas] = useState(false);
   const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-
-  useEffect(() => {
-    api.get('/deportes')
-      .then(res => setDeportes(res.data || []))
-      .catch(() => toast.error('Error al traer deportes'));
-  }, []);
-
 
   // Traer horarios disponibles al seleccionar fecha
   useEffect(() => {
@@ -232,7 +226,9 @@ export default function CrearEvento() {
                 >
                   <option value="">Selecciona un deporte</option>
                   {deportes.map(deporte => (
-                    <option key={deporte.id} value={deporte.id}>{deporte.nombre} {deporte.jugadores_por_equipo}</option>
+                    <option key={deporte.id} value={deporte.id}>
+                      {deporte.nombre} {deporte.jugadores_por_equipo}
+                    </option>
                   ))}
                 </select>
               </div>

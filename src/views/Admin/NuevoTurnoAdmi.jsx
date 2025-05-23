@@ -8,6 +8,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
+import { useDeportes } from '@/context/DeportesContext'; // Importa el contexto
 
 function NuevoTurnoAdmi() {
   const [loading, setLoading] = useState(false);
@@ -32,9 +33,13 @@ function NuevoTurnoAdmi() {
   const [fetchingCanchas, setFetchingCanchas] = useState(false);
   const navigate = useNavigate();
   const [isTurnoFijo, setIsTurnoFijo] = useState(false);
-  // Estado para deportes
-  const [deportes, setDeportes] = useState([]);
-  const [loadingDeportes, setLoadingDeportes] = useState(false);
+
+  // Usa el contexto de deportes
+  const { deportes } = useDeportes();
+
+  // Elimina estos estados y la función fetchDeportes:
+  // const [deportes, setDeportes] = useState([]);
+  // const [loadingDeportes, setLoadingDeportes] = useState(false);
   
   // Estados para el modal de nueva persona
   const [showModal, setShowModal] = useState(false);
@@ -69,27 +74,7 @@ function NuevoTurnoAdmi() {
     };
 
     fetchPersonas();
-    fetchDeportes();
   }, []);
-
-  // Función para cargar los deportes
-  const fetchDeportes = async () => {
-    try {
-      setLoadingDeportes(true);
-      const response = await api.get('/deportes');
-      
-      if (response.data) {
-        setDeportes(response.data);
-      } else {
-        console.error('Estructura de respuesta inesperada en deportes:', response.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar deportes:', error);
-      setError('Error al cargar deportes');
-    } finally {
-      setLoadingDeportes(false);
-    }
-  };
 
   useEffect(() => {
     if (searchTerm.trim()) {
@@ -489,25 +474,18 @@ function NuevoTurnoAdmi() {
               {/* Selector de deportes */}
               <div>
                 <label className="block text-sm font-medium">Deporte</label>
-                {loadingDeportes ? (
-                  <div className="w-full border rounded p-2 border-gray-300 bg-gray-50 cursor-not-allowed text-gray-500">
-                    Deportes cargando...
-                  </div>
-                ) : (
-                  <select
-                    className="w-full border rounded p-2 border-gray-300"
-                    value={formData.deporte_id}
-                    onChange={handleDeporteChange}
-                    disabled={loadingDeportes}
-                  >
-                    <option value="">Seleccionar deporte</option>
-                    {deportes.map(deporte => (
-                      <option key={deporte.id} value={deporte.id}>
-                        {formatDeporteName(deporte)}
-                      </option>
-                    ))}
-                  </select>
-                )}
+                <select
+                  className="w-full border rounded p-2 border-gray-300"
+                  value={formData.deporte_id}
+                  onChange={handleDeporteChange}
+                >
+                  <option value="">Seleccionar deporte</option>
+                  {deportes.map(deporte => (
+                    <option key={deporte.id} value={deporte.id}>
+                      {formatDeporteName(deporte)}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>

@@ -136,7 +136,7 @@ export function Header() {
               }
               className="hover:opacity-80"
             >
-              Inicio
+              {userRole === "admin" || userRole === "moderador" ? "Panel Admin" : "Inicio"}
             </Link>
             {userRole === "admin" && (
               <button 

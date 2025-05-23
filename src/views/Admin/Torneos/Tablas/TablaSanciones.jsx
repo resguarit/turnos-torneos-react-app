@@ -2,13 +2,17 @@ import React, { useState } from 'react';
 import api from '@/lib/axiosConfig';
 import { toast } from 'react-toastify';
 import { ModalEditarSancion } from '../../Modals/ModalEditarSancion';
-import  ConfirmDeleteModal  from '../../Modals/ConfirmDeleteModal';
-import { Trash2, Pencil} from 'lucide-react';
+import ConfirmDeleteModal from '../../Modals/ConfirmDeleteModal';
+import { Trash2, Pencil } from 'lucide-react';
+import { decryptRole } from '@/lib/getRole';
 
 export function TablaSanciones({ sanciones, onEdit, fechas = [], onRefresh }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalDeleteOpen, setModalDeleteOpen] = useState(false);
   const [sancionSeleccionada, setSancionSeleccionada] = useState(null);
+
+  // Obtener el rol desencriptado
+  const userRole = decryptRole(localStorage.getItem('user_role'));
 
   // Eliminar sanción
   const handleEliminar = async (id) => {
@@ -18,10 +22,10 @@ export function TablaSanciones({ sanciones, onEdit, fechas = [], onRefresh }) {
         toast.success('Sanción eliminada correctamente');
         setModalDeleteOpen(false);
         if (onRefresh) {
-        onRefresh(); 
-      } else {
-        window.location.reload();
-      }
+          onRefresh();
+        } else {
+          window.location.reload();
+        }
       } else {
         toast.error(response.data?.message || 'Error al eliminar la sanción');
       }
@@ -54,7 +58,7 @@ export function TablaSanciones({ sanciones, onEdit, fechas = [], onRefresh }) {
 
   const handleModalUpdated = () => {
     if (onRefresh) {
-      onRefresh(); // Llama al callback para refrescar datos sin recargar la página
+      onRefresh();
     } else {
       window.location.reload();
     }
@@ -72,8 +76,12 @@ export function TablaSanciones({ sanciones, onEdit, fechas = [], onRefresh }) {
               <th className="py-2 px-3 text-left font-medium">Tipo</th>
               <th className="py-2 px-3 text-left font-medium">Motivo</th>
               <th className="py-2 px-3 text-center font-medium">Fechas</th>
+              {userRole === 'admin' && (
               <th className="py-2 px-3 text-center font-medium">Estado</th>
-              <th className="py-2 px-3 text-center font-medium">Acciones</th>
+              )}
+              {userRole === 'admin' && (
+                <th className="py-2 px-3 text-center font-medium">Acciones</th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -91,21 +99,25 @@ export function TablaSanciones({ sanciones, onEdit, fechas = [], onRefresh }) {
                       : ` (${item.sancion.fecha_inicio.nombre} - ${item.sancion.fecha_fin.nombre})`
                     : ''}
                 </td>
+                {userRole === 'admin' && (
                 <td className="py-2 px-3 text-gray-700 text-center"> {item.sancion?.estado}</td>
-                <td className='flex gap-2 justify-center items-center m-1'>
-                  <button
-                    className="p-2"
-                    onClick={() => handleEditar(item)}
-                  >
-                    <Pencil size={18} />
-                  </button>
-                  <button
-                    className="p-2"
-                    onClick={() => handleEliminarModal(item)}
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </td>
+                )}
+                {userRole === 'admin' && (
+                  <td className='flex gap-2 justify-center items-center m-1'>
+                    <button
+                      className="p-2"
+                      onClick={() => handleEditar(item)}
+                    >
+                      <Pencil size={18} />
+                    </button>
+                    <button
+                      className="p-2"
+                      onClick={() => handleEliminarModal(item)}
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -127,8 +139,11 @@ export function TablaSanciones({ sanciones, onEdit, fechas = [], onRefresh }) {
         onClose={handleModalDeleteClose}
         onConfirm={() => handleEliminar(sancionSeleccionada?.sancion?.id)}
         loading={false}
+        accionTitulo="Eliminación"
+        accion="eliminar"
         pronombre="la"
         entidad="sanción"
+        accionando="Eliminando"
       />
 
     </div>

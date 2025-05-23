@@ -9,6 +9,8 @@ import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'react-toastify';
 import { useTorneos } from '@/context/TorneosContext';
+import api from '@/lib/axiosConfig';
+import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal';
 
 export default function Zonas() {
   const { torneoId } = useParams();
@@ -16,6 +18,9 @@ export default function Zonas() {
   const [loading, setLoading] = useState(false);
   const [zonaToDelete, setZonaToDelete] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [zonaIdFinalizar, setZonaIdFinalizar] = useState(null);
+  const [modalFinalizarOpen, setModalFinalizarOpen] = useState(false);
+  const [searchYear, setSearchYear] = useState('');
   const navigate = useNavigate();
 
   // Buscar el torneo y sus zonas desde el contexto
@@ -32,6 +37,11 @@ export default function Zonas() {
         : 'No disponible' 
     };
   });
+
+  // FILTRO: solo zonas activas por defecto, o todas las que coincidan con el año si hay búsqueda
+  const zonasFiltradas = searchYear
+    ? zonasConFecha.filter(z => String(z.año).includes(searchYear))
+    : zonasConFecha.filter(z => z.activo === 1 || z.activo === true);
 
   const handleDeleteZona = async (zonaId) => {
     try {
@@ -66,6 +76,37 @@ export default function Zonas() {
     setShowDeleteModal(true);
   };
 
+  // Finalizar zona
+  const finalizarZona = async (zonaId) => {
+    try {
+      setLoading(true);
+      const response = await api.put(`/zonas/${zonaId}`, { activo: false });
+      if (response.data.status === 200) {
+        // Actualiza el contexto eliminando la zona activa
+        const nuevosTorneos = torneos.map(t => {
+          if (String(t.id) === String(torneoId)) {
+            return {
+              ...t,
+              zonas: t.zonas.map(z =>
+                z.id === zonaId ? { ...z, activo: false } : z
+              ),
+            };
+          }
+          return t;
+        });
+        setTorneos(nuevosTorneos);
+        setModalFinalizarOpen(false);
+        toast.success('Zona finalizada correctamente');
+      } else {
+        toast.error(response.data.message || 'Error al finalizar la zona');
+      }
+    } catch (error) {
+      toast.error('Error al finalizar la zona');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col font-inter">
@@ -91,16 +132,33 @@ export default function Zonas() {
         </div>
         <div className="max-w-7xl lg:max-w-full mx-auto">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl lg:text-2xl font-bold">Zonas del Torneo</h1>
+            <h1 className="text-2xl lg:text-2xl font-bold">Zonas del Torneo <span className='text-blue-600'>{torneo.nombre}</span></h1>
             <button onClick={() => navigate(`/alta-zona/${torneoId}`)} className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white">
               + Nueva Zona
             </button>
           </div>
-          {zonasConFecha.length === 0 ? (
-            <p className="text-center text-gray-500">No hay zonas disponibles.</p>
+          <div className="flex mb-6 gap-4">
+            <input
+              type="number"
+              placeholder="Buscar por año (ej: 2025)"
+              value={searchYear}
+              onChange={e => setSearchYear(e.target.value)}
+              className="border border-gray-300 rounded-[6px] py-1 px-2 text-sm"
+            />
+            {searchYear && (
+              <button
+                onClick={() => setSearchYear('')}
+                className="text-sm px-3 py-2 rounded bg-gray-200 hover:bg-gray-300"
+              >
+                Limpiar búsqueda
+              </button>
+            )}
+          </div>
+          {zonasFiltradas.length === 0 ? (
+            <p className="text-center text-gray-500">No se encontraron zonas {searchYear ? `para el año ${searchYear}` : 'activas'}.</p>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {zonasConFecha.map((zona) => (
+              {zonasFiltradas.map((zona) => (
                 <Card className="bg-white rounded-[8px] shadow-md" key={zona.id} >
                   <CardHeader className="w-full p-4 bg-gray-200 rounded-t-[8px]">
                     <div className="flex justify-between items-center">
@@ -132,6 +190,16 @@ export default function Zonas() {
                         className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
                       >
                         Eliminar
+                      </button>
+                      <button
+                        onClick={() => {
+                          setZonaIdFinalizar(zona.id);
+                          setModalFinalizarOpen(true);
+                        }}
+                        className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded"
+                        disabled={zona.activo === false}
+                      >
+                        Finalizar
                       </button>
                     </div>
                   </CardContent>
@@ -167,6 +235,21 @@ export default function Zonas() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal de confirmación para finalizar zona */}
+      {modalFinalizarOpen && (
+        <ConfirmDeleteModal
+          isOpen={modalFinalizarOpen}
+          onClose={() => setModalFinalizarOpen(false)}
+          onConfirm={() => finalizarZona(zonaIdFinalizar)}
+          loading={loading}
+          accionTitulo="Finalización"
+          accion="finalizar"
+          pronombre="la"
+          entidad="zona"
+          accionando="finalizando"
+        />
       )}
       <Footer />
     </div>

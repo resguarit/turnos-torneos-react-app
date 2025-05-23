@@ -5,6 +5,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ModalConfirmation from '@/components/ModalConfirmation';
 import BtnLoading from '@/components/BtnLoading';
+import { IterationCw } from 'lucide-react';
 
 const PestanaPistas = () => {
   const [pistas, setPistas] = useState([]);
@@ -33,6 +34,7 @@ const PestanaPistas = () => {
     jugadores_por_equipo: '',
     duracion_turno: ''
   });
+  const [pistaToRestore, setPistaToRestore] = useState(null);
 
   const fetchPistas = async (signal) => {
     setLoading(true);
@@ -141,17 +143,35 @@ const PestanaPistas = () => {
 
   const handleDeletePista = async () => {
     try {
-      const response = await api.delete(`/canchas/${pistaToDelete.id}`);
+      const response = await api.patch(`/canchas/${pistaToDelete.id}`, {
+        activa: false
+      });
       if (response.status === 200) {
-        setPistas(pistas.filter(pista => pista.id !== pistaToDelete.id));
         setPistaToDelete(null);
-        toast.success('Cancha eliminada correctamente');
+        fetchPistas();
+        toast.success('Cancha desactivada correctamente');
       }
     } catch (error) {
       console.error('Error deleting cancha:', error);
       toast.error('Error al eliminar la cancha');
     }
   };
+
+  const handleRestorePista = async () => {
+    try {
+      const response = await api.patch(`/canchas/${pistaToRestore.id}`, {
+        activa: true
+      });
+      if (response.status === 200) {
+        setPistaToRestore(null);
+        fetchPistas();
+        toast.success('Cancha restaurada correctamente');
+      }
+    } catch (error) {
+      console.error('Error restoring cancha:', error);
+      toast.error('Error al restaurar la cancha');
+    }
+  }
 
   const handleEditClick = (pista) => {
     setNewPista({
@@ -473,13 +493,23 @@ const PestanaPistas = () => {
                       >
                         <Edit2 className="h-5 w-5" />
                       </button>
-                      <button 
-                        onClick={() => setPistaToDelete(pista)} 
-                        className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" 
-                        disabled={isSaving}
+                      {pista.activa ? (
+                        <button 
+                          onClick={() => setPistaToDelete(pista)} 
+                          className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" 
+                          disabled={isSaving}
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>
+                      ) : (
+                        <button
+                          onClick={() => setPistaToRestore(pista)}
+                          className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors duration-200" 
+                          disabled={isSaving}
+                        >
+                          <IterationCw className="h-5 w-5" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </li>
@@ -517,13 +547,6 @@ const PestanaPistas = () => {
                       >
                         <Edit2 className="h-5 w-5" />
                       </button>
-                      <button 
-                        onClick={() => setDeporteToDelete(deporte)} 
-                        className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200" 
-                        disabled={isSaving}
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
                     </div>
                   </div>
                 </li>
@@ -542,6 +565,19 @@ const PestanaPistas = () => {
               botonText2="Eliminar"
             />
           )}
+
+          {pistaToRestore && (
+            <ModalConfirmation
+              onConfirm={handleRestorePista}
+              onCancel={() => setPistaToRestore(null)}
+              title="Restaurar Cancha"
+              subtitle={`¿Estás seguro de que deseas restaurar la cancha ${pistaToRestore.nro}?`}
+              botonText1="Cancelar"
+              botonText2="Restaurar"
+            />
+          )}
+          
+
 
           {deporteToDelete && (
             <ModalConfirmation

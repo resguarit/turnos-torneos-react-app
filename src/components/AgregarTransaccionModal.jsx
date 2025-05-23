@@ -300,6 +300,7 @@ const AgregarTransaccionModal = ({ isOpen, onClose, cuentaCorrienteId = null, pe
                   <option value="turno">Turno</option>
                   <option value="pago">Pago</option>
                   <option value="deuda">Deuda</option>
+                  <option value="saldo">Saldo</option>
                 </select>
               </div>
 

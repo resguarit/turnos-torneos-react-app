@@ -37,6 +37,7 @@ function VerTurnos() {
   const filterRef = useRef(null);
   const [selectedTipos, setSelectedTipos] = useState([]);
   const [eventosPagados, setEventosPagados] = useState({});
+  const [showModalEvento, setShowModalEvento] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -269,7 +270,11 @@ function VerTurnos() {
 
   const handleDeleteSubmit = (booking) => {
     setSelectedBooking(booking);
-    setShowModal(true);
+    if (booking.tipo === 'evento') {
+      setShowModalEvento(true);
+    } else {
+      setShowModal(true);
+    }
     console.log("Turno seleccionado:", booking);
   };
 
@@ -298,6 +303,29 @@ function VerTurnos() {
       toast.error('Error al cancelar el turno');
       console.error("Error canceling reservation:", error);
     }
+  };
+
+  const confirmDeleteEvento = async () => {
+    setShowModalEvento(false);
+    try {
+      const response = await api.delete(`/eventos/${selectedBooking.evento_id}`);
+      if (response.status === 200) {
+        toast.success('Evento cancelado correctamente');
+        setGroupedBookings(prev => {
+          const updated = { ...prev };
+          const date = selectedBooking.fecha_turno.split('T')[0];
+          updated[date] = updated[date].filter(booking => booking.evento_id !== selectedBooking.evento_id);
+          return updated;
+        });
+      }
+    } catch (error) {
+      toast.error('Error al cancelar el evento');
+      console.error("Error canceling event:", error);
+    }
+  };
+
+  const closeDeleteModalEvento = () => {
+    setShowModalEvento(false);
   };
 
   const clearFilters = () => {
@@ -449,6 +477,7 @@ function VerTurnos() {
             </div>
           </div>
           {showModal && <ModalConfirmation onConfirm={confirmDeleteSubmit} onCancel={closeDeleteModal} title="Cancelar Turno" subtitle={"Desea Cancelar el turno?"} botonText1={"Volver"} botonText2={"Cancelar"} />}
+          {showModalEvento && <ModalConfirmation onConfirm={confirmDeleteEvento} onCancel={closeDeleteModalEvento} title="Cancelar Evento" subtitle={"Desea Cancelar el evento?"} botonText1={"Volver"} botonText2={"Cancelar"} />}
           {showTurnoFijoModal && (
           <CrearTurnoFijoModal
             isOpen={showTurnoFijoModal}

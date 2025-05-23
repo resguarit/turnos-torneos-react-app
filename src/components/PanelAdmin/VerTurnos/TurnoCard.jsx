@@ -71,12 +71,26 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
           <div className="flex-1">
             <h3 className="font-semibold text-lg capitalize">{getNombreTurno()}</h3>
             <p className="text-sm font-medium text-gray-500">{`${booking.horario.hora_inicio} - ${booking.horario.hora_fin}`}</p>
-            <p className="text-sm font-medium text-gray-800">
-              {`Monto total: ${booking.monto_total !== undefined && booking.monto_total !== null ? `$${booking.monto_total}` : 'No definido'}`}
-            </p>
-            <p className="text-sm font-medium text-gray-800">
-              {`Monto seña: ${booking.monto_seña !== undefined && booking.monto_seña !== null ? `$${booking.monto_seña}` : 'No definido'}`}
-            </p>
+            {booking.tipo !== 'torneo' && booking.tipo !== 'evento' && (
+              <>
+                <p className="text-sm font-medium text-gray-800">
+                  {`Monto total: ${booking.monto_total !== undefined && booking.monto_total !== null ? `$${booking.monto_total}` : 'No definido'}`}
+                </p>
+                <p className="text-sm font-medium text-gray-800">
+                  {`Monto seña: ${booking.monto_seña !== undefined && booking.monto_seña !== null ? `$${booking.monto_seña}` : 'No definido'}`}
+                </p>
+              </>
+            )}
+            {booking.tipo === 'evento' && (
+              <>
+                <p className="text-sm font-medium text-gray-800">
+                  {`Descripción: ${booking.descripcion}`}
+                </p>
+              <p className="text-sm font-medium text-gray-800">
+                  {`Monto: ${booking.monto !== undefined && booking.monto !== null ? `$${booking.monto}` : 'No definido'}`}
+                </p>
+              </>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-2 w-full mt-2 mb-4">
@@ -117,7 +131,7 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
 
       {/* BOTONES SIEMPRE ABAJO */}
       <div className="flex gap-2 justify-center w-full mt-auto">
-        {booking.estado !== 'Cancelado' && (
+        {booking.estado !== 'Cancelado' && booking.estado !== 'Señado' && booking.estado !== 'Pagado' && booking.tipo !== 'torneo' && (
           <button
             onClick={() => handleDeleteSubmit(booking)}
             size="icon"
@@ -146,14 +160,16 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
             >
               <Phone className="h-4 w-4" />
             </button>
-            <button
-              size="icon"
-              className="rounded-[4px] bg-blue-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
+            {booking.tipo !== 'torneo' && booking.tipo !== 'evento' && (
+              <button
+                size="icon"
+                className="rounded-[4px] bg-blue-600 hover:bg-naranja/90 text-white p-2 transition-colors duration-200"
               onClick={() => navigate(`/editar-turno/${booking.id}`)}
               disabled={verificandoCaja}
             >
-              <PenSquare className="h-4 w-4" /> 
-            </button>
+                <PenSquare className="h-4 w-4" /> 
+              </button>
+            )}
           </div>
         )}
         {/* SOLO mostrar el botón si NO está pagado (para eventos) */}

@@ -14,6 +14,7 @@ export default function CrearEvento() {
     descripcion: '',
     fecha: '',
     persona_id: '',
+    monto: '',
   });
   const [horarios, setHorarios] = useState([]);
   const [horaInicio, setHoraInicio] = useState('');
@@ -112,7 +113,7 @@ export default function CrearEvento() {
   // Enviar formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formEventoData.nombre || !formEventoData.fecha || !formEventoData.descripcion || !formEventoData.persona_id || detalles.length === 0) {
+    if (!formEventoData.nombre || !formEventoData.fecha || !formEventoData.descripcion || !formEventoData.persona_id || !formEventoData.monto || detalles.length === 0) {
       toast.error('Completa todos los campos y agrega al menos una cancha');
       return;
     }
@@ -302,10 +303,21 @@ export default function CrearEvento() {
                 >
                   <option value="">Selecciona hora fin</option>
                   {horarios
-                    .filter(h => parseInt(h.id) >= parseInt(horaInicio))
-                    .map(h => (
-                      <option key={h.id} value={h.id}>{h.hora_fin}</option>
-                    ))}
+                    .filter(h => {
+                      const horarioInicio = horarios.find(hora => hora.id === parseInt(horaInicio));
+                      if (!horarioInicio) return false;
+                      
+                      const horaInicioValue = horarioInicio.hora_inicio.replace(':', '');
+                      const horaActualValue = h.hora_inicio.replace(':', '');
+                      
+                      return parseInt(horaActualValue) >= parseInt(horaInicioValue);
+                    })
+                    .map(h => {
+                      return (
+                        <option key={h.id} value={h.id}>{h.hora_fin}</option>
+                      )
+                    })
+                  }
                 </select>
               </div>
               <div>
@@ -352,6 +364,16 @@ export default function CrearEvento() {
                     </li>
                   ))}
                 </ul>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium">Precio</label>
+                <input
+                  type="number"
+                  className="w-full text-sm border rounded p-2"
+                  value={formEventoData.monto}
+                  onChange={e => setFormEventoData(f => ({ ...f, monto: e.target.value }))}
+                />
               </div>
             </div>
             <div className="justify-end flex w-full">

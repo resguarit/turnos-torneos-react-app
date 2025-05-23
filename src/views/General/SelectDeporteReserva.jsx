@@ -1,46 +1,29 @@
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import api from '@/lib/axiosConfig';
+import { useState } from 'react';
 import BackButton from '@/components/BackButton';
 import BtnLoading from '@/components/BtnLoading';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { useDeportes } from '@/context/DeportesContext'; // Usa el contexto
 
 const sportIcons = {
-    futbol: "⚽",
-    fútbol: "⚽",
-    padel: "🎾",
-    tenis: "🎾",
-    basquet: "🏀",
-    básquet: "🏀",
-    voley: "🏐",
-    hockey: "🏑",
-    default: "🏆",
-  }
+  futbol: "⚽",
+  fútbol: "⚽",
+  padel: "🎾",
+  tenis: "🎾",
+  basquet: "🏀",
+  básquet: "🏀",
+  voley: "🏐",
+  hockey: "🏑",
+  default: "🏆",
+}
 
 const SelectDeporteReserva = () => {
-    const navigate = useNavigate();
-    const [deportes, setDeportes] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [selectedSport, setSelectedSport] = useState(null);
+  const navigate = useNavigate();
+  const { deportes } = useDeportes(); // Usa el contexto
+  const [selectedSport, setSelectedSport] = useState(null);
 
-    useEffect(() => {
-        const fetchDeportes = async () => {
-            try {
-                setLoading(true);
-                const response = await api.get('/deportes');
-                const filteredDeportes = response.data.filter(deporte => deporte.canchas.length > 0);
-                setDeportes(filteredDeportes);
-            } catch (error) {
-                console.error('Error fetching deportes:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchDeportes();
-    }, []);
-
-    // Function to format sport display name
+  // Function to format sport display name
   const formatDeporteName = (deporte) => {
     if (deporte.nombre.toLowerCase().includes("futbol") || deporte.nombre.toLowerCase().includes("fútbol")) {
       return `${deporte.nombre} ${deporte.jugadores_por_equipo}`
@@ -78,14 +61,16 @@ const SelectDeporteReserva = () => {
 
   const handleSportClick = (deporte) => {
     setSelectedSport(deporte.id)
-    // Add a small delay before navigating for animation effect
     setTimeout(() => {
       navigate(`/reserva-mobile/${deporte.id}`)
     }, 300)
   }
 
-    return (
-        <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+  // Filtra deportes que tengan canchas disponibles
+  const deportesConCanchas = deportes.filter(d => d.canchas && d.canchas.length > 0);
+
+  return (
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
 
       <main className="flex-1 container mx-auto px-4 py-6">
@@ -100,14 +85,14 @@ const SelectDeporteReserva = () => {
           <p className="text-gray-600 mt-2">Selecciona una opción para ver disponibilidad</p>
         </div>
 
-        {loading ? (
+        {deportes === undefined ? (
           <div className="flex justify-center items-center py-12">
             <BtnLoading />
           </div>
         ) : (
           <div className="perspective-1000">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 font-[Poppins]">
-              {deportes.map((deporte) => (
+              {deportesConCanchas.map((deporte) => (
                 <button
                   key={deporte.id}
                   onClick={() => handleSportClick(deporte)}
@@ -166,7 +151,7 @@ const SelectDeporteReserva = () => {
           </div>
         )}
 
-        {!loading && deportes.length === 0 && (
+        {deportesConCanchas.length === 0 && (
           <div className="text-center py-12 bg-white rounded-xl shadow-md p-8">
             <div className="text-6xl mb-4">🏆</div>
             <p className="text-gray-600 text-lg">No hay deportes disponibles en este momento.</p>
@@ -176,7 +161,7 @@ const SelectDeporteReserva = () => {
       </main>
       <Footer />
     </div>
-    );
+  );
 };
 
 export default SelectDeporteReserva;

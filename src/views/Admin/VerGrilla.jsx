@@ -15,6 +15,7 @@ import useTimeout from '@/components/useTimeout';
 import * as XLSX from 'xlsx';
 import BtnLoading from '@/components/BtnLoading';
 import ModalTurno from '@/components/PanelAdmin/VerGrilla/ModalTurno';
+import { useDeportes } from '@/context/DeportesContext'; // Usa el contexto
 
 export default function VerGrilla() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -25,69 +26,46 @@ export default function VerGrilla() {
   const [loading, setLoading] = useState(true);
   const [selectedTurno, setSelectedTurno] = useState(null);
   const [showTurnoModal, setShowTurnoModal] = useState(false);
-  // Estados para deportes
-  const [deportes, setDeportes] = useState([]);
+
+  // Usa el contexto de deportes
+  const { deportes } = useDeportes();
   const [selectedDeporte, setSelectedDeporte] = useState('');
-  const [loadingDeportes, setLoadingDeportes] = useState(true); // Cambiado a true por defecto
   const navigate = useNavigate();
 
-  // Cargar deportes al montar el componente
+  // Selecciona automáticamente el primer deporte cuando cambian los deportes
   useEffect(() => {
-    const fetchDeportes = async () => {
-      try {
-        setLoadingDeportes(true);
-        const response = await api.get('/deportes');
-        
-        if (response.data && response.data.length > 0) {
-          setDeportes(response.data);
-          // Seleccionar automáticamente el primer deporte
-          setSelectedDeporte(response.data[0].id.toString());
-        } else {
-          console.error('No se encontraron deportes o estructura de respuesta inesperada:', response.data);
-        }
-      } catch (error) {
-        console.error('Error al cargar deportes:', error);
-      } finally {
-        setLoadingDeportes(false);
-      }
-    };
-
-    fetchDeportes();
-  }, []);
+    if (deportes && deportes.length > 0) {
+      setSelectedDeporte(deportes[0].id.toString());
+    }
+  }, [deportes]);
 
   // Cargar la grilla solo cuando hay un deporte seleccionado
   useEffect(() => {
-    // No cargar la grilla si no hay deporte seleccionado
     if (!selectedDeporte) {
       return;
     }
-    
+    setLoading(true);
     const controller = new AbortController();
     const signal = controller.signal;
 
     const fetchGrid = async (signal) => {
       try {
         const formattedDate = currentDate.toISOString().split('T')[0];
-        // Siempre incluir el deporte_id
         const url = `/grilla?fecha=${formattedDate}&deporte_id=${selectedDeporte}`;
-        
-        const response = await api.get(url, {signal});
+        const response = await api.get(url, { signal });
         setGrid(response.data.grid);
 
-        // Verificar si hay datos en la grilla
         if (Object.keys(response.data.grid).length === 0) {
           setTimeSlots([]);
           setCourts([]);
         } else {
           const times = Object.keys(response.data.grid);
-          // Verificar si hay datos para el primer horario
           if (times.length > 0 && response.data.grid[times[0]]) {
             const courts = Object.keys(response.data.grid[times[0]]).map(court => ({
               nro: court,
               tipo: response.data.grid[times[0]][court].tipo,
               deporte: response.data.grid[times[0]][court].deporte
             }));
-            
             setTimeSlots(times);
             setCourts(courts);
           } else {
@@ -95,14 +73,13 @@ export default function VerGrilla() {
             setCourts([]);
           }
         }
-        
         setLoading(false);
       } catch (error) {
         if (!signal?.aborted) {
           console.error('Error fetching grid:', error);
         }
       } finally {
-        if (!signal?.aborted){
+        if (!signal?.aborted) {
           setLoading(false);
         }
       }
@@ -115,22 +92,20 @@ export default function VerGrilla() {
     };
   }, [currentDate, selectedDeporte]);
 
-  /* useTimeout(() => {
-    if (loading) {
-      navigate('/error');
-    }
-  }, 20000); */
-
-  if (loadingDeportes) {
-    return (<div className='flex justify-center items-center h-[50vh]'>
-      <BtnLoading />
-    </div>)
+  if (!deportes || deportes.length === 0) {
+    return (
+      <div className='flex justify-center items-center h-[50vh]'>
+        <BtnLoading />
+      </div>
+    );
   }
 
   if (loading) {
-    return (<div className='flex justify-center items-center h-[50vh]'>
-      <BtnLoading />
-    </div>)
+    return (
+      <div className='flex justify-center items-center h-[50vh]'>
+        <BtnLoading />
+      </div>
+    );
   }
 
   const handlePrevDay = () => {
@@ -168,7 +143,6 @@ export default function VerGrilla() {
     setSelectedTurno(null);
   };
 
-  // Manejar cambio de deporte
   const handleDeporteChange = (e) => {
     setSelectedDeporte(e.target.value);
     setLoading(true);
@@ -288,11 +262,11 @@ export default function VerGrilla() {
               <button onClick={handleNextDay} className="p-1 hover:bg-gray-100 rounded">
                 <ChevronRight className="w-4 h-4" />
               </button>
-              <select 
+              <select
                 className="px-4 py-2 bg-white rounded-[6px] text-xs sm:text-sm font-medium text-black mr-4"
                 value={selectedDeporte}
                 onChange={handleDeporteChange}
-                disabled={loadingDeportes}
+                disabled={deportes.length === 0}
               >
                 {deportes.map(deporte => (
                   <option key={deporte.id} value={deporte.id}>
@@ -301,10 +275,7 @@ export default function VerGrilla() {
                 ))}
               </select>
             </div>
-            
-            {/* Selector de deportes */}
             <div className="flex items-center">
-              
               <div className="flex gap-4">
                 <button
                   onClick={exportToPDF}
@@ -321,13 +292,11 @@ export default function VerGrilla() {
               </div>
             </div>
           </div>
-
           {isOpen && (
             <div className="absolute z-10 bg-white shadow-lg rounded-lg ">
               <DayPicker selected={currentDate} onDayClick={handleDateChange} />
             </div>
           )}
-
           <div className="flex gap-2 sm:gap-2 md:gap-8 mb-4  text-xs sm:text-base">
             <div className="flex items-center gap-2">
               <div className="w-4 h-3 bg-blue-500 rounded "></div>
@@ -342,8 +311,6 @@ export default function VerGrilla() {
               <span>Torneos</span>
             </div>
           </div>
-
-          {/* Mensaje cuando no hay datos */}
           {(timeSlots.length === 0 || courts.length === 0) ? (
             <div className="bg-white p-6 rounded-lg text-center">
               <p className="text-lg text-gray-600">No hay datos disponibles para la selección actual.</p>
@@ -374,26 +341,26 @@ export default function VerGrilla() {
                         return (
                           <td key={key} className="border max-w-14 p-2 h-12">
                             {reservation ? (
-                              <div 
+                              <div
                                 onClick={() => handleTurnoClick(reservation)}
-                                className="w-full h-full rounded p-2 hover:cursor-pointer text-white" 
+                                className="w-full h-full rounded p-2 hover:cursor-pointer text-white"
                                 style={{ backgroundColor: reservation.tipo === "fijo" ? "#1E90FF" : reservation.tipo === "unico" ? "#16a34a" : "#FFA500" }}
                               >
                                 {reservation.tipo !== "torneo" && (
                                   <div>
-                                <p className="text-xs lg:text-base font-semibold md:flex items-center hidden ">
-                                  <User className="w-4 h-4 mr-1" />
-                                  {reservation.usuario.nombre}
-                                </p>
-                                <p className="text-xs lg:text-sm md:flex items-center hidden">
-                                  <Phone className="w-4 h-4 mr-1" />
-                                  {reservation.usuario.telefono}
-                                </p>
-                                <p className="text-xs lg:text-sm md:flex items-center hidden">
-                                  <AlertCircle className="w-4 h-4 mr-1" />
-                                  {reservation.estado}
-                                </p>
-                                </div>
+                                    <p className="text-xs lg:text-base font-semibold md:flex items-center hidden ">
+                                      <User className="w-4 h-4 mr-1" />
+                                      {reservation.usuario.nombre}
+                                    </p>
+                                    <p className="text-xs lg:text-sm md:flex items-center hidden">
+                                      <Phone className="w-4 h-4 mr-1" />
+                                      {reservation.usuario.telefono}
+                                    </p>
+                                    <p className="text-xs lg:text-sm md:flex items-center hidden">
+                                      <AlertCircle className="w-4 h-4 mr-1" />
+                                      {reservation.estado}
+                                    </p>
+                                  </div>
                                 )}
                                 {reservation.tipo === "torneo" && (
                                   <div>

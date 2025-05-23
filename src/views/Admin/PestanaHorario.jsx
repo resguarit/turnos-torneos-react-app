@@ -6,6 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import BtnLoading from "@/components/BtnLoading";
+import { useDeportes } from "@/context/DeportesContext"; // Usa el contexto
 
 const PestanaHorario = () => {
   const [schedules, setSchedules] = useState([]);
@@ -27,10 +28,9 @@ const PestanaHorario = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false); // Estado de carga
   const [switchLoading, setSwitchLoading] = useState({}); // Estado de carga específico para cada switch
-  const [deportes, setDeportes] = useState([]);
+  const { deportes } = useDeportes(); // Usa el contexto
   const [selectedDeporteId, setSelectedDeporteId] = useState('');
   const [loadingHorarios, setLoadingHorarios] = useState(false);
-  const [loadingDeportes, setLoadingDeportes] = useState(false);
 
   const daysOfWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
   const timeOptions = [
@@ -39,29 +39,19 @@ const PestanaHorario = () => {
 
   // Cargar horarios al montar el componente
   useEffect(() => {
-    setLoadingDeportes(true);
-    const fetchDeportes = async () => {
-      try {
-        const response = await api.get('/deportes');
-        setDeportes(response.data);
-        if (response.data.length > 0) {
-          setSelectedDeporteId(response.data[0].id);
-          fetchActiveScheduleExtremes(response.data[0].id);
-        }
-      } catch (error) {
-        console.error('Error al cargar deportes:', error);
-      } finally {
-        setLoadingDeportes(false);
-      }
-    };
-    fetchDeportes();
-  }, []);
+    if (deportes.length > 0) {
+      setSelectedDeporteId(deportes[0].id);
+      fetchActiveScheduleExtremes(deportes[0].id);
+    }
+    // eslint-disable-next-line
+  }, [deportes]);
 
   useEffect(() => {
     if (selectedDeporteId) {
       fetchActiveScheduleExtremes(selectedDeporteId);
       fetchDisabledRanges(selectedDeporteId);
     }
+    // eslint-disable-next-line
   }, [selectedDeporteId]);
 
   useEffect(() => {
@@ -345,28 +335,24 @@ const PestanaHorario = () => {
       <ToastContainer position="top-right" />
       {/* Botones arriba */}
       <div className="flex justify-between mb-4 mt-4">
-          <div className="flex justify-start items-center">
-            {loadingDeportes ? (
-              <div className="flex items-center space-x-2">
-                <span className="text-gray-500">Cargando deportes...</span>
-              </div>
-            ) : deportes.length > 0 ? (
-              <select 
-                value={selectedDeporteId}
-                onChange={(e) => setSelectedDeporteId(e.target.value)}
-                className="border rounded-[8px] px-2 py-1 min-w-[200px] w-full">
-                {deportes.map((deporte) => (
-                  <option key={deporte.id} value={deporte.id}>
-                    {`${deporte.nombre} ${deporte.jugadores_por_equipo}`}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <span className="text-gray-500">No hay deportes disponibles</span>
-            )}
-          </div>
-          <div className="flex justify-center items-center">
-            <div className="">
+        <div className="flex justify-start items-center">
+          {deportes.length === 0 ? (
+            <span className="text-gray-500">No hay deportes disponibles</span>
+          ) : (
+            <select
+              value={selectedDeporteId}
+              onChange={(e) => setSelectedDeporteId(e.target.value)}
+              className="border rounded-[8px] px-2 py-1 min-w-[200px] w-full">
+              {deportes.map((deporte) => (
+                <option key={deporte.id} value={deporte.id}>
+                  {`${deporte.nombre} ${deporte.jugadores_por_equipo}`}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+        <div className="flex justify-center items-center">
+          <div className="">
             {showError ? (
               <div className="bg-red-50 border-l-4 border-red-500 p-4 flex flex-col">
                 <p className="text-red-700 font-medium">Error al deshabilitar franja horaria</p>
@@ -378,7 +364,7 @@ const PestanaHorario = () => {
               <button
                 onClick={() => setShowDisableModal(true)}
                 className="px-3 sm:text-base text-sm py-2 bg-red-600 hover:bg-red-600 text-white rounded-[10px] transition-colors mr-2"
-                disabled={loading || loadingHorarios || loadingDeportes || !selectedDeporteId}
+                disabled={loading || loadingHorarios || !selectedDeporteId}
               >
                 Deshabilitar franja horaria
               </button>
@@ -389,7 +375,7 @@ const PestanaHorario = () => {
             className={`px-3 sm:text-base text-sm py-2 ${
               hasChanges ? "bg-green-600  hover:bg-green-600" : "bg-blue-600 hover:bg-blue-700"
             } text-white rounded-[10px] transition-colors`}
-            disabled={loading || loadingHorarios || loadingDeportes || !selectedDeporteId}
+            disabled={loading || loadingHorarios || !selectedDeporteId}
           >
             {hasChanges ? "Aplicar cambios" : "Configurar Horarios"}
           </button>
@@ -397,7 +383,7 @@ const PestanaHorario = () => {
       </div>
 
       {/* Tabla de horarios */}
-      {loadingHorarios || loadingDeportes ? (
+      {loadingHorarios ? (
         <div className="flex flex-col justify-center items-center py-12">
           <BtnLoading />
         </div>
@@ -473,7 +459,7 @@ const PestanaHorario = () => {
       )}
 
       {/* Collapsible de franjas deshabilitadas (solo mostrar si no está cargando) */}
-      {(!loadingHorarios && !loadingDeportes) && (
+      {(!loadingHorarios) && (
         <Collapsible className="mt-4" open={isCollapsibleOpen} onOpenChange={handleCollapsibleOpen}>
           <CollapsibleTrigger className="flex w-full items-center justify-between rounded-t-xl text-sm md:text-base border p-4 font-medium">
             Franjas horarias deshabilitadas

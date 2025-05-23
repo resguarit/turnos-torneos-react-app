@@ -8,11 +8,12 @@ import BtnLoading from '@/components/BtnLoading';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useTorneos } from '@/context/TorneosContext';
+import { useDeportes } from '@/context/DeportesContext'; // <-- Importa el contexto
 
 export default function AltaTorneo() {
   const { id } = useParams();
-  const [deportes, setDeportes] = useState([]);
   const { setTorneos } = useTorneos();
+  const { deportes, setDeportes } = useDeportes(); // <-- Usa el contexto
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     nombre: '',
@@ -21,8 +22,8 @@ export default function AltaTorneo() {
     precio_inscripcion: '',
     precio_por_fecha: '',
   });
-  const [modalVisible, setModalVisible] = useState(false); // Estado para controlar el modal
-  const [nuevoDeporte, setNuevoDeporte] = useState({ nombre: '', jugadores_por_equipo: '' }); // Datos del nuevo deporte
+  const [modalVisible, setModalVisible] = useState(false);
+  const [nuevoDeporte, setNuevoDeporte] = useState({ nombre: '', jugadores_por_equipo: '', duracion_turno: '' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,17 +46,9 @@ export default function AltaTorneo() {
       }
     };
 
-    const fetchDeportes = async () => {
-      try {
-        const response = await api.get('/deportes');
-        setDeportes(response.data);
-      } catch (error) {
-        console.error('Error fetching deportes:', error);
-      }
-    };
-
+    // Ya no necesitas fetchDeportes ni fetchData
     const fetchData = async () => {
-      await Promise.all([fetchTorneo(), fetchDeportes()]);
+      await fetchTorneo();
       setLoading(false);
     };
 
@@ -97,12 +90,16 @@ export default function AltaTorneo() {
 
   const handleNuevoDeporteSubmit = async () => {
     try {
-      const response = await api.post('/deportes', nuevoDeporte);
-      const deporteCreado = response.data.deporte;
-      setDeportes([...deportes, deporteCreado]); // Agregar el nuevo deporte a la lista
-      setFormData({ ...formData, deporte_id: deporteCreado.id }); // Seleccionar el nuevo deporte
+      await api.post('/deportes', nuevoDeporte);
+      // Vuelve a consultar la lista completa de deportes
+      const response = await api.get('/deportes');
+      const deportesActualizados = response.data.deportes || response.data;
+      setDeportes(deportesActualizados); // Esto actualiza el contexto y el localStorage
+      // Selecciona el último deporte creado automáticamente
+      const ultimo = deportesActualizados[deportesActualizados.length - 1];
+      setFormData({ ...formData, deporte_id: ultimo?.id || '' });
       toast.success('Deporte creado correctamente');
-      setModalVisible(false); // Cerrar el modal
+      setModalVisible(false);
     } catch (error) {
       console.error('Error creando deporte:', error);
       toast.error('Error al crear el deporte');
@@ -171,7 +168,7 @@ export default function AltaTorneo() {
                 value={formData.deporte_id}
                 onChange={(e) => {
                   if (e.target.value === 'nuevo') {
-                    setModalVisible(true); // Abrir el modal si se selecciona "Nuevo Deporte"
+                    setModalVisible(true);
                   } else {
                     handleChange(e);
                   }
@@ -249,6 +246,19 @@ export default function AltaTorneo() {
                 className="border border-gray-300 rounded-[6px] p-1 w-full"
                 value={nuevoDeporte.jugadores_por_equipo}
                 onChange={(e) => setNuevoDeporte({ ...nuevoDeporte, jugadores_por_equipo: e.target.value })}
+                min={1}
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block font-medium mb-1">Duración del Turno (minutos):</label>
+              <input
+                type="number"
+                className="border border-gray-300 rounded-[6px] p-1 w-full"
+                value={nuevoDeporte.duracion_turno}
+                onChange={(e) => setNuevoDeporte({ ...nuevoDeporte, duracion_turno: e.target.value })}
+                min={1}
+                required
               />
             </div>
             <div className="flex justify-end space-x-4">

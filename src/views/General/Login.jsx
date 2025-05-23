@@ -9,6 +9,7 @@ import { Eye, EyeOff, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { encryptRole } from '@/lib/getRole';
 import { useTorneos } from "@/context/TorneosContext";
+import { useDeportes } from "@/context/DeportesContext";
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -24,6 +25,7 @@ const Login = () => {
     });
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+    const { setDeportes } = useDeportes();
 
     const handleChange = (e) => {
         setFormData({
@@ -50,9 +52,11 @@ const Login = () => {
             saveUserRole(response.rol);
             localStorage.setItem('dni', response.dni);
 
-            if (response.rol === "admin") { // Si es admin, cargar torneos y setear en contexto
+            if (response.rol === "admin" || response.rol === "moderador") { // Si es admin, cargar torneos y setear en contexto
                 const torneosResponse = await api.get("/torneos");
                 setTorneos(torneosResponse.data);
+                const deportesResponse = await api.get("/deportes");
+                setDeportes(deportesResponse.data);
             }
 
             navigate('/');

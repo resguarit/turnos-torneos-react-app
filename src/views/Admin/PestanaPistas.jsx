@@ -6,10 +6,11 @@ import 'react-toastify/dist/ReactToastify.css';
 import ModalConfirmation from '@/components/ModalConfirmation';
 import BtnLoading from '@/components/BtnLoading';
 import { IterationCw } from 'lucide-react';
+import { useDeportes } from '@/context/DeportesContext'; // Usa el contexto
 
 const PestanaPistas = () => {
   const [pistas, setPistas] = useState([]);
-  const [deportes, setDeportes] = useState([]); // Lista de deportes
+  const { deportes, setDeportes } = useDeportes(); // Usa el contexto
   const [agregando, setAgregando] = useState(false);
   const [editando, setEditando] = useState(null);
   const [pistaToDelete, setPistaToDelete] = useState(null);
@@ -19,12 +20,9 @@ const PestanaPistas = () => {
     precio_por_hora: '',
     seña: '',
     descripcion: '',
-    descripcion: '',
     activa: true,
-    deporte_id: '', // Nuevo campo para el deporte
   });
   const [loading, setLoading] = useState(true);
-  const [loadingDeportes, setLoadingDeportes] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [agregandoDeporte, setAgregandoDeporte] = useState(false);
   const [editandoDeporte, setEditandoDeporte] = useState(null); 
@@ -54,28 +52,10 @@ const PestanaPistas = () => {
     }
   };
 
-  const fetchDeportes = async () => {
-    try {
-      const response = await api.get('/deportes');
-      if (response.status === 200) {
-        console.log('Deportes cargados:', response.data); // Log para verificar la respuesta
-        setDeportes(response.data); // Asigna directamente el array de deportes
-      } else {
-        console.error('Error al cargar deportes: Respuesta inesperada', response);
-        setDeportes([]); // Maneja respuestas inesperadas
-      }
-    } catch (error) {
-      console.error('Error fetching deportes:', error);
-      toast.error('Error al cargar los deportes');
-      setDeportes([]); // Maneja errores de red
-    }
-  };
-
   useEffect(() => {
     const controller = new AbortController();
     fetchPistas(controller.signal);
-    fetchDeportes();
-
+    // Elimina fetchDeportes
     return () => {
       controller.abort();
     };
@@ -94,12 +74,13 @@ const PestanaPistas = () => {
           precio_por_hora: '',
           seña: '',
           descripcion: '',
-          descripcion: '',
           activa: true,
-          deporte_id: '', // Resetear el deporte
         });
         setAgregando(false);
         toast.success('Cancha añadida correctamente');
+        // Actualiza deportes/contexto/localStorage
+        const deportesResp = await api.get('/deportes');
+        setDeportes(deportesResp.data.deportes || deportesResp.data);
       }
     } catch (error) {
       console.error('Error adding cancha:', error);
@@ -125,13 +106,14 @@ const PestanaPistas = () => {
           precio_por_hora: '',
           seña: '',
           descripcion: '',
-          descripcion: '',
           activa: true,
-          deporte_id: '', // Resetear el deporte
         });
         setEditando(null);
         setAgregando(false);
         toast.success('Cancha editada correctamente');
+        // Actualiza deportes/contexto/localStorage
+        const deportesResp = await api.get('/deportes');
+        setDeportes(deportesResp.data.deportes || deportesResp.data);
       }
     } catch (error) {
       console.error('Error editing cancha:', error);
@@ -212,21 +194,19 @@ const PestanaPistas = () => {
     e.preventDefault();
     setIsSaving(true);
     try {
-      const response = await api.put(`/deportes/${editandoDeporte.id}`, newDeporte);
-      if (response.status === 200) {
-        const updatedDeportes = deportes.map(deporte => 
-          deporte.id === editandoDeporte.id ? { ...deporte, ...newDeporte } : deporte
-        );
-        setDeportes(updatedDeportes);
-        setNewDeporte({
-          nombre: '',
-          jugadores_por_equipo: '',
-          duracion_turno: ''
-        });
-        setEditandoDeporte(null);
-        setAgregandoDeporte(false);
-        toast.success('Deporte editado correctamente');
-      }
+      await api.put(`/deportes/${editandoDeporte.id}`, newDeporte);
+      // Vuelve a consultar la lista completa de deportes
+      const response = await api.get('/deportes');
+      const deportesActualizados = response.data.deportes || response.data;
+      setDeportes(deportesActualizados); // Actualiza contexto y localStorage
+      setNewDeporte({
+        nombre: '',
+        jugadores_por_equipo: '',
+        duracion_turno: ''
+      });
+      setEditandoDeporte(null);
+      setAgregandoDeporte(false);
+      toast.success('Deporte editado correctamente');
     } catch (error) {
       console.error('Error editing deporte:', error);
       toast.error('Error al editar el deporte');
@@ -239,17 +219,18 @@ const PestanaPistas = () => {
     e.preventDefault();
     setIsSaving(true);
     try {
-      const response = await api.post('/deportes', newDeporte);
-      if (response.status === 201) {
-        setDeportes([...deportes, response.data.deporte]);
-        setNewDeporte({
-          nombre: '',
-          jugadores_por_equipo: '',
-          duracion_turno: ''
-        });
-        setAgregandoDeporte(false);
-        toast.success('Deporte añadido correctamente');
-      }
+      await api.post('/deportes', newDeporte);
+      // Vuelve a consultar la lista completa de deportes
+      const response = await api.get('/deportes');
+      const deportesActualizados = response.data.deportes || response.data;
+      setDeportes(deportesActualizados); // Actualiza contexto y localStorage
+      setNewDeporte({
+        nombre: '',
+        jugadores_por_equipo: '',
+        duracion_turno: ''
+      });
+      setAgregandoDeporte(false);
+      toast.success('Deporte añadido correctamente');
     } catch (error) {
       console.error('Error adding deporte:', error);
       toast.error('Error al añadir el deporte');

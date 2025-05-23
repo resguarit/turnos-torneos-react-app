@@ -17,6 +17,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { TurnoEstado } from '@/constants/estadoTurno';
 import  BtnLoading  from '@/components/BtnLoading';
+import { useDeportes } from '@/context/DeportesContext';
 
 function EditarTurno() {
   const { id } = useParams();
@@ -28,9 +29,7 @@ function EditarTurno() {
   const [fetching, setFetching] = useState(false);
   const [canchaOptions, setCanchaOptions] = useState([]);
   const [horarioOptions, setHorarioOptions] = useState([]);
-  // Estado para deportes
-  const [deportes, setDeportes] = useState([]);
-  const [loadingDeportes, setLoadingDeportes] = useState(false);
+  const { deportes } = useDeportes(); // Usa el contexto
   const [turnoData, setTurnoData] = useState({
     fecha_reserva: '',
     usuario_nombre: '',
@@ -57,21 +56,19 @@ function EditarTurno() {
         const response = await api.get(`/turnos/${id}`);
         const turno = response.data.turno;
         setBooking(turno);
-        
-        // Extraer correctamente el ID del deporte del objeto cancha.deporte
+
         const deporteId = turno.cancha?.deporte?.id || '';
-        
+
         setFormData({
-          // No autoseleccionar fecha_turno, cancha_id ni horario_id
           fecha_turno: '',
           cancha_id: '',
           horario_id: '',
           monto_total: turno.monto_total,
           monto_seña: turno.monto_seña,
           estado: turno.estado,
-          deporte_id: deporteId.toString() // Asignar deporte_id
+          deporte_id: deporteId.toString()
         });
-        
+
         setTurnoData({
           fecha_reserva: turno.fecha_reserva,
           usuario_nombre: turno.usuario.nombre,
@@ -80,8 +77,7 @@ function EditarTurno() {
           usuario_email: turno.usuario.email,
           tipo_turno: turno.tipo
         });
-        
-        await fetchDeportes();
+
         // No cargar horarios y canchas automáticamente
         setLoading(false);
       } catch (error) {
@@ -97,25 +93,6 @@ function EditarTurno() {
 
     fetchTurno();
   }, [id, navigate]);
-
-  // Función para cargar los deportes
-  const fetchDeportes = async () => {
-    try {
-      setLoadingDeportes(true);
-      const response = await api.get('/deportes');
-      
-      if (response.data) {
-        setDeportes(response.data);
-      } else {
-        console.error('Estructura de respuesta inesperada en deportes:', response.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar deportes:', error);
-      toast.error('Error al cargar deportes');
-    } finally {
-      setLoadingDeportes(false);
-    }
-  };
 
   const fetchHorarios = async (fecha, deporteId) => {
     if (!fecha || !deporteId) return;
@@ -386,31 +363,28 @@ function EditarTurno() {
                 {/* Selector de deportes */}
                 <div>
                   <Label className="text-sm md:text-lg font-semibold mb-1 block">Deporte</Label>
-                  {loadingDeportes ? (
-                    <div className="p-2 bg-gray-50 rounded-lg mt-1">Cargando deportes...</div>
-                  ) : (
-                    <Select 
-                      value={formData.deporte_id?.toString()}
-                      onValueChange={handleDeporteChange}
-                    >
-                      <SelectTrigger className="w-full text-sm md:text-base bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja">
-                        <SelectValue placeholder="Seleccionar deporte" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border shadow-lg text-sm md:text-base">
-                        <ScrollArea className="h-[200px]">
-                          {deportes.map((deporte) => (
-                            <SelectItem 
-                              key={deporte.id} 
-                              value={deporte.id.toString()}
-                              className="hover:bg-gray-100 text-sm md:text-base"
-                            >
-                              {formatDeporteName(deporte)}
-                            </SelectItem>
-                          ))}
-                        </ScrollArea>
-                      </SelectContent>
-                    </Select>
-                  )}
+                  {/* Elimina loadingDeportes, solo muestra el select */}
+                  <Select 
+                    value={formData.deporte_id?.toString()}
+                    onValueChange={handleDeporteChange}
+                  >
+                    <SelectTrigger className="w-full text-sm md:text-base bg-white border-gray-200 focus:ring-2 focus:ring-naranja focus:border-naranja">
+                      <SelectValue placeholder="Seleccionar deporte" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border shadow-lg text-sm md:text-base">
+                      <ScrollArea className="h-[200px]">
+                        {deportes.map((deporte) => (
+                          <SelectItem 
+                            key={deporte.id} 
+                            value={deporte.id.toString()}
+                            className="hover:bg-gray-100 text-sm md:text-base"
+                          >
+                            {formatDeporteName(deporte)}
+                          </SelectItem>
+                        ))}
+                      </ScrollArea>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>

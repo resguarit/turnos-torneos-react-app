@@ -139,8 +139,11 @@ export function TablaSanciones({ sanciones, onEdit, fechas = [], onRefresh }) {
         onClose={handleModalDeleteClose}
         onConfirm={() => handleEliminar(sancionSeleccionada?.sancion?.id)}
         loading={false}
+        accionTitulo="Eliminación"
+        accion="eliminar"
         pronombre="la"
         entidad="sanción"
+        accionando="Eliminando"
       />
 
     </div>

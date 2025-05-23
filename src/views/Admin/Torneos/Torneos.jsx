@@ -6,12 +6,18 @@ import { useState } from 'react';
 import { Trophy, List } from 'lucide-react';
 import BtnLoading from '@/components/BtnLoading';
 import { useTorneos } from '@/context/TorneosContext';
+import { toast } from 'react-toastify';
+import api from '@/lib/axiosConfig';
+import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal';
 
 export default function Torneos() {
-  const { torneos } = useTorneos();
+  const { torneos, setTorneos } = useTorneos();
   const [loadingTorneos, setLoadingTorneos] = useState(false);
   const [loadingZonas, setLoadingZonas] = useState(false);
   const [searchYear, setSearchYear] = useState('');
+  const [modalFinalizarOpen, setModalFinalizarOpen] = useState(false); // solo para mostrar/ocultar modal
+  const [torneoIdFinalizar, setTorneoIdFinalizar] = useState(null);    // guarda el id del torneo
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   // Filtrar torneos activos si no hay búsqueda, o todos los que coincidan con el año si hay búsqueda
@@ -32,6 +38,26 @@ export default function Torneos() {
 
   const handleVerZonas = (torneoId) => {
     navigate(`/zonas-admi/${torneoId}`);
+  };
+
+  const finalizarTorneo = async (torneoId) => {
+    try {
+      setLoading(true);
+      const response = await api.put(`/torneos/${torneoId}`, { activo: false });
+      if (response.data.status === 200) {
+        toast.success('Torneo finalizado correctamente');
+        setModalFinalizarOpen(false);
+        // Refrescar torneos en el contexto
+        const torneosResponse = await api.get('/torneos');
+        setTorneos(torneosResponse.data);
+      } else {
+        toast.error(response.data.message || 'Error al finalizar el torneo');
+      }
+    } catch (error) {
+      toast.error('Error al finalizar el torneo');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loadingTorneos || loadingZonas) {
@@ -101,6 +127,15 @@ export default function Torneos() {
                       >
                         Editar
                       </button>
+                      <button
+                        onClick={() => {
+                          setTorneoIdFinalizar(torneo.id);
+                          setModalFinalizarOpen(true);
+                        }}
+                        className="bg-red-500 text-white px-4 py-2 rounded"
+                      >
+                        Finalizar
+                      </button>
                     </div>
                   </CardContent>
                 </Card>
@@ -110,6 +145,17 @@ export default function Torneos() {
         </div>
       </main>
       <Footer />
+      <ConfirmDeleteModal 
+                isOpen={modalFinalizarOpen}
+                onClose={() => setModalFinalizarOpen(false)}
+                onConfirm={() => finalizarTorneo(torneoIdFinalizar)}
+                loading={loading}
+                accionTitulo="Finalización"
+                accion="finalizar"
+                pronombre="este"
+                entidad="torneo"
+                accionando="Finalizando"
+      />
     </div>
   );
 }

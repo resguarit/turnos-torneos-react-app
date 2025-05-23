@@ -766,8 +766,11 @@ export default function DetalleZona() {
           onClose={() => setModalConfirmVisible(false)}
           onConfirm={confirmarEliminarGrupos}
           loading={loading}
+          accionTitulo="Eliminación"
+          accion="eliminar"
           pronombre="este"
           entidad="grupo"
+          accionando="Eliminando"
         />
       )}
       

@@ -1,13 +1,13 @@
 import React from 'react';
 
-export default function ConfirmDeleteModal({ isOpen, onClose, onConfirm, loading, pronombre, entidad }) {
+export default function ConfirmDeleteModal({ isOpen, onClose, onConfirm, loading, accionTitulo, accion, pronombre, entidad, accionando }) {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded-[8px] shadow-lg w-[90%] max-w-md">
-        <h2 className="text-lg font-bold text-gray-800 mb-4">Confirmar Eliminación</h2>
-        <p className="text-gray-600 mb-6">¿Estás seguro de que deseas eliminar {pronombre} {entidad}? Esta acción no se puede deshacer.</p>
+        <h2 className="text-lg font-bold text-gray-800 mb-4">Confirmar {accionTitulo}</h2>
+        <p className="text-gray-600 mb-6">¿Estás seguro de que deseas {accion} {pronombre} {entidad}? Esta acción no se puede deshacer.</p>
         <div className="flex justify-end gap-3">
           <button
             onClick={onClose}
@@ -18,11 +18,11 @@ export default function ConfirmDeleteModal({ isOpen, onClose, onConfirm, loading
           <button
             onClick={onConfirm}
             disabled={loading}
-            className={`px-4 py-2 text-white rounded ${
+            className={`px-4 py-2 capitalize text-white rounded ${
               loading ? 'bg-red-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'
             }`}
           >
-            {loading ? 'Eliminando...' : 'Eliminar'}
+            {loading ? `${accionando}... `: `${accion}`}
           </button>
         </div>
       </div>

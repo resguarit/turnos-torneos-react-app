@@ -33,6 +33,11 @@ export default function ContadorBloqueo() {
   };
 
   const obtenerDuracion = (horaInicio, horaFin) => {
+    // Validar que ambos parámetros existan y no sean undefined
+    if (!horaInicio || !horaFin) {
+      return '--';
+    }
+    
     // Convert HH:MM:SS format to minutes
     const horaInicioMinutos = horaInicio.split(':')[0] * 60 + parseInt(horaInicio.split(':')[1]);
     const horaFinMinutos = horaFin.split(':')[0] * 60 + parseInt(horaFin.split(':')[1]);
@@ -273,7 +278,10 @@ export default function ContadorBloqueo() {
                           {formatFecha(reservaData?.fecha)}
                         </p>
                         <p className="font-medium text-sm">
-                          {horarioDetails?.hora_inicio?.slice(0, 5)} - {horarioDetails?.hora_fin?.slice(0, 5)}
+                          {loadingDetails || !horarioDetails 
+                            ? 'Cargando...' 
+                            : `${horarioDetails?.hora_inicio?.slice(0, 5)} - ${horarioDetails?.hora_fin?.slice(0, 5)}`
+                          }
                         </p>
                       </div>
                     </div>
@@ -284,9 +292,17 @@ export default function ContadorBloqueo() {
                     <div className="w-full">
                       <p className="text-sm text-gray-500">Duración y Cancha</p>
                       <div className="flex justify-between items-center">
-                        <p className="font-medium text-sm">{obtenerDuracion(horarioDetails?.hora_inicio, horarioDetails?.hora_fin)}</p>
                         <p className="font-medium text-sm">
-                          Cancha {canchaDetails?.nro} - {canchaDetails?.tipo_cancha}
+                          {loadingDetails || !horarioDetails 
+                            ? 'Cargando...' 
+                            : obtenerDuracion(horarioDetails?.hora_inicio, horarioDetails?.hora_fin)
+                          }
+                        </p>
+                        <p className="font-medium text-sm">
+                          {loadingDetails || !canchaDetails 
+                            ? 'Cargando...' 
+                            : `Cancha ${canchaDetails?.nro} - ${canchaDetails?.tipo_cancha}`
+                          }
                         </p>
                       </div>
                     </div>

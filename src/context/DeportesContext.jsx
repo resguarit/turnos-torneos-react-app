@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import api from "@/lib/axiosConfig";
 
 const DeportesContext = createContext();
 
@@ -11,9 +12,17 @@ export function DeportesProvider({ children }) {
 
   // Al iniciar, lee de localStorage si existe
   useEffect(() => {
+    const fetchDeportes = async () => {
+      const response = await api.get("/deportes");
+      setDeportesState(response.data);
+      localStorage.setItem("deportes", JSON.stringify(response.data));
+    };
+
     const stored = localStorage.getItem("deportes");
     if (stored) {
       setDeportesState(JSON.parse(stored));
+    } else {
+      fetchDeportes();
     }
   }, []);
 

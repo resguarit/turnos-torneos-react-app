@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { TurnoEstado } from '@/constants/estadoTurno';
 import CoordinarPagoDialog from "./CoordinarPagoDialog";
+import { formatearFechaCompleta, calcularDuracion, formatearRangoHorario } from '@/utils/dateUtils';
 
 const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton }) => {
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -18,9 +19,7 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   // Fix date formatting by using parseISO
-  const fechaFormateada = format(parseISO(turno.fecha_turno), "EEEE, d 'de' MMMM 'de' yyyy", { 
-    locale: es 
-  });
+  const fechaFormateada = formatearFechaCompleta(turno.fecha_turno);
   const señaPorcentaje = turno.cancha ? (turno.monto_seña / turno.monto_total) * 100 : 0;
   const navigate = useNavigate();
 
@@ -81,15 +80,6 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
     }
   };
 
-  const obtenerDuracion = (horaInicio, horaFin) => {
-    // Convert HH:MM:SS format to minutes
-    const horaInicioMinutos = horaInicio.split(':')[0] * 60 + parseInt(horaInicio.split(':')[1]);
-    const horaFinMinutos = horaFin.split(':')[0] * 60 + parseInt(horaFin.split(':')[1]);
-    const duracionMinutos = horaFinMinutos - horaInicioMinutos;
-    
-    return `${duracionMinutos} min`;
-  };
-
   return (
     <div className="flex justify-center">
       <Card className="mb-4 p-4 border rounded-[8px] shadow w-full md:w-1/2 bg-white">
@@ -113,7 +103,7 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
                 <Clock className="w-4 h-4" />
                 <p className="text-xs md:text-sm font-semibold">Duración y Cancha</p>
               </div>
-              <p className="text-xs md:text-sm">{obtenerDuracion(turno.horario.hora_inicio, turno.horario.hora_fin)} | {turno.cancha.tipo_cancha} #{turno.cancha.nro}</p>
+              <p className="text-xs md:text-sm">{calcularDuracion(turno.horario.hora_inicio, turno.horario.hora_fin)} | {turno.cancha.tipo_cancha} #{turno.cancha.nro}</p>
             </div>
           </div>
 

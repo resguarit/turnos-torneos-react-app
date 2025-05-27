@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import { X, DollarSign, Banknote, CreditCard, ArrowDownToLine } from "lucide-react";
 import api from "@/lib/axiosConfig";
 import { toast } from "react-toastify";
-import { format, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
 import BtnLoading from "@/components/BtnLoading";
+import { formatearFechaCorta } from '@/utils/dateUtils';
 
 const METODOS = [
   { id: 1, label: "Efectivo", icon: <Banknote className="h-4 w-4" /> },
@@ -50,7 +49,7 @@ export default function RegistrarPagoEventoDialog({ isOpen, onClose, evento, onP
           <div className="mb-4">
             <p className="text-sm"><b>Evento:</b> {evento.nombre}</p>
             <p className="text-sm"><b>Organizador:</b> {evento.persona?.name} (DNI: {evento.persona?.dni})</p>
-            <p className="text-sm capitalize"><b>Fecha:</b> {format(parseISO(evento.fecha_turno), "EEE, dd/MM/yyyy", {locale:es})}</p>
+            <p className="text-sm capitalize"><b>Fecha:</b> {formatearFechaCorta(evento.fecha_turno)}</p>
             <p className="text-sm"><b>Monto:</b> {evento.monto ? `$${evento.monto}` : "No definido"}</p>
           </div>
           <form onSubmit={handleSubmit}>

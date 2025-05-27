@@ -5,6 +5,7 @@ import api from '@/lib/axiosConfig';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import BtnLoading from '@/components/BtnLoading';
+import { formatearRangoHorario } from '@/utils/dateUtils';
 
 export default function VerFixture() {
   const { zonaId } = useParams();
@@ -146,7 +147,7 @@ export default function VerFixture() {
                     <div className="flex justify-between mt-2 text-sm text-gray-600">
                       <span>Cancha: {partido.cancha?.nro || 'No Definido'}</span>
                       <span>
-                        Hora: {horario.hora_inicio || 'No Definido'} - {horario.hora_fin || 'No Definido'}
+                        Hora: {horario.hora_inicio && horario.hora_fin ? formatearRangoHorario(horario.hora_inicio, horario.hora_fin) : 'No Definido'}
                       </span>
                     </div>
                   </div>

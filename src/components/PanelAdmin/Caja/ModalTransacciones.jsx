@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Banknote, ArrowDownToLine, CreditCard, Clock, User, Building2 } from "lucide-react";
+import { formatearFechaCorta, formatearHora } from '@/utils/dateUtils';
 
 const ModalTransacciones = ({ showModal, setShowModal, transacciones, loading }) => {
   return (
@@ -38,7 +39,7 @@ const ModalTransacciones = ({ showModal, setShowModal, transacciones, loading })
                   <p className="font-medium">{transaction.descripcion}</p>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Clock className="h-4 w-4" />
-                    <span>{new Date(transaction.fecha).toLocaleString()}</span>
+                    <span>{formatearFechaCorta(transaction.fecha)} {formatearHora(transaction.fecha)}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     {transaction.cliente ? (

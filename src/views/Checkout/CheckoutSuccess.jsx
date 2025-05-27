@@ -6,6 +6,7 @@ import { parseISO, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import BtnLoading from '@/components/BtnLoading';
+import { formatearFechaCompleta, calcularDuracion, formatearRangoHorario } from '@/utils/dateUtils';
 
 const CheckoutSuccess = () => {
   const [turno, setTurno] = useState(null);
@@ -52,15 +53,6 @@ const CheckoutSuccess = () => {
     const fecha = parseISO(fechaStr);
     return format(fecha, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })
       .replace(/^\w/, (c) => c.toUpperCase());
-  };
-
-  const obtenerDuracion = (horaInicio, horaFin) => {
-    // Convert HH:MM:SS format to minutes
-    const horaInicioMinutos = horaInicio.split(':')[0] * 60 + parseInt(horaInicio.split(':')[1]);
-    const horaFinMinutos = horaFin.split(':')[0] * 60 + parseInt(horaFin.split(':')[1]);
-    const duracionMinutos = horaFinMinutos - horaInicioMinutos;
-    
-    return `${duracionMinutos} min`;
   };
 
   const calcularMonto = (montoTotal, montoSeña) => {
@@ -138,7 +130,7 @@ const CheckoutSuccess = () => {
               <div>
                 <p className="text-sm font-medium">Horario y Duración</p>
                 <p className="text-sm text-gray-600">
-                  {turno.horario.hora_inicio} - {turno.horario.hora_fin} ({obtenerDuracion(turno.horario.hora_inicio, turno.horario.hora_fin)})
+                  {formatearRangoHorario(turno.horario.hora_inicio, turno.horario.hora_fin)} ({calcularDuracion(turno.horario.hora_inicio, turno.horario.hora_fin)})
                 </p>
               </div>
             </div>

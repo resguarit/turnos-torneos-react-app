@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import { useTorneos } from '@/context/TorneosContext';
 import api from '@/lib/axiosConfig';
 import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal';
+import { formatearFechaCorta } from '@/utils/dateUtils';
 
 export default function Zonas() {
   const { torneoId } = useParams();
@@ -33,7 +34,7 @@ export default function Zonas() {
     return { 
       ...zona, 
       siguienteFecha: siguienteFecha 
-        ? format(parseISO(siguienteFecha.fecha_inicio), "EEE, dd/MM/yyyy", { locale: es }) 
+        ? formatearFechaCorta(siguienteFecha.fecha_inicio)
         : 'No disponible' 
     };
   });

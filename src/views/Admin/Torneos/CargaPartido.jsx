@@ -6,8 +6,7 @@ import BackButton from '@/components/BackButton';
 import { Button } from '@/components/ui/button';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
-import { format, parseISO } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { formatearFechaCorta, formatearRangoHorario } from '@/utils/dateUtils';
 import { useNavigate } from 'react-router-dom';
 
 export default function CargaPartido() {
@@ -106,7 +105,7 @@ export default function CargaPartido() {
   const currentFecha = fechas[currentFechaIndex];
 
   const formattedDate = currentFecha?.fecha_inicio
-    ? format(parseISO(currentFecha.fecha_inicio), "dd/MM/yyyy", { locale: es })
+    ? formatearFechaCorta(currentFecha.fecha_inicio)
     : "";
 
   return (
@@ -202,7 +201,7 @@ export default function CargaPartido() {
               {currentFecha.partidos && currentFecha.partidos.length > 0 ? (
                 currentFecha.partidos.map((partido) => {
                   const cancha = partido.cancha ? `${partido.cancha.nro} - ${partido.cancha.tipo_cancha}` : "No Definido";
-                  const horario = partido.horario ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : "No Definido";
+                  const horario = partido.horario ? formatearRangoHorario(partido.horario.hora_inicio, partido.horario.hora_fin) : "No Definido";
                   const marcadorLocal = partido.marcador_local ?? "-";
                   const marcadorVisitante = partido.marcador_visitante ?? "-";
 

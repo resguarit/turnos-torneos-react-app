@@ -5,6 +5,7 @@ import { es } from 'date-fns/locale';
 import MercadoPagoWallet from '@/components/MercadoPagoWallet';
 import { Loader2 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
+import { formatearRangoHorario } from '@/utils/dateUtils';
 
 export default function MercadoPagoCheckout() {
   const [isLoading, setIsLoading] = useState(false);
@@ -70,7 +71,7 @@ export default function MercadoPagoCheckout() {
           
           <div className="flex justify-between items-center">
             <span className="text-gray-600">Horario:</span>
-            <span className="text-gray-800 font-medium">{turno.horario.hora_inicio}hs - {turno.horario.hora_fin}hs</span>
+            <span className="text-gray-800 font-medium">{formatearRangoHorario(turno.horario.hora_inicio, turno.horario.hora_fin)}</span>
           </div>
           
           <div className="mt-4 bg-white rounded-lg p-4 border border-gray-200 shadow-sm">

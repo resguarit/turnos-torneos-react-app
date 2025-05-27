@@ -18,6 +18,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { TurnoEstado } from '@/constants/estadoTurno';
 import  BtnLoading  from '@/components/BtnLoading';
 import { useDeportes } from '@/context/DeportesContext';
+import { formatearFechaCompleta, formatearFechaSinDia, formatearRangoHorario } from '@/utils/dateUtils';
 
 function EditarTurno() {
   const { id } = useParams();
@@ -313,7 +314,7 @@ function EditarTurno() {
                 <div>
                   <Label className="text-sm md:text-lg  font-bold mb-1 block">Fecha en que fue reservado:</Label>
                   <div className="p-1 text-sm md:text-base bg-white rounded-[8px] border">
-                    {format(parseISO(turnoData.fecha_reserva), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
+                    {formatearFechaCompleta(turnoData.fecha_reserva)}
                   </div>
                 </div>
                 <div>
@@ -330,13 +331,13 @@ function EditarTurno() {
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Fecha Original</Label>
                   <div className="p-2 bg-gray-50 rounded-lg mt-1">
-                    {format(parseISO(booking.fecha_turno), "d 'de' MMMM, yyyy", { locale: es })}
+                    {formatearFechaSinDia(booking.fecha_turno)}
                   </div>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Horario Original</Label>
                   <div className="p-2 bg-gray-50 rounded-lg mt-1">
-                    {booking.horario.hora_inicio} - {booking.horario.hora_fin}
+                    {formatearRangoHorario(booking.horario.hora_inicio, booking.horario.hora_fin)}
                   </div>
                 </div>
                 <div>
@@ -436,7 +437,7 @@ function EditarTurno() {
                             value={horario.id.toString()}
                             className="hover:bg-gray-100 text-sm md:text-base"
                           >
-                            {`${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`}
+                            {formatearRangoHorario(horario.hora_inicio, horario.hora_fin)}
                           </SelectItem>
                         ))}
                       </ScrollArea>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "react-toastify";
 import api from '@/lib/axiosConfig';
+import { formatearRangoHorario } from '@/utils/dateUtils';
 
 const CrearTurnoFijoModal = ({ isOpen, onClose, courts, onSuccess }) => {
   const [step, setStep] = useState(1);

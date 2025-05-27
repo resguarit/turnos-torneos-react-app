@@ -3,6 +3,9 @@ import api from "@/lib/axiosConfig";
 import {format, parseISO} from "date-fns";
 import { es } from "date-fns/locale";
 import BtnLoading from "@/components/BtnLoading";
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
+import { formatearFechaCompleta } from '@/utils/dateUtils';
 
 export default function MisTorneos() {
   const [tarjetas, setTarjetas] = useState([]);
@@ -89,7 +92,7 @@ export default function MisTorneos() {
               </span>
               <div className="flex flex-col gap-2 mt-2 text-sm">
                 <span className="bg-gray-200 px-2 py-1 rounded">
-                  <span className="font-semibold">Fecha:</span> {t.fechaPartido !== "No definido" && t.fechaPartido !== "Sin próximos partidos" ? format(parseISO(t.fechaPartido), "EEE, dd 'de' MMMM',' yyyy", { locale: es }) : t.fechaPartido}
+                  <span className="font-semibold">Fecha:</span> {t.fechaPartido !== "Sin próximos partidos" ? formatearFechaCompleta(t.fechaPartido) : t.fechaPartido}
                 </span>
                 <span className="bg-gray-200 px-2 py-1 rounded">
                   <span className="font-semibold">Cancha:</span> {t.cancha.nro} - {t.cancha.tipo}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import {format, parseISO} from 'date-fns';
+import { formatearFechaCorta } from '@/utils/dateUtils';
 import {es} from 'date-fns/locale';
 
 export default function PostergarFechasModal({ fechas, onSave, onClose }) {
@@ -32,7 +32,7 @@ export default function PostergarFechasModal({ fechas, onSave, onClose }) {
             {fechas && fechas.length > 0 ? (
               fechas.map((fecha) => (
                 <option key={fecha.id} value={fecha.id}>
-                  {fecha.nombre} - {format(parseISO(fecha.fecha_inicio), "EEE, dd/MM/yyyy", { locale: es })} 
+                  {fecha.nombre} - {formatearFechaCorta(fecha.fecha_inicio)}
                 </option>
               ))
             ) : (

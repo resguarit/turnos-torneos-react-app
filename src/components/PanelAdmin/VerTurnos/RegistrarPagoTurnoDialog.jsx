@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { formatearFechaSinDia, formatearFechaCorta, formatearHora, formatearMonto, formatearRangoHorario } from '@/utils/dateUtils';
 
 const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) => {
   const [loading, setLoading] = useState(false);
@@ -269,7 +270,7 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
               </div>
               <div>
                 <p className="text-sm font-semibold">Fecha:</p>
-                <p className="text-sm">{new Date(turno.fecha_turno).toLocaleDateString()}</p>
+                <p className="text-sm">{formatearFechaSinDia(turno.fecha_turno)}</p>
               </div>
               <div>
                 <p className="text-sm font-semibold">Hora:</p>
@@ -358,7 +359,7 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
                       <div className="flex flex-col">
                         <span className="font-medium">{trans.descripcion}</span>
                         <span className="text-xs text-gray-500">
-                          {new Date(trans.created_at).toLocaleDateString()} {new Date(trans.created_at).toLocaleTimeString()}
+                          {formatearFechaCorta(trans.created_at)} {formatearHora(trans.created_at)}
                         </span>
                       </div>
                       <span className={trans.monto.startsWith('-') ? 'text-red-500' : 'text-green-500'}>

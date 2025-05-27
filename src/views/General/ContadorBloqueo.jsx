@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { MapPin, Calendar, Clock, User, CreditCard, Loader2, Check } from "lucide-react";
+import { formatearFechaCompleta, calcularDuracion, formatearRangoHorario } from '@/utils/dateUtils';
 
 export default function ContadorBloqueo() {
   // 3 minutos (180 segundos)
@@ -30,20 +31,6 @@ export default function ContadorBloqueo() {
   const cleanupStorage = () => {
     localStorage.removeItem('reservaStartTime');
     localStorage.removeItem('reservaTemp');
-  };
-
-  const obtenerDuracion = (horaInicio, horaFin) => {
-    // Validar que ambos parámetros existan y no sean undefined
-    if (!horaInicio || !horaFin) {
-      return '--';
-    }
-    
-    // Convert HH:MM:SS format to minutes
-    const horaInicioMinutos = horaInicio.split(':')[0] * 60 + parseInt(horaInicio.split(':')[1]);
-    const horaFinMinutos = horaFin.split(':')[0] * 60 + parseInt(horaFin.split(':')[1]);
-    const duracionMinutos = horaFinMinutos - horaInicioMinutos;
-    
-    return `${duracionMinutos} min`;
   };
 
   useEffect(() => {
@@ -273,14 +260,14 @@ export default function ContadorBloqueo() {
                     <Calendar className="w-5 h-5 text-gray-500" />
                     <div className="w-full">
                       <p className="text-sm text-gray-500">Fecha y Hora</p>
-                      <div className="flex justify-between items-center">
-                        <p className="font-medium text-sm capitalize">
-                          {formatFecha(reservaData?.fecha)}
+                      <div className="flex full justify-between items-center">
+                        <p className="font-medium text-xs md:text-sm">
+                          {formatearFechaCompleta(reservaData.fecha)}
                         </p>
-                        <p className="font-medium text-sm">
-                          {loadingDetails || !horarioDetails 
-                            ? 'Cargando...' 
-                            : `${horarioDetails?.hora_inicio?.slice(0, 5)} - ${horarioDetails?.hora_fin?.slice(0, 5)}`
+                        <p className="font-medium text-xs md:text-sm">
+                          {horarioDetails 
+                            ? formatearRangoHorario(horarioDetails.hora_inicio, horarioDetails.hora_fin)
+                            : 'Cargando...'
                           }
                         </p>
                       </div>
@@ -291,17 +278,17 @@ export default function ContadorBloqueo() {
                     <Clock className="w-5 h-5 text-gray-500" />
                     <div className="w-full">
                       <p className="text-sm text-gray-500">Duración y Cancha</p>
-                      <div className="flex justify-between items-center">
-                        <p className="font-medium text-sm">
-                          {loadingDetails || !horarioDetails 
-                            ? 'Cargando...' 
-                            : obtenerDuracion(horarioDetails?.hora_inicio, horarioDetails?.hora_fin)
+                      <div className="flex w-full justify-between items-center">
+                        <p className="font-medium text-xs md:text-sm">
+                          {horarioDetails 
+                            ? calcularDuracion(horarioDetails.hora_inicio, horarioDetails.hora_fin)
+                            : 'Cargando...'
                           }
                         </p>
-                        <p className="font-medium text-sm">
-                          {loadingDetails || !canchaDetails 
-                            ? 'Cargando...' 
-                            : `Cancha ${canchaDetails?.nro} - ${canchaDetails?.tipo_cancha}`
+                        <p className="font-medium text-xs md:text-sm">
+                          {canchaDetails 
+                            ? `Cancha ${canchaDetails.nro} - ${canchaDetails.tipo_cancha}` 
+                            : 'Cargando...'
                           }
                         </p>
                       </div>

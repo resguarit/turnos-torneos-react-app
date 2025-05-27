@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar } from 'lucide-react';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
+import { Calendar, Clock, User, CreditCard, DollarSign, CheckCircle, XCircle, MinusCircle, ChevronLeft, ChevronRight, Plus, Trash2, Edit } from 'lucide-react';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { TurnoEstado } from '@/constants/estadoTurno';
+import { formatearFechaCompleta, formatearRangoHorario } from '@/utils/dateUtils';
 
 const CreateFixedReservation = () => {
   const [loading, setLoading] = useState(false);
@@ -256,7 +259,7 @@ const CreateFixedReservation = () => {
                   </option>
                   {horarios.map(horario => (
                     <option key={horario.id} value={horario.id}>
-                      {`${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`}
+                      {formatearRangoHorario(horario.hora_inicio, horario.hora_fin)}
                     </option>
                   ))}
                 </select>

@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { useDeportes } from '@/context/DeportesContext'; // Importa el contexto
+import { formatearRangoHorario } from '@/utils/dateUtils';
 
 function NuevoTurnoAdmi() {
   const [loading, setLoading] = useState(false);
@@ -426,6 +427,20 @@ function NuevoTurnoAdmi() {
             </label>
           </div>
 
+          {isTurnoFijo && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+              <div className="flex items-center gap-2 text-amber-800">
+                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                <span className="font-medium text-sm">
+                  Se crearán 4 turnos, 1 por semana para el dia y horario seleccionado con asignación automática de cancha. 
+                  A cada turno se le deberá registrar el pago de la seña y del monto restante individualmente.
+                </span>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4 mt-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -530,7 +545,7 @@ function NuevoTurnoAdmi() {
                     </option>
                     {horarios.map(horario => (
                       <option key={horario.id} value={horario.id}>
-                        {`${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`}
+                        {formatearRangoHorario(horario.hora_inicio, horario.hora_fin)}
                       </option>
                     ))}
                   </select>

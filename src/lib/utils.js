@@ -1,37 +1,21 @@
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge"
+import { formatearFechaCompleta, formatearHora, formatearRangoHorario } from '@/utils/dateUtils';
 
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
-
 export function formatDate(dateString) {
-  const options = {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }
-
-  return new Date(dateString).toLocaleDateString("es-ES", options)
+  return formatearFechaCompleta(dateString);
 }
 
 export function formatTime(timeString) {
-  // Parse the time string (format: "HH:MM:SS")
-  const [hours, minutes] = timeString.split(":")
+  return formatearHora(timeString);
+}
 
-  // Create a date object and set the time
-  const date = new Date()
-  date.setHours(Number.parseInt(hours, 10))
-  date.setMinutes(Number.parseInt(minutes, 10))
-
-  // Format the time
-  return date.toLocaleTimeString("es-ES", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  })
+export function formatTimeRange(startTime, endTime) {
+  return formatearRangoHorario(startTime, endTime);
 }
 
 export function formatCurrency(value) {

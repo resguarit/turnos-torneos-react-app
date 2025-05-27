@@ -7,6 +7,8 @@ import BtnLoading from '@/components/BtnLoading';
 import ModalConfirmation from '@/components/ModalConfirmation';
 import { useNavigate } from 'react-router-dom';
 import { decryptRole } from '@/lib/getRole';
+import { formatearFechaSinDia } from '@/utils/dateUtils';
+
 const PestanaPersonas = () => {
   const [personas, setPersonas] = useState([]);
   const [agregando, setAgregando] = useState(false);
@@ -87,8 +89,7 @@ const PestanaPersonas = () => {
   }, [page, clear]);
 
   const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('es-ES', options);
+    return formatearFechaSinDia(dateString);
   };
 
   const handleEditPersona = async (e) => {

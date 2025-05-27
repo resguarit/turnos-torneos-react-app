@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { formatearFechaCorta, formatearHora } from '@/utils/dateUtils';
 
 // Importar componentes
 import EstadoCaja from '@/components/PanelAdmin/Caja/EstadoCaja';
@@ -524,7 +525,7 @@ const PestanaCaja = () => {
                           >
                             <div>
                               <p className="font-medium">{transaction.descripcion}</p>
-                              <p className="text-sm text-muted-foreground">{new Date(transaction.fecha).toLocaleString()}</p>
+                              <p className="text-sm text-muted-foreground">{formatearFechaCorta(transaction.fecha)} {formatearHora(transaction.fecha)}</p>
                               <div className="flex items-center gap-1 mt-1">
                                 {transaction.metodo_pago === 'efectivo' && <Banknote className="h-4 w-4" />}
                                 {transaction.metodo_pago === 'transferencia' && <ArrowDownToLine className="h-4 w-4" />}

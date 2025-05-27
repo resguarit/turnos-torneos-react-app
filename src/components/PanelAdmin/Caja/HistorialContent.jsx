@@ -7,6 +7,7 @@ import SearchComponent from './SearchComponent';
 import ModalTransacciones from './ModalTransacciones';
 import api from '@/lib/axiosConfig';
 import { toast } from 'react-toastify';
+import { formatearFechaCorta, formatearHora } from '@/utils/dateUtils';
 
 const HistorialContent = ({ 
   handleSearch, 
@@ -82,7 +83,7 @@ const HistorialContent = ({
                       <div className="flex items-center gap-2">
                         <Lock className="h-4 w-4" />
                         <span className="font-medium">
-                          Cierre del {new Date(cierre.fecha_cierre).toLocaleString()}
+                          Cierre del {formatearFechaCorta(cierre.fecha_cierre)} {formatearHora(cierre.fecha_cierre)}
                         </span>
                       </div>
                       <div className="flex items-center gap-4">

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import { formatearRangoHorario } from '@/utils/dateUtils';
 
 export const TablaProximaFecha = ({ fecha, partidos, zonaId }) => {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ export const TablaProximaFecha = ({ fecha, partidos, zonaId }) => {
                   <td className="py-2 px-3 text-center text-gray-600">vs</td>
                   <td className="py-2 px-3 text-gray-600">{getTeamName(partido, partido.equipo_visitante_id)}</td>
                   <td className="py-2 px-3 text-center text-gray-600">{partido.cancha?.nro || 'No Definido'}</td>
-                  <td className="py-2 px-3 text-center text-gray-600">{partido.horario?.hora_inicio && partido.horario?.hora_fin ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : "No Definido"}</td>
+                  <td className="py-2 px-3 text-center text-gray-600">{partido.horario?.hora_inicio && partido.horario?.hora_fin ? formatearRangoHorario(partido.horario.hora_inicio, partido.horario.hora_fin) : "No Definido"}</td>
                 </tr>
               ))}
             </tbody>

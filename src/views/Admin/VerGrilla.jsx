@@ -172,7 +172,7 @@ export default function VerGrilla() {
         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
-      const dateStr = new Date().toLocaleString().replace(/[/,: ]/g, '-');
+      const dateStr = format(currentDate, 'yyyy-MM-dd');
       pdf.save(`grilla-${dateStr}.pdf`);
     });
   };

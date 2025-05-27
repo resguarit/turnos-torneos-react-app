@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Eraser, UserCircle, Calendar, CreditCard, DollarSign, ArrowUpDown, FileText, PlusCircle, Banknote, ArrowDownToLine, CalendarDays } from "lucide-react";
+import { Search, Eraser, UserCircle, Calendar, CreditCard, DollarSign, ArrowUpDown, FileText, PlusCircle, Banknote, ArrowDownToLine, CalendarDays, Plus, Filter, X, ChevronLeft, ChevronRight } from "lucide-react";
 import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -7,6 +7,8 @@ import BtnLoading from '@/components/BtnLoading';
 import { useLocation } from 'react-router-dom';
 import AgregarTransaccionModal from '@/components/AgregarTransaccionModal';
 import { decryptRole } from '@/lib/getRole';
+import { formatearFechaCorta, formatearHora } from '@/utils/dateUtils';
+
 const MontoInput = React.memo(({ value, onChange, label, placeholder }) => {
   return (
     <div>
@@ -148,8 +150,7 @@ const PestanaCuentasCorrientes = () => {
   };
 
   const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-    return new Date(dateString).toLocaleDateString('es-ES', options);
+    return `${formatearFechaCorta(dateString)} ${formatearHora(dateString)}`;
   };
 
   const formatMonto = (monto) => {

@@ -15,6 +15,7 @@ import ReservationModal from "@/components/Reserva/ReservationModal";
 import { Header } from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
 import LoadingSinHF from "@/components/LoadingSinHF";
+import { formatearRangoHorario } from '@/utils/dateUtils';
 
 export default function NuevaReserva() {
   /* const [selectedDate, setSelectedDate] = useState(null);
@@ -81,7 +82,7 @@ export default function NuevaReserva() {
       const availabilityStatus = response.data.horarios
         .filter(horario => horario.disponible)
         .map((horario) => {
-          const timeSlot = `${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`;
+          const timeSlot = formatearRangoHorario(horario.hora_inicio, horario.hora_fin);
           const id = horario.id;
           return { id: id, time: timeSlot, status: "libre" };
         });

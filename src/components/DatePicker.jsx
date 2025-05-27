@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar'; // Asegúrate de que esta ruta sea correcta
 import { Button } from '@/components/ui/button'; // Usando el componente Button de ShadCN
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'; // Usando Popover de ShadCN
+import { formatearFechaSinDia } from '@/utils/dateUtils';
 
 export default function DatePicker({ selectedDate, onDateChange }) {
   const [open, setOpen] = useState(false);
@@ -28,7 +29,7 @@ export default function DatePicker({ selectedDate, onDateChange }) {
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button variant="outline" className="w-[240px] justify-start text-left font-normal">
-            {selectedDate ? selectedDate.toLocaleDateString() : 'Seleccionar Fecha'}
+            {selectedDate ? formatearFechaSinDia(selectedDate.toISOString().split('T')[0]) : 'Seleccionar Fecha'}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="p-0">

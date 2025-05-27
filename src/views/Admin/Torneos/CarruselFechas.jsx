@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight, Edit3, Trash2, Clock, CopyPlus } from "lucide-react"
+import { ChevronLeft, ChevronRight, Edit3, Trash2, Clock, CopyPlus, Calendar, Trophy, Users, MapPin } from "lucide-react"
 import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import api from '@/lib/axiosConfig'
@@ -14,6 +14,7 @@ import CrearFechaModal from "../Modals/CrearFechaModal";
 import AgregarPartidoModal from "../Modals/AgregarPartidoModal"; // Importar el modal
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { formatearFechaCorta, formatearRangoHorario } from '@/utils/dateUtils'
 
 export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortController, deporteId }) {
   const [fechas, setFechas] = useState([]);
@@ -263,7 +264,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
   const currentFecha = fechas[currentFechaIndex]
 
   const formattedDate = currentFecha.fecha_inicio
-    ? format(parseISO(currentFecha.fecha_inicio), "dd/MM/yyyy", { locale: es })
+    ? formatearFechaCorta(currentFecha.fecha_inicio)
     : ""
 
   return (
@@ -356,7 +357,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
                 <div className="flex justify-between mt-2 text-sm text-gray-600">
                   <span>Cancha: {partido.cancha?.nro || 'No Definido'}</span>
                   <span>
-                    Hora: {partido.horario?.hora_inicio || 'No Definido'} - {partido.horario?.hora_fin || 'No Definido'}
+                    Hora: {partido.horario?.hora_inicio && partido.horario?.hora_fin ? formatearRangoHorario(partido.horario.hora_inicio, partido.horario.hora_fin) : "No Definido"}
                   </span>
                 </div>
                 <div className="flex justify-between mt-2">

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, Edit, Calendar, Clock, User, CreditCard, DollarSign, Phone, Mail, CalendarDays, Trophy, CalendarClock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { format, parseISO } from 'date-fns';
-import { es } from 'date-fns/locale';
 import api from '@/lib/axiosConfig';
+import { formatearFechaCompleta, formatearRangoHorario } from '@/utils/dateUtils';
 import BtnLoading from '@/components/BtnLoading';
 
 const ModalTurno = ({ isOpen, onClose, turno: turnoInicial }) => {
@@ -124,7 +123,7 @@ const ModalTurno = ({ isOpen, onClose, turno: turnoInicial }) => {
                   <Calendar className="h-5 w-5 text-blue-600" />
                   <div>
                     <span className="font-semibold block text-gray-700">Fecha</span>
-                    <span>{format(parseISO(turno.fecha_turno), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}</span>
+                    <span>{formatearFechaCompleta(turno.fecha_turno)}</span>
                   </div>
                 </div>
 
@@ -132,7 +131,7 @@ const ModalTurno = ({ isOpen, onClose, turno: turnoInicial }) => {
                   <Clock className="h-5 w-5 text-blue-600" />
                   <div>
                     <span className="font-semibold block text-gray-700">Horario</span>
-                    <span>{turno.horario.hora_inicio.slice(0, 5)} - {turno.horario.hora_fin.slice(0, 5)}</span>
+                    <span>{formatearRangoHorario(turno.horario.hora_inicio, turno.horario.hora_fin)}</span>
                   </div>
                 </div>
 

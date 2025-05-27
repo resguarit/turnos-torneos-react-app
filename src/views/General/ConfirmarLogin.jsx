@@ -15,6 +15,7 @@ import Loading from '@/components/BtnLoading';
 import { format, parseISO, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { encryptRole } from '@/lib/getRole';
+import { formatearFechaCompleta, formatearRangoHorario, calcularDuracion } from '@/utils/dateUtils';
 
 export default function ConfirmarLogin() {
   const [formData, setFormData] = useState({
@@ -277,7 +278,7 @@ export default function ConfirmarLogin() {
                             <p className="text-sm text-gray-500">Fecha y Hora</p>
                             <div className="flex full justify-between items-center">
                               <p className="font-medium text-xs md:text-sm">
-                                {isValid(parseISO(selectedDate)) ? format(parseISO(selectedDate), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es }) : 'Fecha inválida'}
+                                {isValid(parseISO(selectedDate)) ? formatearFechaCompleta(selectedDate) : 'Fecha inválida'}
                               </p>
                               <p className="font-medium text-xs md:text-sm">{reservationDetails.horario.hora_inicio} - {reservationDetails.horario.hora_fin} </p>
                             </div>
@@ -288,7 +289,7 @@ export default function ConfirmarLogin() {
                           <div className="w-full">
                             <p className="text-sm text-gray-500">Duración y Cancha</p>
                             <div className="flex w-full justify-between items-center">
-                              <p className="font-medium text-xs md:text-sm">60 min </p>
+                              <p className="font-medium text-xs md:text-sm">{calcularDuracion(reservationDetails.horario.hora_inicio, reservationDetails.horario.hora_fin)}</p>
                               <p className="font-medium text-xs md:text-sm">Cancha {reservationDetails.cancha.nro} - {reservationDetails.cancha.tipo_cancha} </p>
                             </div>
                           </div>

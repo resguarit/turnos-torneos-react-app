@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, PenSquare, Phone, DollarSign, AlertCircle, X } from 'lucide-react';
+import { Trash2, PenSquare, Phone, DollarSign, AlertCircle, X, Eye, Calendar, Clock, User, CheckCircle, XCircle, MinusCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import RegistrarPagoTurnoDialog from './RegistrarPagoTurnoDialog';
+import InfoPagoTurnoDialog from './InfoPagoTurnoDialog';
 import api from '@/lib/axiosConfig';
 import { toast } from 'react-toastify';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import RegistrarPagoEventoDialog from './RegistrarPagoEventoDialog';
+import { formatearFechaCompleta, formatearRangoHorario } from '@/utils/dateUtils';
 
 const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagados }) => {
   const navigate = useNavigate();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
   const [verificandoCaja, setVerificandoCaja] = useState(false);
   const [cajaError, setCajaError] = useState(false);
   const [showPagoEvento, setShowPagoEvento] = useState(false);
@@ -57,6 +60,20 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
     }
   };
 
+  const handlePagoClick = () => {
+    // Si el turno está pagado, mostrar modal de información
+    if (booking.estado === 'Pagado') {
+      setShowInfoModal(true);
+    } else {
+      // Si no está pagado, verificar caja y mostrar modal de registro
+      if (booking.tipo === 'evento') {
+        setShowPagoEvento(true);
+      } else {
+        verificarCajaAbierta();
+      }
+    }
+  };
+
   const fecha_modificacion = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000);
   const fecha_turno = new Date(booking.fecha_turno);
 
@@ -70,7 +87,11 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
         <div className="flex justify-between items-start w-full">
           <div className="flex-1">
             <h3 className="font-semibold text-lg capitalize">{getNombreTurno()}</h3>
-            <p className="text-sm font-medium text-gray-500">{`${booking.horario.hora_inicio} - ${booking.horario.hora_fin}`}</p>
+            <div className="flex items-center space-x-2 text-gray-600">
+              <Clock className="h-4 w-4 text-gray-400" />
+              <span className="font-medium">Horario:</span>
+              <p className="text-sm font-medium text-gray-500">{formatearRangoHorario(booking.horario.hora_inicio, booking.horario.hora_fin)}</p>
+            </div>
             {booking.tipo !== 'torneo' && booking.tipo !== 'evento' && (
               <>
                 <p className="text-sm font-medium text-gray-800">
@@ -94,12 +115,11 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
           </div>
         </div>
         <div className="flex flex-wrap gap-2 w-full mt-2 mb-4">
-          {booking.tipo === 'fijo' && (
+          {booking.tipo === 'fijo' && booking.estado !== 'Cancelado' && (
             <span className="text-center px-3 py-1 bg-blue-400 rounded-xl text-sm">
               {`Turno fijo`}
             </span>
           )}
-          {booking.tipo !== 'fijo' && (
             <span
               className={`text-center px-3 py-1 rounded-xl capitalize text-sm ${
                 booking.estado === 'Pendiente'
@@ -113,7 +133,6 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
             >
               {`Estado: ${booking.estado}`}
             </span>
-          )}
           {/* Mostrar canchas para eventos o para turnos normales */}
           {booking.tipo === 'evento' && booking.canchas && booking.canchas.length > 0 ? (
             booking.canchas.map(c => (
@@ -172,30 +191,36 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
             )}
           </div>
         )}
-        {/* SOLO mostrar el botón si NO está pagado (para eventos) */}
-        {booking.estado !== 'Pagado' &&
-          booking.estado !== 'Cancelado' &&
+        
+        {/* Botón de pago/información - Lógica condicional mejorada */}
+        {booking.estado !== 'Cancelado' &&
           fecha_turno > fecha_modificacion &&
-          booking.tipo !== 'fijo' &&
           (!eventoPagado || booking.tipo !== 'evento') && (
             <button
-              onClick={() => {
-                if (booking.tipo === 'evento') {
-                  setShowPagoEvento(true);
-                } else {
-                  verificarCajaAbierta();
-                }
-              }}
+              onClick={handlePagoClick}
               disabled={verificandoCaja}
-              className="flex rounded-[4px] flex-row gap-2 items-center bg-emerald-500 hover:bg-emerald-600 text-white p-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`flex rounded-[4px] flex-row gap-2 items-center text-white p-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                booking.estado === 'Pagado'
+                  ? 'bg-blue-600 hover:bg-blue-700'
+                  : 'bg-emerald-500 hover:bg-emerald-600'
+              }`}
             >
-              <DollarSign className="h-4 w-4" />
-              {verificandoCaja ? 'Verificando caja...' : 'Registrar Pago'}
+              {booking.estado === 'Pagado' ? (
+                <>
+                  <Eye className="h-4 w-4" />
+                  Ver Información
+                </>
+              ) : (
+                <>
+                  <DollarSign className="h-4 w-4" />
+                  {verificandoCaja ? 'Verificando caja...' : 'Registrar Pago'}
+                </>
+              )}
             </button>
         )}
       </div>
 
-      {/* Modal para registrar pago */}
+      {/* Modal para registrar pago (cuando NO está pagado) */}
       <RegistrarPagoTurnoDialog
         isOpen={showPaymentModal}
         onClose={() => {
@@ -204,6 +229,13 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
         }}
         turno={booking}
         onPagoRegistrado={handlePagoRegistrado}
+      />
+
+      {/* Modal para ver información de pago (cuando SÍ está pagado) */}
+      <InfoPagoTurnoDialog
+        isOpen={showInfoModal}
+        onClose={() => setShowInfoModal(false)}
+        turno={booking}
       />
 
       {/* Dialog para error de caja cerrada */}

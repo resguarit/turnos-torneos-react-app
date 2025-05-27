@@ -262,7 +262,7 @@ export default function ContadorBloqueo() {
                       <p className="text-sm text-gray-500">Fecha y Hora</p>
                       <div className="flex full justify-between items-center">
                         <p className="font-medium text-xs md:text-sm">
-                          {formatearFechaCompleta(reservaData.fecha)}
+                          {reservaData?.fecha ? formatearFechaCompleta(reservaData.fecha) : 'Cargando...'}
                         </p>
                         <p className="font-medium text-xs md:text-sm">
                           {horarioDetails 

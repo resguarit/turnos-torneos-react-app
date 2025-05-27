@@ -121,7 +121,7 @@ const CheckoutSuccess = () => {
               <Calendar className="w-5 h-5 text-gray-500 mt-0.5" />
               <div>
                 <p className="text-sm font-medium">Fecha</p>
-                <p className="text-sm text-gray-600">{formatFecha(turno.fecha_turno)}</p>
+                <p className="text-sm text-gray-600">{turno?.fecha_turno ? formatearFechaCompleta(turno.fecha_turno) : 'Fecha no disponible'}</p>
               </div>
             </div>
 
@@ -130,7 +130,10 @@ const CheckoutSuccess = () => {
               <div>
                 <p className="text-sm font-medium">Horario y Duración</p>
                 <p className="text-sm text-gray-600">
-                  {formatearRangoHorario(turno.horario.hora_inicio, turno.horario.hora_fin)} ({calcularDuracion(turno.horario.hora_inicio, turno.horario.hora_fin)})
+                  {turno?.horario?.hora_inicio && turno?.horario?.hora_fin 
+                    ? `${formatearRangoHorario(turno.horario.hora_inicio, turno.horario.hora_fin)} (${calcularDuracion(turno.horario.hora_inicio, turno.horario.hora_fin)})`
+                    : 'Horario no disponible'
+                  }
                 </p>
               </div>
             </div>

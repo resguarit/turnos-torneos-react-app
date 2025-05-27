@@ -19,7 +19,7 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   // Fix date formatting by using parseISO
-  const fechaFormateada = formatearFechaCompleta(turno.fecha_turno);
+  const fechaFormateada = turno?.fecha_turno ? formatearFechaCompleta(turno.fecha_turno) : 'Fecha no disponible';
   const señaPorcentaje = turno.cancha ? (turno.monto_seña / turno.monto_total) * 100 : 0;
   const navigate = useNavigate();
 

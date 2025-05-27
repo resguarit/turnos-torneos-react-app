@@ -126,7 +126,7 @@ const InfoPagoTurnoDialog = ({ isOpen, onClose, turno }) => {
                 <Calendar className="h-4 w-4 text-gray-500" />
                 <div>
                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha</p>
-                  <p className="text-sm font-semibold text-gray-900">{formatearFechaCompleta(turno.fecha_turno)}</p>
+                  <p className="text-sm font-semibold text-gray-900">{turno?.fecha_turno ? formatearFechaCompleta(turno.fecha_turno) : 'Fecha no disponible'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -134,7 +134,10 @@ const InfoPagoTurnoDialog = ({ isOpen, onClose, turno }) => {
                 <div>
                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Horario</p>
                   <p className="text-sm font-semibold text-gray-900">
-                    {formatearRangoHorario(turno.horario.hora_inicio, turno.horario.hora_fin)}
+                    {turno?.horario?.hora_inicio && turno?.horario?.hora_fin 
+                      ? formatearRangoHorario(turno.horario.hora_inicio, turno.horario.hora_fin)
+                      : 'Horario no disponible'
+                    }
                   </p>
                 </div>
               </div>

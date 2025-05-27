@@ -123,7 +123,7 @@ const ModalTurno = ({ isOpen, onClose, turno: turnoInicial }) => {
                   <Calendar className="h-5 w-5 text-blue-600" />
                   <div>
                     <span className="font-semibold block text-gray-700">Fecha</span>
-                    <span>{formatearFechaCompleta(turno.fecha_turno)}</span>
+                    <span>{turno?.fecha_turno ? formatearFechaCompleta(turno.fecha_turno) : 'No disponible'}</span>
                   </div>
                 </div>
 

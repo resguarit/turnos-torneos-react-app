@@ -270,7 +270,7 @@ const RegistrarPagoTurnoDialog = ({ isOpen, onClose, turno, onPagoRegistrado }) 
               </div>
               <div>
                 <p className="text-sm font-semibold">Fecha:</p>
-                <p className="text-sm">{formatearFechaSinDia(turno.fecha_turno)}</p>
+                <p className="text-sm">{turno?.fecha_turno ? formatearFechaSinDia(turno.fecha_turno) : 'No disponible'}</p>
               </div>
               <div>
                 <p className="text-sm font-semibold">Hora:</p>

@@ -314,7 +314,7 @@ function EditarTurno() {
                 <div>
                   <Label className="text-sm md:text-lg  font-bold mb-1 block">Fecha en que fue reservado:</Label>
                   <div className="p-1 text-sm md:text-base bg-white rounded-[8px] border">
-                    {formatearFechaCompleta(turnoData.fecha_reserva)}
+                    {turnoData?.fecha_reserva ? formatearFechaCompleta(turnoData.fecha_reserva) : 'No disponible'}
                   </div>
                 </div>
                 <div>
@@ -331,13 +331,16 @@ function EditarTurno() {
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Fecha Original</Label>
                   <div className="p-2 bg-gray-50 rounded-lg mt-1">
-                    {formatearFechaSinDia(booking.fecha_turno)}
+                    {booking?.fecha_turno ? formatearFechaSinDia(booking.fecha_turno) : 'No disponible'}
                   </div>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Horario Original</Label>
                   <div className="p-2 bg-gray-50 rounded-lg mt-1">
-                    {formatearRangoHorario(booking.horario.hora_inicio, booking.horario.hora_fin)}
+                    {booking?.horario?.hora_inicio && booking?.horario?.hora_fin 
+                      ? formatearRangoHorario(booking.horario.hora_inicio, booking.horario.hora_fin)
+                      : 'No disponible'
+                    }
                   </div>
                 </div>
                 <div>

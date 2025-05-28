@@ -20,24 +20,26 @@ export const TablasEstadisticasJugadores = ({
       <h3 className="text-lg font-semibold mb-3 ">{titulo}</h3>
       {statsData.length > 0 ? (
         <div>
-          <table className="min-w-full text-sm table-fixed">
-            <thead>
-              <tr className="text-white bg-black">
-                <th className="py-2 px-3 text-left font-medium w-2/5">Jugador</th>
-                <th className="py-2 px-3 text-left font-medium w-2/5">Equipo</th>
-                <th className="py-2 px-3 text-center font-medium w-1/5">{columnaEstadistica}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {showedStatsData.map((item, index) => (
-                <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                  <td className="py-2 px-3 text-gray-700">{item[nombreKey]}</td>
-                  <td className="py-2 px-3 text-gray-700">{item[equipoKey]}</td>
-                  <td className="py-2 px-3 text-center font-semibold text-gray-700">{item[valorKey]}</td>
+          <div className="overflow-x-auto overflow-y-hidden">
+            <table className="min-w-full text-sm table-fixed">
+              <thead>
+                <tr className="text-white bg-black">
+                  <th className="py-2 px-3 text-left font-medium w-2/5 min-w-[120px]">Jugador</th>
+                  <th className="py-2 px-3 text-left font-medium w-2/5 min-w-[100px]">Equipo</th>
+                  <th className="py-2 px-3 text-center font-medium w-1/5 min-w-[80px]">{columnaEstadistica}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {showedStatsData.map((item, index) => (
+                  <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <td className="py-2 px-3 text-gray-700 truncate">{item[nombreKey]}</td>
+                    <td className="py-2 px-3 text-gray-700 truncate">{item[equipoKey]}</td>
+                    <td className="py-2 px-3 text-center font-semibold text-gray-700">{item[valorKey]}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           {statsData.length > 10 && (
             <div className="mt-3 text-center">
               <button 

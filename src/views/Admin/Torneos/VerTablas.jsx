@@ -10,6 +10,7 @@ import { TablasEstadisticasJugadores } from './Tablas/TablasEstadisticasJugadore
 import { TablaSanciones } from './Tablas/TablaSanciones';
 import api from '@/lib/axiosConfig';
 import { toast } from 'react-toastify'; // Import toast for error messages
+import ArañaEliminacionUsuario from './ArañaEliminacionUsuario';
 
 export default function VerTablas() {
   const { zonaId } = useParams();
@@ -202,6 +203,13 @@ export default function VerTablas() {
             </div>
           ) : (
              <p className="text-center text-gray-500 w-full max-w-4xl">No hay próxima fecha programada.</p>
+          )}
+
+          
+          {zonaInfo.formato === 'Eliminatoria' && (
+            <div className="w-full max-w-6xl">
+              <ArañaEliminacionUsuario equipos={zonaInfo.equipos} />
+            </div>
           )}
 
           {/* Estadísticas de Jugadores */}

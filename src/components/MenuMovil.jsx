@@ -191,7 +191,7 @@ const MenuMovil = ({ setMenuOpen }) => {
             {/* Crear un array de enlaces de navegación, reemplazando "Reservas" por "Continuar Reserva" cuando sea necesario */}
             {[
               { label: "Inicio", path: "/" },
-              //{ label: "Torneos", path: "/torneos-admi" },
+              { label: "Torneos", path: userRole === "admin" || userRole === "moderador" ? "/torneos-admi" : "/torneos-user" },
               // Reemplazar "Reservas" por "Continuar Reserva" cuando hay una reserva activa
               ...(hasActiveReservation && !isReservationPage
                 ? [{ label: "Continuar Reserva", path: "/bloqueo-reserva", onClick: handleReturnToReservation }]

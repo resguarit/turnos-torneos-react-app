@@ -161,6 +161,7 @@ export function Header() {
                 Reservar
               </Link>
             )}
+            {/* <Link to="/reglamento" className="hover:opacity-80">
             <Link to="/reglamento" className="hover:opacity-80">
               Reglamento
             </Link>
@@ -168,6 +169,7 @@ export function Header() {
             <Link to="/premios" className="hover:opacity-80">
               Premios
             </Link>
+            */}
 
             {username ? (
               <div className="relative">

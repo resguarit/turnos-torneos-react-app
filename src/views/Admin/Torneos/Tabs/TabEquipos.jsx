@@ -1,6 +1,20 @@
 import { Users, Edit3, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import ConfirmDeleteModal from '@/views/Admin/Modals/ConfirmDeleteModal';
 
 export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handleReemplazarEquipo, handleNavigateToVerPagos }) {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [equipoAEliminar, setEquipoAEliminar] = useState(null);
+  const [loadingDelete, setLoadingDelete] = useState(false);
+
+  const handleConfirmDelete = async () => {
+    setLoadingDelete(true);
+    await handleEliminarEquipo(equipoAEliminar);
+    setLoadingDelete(false);
+    setShowDeleteModal(false);
+    setEquipoAEliminar(null);
+  };
+
   return (
     <div className="bg-white rounded-[8px] shadow-md p-4">
       <div className="w-full flex items-center justify-between mb-4">
@@ -63,8 +77,11 @@ export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handl
                             <Edit3 className="w-5" />
                           </button>
                           <button
-                            onClick={() => handleEliminarEquipo(equipo.id)}
-                            className=" py-1 rounded-[6px] text-sm"
+                            onClick={() => {
+                              setEquipoAEliminar(equipo.id);
+                              setShowDeleteModal(true);
+                            }}
+                            className="py-1 rounded-[6px] text-sm"
                           >
                             <Trash2 className="w-5" />
                           </button>
@@ -78,6 +95,17 @@ export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handl
           </div>
         )}
       </div>
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
+        loading={loadingDelete}
+        accionTitulo="eliminación"
+        accion="eliminar"
+        pronombre="el"
+        entidad="equipo"
+        accionando="Eliminando"
+      />
     </div>
   );
 }

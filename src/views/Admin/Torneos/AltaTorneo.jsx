@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useTorneos } from '@/context/TorneosContext';
 import { useDeportes } from '@/context/DeportesContext'; // <-- Importa el contexto
+import ConfirmModal from '../Modals/ConfirmModal'; 
 
 export default function AltaTorneo() {
   const { id } = useParams();
@@ -25,6 +26,8 @@ export default function AltaTorneo() {
   const [modalVisible, setModalVisible] = useState(false);
   const [nuevoDeporte, setNuevoDeporte] = useState({ nombre: '', jugadores_por_equipo: '', duracion_turno: '' });
   const navigate = useNavigate();
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingSubmit, setPendingSubmit] = useState(false);
 
   useEffect(() => {
     const fetchTorneo = async () => {
@@ -57,6 +60,17 @@ export default function AltaTorneo() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (id) {
+      setShowConfirmModal(true);
+      setPendingSubmit(true);
+    } else {
+      await submitZona();
+    }
+  };
+
+
+  const submitZona = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!formData.deporte_id) {
       toast.error('Debe seleccionar un deporte');
       return;
@@ -78,7 +92,18 @@ export default function AltaTorneo() {
       toast.error('Error al guardar el torneo');
     } finally {
       setLoading(false);
+      setShowConfirmModal(false);
+      setPendingSubmit(false);
     }
+  };
+
+  const handleConfirmUpdate = async () => {
+    await submitZona();
+  };
+
+  const handleCancelUpdate = () => {
+    setShowConfirmModal(false);
+    setPendingSubmit(false);
   };
 
   const handleChange = (e) => {
@@ -223,6 +248,17 @@ export default function AltaTorneo() {
         </div>
       </main>
       <Footer />
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onClose={handleCancelUpdate}
+        onConfirm={handleConfirmUpdate}
+        loading={loading}
+        accionTitulo="actualización"
+        accion="actualizar"
+        pronombre="el"
+        entidad="torneo"
+        accionando="Actualizando"
+      />
 
       {/* Modal para crear un nuevo deporte */}
       {modalVisible && (

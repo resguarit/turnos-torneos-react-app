@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'; // Import useCallback
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import { Input } from '@/components/ui/input';
-import { ChevronLeft, PlusCircle, Trash2, Check, Edit3, Search } from 'lucide-react'; // Add Search icon
+import { ChevronLeft, PlusCircle, Trash2, Check, Edit3, Search, X } from 'lucide-react'; // Add Search icon
 import BtnLoading from '@/components/BtnLoading';
 import { debounce } from 'lodash'; // Import debounce
 import { toast, ToastContainer } from 'react-toastify'; // Import ToastContainer
@@ -18,6 +18,7 @@ export default function Jugadores() {
   const [loading, setLoading] = useState(false);
   const [jugadoresNuevos, setJugadoresNuevos] = useState([]);
   const [jugadorEditando, setJugadorEditando] = useState(null);
+  const [jugadorEditandoBackup, setJugadorEditandoBackup] = useState(null); // Guarda el estado original
   const [equipo, setEquipo] = useState({});
   const { equipoId } = useParams();
   const location = useLocation();
@@ -186,14 +187,42 @@ export default function Jugadores() {
     }
   };
 
+  const handleEditarJugador = (id) => {
+    const jugador = jugadores.find(j => j.id === id);
+    setJugadorEditando(id);
+    setJugadorEditandoBackup({ ...jugador }); // Guarda el estado original para cancelar
+  };
+
+  const handleCancelarEdicion = () => {
+    // Restaura el jugador original
+    setJugadores(jugadores.map(j =>
+      j.id === jugadorEditando ? { ...jugadorEditandoBackup } : j
+    ));
+    setJugadorEditando(null);
+    setJugadorEditandoBackup(null);
+  };
+
   const handleActualizarJugador = async (id) => {
     const jugador = jugadores.find((jugador) => jugador.id === id);
+    // Si no se editó nada, no actualices
+    if (
+      jugador.nombre === jugadorEditandoBackup.nombre &&
+      jugador.apellido === jugadorEditandoBackup.apellido &&
+      jugador.dni === jugadorEditandoBackup.dni &&
+      jugador.telefono === jugadorEditandoBackup.telefono &&
+      jugador.fecha_nacimiento === jugadorEditandoBackup.fecha_nacimiento
+    ) {
+      setJugadorEditando(null);
+      setJugadorEditandoBackup(null);
+      return;
+    }
     try {
       setLoading(true);
       const response = await api.put(`/jugadores/${id}`, { ...jugador, equipo_id: equipoId });
       if (response.status === 200) {
         setJugadores(jugadores.map((jugador) => (jugador.id === id ? { ...response.data.jugador, editando: false } : jugador)));
         setJugadorEditando(null);
+        setJugadorEditandoBackup(null);
       }
     } catch (error) {
       console.error('Error updating player:', error);
@@ -202,20 +231,20 @@ export default function Jugadores() {
     }
   };
 
-  const handleEditarJugador = (id) => {
-    setJugadorEditando(id);
-  };
-
   const handleEliminarJugador = async () => {
   try {
     setLoading(true);
-    await api.delete(`/jugadores/${jugadorAEliminar}`);
+    await api.post(`/equipos/${equipoId}/jugadores/${jugadorAEliminar}/desvincular-jugador`, {
+      jugador_id: jugadorAEliminar,
+      equipo_id: equipoId,
+    });
     setJugadores(jugadores.filter((jugador) => jugador.id !== jugadorAEliminar));
     setShowDeleteModal(false);
     setJugadorAEliminar(null);
+    toast.success('Jugador desvinculado del equipo.');
   } catch (error) {
-    console.error('Error deleting player:', error);
-    toast.error('Error al eliminar el jugador.');
+    console.error('Error desvinculando jugador:', error);
+    toast.error('Error al desvincular el jugador del equipo.');
   } finally {
     setLoading(false);
   }
@@ -352,32 +381,43 @@ export default function Jugadores() {
                             <td className="py-3 px-4">
                               <div className="flex justify-center space-x-2">
                                 {jugadorEditando === jugador.id ? (
-                                  <button
-                                    onClick={() => handleActualizarJugador(jugador.id)}
-                                    className="p-1.5 bg-green-100 text-green-600 hover:bg-green-200 rounded-full transition-colors"
-                                    title="Confirmar"
-                                  >
-                                    <Check className="h-5 w-5" />
-                                  </button>
+                                  <>
+                                    <button
+                                      onClick={() => handleActualizarJugador(jugador.id)}
+                                      className="p-1.5 bg-green-100 text-green-600 hover:bg-green-200 rounded-full transition-colors"
+                                      title="Confirmar"
+                                    >
+                                      <Check className="h-5 w-5" />
+                                    </button>
+                                    <button
+                                      onClick={handleCancelarEdicion}
+                                      className="p-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-full transition-colors"
+                                      title="Cancelar edición"
+                                    >
+                                      <X className="h-5 w-5" />
+                                    </button>
+                                  </>
                                 ) : (
-                                  <button
-                                    onClick={() => handleEditarJugador(jugador.id)}
-                                    className="p-1.5 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-full transition-colors"
-                                    title="Editar"
-                                  >
-                                    <Edit3 className="h-5 w-5" />
-                                  </button>
+                                  <>
+                                    <button
+                                      onClick={() => handleEditarJugador(jugador.id)}
+                                      className="p-1.5 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-full transition-colors"
+                                      title="Editar"
+                                    >
+                                      <Edit3 className="h-5 w-5" />
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setJugadorAEliminar(jugador.id);
+                                        setShowDeleteModal(true);
+                                      }}
+                                      className="p-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-full transition-colors"
+                                      title="Eliminar"
+                                    >
+                                      <Trash2 className="h-5 w-5" />
+                                    </button>
+                                  </>
                                 )}
-                                <button
-                                  onClick={() => {
-                                    setJugadorAEliminar(jugador.id);
-                                    setShowDeleteModal(true);
-                                  }}
-                                  className="p-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-full transition-colors"
-                                  title="Eliminar"
-                                >
-                                  <Trash2 className="h-5 w-5" />
-                                </button>
                               </div>
                             </td>
                           </tr>

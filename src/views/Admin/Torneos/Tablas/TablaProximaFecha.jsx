@@ -47,7 +47,7 @@ export const TablaProximaFecha = ({ fecha, partidos, zonaId }) => {
       </div>
       <button
         onClick={() => navigate(`/ver-fixture/${zonaId}`)}
-        className='justify-start w-full text-sm items-center text-gray-500 flex mt-2 hover:text-gray-600'
+        className='justify-start w-full text-sm items-center text-gray-500 flex mt-3 hover:text-gray-600'
       >
         Ver Fixture Completo <ArrowRight size={16} />
       </button>

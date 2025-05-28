@@ -97,7 +97,7 @@ export default function ArañaEliminacion({ equipos }) {
       <p className="text-xs mb-4 text-green-700 bg-green-200 p-1 border-l-2 border-green-500">Para avanzar a la siguiente ronda, debes seleccionar un ganador para cada partido de la ronda actual. Una vez seleccionados todos los ganadores, se generará automáticamente la nueva fecha con los nuevos cruces.</p>
       <div className="flex overflow-x-auto justify-center gap-8 p-4">
         {rounds.map((round, roundIndex) => (
-          <div key={round.id} className="flex flex-col gap-4">
+          <div key={round.id} className="flex flex-col gap-4 justify-center">
             <div className="text-center font-semibold ">{round.nombre || 'No definido'}</div>            
               <div className="flex flex-col gap-6">
               {round.matches.map((match, matchIndex) => (

@@ -131,13 +131,13 @@ export default function AltaTorneo() {
           </button>
         </div>
         <div className="bg-white text-black p-4 rounded-xl shadow-lg w-1/2">
-          <h2 className="text-2xl font-sans font-medium mb-1">{id ? 'Editar Torneo' : 'Crear Nuevo Torneo'}</h2>
+          <h2 className="text-2xl font-medium mb-1">{id ? 'Editar Torneo' : 'Crear Nuevo Torneo'}</h2>
           <p className="mb-4 text-sm text-gray-500">Complete los datos para {id ? 'editar el' : 'crear un nuevo'} torneo</p>
           <form className="flex flex-col space-y-3" onSubmit={handleSubmit}>
             <div>
-              <label className="font-medium font-sans text-lg">Nombre del Torneo:</label>
+              <label className="font-medium ">Nombre del Torneo:</label>
               <input
-                className="border-gray-300 border w-full px-2 rounded-xl"
+                className="border-gray-300 border w-full p-1 rounded-[6px]"
                 name="nombre"
                 value={formData.nombre}
                 onChange={handleChange}
@@ -145,9 +145,9 @@ export default function AltaTorneo() {
               />
             </div>
             <div>
-              <label className="font-medium font-sans text-lg">Año:</label>
+              <label className="font-medium ">Año:</label>
               <select
-                className="border-gray-300 border w-full p-1 rounded-xl"
+                className="border-gray-300 border w-full p-1 py-[5px] rounded-[6px]"
                 name="año"
                 value={formData.año}
                 onChange={handleChange}
@@ -161,9 +161,9 @@ export default function AltaTorneo() {
               </select>
             </div>
             <div>
-              <label className="font-medium font-sans text-lg">Deporte:</label>
+              <label className="font-medium ">Deporte:</label>
               <select
-                className="border-gray-300 border w-full p-1 rounded-xl"
+                className="border-gray-300 border w-full p-1 py-[5px] rounded-[6px]"
                 name="deporte_id"
                 value={formData.deporte_id}
                 onChange={(e) => {
@@ -180,17 +180,17 @@ export default function AltaTorneo() {
                 </option>
                 {deportes.map((deporte) => (
                   <option key={deporte.id} value={deporte.id}>
-                    {deporte.nombre} ({deporte.jugadores_por_equipo} jugadores por equipo)
+                    {deporte.nombre} {deporte.jugadores_por_equipo}
                   </option>
                 ))}
-                <option value="nuevo">+ Nuevo Deporte</option>
+                <option className="bg-gray-300" value="nuevo">+ Nuevo Deporte</option>
               </select>
             </div>
             <div>
-              <label className="font-medium font-sans text-lg">Precio Inscripción:</label>
+              <label className="font-medium">Precio Inscripción:</label>
               <input
                 type="number"
-                className="border-gray-300 border w-full px-2 rounded-xl"
+                className="border-gray-300 border w-full p-1 rounded-[6px]"
                 name="precio_inscripcion"
                 value={formData.precio_inscripcion}
                 onChange={handleChange}
@@ -199,10 +199,10 @@ export default function AltaTorneo() {
               />
             </div>
             <div>
-              <label className="font-medium font-sans text-lg">Precio por Fecha:</label>
+              <label className="font-medium">Precio por Fecha:</label>
               <input
                 type="number"
-                className="border-gray-300 border w-full px-2 rounded-xl"
+                className="border-gray-300 border w-full p-1 rounded-[6px]"
                 name="precio_por_fecha"
                 value={formData.precio_por_fecha}
                 onChange={handleChange}

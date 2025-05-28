@@ -8,6 +8,7 @@ import BtnLoading from '@/components/BtnLoading';
 import { toast } from 'react-toastify'; // Importar react-toastify
 import 'react-toastify/dist/ReactToastify.css'; // Importar estilos de react-toastify
 import { useTorneos } from '@/context/TorneosContext';
+import ConfirmModal from '../Modals/ConfirmModal';
 
 export default function AltaZona() {
   const { id, torneoId } = useParams(); // Obtener el ID de la zona y el torneo desde la URL
@@ -20,6 +21,8 @@ export default function AltaZona() {
     año: new Date().getFullYear(),
     torneo_id: torneoId || '', // Asignar el torneo_id desde la URL
   });
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingSubmit, setPendingSubmit] = useState(false);
 
   useEffect(() => {
     const fetchZona = async () => {
@@ -50,26 +53,44 @@ export default function AltaZona() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (id) {
+      setShowConfirmModal(true);
+      setPendingSubmit(true);
+    } else {
+      await submitZona();
+    }
+  };
+
+  const submitZona = async () => {
     try {
       setLoading(true);
       if (id) {
-        // Editar zona
         await api.put(`/zonas/${id}`, formData);
-        toast.success('Zona actualizada correctamente'); // Mostrar éxito con toastify
+        toast.success('Zona actualizada correctamente');
       } else {
-        // Crear nueva zona
         await api.post('/zonas', formData);
-        toast.success('Zona creada correctamente'); // Mostrar éxito con toastify
+        toast.success('Zona creada correctamente');
       }
       const torneosResponse = await api.get('/torneos');
       setTorneos(torneosResponse.data);
       navigate(`/zonas-admi/${formData.torneo_id}`);
     } catch (error) {
       console.error('Error saving zona:', error);
-      toast.error('Error al guardar la zona'); // Mostrar error con toastify
+      toast.error('Error al guardar la zona');
     } finally {
       setLoading(false);
+      setShowConfirmModal(false);
+      setPendingSubmit(false);
     }
+  };
+
+    const handleConfirmUpdate = async () => {
+    await submitZona();
+  };
+
+    const handleCancelUpdate = () => {
+    setShowConfirmModal(false);
+    setPendingSubmit(false);
   };
 
   const handleChange = (e) => {
@@ -162,6 +183,17 @@ export default function AltaZona() {
         </div>
       </main>
       <Footer />
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onClose={handleCancelUpdate}
+        onConfirm={handleConfirmUpdate}
+        loading={loading}
+        accionTitulo="actualización"
+        accion="actualizar"
+        pronombre="la"
+        entidad="zona"
+        accionando="Actualizando"
+      />
     </div>
   );
 }

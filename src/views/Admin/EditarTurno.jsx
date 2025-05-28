@@ -376,7 +376,7 @@ function EditarTurno() {
                       <SelectValue placeholder="Seleccionar deporte" />
                     </SelectTrigger>
                     <SelectContent className="bg-white border shadow-lg text-sm md:text-base">
-                      <ScrollArea className="h-[200px]">
+                      <ScrollArea className="h-fit">
                         {deportes.map((deporte) => (
                           <SelectItem 
                             key={deporte.id} 
@@ -459,7 +459,7 @@ function EditarTurno() {
                       <SelectValue placeholder="Seleccionar cancha" />
                     </SelectTrigger>
                     <SelectContent className="bg-white text-sm md:text-base border shadow-lg">
-                      <ScrollArea className="h-[200px]">
+                      <ScrollArea className="h-fit">
                         {canchaOptions.map((cancha) => (
                           <SelectItem 
                             key={cancha.id} 

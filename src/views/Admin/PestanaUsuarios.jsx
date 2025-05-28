@@ -565,7 +565,7 @@ const PestanaUsuarios = () => {
                     <div className="flex items-center space-x-2 text-gray-600">
                       <Phone className="h-4 w-4 text-gray-400" />
                       <span className="font-bold">Teléfono: </span>
-                      <span>{usuario.telefono}</span>
+                      <span>{usuario.persona.telefono}</span>
                     </div>
 
                     <div className="flex items-center space-x-2 text-gray-600">

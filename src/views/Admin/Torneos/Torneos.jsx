@@ -16,7 +16,9 @@ export default function Torneos() {
   const [loadingZonas, setLoadingZonas] = useState(false);
   const [searchYear, setSearchYear] = useState('');
   const [modalFinalizarOpen, setModalFinalizarOpen] = useState(false); // solo para mostrar/ocultar modal
+  const [modalReactivarOpen, setModalReactivarOpen] = useState(false); // solo para mostrar/ocultar modal
   const [torneoIdFinalizar, setTorneoIdFinalizar] = useState(null);    // guarda el id del torneo
+  const [torneoIdReactivar, setTorneoIdReactivar] = useState(null);    // guarda el id del torneo
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -55,6 +57,26 @@ export default function Torneos() {
       }
     } catch (error) {
       toast.error('Error al finalizar el torneo');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const reactivarTorneo = async (torneoId) => {
+    try {
+      setLoading(true);
+      const response = await api.put(`/torneos/${torneoId}`, { activo: true });
+      if (response.data.status === 200) {
+        toast.success('Torneo reactivado correctamente');
+        setModalReactivarOpen(false);
+        // Refrescar torneos en el contexto
+        const torneosResponse = await api.get('/torneos');
+        setTorneos(torneosResponse.data);
+      } else {
+        toast.error(response.data.message || 'Error al reactivar el torneo');
+      }
+    } catch (error) {
+      toast.error('Error al reactivar el torneo');
     } finally {
       setLoading(false);
     }
@@ -129,12 +151,17 @@ export default function Torneos() {
                       </button>
                       <button
                         onClick={() => {
-                          setTorneoIdFinalizar(torneo.id);
-                          setModalFinalizarOpen(true);
+                          if (torneo.activo) {
+                            setTorneoIdFinalizar(torneo.id);
+                            setModalFinalizarOpen(true);
+                          } else {
+                            setTorneoIdReactivar(torneo.id);
+                            setModalReactivarOpen(true);
+                          }
                         }}
-                        className="bg-red-500 text-white px-4 py-2 rounded"
+                        className={`text-white px-4 py-2 rounded ${torneo.activo ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
                       >
-                        Finalizar
+                        {torneo.activo ? 'Finalizar' : 'Reactivar'}
                       </button>
                     </div>
                   </CardContent>
@@ -155,6 +182,17 @@ export default function Torneos() {
                 pronombre="este"
                 entidad="torneo"
                 accionando="Finalizando"
+      />
+      <ConfirmDeleteModal 
+                isOpen={modalReactivarOpen}
+                onClose={() => setModalReactivarOpen(false)}
+                onConfirm={() => reactivarTorneo(torneoIdReactivar)}
+                loading={loading}
+                accionTitulo="Activación"
+                accion="activar"
+                pronombre="este"
+                entidad="torneo"
+                accionando="Reactivando"
       />
     </div>
   );

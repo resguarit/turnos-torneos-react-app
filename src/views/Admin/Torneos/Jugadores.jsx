@@ -10,6 +10,7 @@ import { debounce } from 'lodash'; // Import debounce
 import { toast, ToastContainer } from 'react-toastify'; // Import ToastContainer
 import 'react-toastify/dist/ReactToastify.css';
 import { useLocation } from 'react-router-dom';
+import ConfirmDeleteModal from '@/views/Admin/Modals/ConfirmDeleteModal';
 
 
 export default function Jugadores() {
@@ -26,6 +27,8 @@ export default function Jugadores() {
   const [searchingDniForId, setSearchingDniForId] = useState(null); // ID of the new player row being searched
   const [equipoCargado, setEquipoCargado] = useState(false); // Nuevo estado para verificar si el equipo está cargado
   const navigate = useNavigate();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [jugadorAEliminar, setJugadorAEliminar] = useState(null);
 
   useEffect(() => {
     const fetchJugadoresYEquipo = async () => {
@@ -203,17 +206,20 @@ export default function Jugadores() {
     setJugadorEditando(id);
   };
 
-  const handleEliminarJugador = async (id) => {
-    try {
-      setLoading(true);
-      await api.delete(`/jugadores/${id}`);
-      setJugadores(jugadores.filter((jugador) => jugador.id !== id));
-    } catch (error) {
-      console.error('Error deleting player:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleEliminarJugador = async () => {
+  try {
+    setLoading(true);
+    await api.delete(`/jugadores/${jugadorAEliminar}`);
+    setJugadores(jugadores.filter((jugador) => jugador.id !== jugadorAEliminar));
+    setShowDeleteModal(false);
+    setJugadorAEliminar(null);
+  } catch (error) {
+    console.error('Error deleting player:', error);
+    toast.error('Error al eliminar el jugador.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (loading) {
     return (
@@ -363,7 +369,10 @@ export default function Jugadores() {
                                   </button>
                                 )}
                                 <button
-                                  onClick={() => handleEliminarJugador(jugador.id)}
+                                  onClick={() => {
+                                    setJugadorAEliminar(jugador.id);
+                                    setShowDeleteModal(true);
+                                  }}
                                   className="p-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-full transition-colors"
                                   title="Eliminar"
                                 >
@@ -491,6 +500,17 @@ export default function Jugadores() {
       </main>
       <Footer />
       <ToastContainer />
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleEliminarJugador}
+        loading={loading}
+        accionTitulo="eliminación"
+        accion="eliminar"
+        pronombre="al"
+        entidad="jugador"
+        accionando="Eliminando"
+      />
     </div>
   );
 }

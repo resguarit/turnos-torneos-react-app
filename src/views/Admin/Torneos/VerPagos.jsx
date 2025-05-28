@@ -27,7 +27,11 @@ export default function VerPagos() {
   const [valorFecha, setValorFecha] = useState(0);
   const [inscripcionPagada, setInscripcionPagada] = useState(false);
   const [estadoPagosPorFecha, setEstadoPagosPorFecha] = useState([]);
-  const [metodosPago, setMetodosPago] = useState([]); // State for payment methods
+  const [metodosPago, setMetodosPago] = useState([
+    { id: 1, nombre: 'Efectivo' },
+    { id: 2, nombre: 'Transferencia' },
+    { id: 3, nombre: 'Tarjeta' },
+  ]); // Setea métodos de pago fijos
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState(""); // State for selected payment method
 
   useEffect(() => {
@@ -46,13 +50,11 @@ export default function VerPagos() {
         const inscripcionResponse = await api.get(`/equipos/${equipoId}/torneos/${torneoId}/pago-inscripcion`);
         setInscripcionPagada(!!inscripcionResponse.data.transaccion);
 
-        // Fetch payment methods
-        const metodosPagoResponse = await api.get('/metodos-pago'); // Adjust endpoint if needed
-        setMetodosPago(metodosPagoResponse.data);
+        // NO traigas métodos de pago del back, ya están seteados arriba
+        // setMetodosPago([...]);
 
       } catch (error) {
         console.error("Error fetching data:", error);
-        // Handle specific errors if needed (e.g., show toast notification)
       } finally {
         setLoading(false);
       }
@@ -242,10 +244,17 @@ export default function VerPagos() {
                 </div>
                 {/* Fecha Option */}
                 <div className="flex items-start space-x-3 space-y-0">
-                  <RadioGroupItem value="fecha" id="fecha" disabled={!estadoPagosPorFecha.some(p => !p.transaccion)} /> {/* Disable if no pending dates */}
+                  <RadioGroupItem
+                    value="fecha"
+                    id="fecha"
+                    disabled={!((estadoPagosPorFecha || []).some(p => !p.transaccion))}
+                  /> {/* Disable if no pending dates */}
                   <div className="grid gap-1.5 w-full">
-                    <Label htmlFor="fecha" className={`font-medium text-base ${!estadoPagosPorFecha.some(p => !p.transaccion) ? 'text-gray-400 cursor-not-allowed' : ''}`}>
-                      Pago por Fecha {!estadoPagosPorFecha.some(p => !p.transaccion) ? '(Todas Pagadas)' : ''}
+                    <Label
+                      htmlFor="fecha"
+                      className={`font-medium text-base ${!((estadoPagosPorFecha || []).some(p => !p.transaccion)) ? 'text-gray-400 cursor-not-allowed' : ''}`}
+                    >
+                      Pago por Fecha {!((estadoPagosPorFecha || []).some(p => !p.transaccion)) ? '(Todas Pagadas)' : ''}
                     </Label>
                     <div className="flex items-center mb-2">
                       <Calendar className="mr-2 h-4 w-4 text-gray-500" />

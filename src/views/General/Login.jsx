@@ -106,7 +106,7 @@ const Login = () => {
                                         placeholder="Email o DNI"
                                         value={formData.identifier}
                                         onChange={handleChange}
-                                        className={`w-full rounded-xl text-sm p-2 border-2 ${
+                                        className={`w-full rounded-[6px] text-sm p-1 px-2 border ${
                                             inputErrors.identifier ? 'border-red-500' : 'border-gray-200'
                                         }`}
                                         required
@@ -119,7 +119,7 @@ const Login = () => {
                                         placeholder="Contraseña"
                                         value={formData.password}
                                         onChange={handleChange}
-                                        className={`w-full rounded-xl text-sm p-2 border-2 ${
+                                        className={`w-full rounded-[6px] text-sm p-1 px-2 border ${
                                             inputErrors.password ? 'border-red-500' : 'border-gray-200'
                                         }`}
                                         required
@@ -137,7 +137,7 @@ const Login = () => {
                                 )}
                                 <button 
                                     type="submit" 
-                                    className="w-full bg-naranja text-lg font-medium rounded-xl p-2 hover:bg-naranja/90 text-white transition-colors" 
+                                    className="w-full bg-naranja font-medium rounded-xl p-2 hover:bg-naranja/90 text-white transition-colors" 
                                     disabled={loading}
                                 >
                                     {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}

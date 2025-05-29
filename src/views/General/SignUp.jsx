@@ -218,7 +218,7 @@ function SignUp() {
                                 </div>
                             )}
                             <div className="flex justify-center pt-3">
-                                <button type="submit" className="w-full bg-naranja text-base font-medium rounded-xl p-2 hover:bg-naranja/90 text-white" disabled={loading}>
+                                <button type="submit" className="w-full bg-naranja font-medium rounded-xl p-2 hover:bg-naranja/90 text-white" disabled={loading}>
                                     {loading ? 'Registrando Usuario...' : 'Registrarme'}
                                 </button>
                             </div>

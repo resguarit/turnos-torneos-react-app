@@ -514,7 +514,7 @@ export default function ResultadoPartido() {
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => setVerEquipo(1)}
-                className={`rounded-[8px] px-3 py-2 font-medium transition-colors shadow-sm ${
+                className={`rounded-[6px] px-3 py-2 font-medium transition-colors shadow-sm ${
                   verEquipo === 1
                     ? "bg-blue-600 text-white hover:bg-blue-700"
                     : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
@@ -524,7 +524,7 @@ export default function ResultadoPartido() {
               </button>
               <button
                 onClick={() => setVerEquipo(2)}
-                className={`rounded-[8px] px-3 py-2 font-medium transition-colors shadow-sm ${
+                className={`rounded-[6px] px-3 py-2 font-medium transition-colors shadow-sm ${
                   verEquipo === 2
                     ? "bg-blue-600 text-white hover:bg-blue-700"
                     : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
@@ -536,14 +536,14 @@ export default function ResultadoPartido() {
             <div className='flex gap-3'>
               <button
                 onClick={() => setModalSanciones(true)}
-                className="rounded-[8px] px-3 py-2 bg-red-500 text-white font-medium hover:bg-red-600 transition-colors shadow-sm flex items-center gap-1"
+                className="rounded-[6px] px-3 py-2 bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm flex items-center gap-1"
               >
                 <span className="text-lg">+</span> Cargar Sanciones
               </button>
               <button
                 onClick={handleAddJugador}
                 disabled={jugadoresEnAlta.length > 0}
-                className="rounded-[8px] px-3 py-2 bg-black text-white font-medium hover:bg-gray-900 transition-colors shadow-sm flex items-center gap-1"
+                className="rounded-[6px] px-3 py-2 bg-black text-white hover:bg-gray-900 transition-colors shadow-sm flex items-center gap-1"
               >
                 <span className="text-lg">+</span> Agregar Jugador
               </button>
@@ -641,13 +641,13 @@ export default function ResultadoPartido() {
                       <div className="flex justify-center space-x-2">
                         <button
                           onClick={() => handleConfirmAlta(jugador.id)}
-                          className="bg-green-600 text-white rounded-[6px] p-1.5 hover:bg-green-700 transition-colors"
+                          className="bg-green-200 text-green-600 rounded-[6px] p-1 px-3 hover:bg-green-500 hover:text-white transition-colors"
                         >
                           ✓
                         </button>
                         <button
                           onClick={() => handleCancelAlta(jugador.id)}
-                          className="bg-red-600 text-white rounded-[6px] p-1.5 hover:bg-red-700 transition-colors"
+                          className="bg-red-200 text-red-600 rounded-[6px] p-1 px-3 hover:bg-red-500 hover:text-white transition-colors"
                         >
                           ✕
                         </button>
@@ -910,7 +910,7 @@ export default function ResultadoPartido() {
               {!chargingMode && Object.keys(originalEstadisticas).length === 0 && (
                 <button
                   onClick={() => setChargingMode(true)}
-                  className="px-4 py-2.5 bg-green-600 text-white font-medium rounded-[8px] shadow-sm hover:bg-green-700 transition-colors"
+                  className="px-3 py-2 bg-green-600 text-white rounded-[6px] shadow-sm hover:bg-green-700 transition-colors"
                   disabled={jugadoresEnAlta.length > 0}
                 >
                   Cargar Resultados

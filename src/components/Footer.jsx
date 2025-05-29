@@ -7,7 +7,7 @@ export function Footer() {
 const anio = new Date().getFullYear();
 
   return (
-    <footer className="bg-footer py-3 px-2 sm:px-6 lg:py-4">
+    <footer className="bg-zinc-800 py-3 px-2 sm:px-6 lg:py-4">
       <div className="w-full  mx-auto grid grid-cols-3 items-center">
         {/* Logo Section - Left */}
         <Link to="https://resguarit.com.ar/" target="_blank" className="">

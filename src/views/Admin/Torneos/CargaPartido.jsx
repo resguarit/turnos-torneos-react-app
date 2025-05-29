@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import { Button } from '@/components/ui/button';
 import api from '@/lib/axiosConfig';
@@ -111,17 +111,23 @@ export default function CargaPartido() {
   return (
     <div className="min-h-screen flex flex-col justify-start bg-gray-100 font-inter">
       <Header />
+      
       <main className="max-w-7xl lg:max-w-full p-6 grow">
-        <BackButton />
+        <div className="w-full flex mb-4">
+          <button onClick={() => navigate('/torneos-admi')} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
+            <ChevronLeft className="w-5" /> Atrás
+          </button>
+        </div>
+        
         <h1 className="text-xl font-bold mb-4 lg:text-2xl">Cargar Partido</h1>
 
-        <div className="space-y-4 mb-6">
+        <div className="grid grid-cols-2 gap-32 w-full  mb-6">
           <div>
-            <label className="block font-semibold font-sans mb-1 lg:text-xl">
+            <label className="block font-semibold  mb-1 lg:text-xl">
               Torneo:
             </label>
             <select
-              className="w-1/2 border border-gray-300 p-1 lg:text-lg"
+              className="w-full border border-gray-300 p-1  rounded-[6px]"
               style={{ borderRadius: '6px' }}
               value={selectedTorneo}
               onChange={handleTorneoChange}
@@ -137,14 +143,15 @@ export default function CargaPartido() {
             </select>
           </div>
           <div>
-            <label className="block font-semibold font-sans mb-1 lg:text-xl">
+            <label className="block font-semibold  mb-1 lg:text-xl">
               Zona:
             </label>
             <select
-              className="w-1/2 border border-gray-300 p-1 lg:text-lg"
+              className={`w-full border border-gray-300 p-1 rounded-[6px] ${!selectedTorneo ? 'cursor-not-allowed' : ''}`} 
               style={{ borderRadius: '6px' }}
               value={selectedZona}
               onChange={handleZonaChange}
+              disabled={!selectedTorneo}
             >
               <option value="" disabled>
                 Seleccionar zona...
@@ -155,6 +162,14 @@ export default function CargaPartido() {
                 </option>
               ))}
             </select>
+            {!selectedTorneo && (
+              <div className="flex items-center mt-2 px-2">
+                <Info className="w-4 h-4 mr-2" />
+                <p className="text-gray-500 text-sm">
+                  Debe seleccionar <span className="font-bold">primero un torneo y luego una zona</span> para buscar partidos. 
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

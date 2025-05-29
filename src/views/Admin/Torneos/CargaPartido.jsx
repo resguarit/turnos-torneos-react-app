@@ -114,7 +114,7 @@ export default function CargaPartido() {
       
       <main className="max-w-7xl lg:max-w-full p-6 grow">
         <div className="w-full flex mb-4">
-          <button onClick={() => navigate('/torneos-admi')} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
+          <button onClick={() => navigate('/partidos')} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
             <ChevronLeft className="w-5" /> Atrás
           </button>
         </div>

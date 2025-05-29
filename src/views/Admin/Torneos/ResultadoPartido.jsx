@@ -7,7 +7,7 @@ import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { toast } from 'react-toastify'; // Importar react-toastify
 import ResultadoModal from '../Modals/ResultadoModal';
-import { Info, Trash } from 'lucide-react';
+import { Info, Trash, ChevronLeft } from 'lucide-react';
 import { debounce } from 'lodash'; // Import debounce
 import  SancionesModal  from '../Modals/SancionesModal';
 
@@ -445,7 +445,11 @@ export default function ResultadoPartido() {
     <div className="min-h-screen flex flex-col justify-start bg-gray-100 font-inter">
       <Header />
       <main className="max-w-7xl lg:max-w-full p-6 grow">
-        <BackButton />
+        <div className="w-full flex mb-4">
+          <button onClick={() => navigate('/cargar-partido')} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
+            <ChevronLeft className="w-5" /> Atrás
+          </button>
+        </div>
         <h1 className=" font-bold mb-4 text-2xl">Resultado Partido</h1>
         <div className='w-full  flex gap-4'>
         <div className="bg-white w-1/2 rounded-[8px] shadow-md p-4 mb-6">

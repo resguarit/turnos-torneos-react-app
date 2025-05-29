@@ -664,6 +664,7 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.nro_camiseta || ''}
+                              disabled={!estadisticas[jugador.id]?.presente}
                               onChange={(e) =>
                                 handleInputChange(jugador.id, "nro_camiseta", e.target.value ? Number.parseInt(e.target.value) : null)
                               }
@@ -679,6 +680,7 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.goles ?? 0}
+                              disabled={!estadisticas[jugador.id]?.presente}
                               onChange={(e) => handleInputChange(jugador.id, "goles", Number.parseInt(e.target.value) || 0)}
                               className="w-full text-center border border-gray-300 rounded p-1"
                               min="0"
@@ -692,6 +694,7 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.asistencias ?? 0}
+                              disabled={!estadisticas[jugador.id]?.presente}
                               onChange={(e) =>
                                 handleInputChange(jugador.id, "asistencias", Number.parseInt(e.target.value) || 0)
                               }
@@ -707,6 +710,7 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.amarillas ?? 0}
+                              disabled={!estadisticas[jugador.id]?.presente}
                               onChange={(e) =>
                                 handleInputChange(jugador.id, "amarillas", Number.parseInt(e.target.value) || 0)
                               }
@@ -722,6 +726,7 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.rojas ?? 0}
+                              disabled={!estadisticas[jugador.id]?.presente}
                               onChange={(e) => handleInputChange(jugador.id, "rojas", Number.parseInt(e.target.value) || 0)}
                               className="w-full text-center border border-gray-300 rounded p-1"
                               min="0"
@@ -775,6 +780,7 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.nro_camiseta || ''}
+                              disabled={!estadisticas[jugador.id]?.presente}
                               onChange={(e) =>
                                 handleInputChange(jugador.id, "nro_camiseta", e.target.value ? Number.parseInt(e.target.value) : null)
                               }
@@ -790,6 +796,7 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.goles ?? 0}
+                              disabled={!estadisticas[jugador.id]?.presente}
                               onChange={(e) => handleInputChange(jugador.id, "goles", Number.parseInt(e.target.value) || 0)}
                               className="w-full text-center border border-gray-300 rounded p-1"
                               min="0"
@@ -803,6 +810,7 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.asistencias ?? 0}
+                              disabled={!estadisticas[jugador.id]?.presente}
                               onChange={(e) =>
                                 handleInputChange(jugador.id, "asistencias", Number.parseInt(e.target.value) || 0)
                               }
@@ -818,6 +826,7 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.amarillas ?? 0}
+                              disabled={!estadisticas[jugador.id]?.presente}
                               onChange={(e) =>
                                 handleInputChange(jugador.id, "amarillas", Number.parseInt(e.target.value) || 0)
                               }
@@ -833,6 +842,7 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.rojas ?? 0}
+                              disabled={!estadisticas[jugador.id]?.presente}
                               onChange={(e) => handleInputChange(jugador.id, "rojas", Number.parseInt(e.target.value) || 0)}
                               className="w-full text-center border border-gray-300 rounded p-1"
                               min="0"

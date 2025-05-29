@@ -135,19 +135,19 @@ function SignUp() {
             <div className="absolute top-4 left-4">
                     <button onClick={() => navigate('/')} className="hover:bg-naranja rounded-2xl text-white p-2 text-sm flex items-center"><ChevronLeft className="w-5"/> Volver Al Inicio</button>
                 </div>
-                <div className="w-full max-w-md bg-white rounded-xl p-5 space-y-6">
+                <div className="w-full max-w-xl bg-white rounded-xl p-5 space-y-6">
                     <div className="space-y-4">
                         <h2 className="text-2xl font-bold text-center lg:text-3xl">Registrarse</h2>
                         
                         <form onSubmit={handleSubmit} className="space-y-3">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
                                 <input
                                     type="text"
                                     name="name"
                                     placeholder="Nombre Completo"
                                     value={formData.name}
                                     onChange={handleChange}
-                                    className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                    className="w-full text-black text-sm border p-1 px-2 rounded-[6px]"
                                 />
                                 <input
                                     type="email"
@@ -155,7 +155,7 @@ function SignUp() {
                                     placeholder="Correo electrónico"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                    className="w-full text-black text-sm border p-1 px-2 rounded-[6px]"
                                 />
                                 <input
                                     type="tel"
@@ -163,7 +163,7 @@ function SignUp() {
                                     placeholder="Teléfono"
                                     value={formData.telefono}
                                     onChange={handleChange}
-                                    className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                    className="w-full text-black text-sm border p-1 px-2 rounded-[6px]"
                                 />
                                 <input
                                     type="text"
@@ -171,7 +171,7 @@ function SignUp() {
                                     placeholder="DNI"
                                     value={formData.dni}
                                     onChange={handleChange}
-                                    className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                    className="w-full text-black text-sm border p-1 px-2 rounded-[6px]"
                                 />
                                 <div className="relative">
                                     <input
@@ -180,7 +180,7 @@ function SignUp() {
                                         placeholder="Contraseña"
                                         value={formData.password}
                                         onChange={handleChange}
-                                        className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                        className="w-full text-black text-sm border p-1 px-2 rounded-[6px]"
                                         onFocus={() => setShowPasswordMsg(true)}
                                         onBlur={() => setShowPasswordMsg(false)}
                                     />
@@ -199,7 +199,7 @@ function SignUp() {
                                         placeholder="Confirmar Contraseña"
                                         value={formData.password_confirmation}
                                         onChange={handleChange}
-                                        className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                        className="w-full text-black text-sm border p-1 px-2 rounded-[6px]"
                                         onFocus={() => setShowPasswordMsg(true)}
                                         onBlur={() => setShowPasswordMsg(false)}
                                     />

@@ -155,7 +155,7 @@ export default function AltaTorneo() {
           <BackButton ruta={'/torneos-admi'} />
         </div>
         <div className="bg-white text-black p-4 rounded-xl shadow-lg w-1/2">
-          <h2 className="text-2xl font-medium mb-1">{id ? 'Editar Torneo' : 'Crear Nuevo Torneo'}</h2>
+          <h2 className="text-2xl font-semibold mb-1">{id ? 'Editar Torneo' : 'Crear Nuevo Torneo'}</h2>
           <p className="mb-4 text-sm text-gray-500">Complete los datos para {id ? 'editar el' : 'crear un nuevo'} torneo</p>
           <form className="flex flex-col space-y-3" onSubmit={handleSubmit}>
             <div>

@@ -40,7 +40,7 @@ useEffect(() => {
             <BackButton ruta={`/torneos-user`} />
                   </div>
           <div className="flex flex-col justify-center items-center h-full">
-            <h1 className="text-center text-2xl font-sans font-semibold ">Zonas</h1>
+            <h1 className="text-center text-2xl font-semibold ">Zonas</h1>
             <div className='flex flex-col w-1/2'>
             {zonas.map((zona) => (
                 <div key={zona.id} className="bg-black text-white shadow-md rounded-[6px] p-2 mt-4">

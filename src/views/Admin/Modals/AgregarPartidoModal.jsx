@@ -96,7 +96,7 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
               </option>
             ))}
           </select>
-          <p className="font-sans font-semibold">vs</p>
+          <p className=" font-semibold">vs</p>
           <select
             value={equipoVisitante}
             onChange={(e) => setEquipoVisitante(e.target.value)}

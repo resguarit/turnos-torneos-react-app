@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
 import { Search, X, Filter, ChevronDown } from "lucide-react"
 import api from '@/lib/axiosConfig'
+import BtnLoading from "@/components/BtnLoading"
 
 const ITEMS_PER_PAGE = 10;
 
@@ -20,10 +21,12 @@ function Partidos() {
   const [showTorneoDropdown, setShowTorneoDropdown] = useState(false)
   const [showZonaDropdown, setShowZonaDropdown] = useState(false)
   const [showFechaDropdown, setShowFechaDropdown] = useState(false)
+  const [loading, setLoading] = useState(false) 
 
   useEffect(() => {
     const fetchPartidos = async () => {
       try {
+        setLoading(true)
         const response = await api.get('/partidos');
         // Ordenar los partidos por fecha de creación en orden descendente
         const sortedPartidos = response.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -31,6 +34,8 @@ function Partidos() {
         setFilteredPartidos(sortedPartidos);
       } catch (error) {
         console.error('Error fetching partidos:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -145,6 +150,20 @@ function Partidos() {
     setShowTorneoDropdown(false);
     setShowZonaDropdown(false);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col font-inter">
+        <Header />
+        <main className="flex-1 p-6 bg-gray-100">
+          <div className="flex justify-center items-center h-full">
+            <BtnLoading />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col font-inter">

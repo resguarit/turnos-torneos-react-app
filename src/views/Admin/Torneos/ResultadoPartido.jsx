@@ -446,9 +446,7 @@ export default function ResultadoPartido() {
       <Header />
       <main className="max-w-7xl lg:max-w-full p-6 grow">
         <div className="w-full flex mb-4">
-          <button onClick={() => navigate('/cargar-partido')} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
-            <ChevronLeft className="w-5" /> Atrás
-          </button>
+          <BackButton ruta={'/cargar-partido'} />
         </div>
         <h1 className=" font-bold mb-4 text-2xl">Resultado Partido</h1>
         <div className='w-full  flex gap-4'>

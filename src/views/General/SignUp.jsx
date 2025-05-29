@@ -21,6 +21,7 @@ function SignUp() {
     const [loading, setLoading] = useState(false); // Estado de carga
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [showPasswordMsg, setShowPasswordMsg] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -172,9 +173,6 @@ function SignUp() {
                                     onChange={handleChange}
                                     className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
                                 />
-                            </div>
-                            <p className="text-xs text-gray-500">La contraseña debe tener al menos 8 caracteres</p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ">
                                 <div className="relative">
                                     <input
                                         type={showPassword ? "text" : "password"}
@@ -183,6 +181,8 @@ function SignUp() {
                                         value={formData.password}
                                         onChange={handleChange}
                                         className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                        onFocus={() => setShowPasswordMsg(true)}
+                                        onBlur={() => setShowPasswordMsg(false)}
                                     />
                                     <button
                                         type="button"
@@ -200,6 +200,8 @@ function SignUp() {
                                         value={formData.password_confirmation}
                                         onChange={handleChange}
                                         className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                        onFocus={() => setShowPasswordMsg(true)}
+                                        onBlur={() => setShowPasswordMsg(false)}
                                     />
                                     <button
                                         type="button"
@@ -210,6 +212,11 @@ function SignUp() {
                                     </button>
                                 </div>
                             </div>
+                            {showPasswordMsg && (
+                                <div className='flex ml-1 w-full'>
+                                    <p className="text-xs text-red-500">La contraseña debe tener al menos 8 caracteres</p>
+                                </div>
+                            )}
                             <div className="flex justify-center pt-3">
                                 <button type="submit" className="w-full bg-naranja text-base font-medium rounded-xl p-2 hover:bg-naranja/90 text-white" disabled={loading}>
                                     {loading ? 'Registrando Usuario...' : 'Registrarme'}

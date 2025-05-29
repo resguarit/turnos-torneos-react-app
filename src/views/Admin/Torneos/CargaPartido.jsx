@@ -114,9 +114,7 @@ export default function CargaPartido() {
       
       <main className="max-w-7xl lg:max-w-full p-6 grow">
         <div className="w-full flex mb-4">
-          <button onClick={() => navigate('/partidos')} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
-            <ChevronLeft className="w-5" /> Atrás
-          </button>
+          <BackButton ruta={'/partidos'} />
         </div>
         
         <h1 className="text-xl font-bold mb-4 lg:text-2xl">Cargar Partido</h1>

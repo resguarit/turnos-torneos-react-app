@@ -12,6 +12,7 @@ import { useTorneos } from '@/context/TorneosContext';
 import api from '@/lib/axiosConfig';
 import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal';
 import { formatearFechaCorta } from '@/utils/dateUtils';
+import BackButton from '@/components/BackButton';
 
 export default function Zonas() {
   const { torneoId } = useParams();
@@ -124,9 +125,7 @@ export default function Zonas() {
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
         <div className="w-full flex mb-4">
-          <button onClick={() => navigate('/torneos-admi')} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
-            <ChevronLeft className="w-5" /> Atrás
-          </button>
+          <BackButton ruta={'/torneos-admi'} />
         </div>
         <div className="max-w-7xl lg:max-w-full mx-auto">
           <div className="flex justify-between items-center mb-6">

@@ -11,6 +11,7 @@ import { toast, ToastContainer } from 'react-toastify'; // Import ToastContainer
 import 'react-toastify/dist/ReactToastify.css';
 import { useLocation } from 'react-router-dom';
 import ConfirmDeleteModal from '@/views/Admin/Modals/ConfirmDeleteModal';
+import BackButton from '@/components/BackButton';
 
 
 export default function Jugadores() {
@@ -269,9 +270,7 @@ export default function Jugadores() {
       <Header />
       <main className="flex-1 grow p-6 bg-gray-100">
         <div className="w-full flex mb-2">
-          <button onClick={() => navigate(-1)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
-            <ChevronLeft className="w-5" /> Atrás
-          </button>
+          <BackButton ruta={`/detalle-zona/${zonaId}`} />
         </div> 
         <div className="justify-center"> 
           <div className="flex justify-end items-center mb-6">

@@ -9,6 +9,7 @@ import { toast } from 'react-toastify'; // Importar react-toastify
 import 'react-toastify/dist/ReactToastify.css'; // Importar estilos de react-toastify
 import { useTorneos } from '@/context/TorneosContext';
 import ConfirmModal from '../Modals/ConfirmModal';
+import BackButton from '@/components/BackButton';
 
 export default function AltaZona() {
   const { id, torneoId } = useParams(); // Obtener el ID de la zona y el torneo desde la URL
@@ -120,9 +121,7 @@ export default function AltaZona() {
       <Header />
       <main className="flex-col grow p-6 bg-gray-100 flex items-center ">
         <div className="w-full flex mb-2">
-          <button onClick={() => navigate(`/zonas-admi/${formData.torneo_id}`)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
-            <ChevronLeft className="w-5" /> Atrás
-          </button>
+          <BackButton ruta={`/zonas-admi/${formData.torneo_id}`} />
         </div>
         <div className="bg-white text-black p-4 rounded-xl shadow-lg w-1/2">
           <h2 className="text-2xl font-sans font-medium mb-1">{id ? 'Editar Zona' : 'Crear Nueva Zona'}</h2>

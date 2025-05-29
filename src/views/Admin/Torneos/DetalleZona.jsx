@@ -19,6 +19,7 @@ import {TabResultados} from './Tabs/TabResultados';
 import {TabResultadosGrupos} from './Tabs/TabResultadosGrupos';
 import {TabEliminatoria} from './Tabs/TabResultadosEliminatoria';
 import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal';
+import BackButton from '@/components/BackButton';
 
 export default function DetalleZona() {
   const { zonaId } = useParams();
@@ -540,9 +541,7 @@ export default function DetalleZona() {
     <Header />
     <main className="flex-1 p-6 bg-gray-100">
       <div className="w-full flex mb-2">
-        <button onClick={() => navigate(`/zonas-admi/${zona.torneo_id}`)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
-          <ChevronLeft className="w-5" /> Atrás
-        </button>
+        <BackButton ruta={`/zonas-admi/${zona.torneo_id}`} />
       </div>
       <div className="w-full px-40">
         <div className="flex justify-between items-center mb-6">

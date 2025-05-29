@@ -10,6 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useTorneos } from '@/context/TorneosContext';
 import { useDeportes } from '@/context/DeportesContext'; // <-- Importa el contexto
 import ConfirmModal from '../Modals/ConfirmModal'; 
+import BackButton from '@/components/BackButton';
 
 export default function AltaTorneo() {
   const { id } = useParams();
@@ -151,9 +152,7 @@ export default function AltaTorneo() {
       <Header />
       <main className="flex-col grow p-6 bg-gray-100 flex items-center ">
         <div className="w-full flex mb-2">
-          <button onClick={() => navigate('/torneos-admi')} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
-            <ChevronLeft className="w-5" /> Atrás
-          </button>
+          <BackButton ruta={'/torneos-admi'} />
         </div>
         <div className="bg-white text-black p-4 rounded-xl shadow-lg w-1/2">
           <h2 className="text-2xl font-medium mb-1">{id ? 'Editar Torneo' : 'Crear Nuevo Torneo'}</h2>

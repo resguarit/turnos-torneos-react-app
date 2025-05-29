@@ -129,6 +129,23 @@ function Partidos() {
     .map(partido => partido.fecha.nombre)
   )];
 
+  // Cambia los handlers para que solo un dropdown esté abierto a la vez:
+  const handleTorneoDropdown = () => {
+    setShowTorneoDropdown(!showTorneoDropdown);
+    setShowZonaDropdown(false);
+    setShowFechaDropdown(false);
+  };
+  const handleZonaDropdown = () => {
+    setShowZonaDropdown(!showZonaDropdown);
+    setShowTorneoDropdown(false);
+    setShowFechaDropdown(false);
+  };
+  const handleFechaDropdown = () => {
+    setShowFechaDropdown(!showFechaDropdown);
+    setShowTorneoDropdown(false);
+    setShowZonaDropdown(false);
+  };
+
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header></Header>
@@ -159,7 +176,7 @@ function Partidos() {
               <div className="relative">
                 <button
                   className="flex items-center gap-1 border rounded-[8px] px-2 py-1 bg-white  hover:bg-gray-100 text-gray-700"
-                  onClick={() => setShowTorneoDropdown(!showTorneoDropdown)}
+                  onClick={handleTorneoDropdown}
                 >
                   <Filter className="h-4 w-4" />
                   Torneo
@@ -185,7 +202,7 @@ function Partidos() {
               <div className="relative">
                 <button
                   className="flex items-center gap-1 border rounded-[8px] px-2 py-1 bg-white  hover:bg-gray-100 text-gray-700"
-                  onClick={() => setShowZonaDropdown(!showZonaDropdown)}
+                  onClick={handleZonaDropdown}
                 >
                   <Filter className="h-4 w-4" />
                   Zona
@@ -211,7 +228,7 @@ function Partidos() {
               <div className="relative">
                 <button
                   className="flex items-center gap-1 border rounded-[8px] px-2 py-1 bg-white  hover:bg-gray-100 text-gray-700"
-                  onClick={() => setShowFechaDropdown(!showFechaDropdown)}
+                  onClick={handleFechaDropdown}
                 >
                   <Filter className="h-4 w-4" />
                   Fecha

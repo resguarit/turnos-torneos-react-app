@@ -28,12 +28,8 @@ export default function VerPagos() {
   const [valorFecha, setValorFecha] = useState(0);
   const [inscripcionPagada, setInscripcionPagada] = useState(false);
   const [estadoPagosPorFecha, setEstadoPagosPorFecha] = useState([]);
-  const [metodosPago, setMetodosPago] = useState([
-    { id: 1, nombre: 'Efectivo' },
-    { id: 2, nombre: 'Transferencia' },
-    { id: 3, nombre: 'Tarjeta' },
-  ]); // Setea métodos de pago fijos
-  const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState(""); // State for selected payment method
+  const [metodosPago, setMetodosPago] = useState([]); 
+  const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState(""); 
   const [inscripcionTransaccion, setInscripcionTransaccion] = useState(null);
   const [noCapitan, setNoCapitan] = useState(false);
 
@@ -64,6 +60,15 @@ export default function VerPagos() {
           setInscripcionPagada(!!inscripcionResponse.data.transaccion);
           setInscripcionTransaccion(inscripcionResponse.data.transaccion || null);
         }
+
+        // Traer métodos de pago activos del backend
+        const metodosPagoResponse = await api.get(`/metodos-pago`);
+        // Si la respuesta es un array, filtra solo los activos
+        const metodos = Array.isArray(metodosPagoResponse.data)
+          ? metodosPagoResponse.data.filter(m => m.activo === 1)
+          : [];
+        setMetodosPago(metodos);
+
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -341,9 +346,9 @@ export default function VerPagos() {
                     id="metodo-pago"
                     value={metodoPagoSeleccionado}
                     onChange={(e) => setMetodoPagoSeleccionado(e.target.value)}
-                    className="w-full border border-gray-300 rounded-[6px] p-2"
+                    className="w-full border capitalize border-gray-300 rounded-[6px] p-2"
                   >
-                    <option value="">Seleccionar método</option>
+                    <option className="capitalize" value="">Seleccionar método</option>
                     {metodosPago.length > 0 ? (
                       metodosPago.map((metodo) => (
                         <option key={metodo.id} value={metodo.id}>
@@ -351,7 +356,7 @@ export default function VerPagos() {
                         </option>
                       ))
                     ) : (
-                      <option value="loading" disabled>
+                      <option className="capitalize" value="loading" disabled>
                         Cargando métodos...
                       </option>
                     )}

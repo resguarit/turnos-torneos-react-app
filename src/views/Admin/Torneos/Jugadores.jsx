@@ -298,6 +298,8 @@ export default function Jugadores() {
         const responseJugadores = await api.get(`/equipos/${equipoId}/jugadores`);
         setJugadores(responseJugadores.data);
         setNuevoCapitanId('');
+        setSuccessCapitan('');
+        setErrorCapitan('');
         setShowModalCapitan(false);
         toast.success('Cambio de capitán realizado correctamente.');
       } else {
@@ -332,16 +334,14 @@ export default function Jugadores() {
           <BackButton ruta={`/detalle-zona/${zonaId}`} />
         </div>
         <div className="justify-center">
-          {jugadorCapitan !== undefined && (
           <div className="flex justify-end items-center mb-4">
             <button
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-[6px] text-sm font-medium shadow"
               onClick={() => setShowModalCapitan(true)}
             >
-              Cambiar Capitán
+              {jugadorCapitan === undefined ? 'Asignar Capitán' : 'Cambiar Capitán'}
             </button>
           </div>
-          )}
           <div className="bg-white w-full rounded-[12px] shadow-lg p-6 border border-gray-100">
             <h2 className="text-2xl font-medium mb-6 flex items-center">
               Lista de Jugadores de 

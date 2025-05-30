@@ -350,7 +350,7 @@ const PestanaCaja = () => {
                             value="deposit" 
                             className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
                           >
-                            Depósito
+                            Ingreso
                           </TabsTrigger>
                           <TabsTrigger 
                             value="withdrawal"
@@ -363,8 +363,8 @@ const PestanaCaja = () => {
                         <TabsContent value="deposit">
                           <Card className="border-0 shadow-sm">
                             <CardHeader>
-                              <CardTitle className="text-lg">Registrar Depósito</CardTitle>
-                              <CardDescription>Registre un pago o depósito del cliente</CardDescription>
+                              <CardTitle className="text-lg">Registrar Ingreso</CardTitle>
+                              <CardDescription>Registre un ingreso del cliente</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                               <div>

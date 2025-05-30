@@ -286,6 +286,7 @@ function VerTurnos() {
     setShowModal(false);
     try {
       const response = await api.patch(`/turnos/${selectedBooking.id}`, { estado: 'Cancelado' });
+      
       if (response.status === 200) {
         toast.success('Turno cancelado correctamente');
         // Actualiza el estado para reflejar la cancelación
@@ -301,7 +302,6 @@ function VerTurnos() {
       }
     } catch (error) {
       toast.error('Error al cancelar el turno');
-      console.error("Error canceling reservation:", error);
     }
   };
 

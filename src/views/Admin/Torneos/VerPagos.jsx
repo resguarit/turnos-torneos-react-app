@@ -41,29 +41,28 @@ export default function VerPagos() {
         setValorInscripcion(precioInscripcion || 0);
         setValorFecha(precioFecha || 0);
 
-        // Fetch pagos por fecha for the entire zona
-        const pagosPorFechaResponse = await api.get(`/equipos/${equipoId}/zonas/${zonaId}/pago-fecha`);
-        setEstadoPagosPorFecha(pagosPorFechaResponse.data.pagos_por_fecha);
-
-        // Fetch inscripción status
-        const inscripcionResponse = await api.get(`/equipos/${equipoId}/torneos/${torneoId}/pago-inscripcion`);
+        // Unificada: obtener pagos de inscripción y por fecha
+        const pagosResponse = await api.get(`/equipos/${equipoId}/torneos/${torneoId}/zonas/${zonaId}/pagos`);
         if (
-          inscripcionResponse.data.status === 400 &&
-          inscripcionResponse.data.message &&
-          inscripcionResponse.data.message.toLowerCase().includes("capitán")
+          pagosResponse.data.status === 400 &&
+          pagosResponse.data.message &&
+          pagosResponse.data.message.toLowerCase().includes("capitán")
         ) {
           setNoCapitan(true);
           setInscripcionPagada(false);
           setInscripcionTransaccion(null);
+          setEstadoPagosPorFecha([]);
         } else {
           setNoCapitan(false);
-          setInscripcionPagada(!!inscripcionResponse.data.transaccion);
-          setInscripcionTransaccion(inscripcionResponse.data.transaccion || null);
+          // Inscripción
+          setInscripcionPagada(!!pagosResponse.data.pago_inscripcion?.pagado);
+          setInscripcionTransaccion(pagosResponse.data.pago_inscripcion?.transaccion || null);
+          // Fechas
+          setEstadoPagosPorFecha(pagosResponse.data.pagos_por_fecha || []);
         }
 
-        // Traer métodos de pago activos del backend
+        // Métodos de pago activos
         const metodosPagoResponse = await api.get(`/metodos-pago`);
-        // Si la respuesta es un array, filtra solo los activos
         const metodos = Array.isArray(metodosPagoResponse.data)
           ? metodosPagoResponse.data.filter(m => m.activo === 1)
           : [];

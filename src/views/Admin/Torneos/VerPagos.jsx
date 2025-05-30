@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import api from "@/lib/axiosConfig";
 import { useLocation } from "react-router-dom";
 import BtnLoading from "@/components/BtnLoading";
+import { toast } from "react-toastify";
 
 export default function VerPagos() {
   const navigate = useNavigate();
@@ -34,6 +35,7 @@ export default function VerPagos() {
   ]); // Setea métodos de pago fijos
   const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState(""); // State for selected payment method
   const [inscripcionTransaccion, setInscripcionTransaccion] = useState(null);
+  const [noCapitan, setNoCapitan] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,9 +51,19 @@ export default function VerPagos() {
 
         // Fetch inscripción status
         const inscripcionResponse = await api.get(`/equipos/${equipoId}/torneos/${torneoId}/pago-inscripcion`);
-        setInscripcionPagada(!!inscripcionResponse.data.transaccion);
-        setInscripcionTransaccion(inscripcionResponse.data.transaccion || null); // <--- Guarda la transacción
-
+        if (
+          inscripcionResponse.data.status === 400 &&
+          inscripcionResponse.data.message &&
+          inscripcionResponse.data.message.toLowerCase().includes("capitán")
+        ) {
+          setNoCapitan(true);
+          setInscripcionPagada(false);
+          setInscripcionTransaccion(null);
+        } else {
+          setNoCapitan(false);
+          setInscripcionPagada(!!inscripcionResponse.data.transaccion);
+          setInscripcionTransaccion(inscripcionResponse.data.transaccion || null);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -121,6 +133,29 @@ export default function VerPagos() {
         <main className="flex-1 p-6 bg-gray-100">
           <div className="flex justify-center items-center h-full">
             <BtnLoading />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (noCapitan) {
+    return (
+      <div className="min-h-screen flex flex-col font-inter">
+        <Header />
+        <main className="flex-1 p-6 bg-gray-100 flex flex-col items-center justify-center">
+          <div className="bg-white rounded-xl shadow-lg p-8 max-w-lg w-full text-center">
+            <h2 className="text-2xl font-bold mb-4">Estado de Pagos</h2>
+            <p className="mb-6 text-gray-700">
+              Para ver el estado de los pagos, debe haber un capitán asignado en el equipo.
+            </p>
+            <button
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-[6px] text-base font-medium shadow"
+              onClick={() => navigate(`/jugadores/${equipoId}`, { state: { equipoNombre, zonaId } })}
+            >
+              Asignar Capitán
+            </button>
           </div>
         </main>
         <Footer />

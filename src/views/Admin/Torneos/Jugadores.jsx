@@ -252,6 +252,21 @@ export default function Jugadores() {
   const handleEliminarJugador = async () => {
   try {
     setLoading(true);
+
+    // Verificar si el jugador a eliminar es el capitán
+    const jugadorAEliminarObj = jugadores.find(j => j.id === jugadorAEliminar);
+    const esCapitan = jugadorAEliminarObj && (jugadorAEliminarObj.capitan !== undefined
+      ? jugadorAEliminarObj.capitan
+      : jugadorAEliminarObj.pivot?.capitan);
+
+    if (esCapitan) {
+      toast.error('No se puede eliminar al capitán. Debe cambiar el capitán antes de desvincularlo del equipo.');
+      setShowDeleteModal(false);
+      setJugadorAEliminar(null);
+      setLoading(false);
+      return;
+    }
+
     await api.post(`/equipos/${equipoId}/jugadores/${jugadorAEliminar}/desvincular-jugador`, {
       jugador_id: jugadorAEliminar,
       equipo_id: equipoId,

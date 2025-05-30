@@ -89,11 +89,13 @@ export default function EditarEquipo() {
       <main className="flex-1 p-6 bg-gray-100">
         <div className="w-full flex mb-2">
           <button 
-            onClick={() => navigate(`/detalle-zona/${equipo.zona_id}`)} 
+            onClick={() => navigate(`/detalle-zona/${equipo.zonas[0].id}`)} 
+            
             className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center"
           >
             <ChevronLeft className="w-5" /> Atrás
           </button>
+          {console.log(equipo)}
         </div>
         <div className="max-w-xl mx-auto">
           <div className="bg-white rounded-[8px] shadow-md p-6">

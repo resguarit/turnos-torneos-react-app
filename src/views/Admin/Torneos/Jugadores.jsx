@@ -132,6 +132,18 @@ export default function Jugadores() {
     try {
       setLoading(true);
 
+      // Validar que no haya más de un capitán
+      const yaHayCapitan = jugadores.some(j =>
+        j.capitan !== undefined ? j.capitan : j.pivot?.capitan
+      );
+      const nuevosCapitanes = jugadoresNuevos.filter(j => j.capitan);
+
+      if (yaHayCapitan && nuevosCapitanes.length > 0) {
+        toast.error('Ya hay un capitán en el equipo. Solo puede haber uno.');
+        setLoading(false);
+        return;
+      }
+
       // Dividir jugadores en seleccionados y manuales
       const jugadoresSeleccionados = jugadoresNuevos.filter(jugador => jugador.seleccionado);
       const jugadoresManuales = jugadoresNuevos.filter(jugador => !jugador.seleccionado);
@@ -320,15 +332,16 @@ export default function Jugadores() {
           <BackButton ruta={`/detalle-zona/${zonaId}`} />
         </div>
         <div className="justify-center">
-          <div className="flex justify-between items-center mb-6">
+          {jugadorCapitan !== undefined && (
+          <div className="flex justify-end items-center mb-4">
             <button
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-[6px] text-sm font-medium shadow"
               onClick={() => setShowModalCapitan(true)}
             >
               Cambiar Capitán
             </button>
-            {/* ...otros botones si hay... */}
           </div>
+          )}
           <div className="bg-white w-full rounded-[12px] shadow-lg p-6 border border-gray-100">
             <h2 className="text-2xl font-medium mb-6 flex items-center">
               Lista de Jugadores de 

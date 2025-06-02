@@ -113,9 +113,10 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
   return (
     <div className="min-h-screen flex flex-col font-inter bg-gray-100">
       <Header />
-      <main className="max-w-7xl lg:max-w-full p-6 grow">
+      <main className="w-full  p-6 grow">
         <BackButton ruta={`/detalle-zona/${zonaId}`}/>
-        <h1 className="text-2xl font-bold mb-6 lg:text-4xl">
+        <div className="flex   flex-col w-full">
+        <h1 className="text-2xl px-40 font-bold mb-6 lg:text-2xl">
           Cargar Equipos
         </h1>
         
@@ -218,6 +219,7 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
               )}
             </div>
           </div>
+        </div>
         </div>
       </main>
       <Footer />

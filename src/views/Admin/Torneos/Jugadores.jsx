@@ -351,7 +351,7 @@ export default function Jugadores() {
         <div className="justify-center">
           <div className="flex justify-end items-center mb-4">
             <button
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-[6px] text-sm font-medium shadow"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-[6px] text-sm  shadow"
               onClick={() => setShowModalCapitan(true)}
             >
               {jugadorCapitan === undefined ? 'Asignar Capitán' : 'Cambiar Capitán'}
@@ -593,7 +593,7 @@ export default function Jugadores() {
               <div className='w-full flex justify-end p-4'>
                 <button
                   onClick={handleAddFilaJugador}
-                  className="bg-black hover:bg-black/80 p-2 px-4 text-sm font-medium rounded-[6px] text-white flex items-center transition-colors shadow-sm" 
+                  className="bg-black hover:bg-black/80 p-2 px-4 text-sm  rounded-[6px] text-white flex items-center transition-colors shadow-sm" 
                 >
                   + Agregar Jugador
                 </button>

@@ -234,15 +234,15 @@ function VerJugadores() {
               <div className="flex gap-2">
               <button
                 onClick={() => navigate("/cargar-jugador")}
-                className="bg-black text-base font-normal text-white hover:bg-black/90 p-1 px-3 rounded-[6px]"
+                className="bg-black text-sm font-normal text-white hover:bg-black/90 p-1 px-3 rounded-[6px]"
               >
-                + Cargar Jugador
+                + Cargar Jugadores
               </button>
               <button
                 onClick={() => navigate("/asociar-jugadores")}
-                className="bg-gray-800 gap-2 flex items-center text-base font-normal text-white hover:bg-black/90 p-1 px-3 rounded-[6px]"
+                className="bg-gray-800 text-sm gap-2 flex items-center  font-normal text-white hover:bg-black/90 p-1 px-3 rounded-[6px]"
               >
-                <Link size={16}/> Asociar Jugador
+                <Link size={16}/> Asociar Jugadores
               </button>
               </div>
             </div>

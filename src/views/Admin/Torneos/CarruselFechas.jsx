@@ -272,7 +272,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
       <div className="flex justify-end mb-2">
         <button
           onClick={() => setModalCrearFechaVisible(true)}
-          className="bg-green-500 text-white text-sm px-3 py-1 rounded-[6px] hover:bg-green-600"
+          className="bg-green-500 text-white text-sm px-3 py-2 rounded-[6px] hover:bg-green-600"
         >
           + Agregar Fecha
         </button>

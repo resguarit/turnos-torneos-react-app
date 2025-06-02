@@ -185,7 +185,7 @@ export default function VerPagos() {
             <h1 className="text-2xl font-bold">Historial de Pagos</h1>
             <button
               onClick={() => setModalOpen(true)}
-              className="bg-black hover:bg-black/80 p-2 font-inter rounded-[6px] text-white flex items-center gap-1"
+              className="bg-black hover:bg-black/80 py-2 px-3 text-sm rounded-[6px] text-white flex items-center gap-1"
             >
               <Plus size={16} /> Registrar Pago
             </button>

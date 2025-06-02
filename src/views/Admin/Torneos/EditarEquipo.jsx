@@ -121,7 +121,7 @@ export default function EditarEquipo() {
                 <button
                   type="submit"
                   disabled={saving || !nombreEquipo.trim()}
-                  className={`px-3 py-2 rounded-[6px] ${
+                  className={`px-3 py-2 text-sm rounded-[6px] ${
                     saving || !nombreEquipo.trim() 
                       ? 'bg-gray-400 cursor-not-allowed' 
                       : 'bg-blue-500 hover:bg-blue-600 text-white'

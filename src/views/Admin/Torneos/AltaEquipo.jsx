@@ -114,7 +114,7 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
     <div className="min-h-screen flex flex-col font-inter bg-gray-100">
       <Header />
       <main className="max-w-7xl lg:max-w-full p-6 grow">
-        <BackButton />
+        <BackButton ruta={`/detalle-zona/${zonaId}`}/>
         <h1 className="text-2xl font-bold mb-6 lg:text-4xl">
           Cargar Equipos
         </h1>
@@ -209,7 +209,7 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
                   </ul>
                   <button
                     onClick={handleGuardarCambios}
-                    className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+                    className="mt-4 bg-blue-500 text-white px-4 py-2 text-sm rounded hover:bg-blue-600 w-full"
                     disabled={loading}
                   >
                     {loading ? 'Guardando...' : 'Guardar Cambios'}

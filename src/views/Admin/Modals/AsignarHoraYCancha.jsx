@@ -78,13 +78,13 @@ export default function AsignarHoraYCanchaModal({ zonaId, horarios, onClose }) {
         <div className="flex justify-end space-x-4">
           <button
             onClick={onClose}
-            className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md"
+            className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-[6px]"
           >
             Cancelar
           </button>
           <button
             onClick={handleAsignarHoraYCancha}
-            className={`py-2 px-4 rounded-md text-white ${loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'}`}
+            className={`py-2 px-4 rounded-[6px] text-white ${loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'}`}
             disabled={loading}
           >
             {loading ? 'Asignando...' : 'Asignar'}

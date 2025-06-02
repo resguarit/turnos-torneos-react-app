@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { X } from "lucide-react";
 
 
@@ -12,7 +12,40 @@ export default function AsociarJugadorModal({
   loading,
   onAsociar
 }) {
+  const [busquedaEquipo, setBusquedaEquipo] = useState("");
+
+  // Reiniciar estado al abrir/cerrar el modal
+  useEffect(() => {
+    if (!isOpen) {
+      setBusquedaEquipo("");
+      setSelectedEquipoId(null);
+    }
+  }, [isOpen, setSelectedEquipoId]);
+
+  // Reiniciar estado después de asociar
+  useEffect(() => {
+    if (!loading && !isOpen) {
+      setBusquedaEquipo("");
+      setSelectedEquipoId(null);
+    }
+  }, [loading, isOpen, setSelectedEquipoId]);
+
+  // Filtrado local de equipos por nombre
+  const equiposFiltrados = useMemo(() => {
+    if (!busquedaEquipo.trim()) return equipos;
+    const term = busquedaEquipo.trim().toLowerCase();
+    return equipos.filter(
+      (e) => e.nombre && e.nombre.toLowerCase().includes(term)
+    );
+  }, [busquedaEquipo, equipos]);
+
   if (!isOpen) return null;
+
+  const handleAsociar = () => {
+    onAsociar();
+    setBusquedaEquipo("");
+    setSelectedEquipoId(null);
+  };
 
   return (
     <div
@@ -32,22 +65,38 @@ export default function AsociarJugadorModal({
           </button>
         </div>
         <div className="space-y-4">
-          <select
-            className="w-full border rounded p-2"
-            value={selectedEquipoId ? selectedEquipoId.toString() : ""}
-            onChange={e => setSelectedEquipoId(Number(e.target.value))}
-          >
-            <option value="">Seleccionar equipo</option>
-            {equipos.map((equipo) => (
-              <option key={equipo.id} value={equipo.id}>
-                {equipo.nombre}
-              </option>
+          <input
+            className="w-full border rounded px-2 py-1 mb-2"
+            placeholder="Buscar equipo por nombre..."
+            value={busquedaEquipo}
+            onChange={e => setBusquedaEquipo(e.target.value)}
+            autoFocus
+          />
+          <div className="max-h-48 overflow-y-auto border rounded">
+            {equiposFiltrados.length === 0 && (
+              <div className="text-center text-gray-500 py-2 text-sm">
+                No se encontraron equipos
+              </div>
+            )}
+            {equiposFiltrados.map((equipo) => (
+              <div
+                key={equipo.id}
+                className={`flex items-center justify-between p-2 hover:bg-gray-100 rounded cursor-pointer ${
+                  selectedEquipoId === equipo.id ? "bg-blue-100" : ""
+                }`}
+                onClick={() => setSelectedEquipoId(equipo.id)}
+              >
+                <span>{equipo.nombre}</span>
+                {selectedEquipoId === equipo.id && (
+                  <span className="text-xs text-blue-600 font-semibold">Seleccionado</span>
+                )}
+              </div>
             ))}
-          </select>
+          </div>
           <button
             className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded"
-            onClick={onAsociar}
-            disabled={loading}
+            onClick={handleAsociar}
+            disabled={loading || !selectedEquipoId}
           >
             {loading ? "Asociando..." : "Asociar"}
           </button>

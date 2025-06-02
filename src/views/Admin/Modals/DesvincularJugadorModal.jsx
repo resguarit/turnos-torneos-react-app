@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 
 export default function DesvincularJugadorModal({
@@ -11,6 +11,14 @@ export default function DesvincularJugadorModal({
 }) {
   const [equipoId, setEquipoId] = useState("");
   const [confirm, setConfirm] = useState(false);
+
+  // Resetear estado cada vez que se abre el modal
+  useEffect(() => {
+    if (isOpen) {
+      setEquipoId("");
+      setConfirm(false);
+    }
+  }, [isOpen, jugador]);
 
   if (!isOpen) return null;
 

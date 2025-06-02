@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import { X } from "lucide-react";
 
 export default function AgregarJugadorAEquipoModal({
@@ -10,6 +10,13 @@ export default function AgregarJugadorAEquipoModal({
   onAsociar
 }) {
   const [busquedaJugador, setBusquedaJugador] = React.useState("");
+
+  // Reiniciar estado al abrir/cerrar el modal
+  useEffect(() => {
+    if (!isOpen) {
+      setBusquedaJugador("");
+    }
+  }, [isOpen]);
 
   const jugadoresFiltrados = useMemo(() => {
     if (!busquedaJugador.trim()) return jugadores;
@@ -23,6 +30,11 @@ export default function AgregarJugadorAEquipoModal({
   }, [busquedaJugador, jugadores]);
 
   if (!isOpen) return null;
+
+  const handleAsociar = (jugador) => {
+    onAsociar(jugador);
+    setBusquedaJugador(""); // Limpiar filtro al asociar
+  };
 
   return (
     <div
@@ -63,10 +75,7 @@ export default function AgregarJugadorAEquipoModal({
                 </span>
                 <button
                   className="ml-2 px-2 py-1 rounded bg-blue-600 text-white text-xs hover:bg-blue-700"
-                  onClick={() => {
-                    onAsociar(jugador);
-                    setBusquedaJugador(""); // Limpiar filtro al asociar
-                  }}
+                  onClick={() => handleAsociar(jugador)}
                   disabled={loading}
                 >
                   Asociar

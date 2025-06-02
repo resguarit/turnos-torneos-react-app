@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Search, Users, Shield, X, UserCheck } from "lucide-react";
+import { Search, Users, Shield, X, UserCheck, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,6 +32,7 @@ export default function AsociarJugadores() {
   const [loadingData, setLoadingData] = useState(true);
   const [currentPageJugadores, setCurrentPageJugadores] = useState(1);
   const [currentPageEquipos, setCurrentPageEquipos] = useState(1);
+  const [expandedEquipoId, setExpandedEquipoId] = useState(null);
 
   // Traer jugadores y equipos del backend
   useEffect(() => {
@@ -270,38 +271,54 @@ export default function AsociarJugadores() {
                   <div className="space-y-4">
                     <div className="grid gap-4">
                       {paginatedEquipos.length > 0 ? (
-                        paginatedEquipos.map((equipo) => (
-                          <div key={equipo.id} className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <h3 className="font-medium text-black">{equipo.nombre}</h3>
-                                <div className="text-sm text-gray-600">
-                                  {equipo.descripcion || ""}
+                        paginatedEquipos.map((equipo) => {
+                          const jugadoresEquipo = jugadores.filter((j) =>
+                            j.equipos?.some(eq => eq.id === equipo.id)
+                          );
+                          const isExpanded = expandedEquipoId === equipo.id;
+                          return (
+                            <div key={equipo.id} className="border border-gray-200 rounded-lg">
+                              <button
+                                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 focus:outline-none"
+                                onClick={() =>
+                                  setExpandedEquipoId(isExpanded ? null : equipo.id)
+                                }
+                              >
+                                <div className="flex items-center gap-2">
+                                  <h3 className="font-medium capitalize text-black">{equipo.nombre}</h3>
+                                  <span className="ml-2 text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-0.5">
+                                    {jugadoresEquipo.length} jugadores
+                                  </span>
                                 </div>
-                              </div>
-                              <Badge variant="outline" className="ml-2">
-                                {jugadores.filter((j) =>
-                                  j.equipos?.some(eq => eq.id === equipo.id)
-                                ).length} jugadores
-                              </Badge>
+                                {isExpanded ? (
+                                  <ChevronUp className="w-5 h-5 text-gray-500" />
+                                ) : (
+                                  <ChevronDown className="w-5 h-5 text-gray-500" />
+                                )}
+                              </button>
+                              {isExpanded && (
+                                <div className="border-t px-4 py-2 bg-gray-50 space-y-1">
+                                  {jugadoresEquipo.length > 0 ? (
+                                    jugadoresEquipo.map((jugador) => (
+                                      <div
+                                        key={jugador.id}
+                                        className="flex items-center justify-between text-sm p-2 rounded"
+                                      >
+                                        <span>
+                                          {jugador.nombre} {jugador.apellido} • DNI: {jugador.dni}
+                                        </span>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <div className="text-gray-500 text-sm py-2">
+                                      No hay jugadores en este equipo
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                            {/* Lista de jugadores en el equipo */}
-                            <div className="mt-3 space-y-1">
-                              {jugadores
-                                .filter((j) => j.equipos?.some(eq => eq.id === equipo.id))
-                                .map((jugador) => (
-                                  <div
-                                    key={jugador.id}
-                                    className="flex items-center justify-between text-sm bg-gray-50 p-2 rounded"
-                                  >
-                                    <span>
-                                      {jugador.nombre} {jugador.apellido} • DNI: {jugador.dni}
-                                    </span>
-                                  </div>
-                                ))}
-                            </div>
-                          </div>
-                        ))
+                          );
+                        })
                       ) : (
                         <div className="text-center py-8 text-gray-500">
                           No se encontraron equipos con ese criterio de búsqueda

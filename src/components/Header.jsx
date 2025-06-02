@@ -127,7 +127,7 @@ export function Header() {
         )}
 
         <div className="hidden md:flex items-center">
-          <div className="flex gap-8 lg:gap-12 font-inter text-sm xl:text-lg">
+          <div className="flex gap-8 lg:gap-20 font-inter text-sm xl:text-lg">
             <Link
               to={
                 userRole === "admin" || userRole === "moderador"

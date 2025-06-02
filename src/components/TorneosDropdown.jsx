@@ -175,7 +175,7 @@ export default function TorneosDropdown({ anchorRef, closeMenuTorneos }) {
           {/* Jugadores - Solo click */}
           <button
             onClick={() => {
-              navigate("/jugadores")
+              navigate("/ver-jugadores")
               closeMenuTorneos()
             }}
             className="w-full flex justify-between items-center text-left hover:bg-gray-700 px-3 py-2 rounded-[4px] transition-colors"

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Search, Users, Shield, X, UserCheck, ChevronDown, ChevronUp } from "lucide-react";
+import { Search, Users, Shield, X, UserCheck, ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -33,6 +33,11 @@ export default function AsociarJugadores() {
   const [currentPageJugadores, setCurrentPageJugadores] = useState(1);
   const [currentPageEquipos, setCurrentPageEquipos] = useState(1);
   const [expandedEquipoId, setExpandedEquipoId] = useState(null);
+  const [isAddJugadorOpen, setIsAddJugadorOpen] = useState(false);
+  const [equipoSeleccionado, setEquipoSeleccionado] = useState(null);
+  const [busquedaJugador, setBusquedaJugador] = useState("");
+  const [jugadoresBusqueda, setJugadoresBusqueda] = useState([]);
+  const [loadingBusqueda, setLoadingBusqueda] = useState(false);
 
   // Traer jugadores y equipos del backend
   useEffect(() => {
@@ -86,6 +91,55 @@ export default function AsociarJugadores() {
     setSelectedEquipoId(null);
     setAsignarCapitan(false);
     setIsDialogOpen(true);
+  };
+
+  // Función para abrir el modal de agregar jugador a equipo
+  const openAddJugadorModal = (equipo) => {
+    setEquipoSeleccionado(equipo);
+    setBusquedaJugador("");
+    setJugadoresBusqueda([]);
+    setIsAddJugadorOpen(true);
+  };
+
+  // Buscar jugadores por nombre, apellido o dni
+  const buscarJugadores = async (valor) => {
+    setBusquedaJugador(valor);
+    if (valor.length < 2) {
+      setJugadoresBusqueda([]);
+      return;
+    }
+    setLoadingBusqueda(true);
+    try {
+      // Puedes ajustar el endpoint según tu backend
+      const res = await api.get(`/jugadores?busqueda=${encodeURIComponent(valor)}`);
+      setJugadoresBusqueda(res.data);
+    } catch {
+      setJugadoresBusqueda([]);
+    } finally {
+      setLoadingBusqueda(false);
+    }
+  };
+
+  // Asociar jugador seleccionado al equipo
+  const asociarJugadorAEquipo = async (jugador) => {
+    if (!equipoSeleccionado) return;
+    setLoading(true);
+    try {
+      await api.post("/jugadores/asociar-a-equipo", {
+        jugadorId: jugador.id,
+        equipoId: equipoSeleccionado.id,
+        capitan: false,
+      });
+      toast.success("Jugador asociado correctamente");
+      setIsAddJugadorOpen(false);
+      // Refrescar jugadores
+      const jugadoresRes = await api.get("/jugadores");
+      setJugadores(jugadoresRes.data);
+    } catch (err) {
+      toast.error("Error al asociar jugador");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Asociar jugador a equipo
@@ -229,10 +283,10 @@ export default function AsociarJugadores() {
                                 </div>
                               </div>
                               <button
-                                className={`rounded-[6px] px-3 py-1 flex items-center transition-colors
+                                className={`rounded-[6px] px-2 py-1 text-sm flex items-center transition-colors
                                   ${tieneEquipo
-                                    ? "bg-gray-200 text-gray-800 hover:bg-blue-100"
-                                    : "bg-green-600 text-white hover:bg-green-700"}
+                                    ? "bg-gray-200 text-gray-800 hover:bg-gray-700 hover:text-white"
+                                    : "bg-green-200 text-green-700 hover:bg-green-500 hover:text-white transition"}
                                 `}
                                 size="sm"
                                 onClick={() => openDialog(jugador)}
@@ -278,24 +332,32 @@ export default function AsociarJugadores() {
                           const isExpanded = expandedEquipoId === equipo.id;
                           return (
                             <div key={equipo.id} className="border border-gray-200 rounded-lg">
-                              <button
-                                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 focus:outline-none"
-                                onClick={() =>
-                                  setExpandedEquipoId(isExpanded ? null : equipo.id)
-                                }
-                              >
-                                <div className="flex items-center gap-2">
+                              <div className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
+                                <button
+                                  className="flex items-center gap-2 focus:outline-none"
+                                  onClick={() =>
+                                    setExpandedEquipoId(isExpanded ? null : equipo.id)
+                                  }
+                                >
                                   <h3 className="font-medium capitalize text-black">{equipo.nombre}</h3>
                                   <span className="ml-2 text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-0.5">
                                     {jugadoresEquipo.length} jugadores
                                   </span>
-                                </div>
-                                {isExpanded ? (
-                                  <ChevronUp className="w-5 h-5 text-gray-500" />
-                                ) : (
-                                  <ChevronDown className="w-5 h-5 text-gray-500" />
-                                )}
-                              </button>
+                                  {isExpanded ? (
+                                    <ChevronUp className="w-5 h-5 text-gray-500" />
+                                  ) : (
+                                    <ChevronDown className="w-5 h-5 text-gray-500" />
+                                  )}
+                                </button>
+                                <button
+                                  className="ml-2 flex items-center gap-1 px-2 py-1 rounded-[6px] bg-green-200 text-green-700 hover:bg-green-500 hover:text-white transition"
+                                  onClick={() => openAddJugadorModal(equipo)}
+                                  title="Agregar jugador"
+                                >
+                                  <Plus className="w-4 h-4" />
+                                  <span className="text-sm ">Agregar</span>
+                                </button>
+                              </div>
                               {isExpanded && (
                                 <div className="border-t px-4 py-2 bg-gray-50 space-y-1">
                                   {jugadoresEquipo.length > 0 ? (
@@ -338,6 +400,52 @@ export default function AsociarJugadores() {
                           </button>
                         ))}
                       </div>
+                    )}
+                    {/* Modal agregar jugador */}
+                    {isAddJugadorOpen && (
+                      <Dialog open={isAddJugadorOpen} onOpenChange={setIsAddJugadorOpen}>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>
+                              Agregar jugador a {equipoSeleccionado?.nombre}
+                            </DialogTitle>
+                          </DialogHeader>
+                          <div className="py-2">
+                            <input
+                              className="w-full border rounded px-2 py-1 mb-2"
+                              placeholder="Buscar por nombre, apellido o DNI..."
+                              value={busquedaJugador}
+                              onChange={e => buscarJugadores(e.target.value)}
+                              autoFocus
+                            />
+                            {loadingBusqueda && (
+                              <div className="text-center text-gray-500 py-2 text-sm">Buscando...</div>
+                            )}
+                            {!loadingBusqueda && jugadoresBusqueda.length === 0 && busquedaJugador.length > 1 && (
+                              <div className="text-center text-gray-500 py-2 text-sm">No se encontraron jugadores</div>
+                            )}
+                            <div className="max-h-48 overflow-y-auto">
+                              {jugadoresBusqueda.map(jugador => (
+                                <div
+                                  key={jugador.id}
+                                  className="flex items-center justify-between p-2 hover:bg-gray-100 rounded cursor-pointer"
+                                >
+                                  <span>
+                                    {jugador.nombre} {jugador.apellido} • DNI: {jugador.dni}
+                                  </span>
+                                  <button
+                                    className="ml-2 px-2 py-1 rounded bg-blue-600 text-white text-xs hover:bg-blue-700"
+                                    onClick={() => asociarJugadorAEquipo(jugador)}
+                                    disabled={loading}
+                                  >
+                                    Asociar
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     )}
                   </div>
                 )}

@@ -246,7 +246,7 @@ const desvincularJugador = async (equipoId) => {
       <ToastContainer position="top-right" />
       <main className="flex-1 grow p-6">
         <div className="w-full flex mb-4">
-          <BackButton ruta={-1} />
+          <BackButton ruta={'/ver-jugadores'} />
         </div>
         <div className="w-full flex flex-col items-center justify-center">
           <div className="bg-white p-6 rounded-[8px] max-w-5xl w-full">

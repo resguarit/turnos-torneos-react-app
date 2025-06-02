@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Search, Users, Shield, X, UserCheck, ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { Search, Users, Shield, X, UserCheck, ChevronDown, ChevronUp, Plus, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +15,7 @@ import BtnLoading from "@/components/BtnLoading";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import AsociarJugadorModal from "../Modals/AsociarJugadorModal";
+import DesvincularJugadorModal from "../Modals/DesvincularJugadorModal";
 
 const ITEMS_PER_PAGE = 10;
 const MAX_JUGADORES = 100;
@@ -38,6 +39,9 @@ export default function AsociarJugadores() {
   const [busquedaJugador, setBusquedaJugador] = useState("");
   const [jugadoresBusqueda, setJugadoresBusqueda] = useState([]);
   const [loadingBusqueda, setLoadingBusqueda] = useState(false);
+  const [isDesvincularOpen, setIsDesvincularOpen] = useState(false);
+const [jugadorDesvincular, setJugadorDesvincular] = useState(null);
+const [loadingDesvincular, setLoadingDesvincular] = useState(false);
 
   // Traer jugadores y equipos del backend
   useEffect(() => {
@@ -194,6 +198,33 @@ export default function AsociarJugadores() {
     currentPageEquipos * ITEMS_PER_PAGE
   );
 
+  const openDesvincularModal = (jugador) => {
+  setJugadorDesvincular(jugador);
+  setIsDesvincularOpen(true);
+};
+
+const desvincularJugador = async (equipoId) => {
+  setLoadingDesvincular(true);
+  try {
+    await api.post(`/equipos/${equipoId}/jugadores/${jugadorDesvincular.id}/desvincular-jugador`, {
+      jugador_id: jugadorDesvincular.id,
+      equipo_id: equipoId,
+    });
+    toast.success("Jugador desvinculado correctamente");
+    setIsDesvincularOpen(false);
+    // Refrescar jugadores
+    const jugadoresRes = await api.get("/jugadores");
+    setJugadores(jugadoresRes.data);
+  } catch (err) {
+    toast.error(
+      err.response?.data?.message ||
+      "No se pudo desvincular al jugador"
+    );
+  } finally {
+    setLoadingDesvincular(false);
+  }
+};
+
   return (
     <div className="min-h-screen flex flex-col font-inter bg-gray-100">
       <Header />
@@ -204,7 +235,7 @@ export default function AsociarJugadores() {
         </div>
         <div className="w-full flex flex-col items-center justify-center">
           <div className="bg-white p-6 rounded-[8px] max-w-5xl w-full">
-            <h1 className="text-3xl font-bold mb-6 text-black">Asociar Jugadores a Equipos</h1>
+            <h1 className="text-xl font-bold mb-6 text-black">Asociar Jugadores a Equipos</h1>
             {loadingData ? (
               <div className="flex justify-center items-center h-64">
                 <BtnLoading />
@@ -279,6 +310,15 @@ export default function AsociarJugadores() {
                                   {getEquiposJugador(jugador)}
                                 </div>
                               </div>
+                              <div className="flex items-center gap-2">
+                                {tieneEquipo && (
+                                    <button
+                                        className="ml-2 rounded-[6px] px-2 py-1 text-sm flex items-center bg-red-200 text-red-700 hover:bg-red-500 hover:text-white transition"
+                                        onClick={() => openDesvincularModal(jugador)}
+                                    >
+                                        <UserX className="w-4 h-4 mr-1" /> Desvincular de equipo
+                                    </button>
+                                    )}
                               <button
                                 className={`rounded-[6px] px-2 py-1 text-sm flex items-center transition-colors
                                   ${tieneEquipo
@@ -291,6 +331,7 @@ export default function AsociarJugadores() {
                                 <UserCheck className="w-4 h-4 mr-1" />
                                 Asociar a Equipo
                               </button>
+                              </div>
                             </div>
                           );
                         })
@@ -455,15 +496,23 @@ export default function AsociarJugadores() {
       </main>
       <Footer />
     <AsociarJugadorModal
-  isOpen={isDialogOpen}
-  onClose={() => setIsDialogOpen(false)}
-  jugador={selectedJugador}
-  equipos={equipos}
-  selectedEquipoId={selectedEquipoId}
-  setSelectedEquipoId={setSelectedEquipoId}
-  loading={loading}
-  onAsociar={asociarJugador}
-/>
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        jugador={selectedJugador}
+        equipos={equipos}
+        selectedEquipoId={selectedEquipoId}
+        setSelectedEquipoId={setSelectedEquipoId}
+        loading={loading}
+        onAsociar={asociarJugador}
+    />
+    <DesvincularJugadorModal
+        isOpen={isDesvincularOpen}
+        onClose={() => setIsDesvincularOpen(false)}
+        jugador={jugadorDesvincular}
+        equiposJugador={jugadorDesvincular?.equipos || []}
+        loading={loadingDesvincular}
+        onDesvincular={desvincularJugador}
+    />
     </div>
   );
 }

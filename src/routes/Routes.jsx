@@ -49,6 +49,7 @@ import CheckoutFailure from "@/views/Checkout/CheckoutFailure";
 import CheckoutPending from "@/views/Checkout/CheckoutPending";
 import BloquearTurnos from "@/views/Admin/BloquearTurnos";
 import TurnosBloqueados from "@/views/Admin/TurnosBloqueados";
+import VerJugadores from "@/views/Admin/Torneos/VerJugadores";
 
 const AppRoutes = () => {
   return (
@@ -96,6 +97,7 @@ const AppRoutes = () => {
       <Route path={`/crear-evento`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><CrearEvento /></ProtectedRoute>} />
       <Route path={`/bloquear-turnos`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><BloquearTurnos /></ProtectedRoute>} />
       <Route path={`/turnos-bloqueados`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><TurnosBloqueados /></ProtectedRoute>} />
+      <Route path={`/ver-jugadores`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><VerJugadores /></ProtectedRoute>} />
 
       {/* Rutas protegidas para usuarios y administradores */}
       <Route path={`/user-profile`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><UserProfile /></ProtectedRoute>} />

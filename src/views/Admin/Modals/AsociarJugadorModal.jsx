@@ -9,8 +9,6 @@ export default function AsociarJugadorModal({
   equipos,
   selectedEquipoId,
   setSelectedEquipoId,
-  asignarCapitan,
-  setAsignarCapitan,
   loading,
   onAsociar
 }) {
@@ -46,17 +44,6 @@ export default function AsociarJugadorModal({
               </option>
             ))}
           </select>
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="asignar-capitan"
-              checked={asignarCapitan}
-              onChange={() => setAsignarCapitan(!asignarCapitan)}
-            />
-            <label htmlFor="asignar-capitan" className="text-sm text-gray-700">
-              Asignar como capitán
-            </label>
-          </div>
           <button
             className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded"
             onClick={onAsociar}

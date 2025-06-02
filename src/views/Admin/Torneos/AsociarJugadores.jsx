@@ -28,7 +28,6 @@ export default function AsociarJugadores() {
   const [selectedJugador, setSelectedJugador] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEquipoId, setSelectedEquipoId] = useState(null);
-  const [asignarCapitan, setAsignarCapitan] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [currentPageJugadores, setCurrentPageJugadores] = useState(1);
@@ -90,7 +89,6 @@ export default function AsociarJugadores() {
   const openDialog = (jugador) => {
     setSelectedJugador(jugador);
     setSelectedEquipoId(null);
-    setAsignarCapitan(false);
     setIsDialogOpen(true);
   };
 
@@ -129,7 +127,6 @@ export default function AsociarJugadores() {
       await api.post("/jugadores/asociar-a-equipo", {
         jugador_id: jugador.id,
         equipo_id: equipoSeleccionado.id,
-        capitan: false,
       });
       toast.success("Jugador asociado correctamente");
       setIsAddJugadorOpen(false);
@@ -154,7 +151,6 @@ export default function AsociarJugadores() {
       await api.post("/jugadores/asociar-a-equipo", {
         jugador_id: selectedJugador.id,
         equipo_id: selectedEquipoId,
-        capitan: asignarCapitan,
       });
       toast.success("Jugador asociado correctamente");
       setIsDialogOpen(false);
@@ -465,8 +461,6 @@ export default function AsociarJugadores() {
   equipos={equipos}
   selectedEquipoId={selectedEquipoId}
   setSelectedEquipoId={setSelectedEquipoId}
-  asignarCapitan={asignarCapitan}
-  setAsignarCapitan={setAsignarCapitan}
   loading={loading}
   onAsociar={asociarJugador}
 />

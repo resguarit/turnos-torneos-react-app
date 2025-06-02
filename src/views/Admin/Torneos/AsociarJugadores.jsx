@@ -14,6 +14,7 @@ import BackButton from "@/components/BackButton";
 import BtnLoading from "@/components/BtnLoading";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import AsociarJugadorModal from "../Modals/AsociarJugadorModal";
 
 const ITEMS_PER_PAGE = 10;
 const MAX_JUGADORES = 100;
@@ -126,8 +127,8 @@ export default function AsociarJugadores() {
     setLoading(true);
     try {
       await api.post("/jugadores/asociar-a-equipo", {
-        jugadorId: jugador.id,
-        equipoId: equipoSeleccionado.id,
+        jugador_id: jugador.id,
+        equipo_id: equipoSeleccionado.id,
         capitan: false,
       });
       toast.success("Jugador asociado correctamente");
@@ -151,8 +152,8 @@ export default function AsociarJugadores() {
     setLoading(true);
     try {
       await api.post("/jugadores/asociar-a-equipo", {
-        jugadorId: selectedJugador.id,
-        equipoId: selectedEquipoId,
+        jugador_id: selectedJugador.id,
+        equipo_id: selectedEquipoId,
         capitan: asignarCapitan,
       });
       toast.success("Jugador asociado correctamente");
@@ -450,57 +451,25 @@ export default function AsociarJugadores() {
                   </div>
                 )}
 
-                {/* Diálogo para asociar jugador a equipo */}
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>
-                        Asociar a equipo: {selectedJugador?.nombre} {selectedJugador?.apellido}
-                      </DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4 space-y-4">
-                      <Select
-                        value={selectedEquipoId ? selectedEquipoId.toString() : ""}
-                        onValueChange={(value) => setSelectedEquipoId(Number(value))}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Seleccionar equipo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {equipos.map((equipo) => (
-                            <SelectItem key={equipo.id} value={equipo.id.toString()}>
-                              {equipo.nombre}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id="asignar-capitan"
-                          checked={asignarCapitan}
-                          onChange={() => setAsignarCapitan(!asignarCapitan)}
-                        />
-                        <label htmlFor="asignar-capitan" className="text-sm text-gray-700">
-                          Asignar como capitán
-                        </label>
-                      </div>
-                      <Button
-                        className="w-full bg-green-600 hover:bg-green-700 text-white"
-                        onClick={asociarJugador}
-                        disabled={loading}
-                      >
-                        {loading ? "Asociando..." : "Asociar"}
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                
               </>
             )}
           </div>
         </div>
       </main>
       <Footer />
+    <AsociarJugadorModal
+  isOpen={isDialogOpen}
+  onClose={() => setIsDialogOpen(false)}
+  jugador={selectedJugador}
+  equipos={equipos}
+  selectedEquipoId={selectedEquipoId}
+  setSelectedEquipoId={setSelectedEquipoId}
+  asignarCapitan={asignarCapitan}
+  setAsignarCapitan={setAsignarCapitan}
+  loading={loading}
+  onAsociar={asociarJugador}
+/>
     </div>
   );
 }

@@ -16,6 +16,8 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import AsociarJugadorModal from "../Modals/AsociarJugadorModal";
 import DesvincularJugadorModal from "../Modals/DesvincularJugadorModal";
+import AgregarJugadorAEquipoModal from "../Modals/AgregarJugadorAEquipoModal";
+
 
 const ITEMS_PER_PAGE = 10;
 const MAX_JUGADORES = 100;
@@ -100,15 +102,15 @@ const [loadingDesvincular, setLoadingDesvincular] = useState(false);
   const openAddJugadorModal = (equipo) => {
     setEquipoSeleccionado(equipo);
     setBusquedaJugador("");
-    setJugadoresBusqueda([]);
+    setJugadoresBusqueda(jugadores); // <-- Mostrar todos los jugadores al abrir el modal
     setIsAddJugadorOpen(true);
   };
 
-  // Buscar jugadores por nombre, apellido o dni
+  // Buscar jugadores por nombre, apellido o dni (filtrado remoto)
   const buscarJugadores = async (valor) => {
     setBusquedaJugador(valor);
     if (valor.length < 2) {
-      setJugadoresBusqueda([]);
+      setJugadoresBusqueda(jugadores); // <-- Si el filtro es corto, mostrar todos los jugadores
       return;
     }
     setLoadingBusqueda(true);
@@ -224,6 +226,19 @@ const desvincularJugador = async (equipoId) => {
     setLoadingDesvincular(false);
   }
 };
+
+  useEffect(() => {
+    if (!isAddJugadorOpen) return;
+    if (busquedaJugador.length < 2) {
+      setJugadoresBusqueda(jugadores);
+      return;
+    }
+    setLoadingBusqueda(true);
+    api.get(`/jugadores?busqueda=${encodeURIComponent(busquedaJugador)}`)
+      .then(res => setJugadoresBusqueda(res.data))
+      .catch(() => setJugadoresBusqueda([]))
+      .finally(() => setLoadingBusqueda(false));
+  }, [busquedaJugador, isAddJugadorOpen]);
 
   return (
     <div className="min-h-screen flex flex-col font-inter bg-gray-100">
@@ -439,52 +454,7 @@ const desvincularJugador = async (equipoId) => {
                         ))}
                       </div>
                     )}
-                    {/* Modal agregar jugador */}
-                    {isAddJugadorOpen && (
-                      <Dialog open={isAddJugadorOpen} onOpenChange={setIsAddJugadorOpen}>
-                        <DialogContent className="sm:max-w-md">
-                          <DialogHeader>
-                            <DialogTitle>
-                              Agregar jugador a {equipoSeleccionado?.nombre}
-                            </DialogTitle>
-                          </DialogHeader>
-                          <div className="py-2">
-                            <input
-                              className="w-full border rounded px-2 py-1 mb-2"
-                              placeholder="Buscar por nombre, apellido o DNI..."
-                              value={busquedaJugador}
-                              onChange={e => buscarJugadores(e.target.value)}
-                              autoFocus
-                            />
-                            {loadingBusqueda && (
-                              <div className="text-center text-gray-500 py-2 text-sm">Buscando...</div>
-                            )}
-                            {!loadingBusqueda && jugadoresBusqueda.length === 0 && busquedaJugador.length > 1 && (
-                              <div className="text-center text-gray-500 py-2 text-sm">No se encontraron jugadores</div>
-                            )}
-                            <div className="max-h-48 overflow-y-auto">
-                              {jugadoresBusqueda.map(jugador => (
-                                <div
-                                  key={jugador.id}
-                                  className="flex items-center justify-between p-2 hover:bg-gray-100 rounded cursor-pointer"
-                                >
-                                  <span>
-                                    {jugador.nombre} {jugador.apellido} • DNI: {jugador.dni}
-                                  </span>
-                                  <button
-                                    className="ml-2 px-2 py-1 rounded bg-blue-600 text-white text-xs hover:bg-blue-700"
-                                    onClick={() => asociarJugadorAEquipo(jugador)}
-                                    disabled={loading}
-                                  >
-                                    Asociar
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    )}
+                    
                   </div>
                 )}
 
@@ -512,6 +482,14 @@ const desvincularJugador = async (equipoId) => {
         equiposJugador={jugadorDesvincular?.equipos || []}
         loading={loadingDesvincular}
         onDesvincular={desvincularJugador}
+    />
+    <AgregarJugadorAEquipoModal
+        isOpen={isAddJugadorOpen}
+        onClose={() => setIsAddJugadorOpen(false)}
+        equipo={equipoSeleccionado}
+        jugadores={jugadores}
+        loading={loading}
+        onAsociar={asociarJugadorAEquipo}
     />
     </div>
   );

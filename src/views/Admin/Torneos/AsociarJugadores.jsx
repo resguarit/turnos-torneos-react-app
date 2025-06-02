@@ -12,6 +12,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import BackButton from "@/components/BackButton";
 import BtnLoading from "@/components/BtnLoading";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 const ITEMS_PER_PAGE = 10;
 const MAX_JUGADORES = 100;
@@ -217,9 +219,9 @@ export default function AsociarJugadores() {
                               className="flex items-center justify-between p-2 px-4 border border-gray-200 rounded-lg hover:bg-gray-50"
                             >
                               <div>
-                                <h3 className="font-medium text-black">{jugador.nombre} {jugador.apellido}</h3>
+                                <h3 className="font-medium capitalize text-black">{jugador.nombre} {jugador.apellido}</h3>
                                 <div className="text-sm text-gray-600">
-                                  DNI: {jugador.dni} • {jugador.fecha_nacimiento}
+                                  DNI: {jugador.dni} • {jugador.fecha_nacimiento ? format(new Date(jugador.fecha_nacimiento), "dd/MM/yyyy") : ""}
                                 </div>
                                 <div className={`w-fit px-2 text-sm mt-1 rounded-xl ${tieneEquipo ? "bg-blue-200 text-blue-800" : "bg-red-200 text-red-500"}`} >
                                   {getEquiposJugador(jugador)}

@@ -239,7 +239,7 @@ function VerJugadores() {
                 + Cargar Jugador
               </button>
               <button
-                onClick={() => navigate("/cargar-jugador")}
+                onClick={() => navigate("/asociar-jugadores")}
                 className="bg-gray-800 gap-2 flex items-center text-base font-normal text-white hover:bg-black/90 p-1 px-3 rounded-[6px]"
               >
                 <Link size={16}/> Asociar Jugador

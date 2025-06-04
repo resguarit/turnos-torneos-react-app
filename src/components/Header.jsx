@@ -16,8 +16,6 @@ export function Header() {
   const location = useLocation()
   const [username, setUserName] = useState(null)
   const [isOpen, setIsOpen] = useState(false)
-  const [MenuTorneos, setMenuTorneos] = useState(false)
-  const torneosBtnRef = useRef(null);
   const [showModal, setShowModal] = useState(false)
   const [userRole, setUserRole] = useState(null);
   const [hasActiveReservation, setHasActiveReservation] = useState(false)
@@ -28,18 +26,10 @@ export function Header() {
     setMenuTorneos(false)
   }
 
-  const toggleMenuTorneos = () => {
-    setMenuTorneos(!MenuTorneos)
-    setIsOpen(false)
-  }
-
   const closeMenu = () => {
     setIsOpen(false)
   }
 
-  const closeMenuTorneos = () => {
-    setMenuTorneos(false)
-  }
 
   useEffect(() => {
     const name = localStorage.getItem("username")
@@ -139,12 +129,7 @@ export function Header() {
               {userRole === "admin" || userRole === "moderador" ? "Panel Admin" : "Inicio"}
             </Link>
             {userRole === "admin" && (
-              <button 
-              onClick={toggleMenuTorneos}
-              ref={torneosBtnRef}
-              className="hover:opacity-80">
-                Torneos
-            </button>
+              <TorneosDropdown />
             )}
             {userRole !== "admin" && (
             <Link to="/torneos-user" className="hover:opacity-80">
@@ -230,9 +215,6 @@ export function Header() {
           botonText1={"Cancelar"}
           botonText2={"Cerrar Sesión"}
         />
-      )}
-      {MenuTorneos && (
-        <TorneosDropdown anchorRef={torneosBtnRef} closeMenuTorneos={closeMenuTorneos}/>
       )}
     </header>
   )

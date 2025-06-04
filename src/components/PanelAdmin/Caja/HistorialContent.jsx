@@ -154,6 +154,12 @@ const HistorialContent = ({
                             </span>
                             <span>${cierre.resumen_pagos?.tarjeta?.toFixed(2) || '0.00'}</span>
                           </div>
+                          <div className="flex justify-between">
+                            <span className="flex items-center gap-1">
+                              <CreditCard className="h-4 w-4" /> Mercado Pago:
+                            </span>
+                            <span>${cierre.resumen_pagos?.mercadopago?.toFixed(2) || '0.00'}</span>
+                          </div>
                         </div>
                       </div>
 

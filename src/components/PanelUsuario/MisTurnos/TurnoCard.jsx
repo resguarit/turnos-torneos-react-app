@@ -176,7 +176,7 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
           <div className="flex flex-col gap-2 mt-4">
             {/* Primera fila de botones */}
             <div className="flex flex-col lg:flex-row gap-2 w-full">
-              {turno.estado !== TurnoEstado.CANCELADO && turno.estado !== TurnoEstado.PAGADO && turno.estado !== TurnoEstado.SEÑADO && showCancelButton && (
+              {turno.estado !== TurnoEstado.CANCELADO && turno.estado !== TurnoEstado.PAGADO && showCancelButton && (
                 <Button
                   onClick={() => setShowCancelModal(true)}
                   className="w-full bg-red-500 text-white hover:bg-red-600"

@@ -89,19 +89,25 @@ const DialogCierreCaja = ({
               <span className="flex items-center gap-1">
                 <Banknote className="h-4 w-4" /> Efectivo:
               </span>
-              <span>${resumenPagos.efectivo.toFixed(2)}</span>
+              <span>${resumenPagos?.efectivo?.toFixed(2) || '0.00'}</span>
             </div>
             <div className="flex justify-between">
               <span className="flex items-center gap-1">
                 <ArrowDownToLine className="h-4 w-4" /> Transferencias:
               </span>
-              <span>${resumenPagos.transferencia.toFixed(2)}</span>
+              <span>${resumenPagos?.transferencia?.toFixed(2) || '0.00'}</span>
             </div>
             <div className="flex justify-between">
               <span className="flex items-center gap-1">
                 <CreditCard className="h-4 w-4" /> Tarjetas:
               </span>
-              <span>${resumenPagos.tarjeta.toFixed(2)}</span>
+              <span>${resumenPagos?.tarjeta?.toFixed(2) || '0.00'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="flex items-center gap-1">
+                <CreditCard className="h-4 w-4" /> Mercado Pago:
+              </span>
+              <span>${resumenPagos?.mercadopago?.toFixed(2) || '0.00'}</span>
             </div>
           </div>
         </div>

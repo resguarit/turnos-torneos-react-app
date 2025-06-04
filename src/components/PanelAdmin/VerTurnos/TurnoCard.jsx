@@ -150,7 +150,7 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
 
       {/* BOTONES SIEMPRE ABAJO */}
       <div className="flex gap-2 justify-center w-full mt-auto">
-        {booking.estado !== 'Cancelado' && booking.estado !== 'Señado' && booking.estado !== 'Pagado' && booking.tipo !== 'torneo' && (
+        {booking.estado !== 'Cancelado' && booking.estado !== 'Pagado' && booking.tipo !== 'torneo' && (
           <button
             onClick={() => handleDeleteSubmit(booking)}
             size="icon"
@@ -194,7 +194,6 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
         
         {/* Botón de pago/información - Lógica condicional mejorada */}
         {booking.estado !== 'Cancelado' &&
-          fecha_turno > fecha_modificacion &&
           (!eventoPagado || booking.tipo !== 'evento') && (
             <button
               onClick={handlePagoClick}

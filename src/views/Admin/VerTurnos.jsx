@@ -284,24 +284,52 @@ function VerTurnos() {
 
   const confirmDeleteSubmit = async () => {
     setShowModal(false);
+    if (!selectedBooking || !selectedBooking.id) {
+      toast.error('Error: No se ha seleccionado ningún turno para cancelar.');
+      return;
+    }
+
     try {
-      const response = await api.patch(`/turnos/${selectedBooking.id}`, { estado: 'Cancelado' });
+      // Cambiamos de PATCH a POST y usamos el nuevo endpoint
+      const response = await api.post(`/turnos/cancelar/${selectedBooking.id}`);
       
+      // La respuesta del endpoint de cancelación ya incluye un mensaje y el estado 200 si es exitoso
       if (response.status === 200) {
-        toast.success('Turno cancelado correctamente');
+        toast.success(response.data.message || 'Turno cancelado correctamente');
         // Actualiza el estado para reflejar la cancelación
-        setSelectedBooking({ ...selectedBooking, estado: 'Cancelado' });
+        // La respuesta del backend podría devolver el turno actualizado si fuera necesario,
+        // pero por ahora, asumimos que el estado siempre cambia a "Cancelado"
+        // o que la respuesta es suficiente para el usuario.
         setGroupedBookings(prev => {
           const updated = { ...prev };
+          if (selectedBooking.fecha_turno) { // Asegurarse que fecha_turno exista
           const date = selectedBooking.fecha_turno.split('T')[0];
+            if (updated[date]) {
           updated[date] = updated[date].map(booking => 
             booking.id === selectedBooking.id ? { ...booking, estado: 'Cancelado' } : booking
           );
+            } else {
+               // Si la fecha no existe (raro, pero por seguridad), recargamos todos los turnos
+               fetchTurnos(); 
+            }
+          } else {
+            // Si no hay fecha_turno, algo es inconsistente, mejor recargar
+            fetchTurnos();
+          }
           return updated;
         });
+        setSelectedBooking(null); // Limpiar el turno seleccionado
+      } else {
+        // Si el backend devuelve un error específico con mensaje
+        toast.error(response.data.message || 'Error al cancelar el turno desde el backend');
       }
     } catch (error) {
-      toast.error('Error al cancelar el turno');
+      console.error("Error canceling reservation:", error);
+      if (error.response && error.response.data && error.response.data.message) {
+        toast.error(`Error: ${error.response.data.message}`);
+      } else {
+        toast.error('Error al conectar con el servidor para cancelar el turno.');
+      }
     }
   };
 

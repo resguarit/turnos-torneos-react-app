@@ -61,11 +61,11 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
   };
 
   const handlePagoClick = () => {
-    // Si el turno está pagado, mostrar modal de información
-    if (booking.estado === 'Pagado') {
+    // Si el turno está pagado o cancelado, mostrar modal de información
+    if (booking.estado === 'Pagado' || booking.estado === 'Cancelado') {
       setShowInfoModal(true);
     } else {
-      // Si no está pagado, verificar caja y mostrar modal de registro
+      // Si no está pagado ni cancelado, verificar caja y mostrar modal de registro
       if (booking.tipo === 'evento') {
         setShowPagoEvento(true);
       } else {
@@ -193,18 +193,17 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
         )}
         
         {/* Botón de pago/información - Lógica condicional mejorada */}
-        {booking.estado !== 'Cancelado' &&
-          (!eventoPagado || booking.tipo !== 'evento') && (
+        {(booking.estado === 'Pagado' || booking.estado === 'Cancelado') || (booking.estado !== 'Pagado' && booking.estado !== 'Cancelado' && (!eventoPagado || booking.tipo !== 'evento')) ? (
             <button
               onClick={handlePagoClick}
               disabled={verificandoCaja}
               className={`flex rounded-[4px] flex-row gap-2 items-center text-white p-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                booking.estado === 'Pagado'
-                  ? 'bg-blue-600 hover:bg-blue-700'
-                  : 'bg-emerald-500 hover:bg-emerald-600'
+                (booking.estado === 'Pagado' || booking.estado === 'Cancelado')
+                  ? 'bg-blue-600 hover:bg-blue-700' // Estilo para "Ver Información"
+                  : 'bg-emerald-500 hover:bg-emerald-600' // Estilo para "Registrar Pago"
               }`}
             >
-              {booking.estado === 'Pagado' ? (
+              {(booking.estado === 'Pagado' || booking.estado === 'Cancelado') ? (
                 <>
                   <Eye className="h-4 w-4" />
                   Ver Información
@@ -216,10 +215,10 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
                 </>
               )}
             </button>
-        )}
+        ) : null}
       </div>
 
-      {/* Modal para registrar pago (cuando NO está pagado) */}
+      {/* Modal para registrar pago (cuando NO está pagado ni cancelado) */}
       <RegistrarPagoTurnoDialog
         isOpen={showPaymentModal}
         onClose={() => {

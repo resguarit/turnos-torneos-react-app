@@ -6,6 +6,9 @@ import { useNavigate } from "react-router-dom"
 import { Search, X, Filter, ChevronDown, Link } from "lucide-react"
 import api from '@/lib/axiosConfig'
 import BtnLoading from "@/components/BtnLoading"
+import { normalize } from "../../../utils/normalize"; 
+import { format, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
 
 const ITEMS_PER_PAGE = 10;
 const MAX_VISIBLE = 100;
@@ -70,13 +73,13 @@ function VerJugadores() {
     // Si hay búsqueda o filtros activos, buscar sobre todos los jugadores
     if (searchTerm || activeFilters.length > 0) {
       if (searchTerm) {
-        const term = searchTerm.toLowerCase();
+        const term = searchTerm;
         results = jugadores.filter(
           (jugador) =>
-            jugador.nombre?.toLowerCase().includes(term) ||
-            jugador.apellido?.toLowerCase().includes(term) ||
+            normalize(jugador.nombre)?.includes(term) ||
+            normalize(jugador.apellido)?.includes(term) ||
             jugador.dni?.toString().includes(term) ||
-            jugador.equipos?.some(eq => eq.nombre?.toLowerCase().includes(term))
+            jugador.equipos?.some(eq => normalize(eq.nombre)?.includes(term))
         );
       }
       // Si no hay búsqueda pero sí filtros, usar todos los jugadores
@@ -307,7 +310,7 @@ function VerJugadores() {
                       <td className="py-2 px-3 border-b text-center text-sm">{jugador.nombre}</td>
                       <td className="py-2 px-3 border-b text-center text-sm">{jugador.apellido}</td>
                       <td className="py-2 px-3 border-b text-center text-sm">{jugador.telefono}</td>
-                      <td className="py-2 px-3 border-b text-center text-sm">{jugador.fecha_nacimiento}</td>
+                      <td className="py-2 px-3 border-b text-center text-sm">{format(parseISO(jugador.fecha_nacimiento), 'dd/MM/yyyy', {local: es})}</td>
                       <td className="py-2 px-3 border-b text-center text-sm">
                         {jugador.equipos && jugador.equipos.length > 0
                           ? jugador.equipos.map(eq => (

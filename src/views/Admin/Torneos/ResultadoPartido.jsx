@@ -7,7 +7,7 @@ import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { toast } from 'react-toastify'; // Importar react-toastify
 import ResultadoModal from '../Modals/ResultadoModal';
-import { Info, Trash, ChevronLeft } from 'lucide-react';
+import { Info, Trash, ChevronLeft, TriangleAlert } from 'lucide-react';
 import { debounce } from 'lodash'; // Import debounce
 import  SancionesModal  from '../Modals/SancionesModal';
 
@@ -35,6 +35,23 @@ export default function ResultadoPartido() {
   const [searchResults, setSearchResults] = useState([]);
   const [searchingDniForId, setSearchingDniForId] = useState(null);
 
+  // Nueva función para traer ambos equipos en un solo llamado
+  const fetchDosEquipos = async (id1, id2) => {
+    try {
+      const response = await api.get(`/equipos/dos/${id1}/${id2}`);
+      const equipos = response.data.equipos || [];
+      // Asegura el orden: primero local, luego visitante
+      const equipoLocalData = equipos.find(eq => eq.id === id1 || eq.id === Number(id1));
+      const equipoVisitanteData = equipos.find(eq => eq.id === id2 || eq.id === Number(id2));
+      setEquipoLocal(equipoLocalData);
+      setEquipoVisitante(equipoVisitanteData);
+    } catch (error) {
+      setEquipoLocal(null);
+      setEquipoVisitante(null);
+      console.error('Error fetching ambos equipos:', error);
+    }
+  };
+
   // Mover la definición de fetchPartido fuera del useEffect para poder llamarla desde otros lugares
   const fetchPartido = async () => {
     try {
@@ -51,12 +68,11 @@ export default function ResultadoPartido() {
       setEstadisticas(estadisticasMap);
       setOriginalEstadisticas(estadisticasMap);
 
+      // Trae ambos equipos en un solo llamado
       const equipoLocalId = response.data.equipos[0].id;
       const equipoVisitanteId = response.data.equipos[1].id;
-      const equipoLocal = await api.get(`/equipos/${equipoLocalId}`);
-      setEquipoLocal(equipoLocal.data);
-      const equipoVisitante = await api.get(`/equipos/${equipoVisitanteId}`);
-      setEquipoVisitante(equipoVisitante.data);
+      await fetchDosEquipos(equipoLocalId, equipoVisitanteId);
+
     } catch (error) {
       console.error('Error fetching partido:', error);
     } finally {
@@ -655,7 +671,14 @@ export default function ResultadoPartido() {
                 ))}
                 {verEquipo === 1
                   ? equipoLocal.jugadores.map((jugador) => (
-                      <tr key={jugador.id} className="border-b border-gray-200 hover:bg-gray-50">
+                      <tr
+                        key={jugador.id}
+                        className={
+                          jugador.expulsado
+                            ? "bg-red-200 opacity-70"
+                            : "border-b border-gray-200 hover:bg-gray-50"
+                        }
+                      >
                         <td className="p-2 text-center">{jugador.dni}</td>
                         <td className="p-2 text-center">
                           {jugador.nombre} {jugador.apellido}
@@ -666,9 +689,13 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.nro_camiseta || ''}
-                              disabled={!estadisticas[jugador.id]?.presente}
+                              disabled={!estadisticas[jugador.id]?.presente || jugador.expulsado}
                               onChange={(e) =>
-                                handleInputChange(jugador.id, "nro_camiseta", e.target.value ? Number.parseInt(e.target.value) : null)
+                                handleInputChange(
+                                  jugador.id,
+                                  "nro_camiseta",
+                                  e.target.value ? Number.parseInt(e.target.value) : null
+                                )
                               }
                               className="w-full text-center border border-gray-300 rounded p-1"
                               min="1"
@@ -682,8 +709,14 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.goles ?? 0}
-                              disabled={!estadisticas[jugador.id]?.presente}
-                              onChange={(e) => handleInputChange(jugador.id, "goles", Number.parseInt(e.target.value) || 0)}
+                              disabled={!estadisticas[jugador.id]?.presente || jugador.expulsado}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  jugador.id,
+                                  "goles",
+                                  Number.parseInt(e.target.value) || 0
+                                )
+                              }
                               className="w-full text-center border border-gray-300 rounded p-1"
                               min="0"
                             />
@@ -696,9 +729,13 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.asistencias ?? 0}
-                              disabled={!estadisticas[jugador.id]?.presente}
+                              disabled={!estadisticas[jugador.id]?.presente || jugador.expulsado}
                               onChange={(e) =>
-                                handleInputChange(jugador.id, "asistencias", Number.parseInt(e.target.value) || 0)
+                                handleInputChange(
+                                  jugador.id,
+                                  "asistencias",
+                                  Number.parseInt(e.target.value) || 0
+                                )
                               }
                               className="w-full text-center border border-gray-300 rounded p-1"
                               min="0"
@@ -712,9 +749,13 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.amarillas ?? 0}
-                              disabled={!estadisticas[jugador.id]?.presente}
+                              disabled={!estadisticas[jugador.id]?.presente || jugador.expulsado}
                               onChange={(e) =>
-                                handleInputChange(jugador.id, "amarillas", Number.parseInt(e.target.value) || 0)
+                                handleInputChange(
+                                  jugador.id,
+                                  "amarillas",
+                                  Number.parseInt(e.target.value) || 0
+                                )
                               }
                               className="w-full text-center border border-gray-300 rounded p-1"
                               min="0"
@@ -728,8 +769,14 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.rojas ?? 0}
-                              disabled={!estadisticas[jugador.id]?.presente}
-                              onChange={(e) => handleInputChange(jugador.id, "rojas", Number.parseInt(e.target.value) || 0)}
+                              disabled={!estadisticas[jugador.id]?.presente || jugador.expulsado}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  jugador.id,
+                                  "rojas",
+                                  Number.parseInt(e.target.value) || 0
+                                )
+                              }
                               className="w-full text-center border border-gray-300 rounded p-1"
                               min="0"
                             />
@@ -741,7 +788,7 @@ export default function ResultadoPartido() {
                           <input
                             type="checkbox"
                             checked={!!estadisticas[jugador.id]?.presente}
-                            disabled={!chargingMode}
+                            disabled={!chargingMode || jugador.expulsado}
                             onChange={(e) => {
                               const isPresente = e.target.checked;
                               if (isPresente && !estadisticas[jugador.id]) {
@@ -771,7 +818,14 @@ export default function ResultadoPartido() {
                       </tr>
                     ))
                   : equipoVisitante.jugadores.map((jugador) => (
-                      <tr key={jugador.id} className="border-b border-gray-200 hover:bg-gray-50">
+                      <tr
+                        key={jugador.id}
+                        className={
+                          jugador.expulsado
+                            ? "bg-red-200 opacity-70"
+                            : "border-b border-gray-200 hover:bg-gray-50"
+                        }
+                      >
                         <td className="p-2 text-center">{jugador.dni}</td>
                         <td className="p-2 text-center">
                           {jugador.nombre} {jugador.apellido}
@@ -782,9 +836,13 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.nro_camiseta || ''}
-                              disabled={!estadisticas[jugador.id]?.presente}
+                              disabled={!estadisticas[jugador.id]?.presente || jugador.expulsado}
                               onChange={(e) =>
-                                handleInputChange(jugador.id, "nro_camiseta", e.target.value ? Number.parseInt(e.target.value) : null)
+                                handleInputChange(
+                                  jugador.id,
+                                  "nro_camiseta",
+                                  e.target.value ? Number.parseInt(e.target.value) : null
+                                )
                               }
                               className="w-full text-center border border-gray-300 rounded p-1"
                               min="1"
@@ -798,8 +856,14 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.goles ?? 0}
-                              disabled={!estadisticas[jugador.id]?.presente}
-                              onChange={(e) => handleInputChange(jugador.id, "goles", Number.parseInt(e.target.value) || 0)}
+                              disabled={!estadisticas[jugador.id]?.presente || jugador.expulsado}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  jugador.id,
+                                  "goles",
+                                  Number.parseInt(e.target.value) || 0
+                                )
+                              }
                               className="w-full text-center border border-gray-300 rounded p-1"
                               min="0"
                             />
@@ -812,9 +876,13 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.asistencias ?? 0}
-                              disabled={!estadisticas[jugador.id]?.presente}
+                              disabled={!estadisticas[jugador.id]?.presente || jugador.expulsado}
                               onChange={(e) =>
-                                handleInputChange(jugador.id, "asistencias", Number.parseInt(e.target.value) || 0)
+                                handleInputChange(
+                                  jugador.id,
+                                  "asistencias",
+                                  Number.parseInt(e.target.value) || 0
+                                )
                               }
                               className="w-full text-center border border-gray-300 rounded p-1"
                               min="0"
@@ -828,9 +896,13 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.amarillas ?? 0}
-                              disabled={!estadisticas[jugador.id]?.presente}
+                              disabled={!estadisticas[jugador.id]?.presente || jugador.expulsado}
                               onChange={(e) =>
-                                handleInputChange(jugador.id, "amarillas", Number.parseInt(e.target.value) || 0)
+                                handleInputChange(
+                                  jugador.id,
+                                  "amarillas",
+                                  Number.parseInt(e.target.value) || 0
+                                )
                               }
                               className="w-full text-center border border-gray-300 rounded p-1"
                               min="0"
@@ -844,8 +916,14 @@ export default function ResultadoPartido() {
                             <input
                               type="number"
                               value={estadisticas[jugador.id]?.rojas ?? 0}
-                              disabled={!estadisticas[jugador.id]?.presente}
-                              onChange={(e) => handleInputChange(jugador.id, "rojas", Number.parseInt(e.target.value) || 0)}
+                              disabled={!estadisticas[jugador.id]?.presente || jugador.expulsado}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  jugador.id,
+                                  "rojas",
+                                  Number.parseInt(e.target.value) || 0
+                                )
+                              }
                               className="w-full text-center border border-gray-300 rounded p-1"
                               min="0"
                             />
@@ -857,7 +935,7 @@ export default function ResultadoPartido() {
                           <input
                             type="checkbox"
                             checked={!!estadisticas[jugador.id]?.presente}
-                            disabled={!chargingMode}
+                            disabled={!chargingMode || jugador.expulsado}
                             onChange={(e) => {
                               const isPresente = e.target.checked;
                               if (isPresente && !estadisticas[jugador.id]) {
@@ -901,6 +979,12 @@ export default function ResultadoPartido() {
               <Trash className="w-4 h-4 mr-2" />
               <p className="text-gray-500 text-sm">
                 Para eliminar la estadistica de un jugador, <span className="font-bold">desmarque el checkbox de presente</span>
+              </p>
+            </div>
+            <div className="flex items-center justify-start px-4">
+              <TriangleAlert  className="w-4 h-4 mr-2" />
+              <p className="text-gray-500 text-sm">
+                Los jugadores <span className="font-bold">marcados con fondo rojo</span> tienen expulsión permanente del predio
               </p>
             </div>
             </div>

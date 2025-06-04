@@ -17,6 +17,7 @@ import { es } from "date-fns/locale";
 import AsociarJugadorModal from "../Modals/AsociarJugadorModal";
 import DesvincularJugadorModal from "../Modals/DesvincularJugadorModal";
 import AgregarJugadorAEquipoModal from "../Modals/AgregarJugadorAEquipoModal";
+import { normalize } from "../../../utils/normalize"; 
 
 
 const ITEMS_PER_PAGE = 10;
@@ -68,14 +69,14 @@ const [loadingDesvincular, setLoadingDesvincular] = useState(false);
   // Filtrar jugadores y equipos según el término de búsqueda
   const filteredJugadores = jugadores.filter(
     (jugador) =>
-      jugador.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      jugador.apellido?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      normalize(jugador.nombre)?.includes(normalize(searchTerm)) ||
+      normalize(jugador.apellido)?.includes(normalize(searchTerm)) ||
       jugador.dni?.toString().includes(searchTerm)
   );
 
   const filteredEquipos = equipos.filter(
     (equipo) =>
-      equipo.nombre?.toLowerCase().includes(searchTerm.toLowerCase())
+      normalize(equipo.nombre)?.includes(normalize(searchTerm))
   );
 
   // Obtener nombre del equipo por ID
@@ -104,25 +105,6 @@ const [loadingDesvincular, setLoadingDesvincular] = useState(false);
     setBusquedaJugador("");
     setJugadoresBusqueda(jugadores); // <-- Mostrar todos los jugadores al abrir el modal
     setIsAddJugadorOpen(true);
-  };
-
-  // Buscar jugadores por nombre, apellido o dni (filtrado remoto)
-  const buscarJugadores = async (valor) => {
-    setBusquedaJugador(valor);
-    if (valor.length < 2) {
-      setJugadoresBusqueda(jugadores); // <-- Si el filtro es corto, mostrar todos los jugadores
-      return;
-    }
-    setLoadingBusqueda(true);
-    try {
-      // Puedes ajustar el endpoint según tu backend
-      const res = await api.get(`/jugadores?busqueda=${encodeURIComponent(valor)}`);
-      setJugadoresBusqueda(res.data);
-    } catch {
-      setJugadoresBusqueda([]);
-    } finally {
-      setLoadingBusqueda(false);
-    }
   };
 
   // Asociar jugador seleccionado al equipo

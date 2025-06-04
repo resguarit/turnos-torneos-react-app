@@ -5,6 +5,7 @@ import { Footer } from '@/components/Footer';
 import BackButton from '@/components/BackButton';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { normalize } from '@/utils/normalize'; 
 
 export default function CargarEquipo({ onEquipoSeleccionado }) {
   const { zonaId } = useParams();
@@ -42,7 +43,7 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
     }
 
     const filtered = equipos.filter((equipo) =>
-      equipo.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+      normalize(equipo.nombre).includes(normalize(searchTerm))
     );
     setFilteredEquipos(filtered);
   }, [searchTerm, equipos]);

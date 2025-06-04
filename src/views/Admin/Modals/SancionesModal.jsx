@@ -202,7 +202,7 @@ export default function SancionesModal({
                     <option value="expulsión">Expulsión</option>
                     <option value="advertencia">Advertencia</option>
                     <option value="suspensión">Suspensión</option>
-                    <option value="multa">Multa</option>
+                    <option value="expulsión permanente">Expulsión Permanente</option>
                   </select>
                 </div>
 

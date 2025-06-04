@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
 import { Search, X, Filter, ChevronDown } from "lucide-react"
 import api from '@/lib/axiosConfig'
+import BtnLoading from "@/components/BtnLoading"
 
 const ITEMS_PER_PAGE = 10;
 
@@ -20,10 +21,12 @@ function Partidos() {
   const [showTorneoDropdown, setShowTorneoDropdown] = useState(false)
   const [showZonaDropdown, setShowZonaDropdown] = useState(false)
   const [showFechaDropdown, setShowFechaDropdown] = useState(false)
+  const [loading, setLoading] = useState(false) 
 
   useEffect(() => {
     const fetchPartidos = async () => {
       try {
+        setLoading(true)
         const response = await api.get('/partidos');
         // Ordenar los partidos por fecha de creación en orden descendente
         const sortedPartidos = response.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -31,6 +34,8 @@ function Partidos() {
         setFilteredPartidos(sortedPartidos);
       } catch (error) {
         console.error('Error fetching partidos:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -129,6 +134,37 @@ function Partidos() {
     .map(partido => partido.fecha.nombre)
   )];
 
+  // Cambia los handlers para que solo un dropdown esté abierto a la vez:
+  const handleTorneoDropdown = () => {
+    setShowTorneoDropdown(!showTorneoDropdown);
+    setShowZonaDropdown(false);
+    setShowFechaDropdown(false);
+  };
+  const handleZonaDropdown = () => {
+    setShowZonaDropdown(!showZonaDropdown);
+    setShowTorneoDropdown(false);
+    setShowFechaDropdown(false);
+  };
+  const handleFechaDropdown = () => {
+    setShowFechaDropdown(!showFechaDropdown);
+    setShowTorneoDropdown(false);
+    setShowZonaDropdown(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col font-inter">
+        <Header />
+        <main className="flex-1 p-6 bg-gray-100">
+          <div className="flex justify-center items-center h-full">
+            <BtnLoading />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header></Header>
@@ -136,19 +172,15 @@ function Partidos() {
         <div className="max-w-7xl lg:max-w-full mx-auto">
           <h1 className="text-xl font-bold mb-4 lg:text-2xl">Partidos</h1>
 
-          {/* Search and Filter Section */}
-          <div className="bg-white p-2 px-3 rounded-[8px] shadow mb-6">
-            <h2 className="font-sans font-semibold text-lg mb-4">Buscar Partidos</h2>
-
             {/* Search Bar */}
             <div className="w-full flex gap-2" >
-            <div className="w-full mb-4">
+            <div className="w-1/2 mb-1">
               <input
                 type="text"
                 placeholder="Buscar por equipo..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-1 pl-3 border rounded-[8px]"
+                className="w-full p-1 pl-2 border rounded-[6px]"
               />
               {searchTerm && (
                 <button onClick={() => setSearchTerm("")} className="absolute right-3 top-2.5">
@@ -158,23 +190,24 @@ function Partidos() {
             </div>
 
             {/* Filter Buttons */}
-            <div className="flex  gap-2 mb-4">
+            <div className="flex  justify-between w-1/2">
+              <div className="flex  gap-2">
               <div className="relative">
                 <button
-                  className="flex items-center gap-1 border rounded-[8px] px-2 py-1 bg-white  hover:bg-gray-100"
-                  onClick={() => setShowTorneoDropdown(!showTorneoDropdown)}
+                  className="flex items-center gap-1 border rounded-[8px] px-2 py-1 bg-white  hover:bg-gray-100 text-gray-700"
+                  onClick={handleTorneoDropdown}
                 >
                   <Filter className="h-4 w-4" />
                   Torneo
                   <ChevronDown className="h-4 w-4" />
                 </button>
                 {showTorneoDropdown && (
-                  <div className="absolute z-10 mt-1 w-48 bg-white rounded-md shadow-lg">
+                  <div className="absolute z-10 mt-1 w-48 max-h-60 overflow-y-auto bg-white rounded-[6px] shadow-lg">
                     <ul className="py-1">
                       {uniqueTorneos.map((torneo) => (
                         <li
                           key={torneo}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          className="px-4 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer"
                           onClick={() => addFilter("tournament", torneo)}
                         >
                           {torneo}
@@ -187,20 +220,20 @@ function Partidos() {
 
               <div className="relative">
                 <button
-                  className="flex items-center gap-1 border rounded-[8px] px-2 py-1 bg-white  hover:bg-gray-100"
-                  onClick={() => setShowZonaDropdown(!showZonaDropdown)}
+                  className="flex items-center gap-1 border rounded-[8px] px-2 py-1 bg-white  hover:bg-gray-100 text-gray-700"
+                  onClick={handleZonaDropdown}
                 >
                   <Filter className="h-4 w-4" />
                   Zona
                   <ChevronDown className="h-4 w-4" />
                 </button>
                 {showZonaDropdown && (
-                  <div className="absolute z-10 mt-1 w-48 bg-white rounded-md shadow-lg">
-                    <ul className="py-1">
+                  <div className="absolute z-10 mt-1 w-48 max-h-60 overflow-y-auto bg-white rounded-[6px] shadow-lg">
+                    <ul className="py-1 ">
                       {uniqueZonas.map((zona) => (
                         <li
                           key={zona}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          className="px-4 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer"
                           onClick={() => addFilter("zone", zona)}
                         >
                           {zona}
@@ -213,20 +246,20 @@ function Partidos() {
 
               <div className="relative">
                 <button
-                  className="flex items-center gap-1 border rounded-[8px] px-2 py-1 bg-white  hover:bg-gray-100"
-                  onClick={() => setShowFechaDropdown(!showFechaDropdown)}
+                  className="flex items-center gap-1 border rounded-[8px] px-2 py-1 bg-white  hover:bg-gray-100 text-gray-700"
+                  onClick={handleFechaDropdown}
                 >
                   <Filter className="h-4 w-4" />
                   Fecha
                   <ChevronDown className="h-4 w-4" />
                 </button>
                 {showFechaDropdown && (
-                  <div className="absolute z-10 mt-1 w-48 bg-white rounded-md shadow-lg">
+                  <div className="absolute z-10 mt-1 w-48 max-h-60 overflow-y-auto bg-white rounded-[6px] shadow-lg">
                     <ul className="py-1">
                       {uniqueFechas.map((fecha) => (
                         <li
                           key={fecha}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          className="px-4 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer"
                           onClick={() => addFilter("date", fecha)}
                         >
                           {fecha}
@@ -236,15 +269,21 @@ function Partidos() {
                   </div>
                 )}
               </div>
-
+              </div>
+            <button
+              onClick={handleCargarClick}
+              className="bg-black text-white hover:bg-black/90 p-1 px-3 rounded-[6px]"
+            >
+              + Cargar Partido
+            </button>
             </div>
             </div>
 
-            <div className="w-full flex items-center" >
+            <div className="w-full flex items-center mb-6" >
             {activeFilters.length > 0 && (
-                <Button variant="ghost" className="text-red-500" onClick={clearFilters}>
+                <button  className="text-sm ml-1 text-red-500" onClick={clearFilters}>
                   Limpiar filtros
-                </Button>
+                </button>
               )}
 
             {/* Active Filters */}
@@ -264,18 +303,12 @@ function Partidos() {
               </div>
             )}
           </div>
-          </div>
 
-          <button
-              onClick={handleCargarClick}
-              className="bg-black text-white mb-4 hover:bg-black/90 p-2 rounded-[6px]"
-            >
-              Cargar Partido +
-            </button>
+          
 
           {/* Results Count */}
-          <div className="mb-4">
-            <h2 className="font-semibold text-sm lg:text-2xl">
+          <div className="mb-2">
+            <h2 className=" text-gray-700 ">
               {filteredPartidos.length === 0
                 ? "No se encontraron partidos"
                 : `Partidos encontrados: ${filteredPartidos.length}`}
@@ -284,33 +317,43 @@ function Partidos() {
 
           {/* Partidos Table */}
           {currentItems.length > 0 && (
-            <div className="bg-white shadow overflow-x-auto mb-4 lg:text-lg rounded-[6px]">
-              <table className="w-full">
-                <thead className="bg-naranja text-white font-sans">
+            <div className="overflow-x-auto overflow-y-hidden mb-4">
+              <table className="min-w-full bg-white border border-gray-300">
+                <thead className="bg-black">
                   <tr>
-                    <th className="px-10 py-2 text-center font-medium">Resultado</th>
-                    <th className="px-4 py-2 text-center font-medium">Horario</th>
-                    <th className="px-4 py-2 text-center font-medium">Cancha</th>
-                    <th className="px-6 py-2 text-center font-medium">Torneo</th>
-                    <th className="px-6 py-2 text-center font-medium">Zona</th>
-                    <th className="px-6 py-2 text-center font-medium">Fecha</th>
+                    <th className="py-2 px-3 border-b text-center text-xs font-semibold text-white uppercase tracking-wider min-w-[120px]">Resultado</th>
+                    <th className="py-2 px-3 border-b text-center text-xs font-semibold text-white uppercase tracking-wider min-w-[90px]">Horario</th>
+                    <th className="py-2 px-3 border-b text-center text-xs font-semibold text-white uppercase tracking-wider min-w-[90px]">Cancha</th>
+                    <th className="py-2 px-3 border-b text-center text-xs font-semibold text-white uppercase tracking-wider min-w-[120px]">Torneo</th>
+                    <th className="py-2 px-3 border-b text-center text-xs font-semibold text-white uppercase tracking-wider min-w-[120px]">Zona</th>
+                    <th className="py-2 px-3 border-b text-center text-xs font-semibold text-white uppercase tracking-wider min-w-[90px]">Fecha</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {currentItems.map((partido) => (
-                    <tr key={partido.id} className="border-b text-sm ">
-                      <td className="px-4 py-2 text-center">
+                <tbody className="text-gray-700">
+                  {currentItems.map((partido, index) => (
+                    <tr key={partido.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="py-2 px-3 border-b text-sm truncate">
                         <div className="grid grid-cols-3 items-center w-full">
                           <span className="text-left truncate">{partido.equipos[0]?.nombre}</span>
                           <span className="text-center min-w-[50px]">{partido.marcador_visitante ?? '-'} - {partido.marcador_local ?? '-'}</span>
                           <span className="text-right truncate">{partido.equipos[1]?.nombre}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-2 text-center">{partido.horario ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : 'No Definido'}</td>
-                      <td className="px-4 py-2 text-center">{partido.cancha ? `${partido.cancha.nro} - ${partido.cancha.tipo_cancha}` : 'No Definido'}</td>
-                      <td className="px-4 py-2 text-center">{partido.fecha?.zona?.torneo?.nombre || 'No Definido'}</td>
-                      <td className="px-4 py-2 text-center">{partido.fecha?.zona?.nombre}</td>
-                      <td className="px-4 py-2 text-center">{partido.fecha.nombre}</td>
+                      <td className="py-2 px-3 border-b text-center text-sm">
+                        {partido.horario ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : 'No Definido'}
+                      </td>
+                      <td className="py-2 px-3 border-b text-center text-sm">
+                        {partido.cancha ? `${partido.cancha.nro} - ${partido.cancha.tipo_cancha}` : 'No Definido'}
+                      </td>
+                      <td className="py-2 px-3 border-b text-center text-sm">
+                        {partido.fecha?.zona?.torneo?.nombre || 'No Definido'}
+                      </td>
+                      <td className="py-2 px-3 border-b text-center text-sm">
+                        {partido.fecha?.zona?.nombre}
+                      </td>
+                      <td className="py-2 px-3 border-b text-center text-sm">
+                        {partido.fecha?.nombre}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

@@ -4,6 +4,7 @@ import { Footer } from '@/components/Footer';
 import api from '@/lib/axiosConfig';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
+import BackButton from '@/components/BackButton';
 
 export default function VerZonas() {
 const [zonas, setZonas] = useState([]);
@@ -36,12 +37,10 @@ useEffect(() => {
         <Header />
         <main className="flex-1 p-6 bg-gray-100">
           <div className="w-full flex mb-2">
-                    <button onClick={() => navigate(-1)} className="bg-black rounded-xl text-white px-4 py-2 text-sm flex items-center justify-center hover:bg-gray-800 transition-colors">
-                                <ChevronLeft className="w-5 mr-1" /> Atrás
-                              </button>
+            <BackButton ruta={`/torneos-user`} />
                   </div>
           <div className="flex flex-col justify-center items-center h-full">
-            <h1 className="text-center text-2xl font-sans font-semibold ">Zonas</h1>
+            <h1 className="text-center text-2xl font-semibold ">Zonas</h1>
             <div className='flex flex-col w-1/2'>
             {zonas.map((zona) => (
                 <div key={zona.id} className="bg-black text-white shadow-md rounded-[6px] p-2 mt-4">

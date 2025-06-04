@@ -21,6 +21,7 @@ function SignUp() {
     const [loading, setLoading] = useState(false); // Estado de carga
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [showPasswordMsg, setShowPasswordMsg] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -134,19 +135,19 @@ function SignUp() {
             <div className="absolute top-4 left-4">
                     <button onClick={() => navigate('/')} className="hover:bg-naranja rounded-2xl text-white p-2 text-sm flex items-center"><ChevronLeft className="w-5"/> Volver Al Inicio</button>
                 </div>
-                <div className="w-full max-w-md bg-white rounded-xl p-5 space-y-6">
+                <div className="w-full max-w-xl bg-white rounded-xl p-5 space-y-6">
                     <div className="space-y-4">
                         <h2 className="text-2xl font-bold text-center lg:text-3xl">Registrarse</h2>
                         
                         <form onSubmit={handleSubmit} className="space-y-3">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
                                 <input
                                     type="text"
                                     name="name"
                                     placeholder="Nombre Completo"
                                     value={formData.name}
                                     onChange={handleChange}
-                                    className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                    className="w-full text-black text-sm border p-1 px-2 rounded-[6px]"
                                 />
                                 <input
                                     type="email"
@@ -154,7 +155,7 @@ function SignUp() {
                                     placeholder="Correo electrónico"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                    className="w-full text-black text-sm border p-1 px-2 rounded-[6px]"
                                 />
                                 <input
                                     type="tel"
@@ -162,7 +163,7 @@ function SignUp() {
                                     placeholder="Teléfono"
                                     value={formData.telefono}
                                     onChange={handleChange}
-                                    className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                    className="w-full text-black text-sm border p-1 px-2 rounded-[6px]"
                                 />
                                 <input
                                     type="text"
@@ -170,11 +171,8 @@ function SignUp() {
                                     placeholder="DNI"
                                     value={formData.dni}
                                     onChange={handleChange}
-                                    className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                    className="w-full text-black text-sm border p-1 px-2 rounded-[6px]"
                                 />
-                            </div>
-                            <p className="text-xs text-gray-500">La contraseña debe tener al menos 8 caracteres</p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ">
                                 <div className="relative">
                                     <input
                                         type={showPassword ? "text" : "password"}
@@ -182,7 +180,9 @@ function SignUp() {
                                         placeholder="Contraseña"
                                         value={formData.password}
                                         onChange={handleChange}
-                                        className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                        className="w-full text-black text-sm border p-1 px-2 rounded-[6px]"
+                                        onFocus={() => setShowPasswordMsg(true)}
+                                        onBlur={() => setShowPasswordMsg(false)}
                                     />
                                     <button
                                         type="button"
@@ -199,7 +199,9 @@ function SignUp() {
                                         placeholder="Confirmar Contraseña"
                                         value={formData.password_confirmation}
                                         onChange={handleChange}
-                                        className="w-full text-black text-sm border-2 border-gray-300 p-2 rounded-xl"
+                                        className="w-full text-black text-sm border p-1 px-2 rounded-[6px]"
+                                        onFocus={() => setShowPasswordMsg(true)}
+                                        onBlur={() => setShowPasswordMsg(false)}
                                     />
                                     <button
                                         type="button"
@@ -210,8 +212,13 @@ function SignUp() {
                                     </button>
                                 </div>
                             </div>
+                            {showPasswordMsg && (
+                                <div className='flex ml-1 w-full'>
+                                    <p className="text-xs text-red-500">La contraseña debe tener al menos 8 caracteres</p>
+                                </div>
+                            )}
                             <div className="flex justify-center pt-3">
-                                <button type="submit" className="w-full bg-naranja text-base font-medium rounded-xl p-2 hover:bg-naranja/90 text-white" disabled={loading}>
+                                <button type="submit" className="w-full bg-naranja font-medium rounded-xl p-2 hover:bg-naranja/90 text-white" disabled={loading}>
                                     {loading ? 'Registrando Usuario...' : 'Registrarme'}
                                 </button>
                             </div>

@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import api from "@/lib/axiosConfig";
 import { useLocation } from "react-router-dom";
 import BtnLoading from "@/components/BtnLoading";
+import { toast } from "react-toastify";
 
 export default function VerPagos() {
   const navigate = useNavigate();
@@ -27,12 +28,10 @@ export default function VerPagos() {
   const [valorFecha, setValorFecha] = useState(0);
   const [inscripcionPagada, setInscripcionPagada] = useState(false);
   const [estadoPagosPorFecha, setEstadoPagosPorFecha] = useState([]);
-  const [metodosPago, setMetodosPago] = useState([
-    { id: 1, nombre: 'Efectivo' },
-    { id: 2, nombre: 'Transferencia' },
-    { id: 3, nombre: 'Tarjeta' },
-  ]); // Setea métodos de pago fijos
-  const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState(""); // State for selected payment method
+  const [metodosPago, setMetodosPago] = useState([]); 
+  const [metodoPagoSeleccionado, setMetodoPagoSeleccionado] = useState(""); 
+  const [inscripcionTransaccion, setInscripcionTransaccion] = useState(null);
+  const [noCapitan, setNoCapitan] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,16 +41,32 @@ export default function VerPagos() {
         setValorInscripcion(precioInscripcion || 0);
         setValorFecha(precioFecha || 0);
 
-        // Fetch pagos por fecha for the entire zona
-        const pagosPorFechaResponse = await api.get(`/equipos/${equipoId}/zonas/${zonaId}/pago-fecha`);
-        setEstadoPagosPorFecha(pagosPorFechaResponse.data.pagos_por_fecha);
+        // Unificada: obtener pagos de inscripción y por fecha
+        const pagosResponse = await api.get(`/equipos/${equipoId}/torneos/${torneoId}/zonas/${zonaId}/pagos`);
+        if (
+          pagosResponse.data.status === 400 &&
+          pagosResponse.data.message &&
+          pagosResponse.data.message.toLowerCase().includes("capitán")
+        ) {
+          setNoCapitan(true);
+          setInscripcionPagada(false);
+          setInscripcionTransaccion(null);
+          setEstadoPagosPorFecha([]);
+        } else {
+          setNoCapitan(false);
+          // Inscripción
+          setInscripcionPagada(!!pagosResponse.data.pago_inscripcion?.pagado);
+          setInscripcionTransaccion(pagosResponse.data.pago_inscripcion?.transaccion || null);
+          // Fechas
+          setEstadoPagosPorFecha(pagosResponse.data.pagos_por_fecha || []);
+        }
 
-        // Fetch inscripción status
-        const inscripcionResponse = await api.get(`/equipos/${equipoId}/torneos/${torneoId}/pago-inscripcion`);
-        setInscripcionPagada(!!inscripcionResponse.data.transaccion);
-
-        // NO traigas métodos de pago del back, ya están seteados arriba
-        // setMetodosPago([...]);
+        // Métodos de pago activos
+        const metodosPagoResponse = await api.get(`/metodos-pago`);
+        const metodos = Array.isArray(metodosPagoResponse.data)
+          ? metodosPagoResponse.data.filter(m => m.activo === 1)
+          : [];
+        setMetodosPago(metodos);
 
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -109,6 +124,12 @@ export default function VerPagos() {
     return pagoInfo?.fecha_nombre || `Fecha ${fechaId}`;
   };
 
+  function formatFechaPago(fecha) {
+    if (!fecha) return '';
+    const d = new Date(fecha);
+    return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col font-inter">
@@ -116,6 +137,29 @@ export default function VerPagos() {
         <main className="flex-1 p-6 bg-gray-100">
           <div className="flex justify-center items-center h-full">
             <BtnLoading />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (noCapitan) {
+    return (
+      <div className="min-h-screen flex flex-col font-inter">
+        <Header />
+        <main className="flex-1 p-6 bg-gray-100 flex flex-col items-center justify-center">
+          <div className="bg-white rounded-xl shadow-lg p-8 max-w-lg w-full text-center">
+            <h2 className="text-2xl font-bold mb-4">Estado de Pagos</h2>
+            <p className="mb-6 text-gray-700">
+              Para ver el estado de los pagos, debe haber un capitán asignado en el equipo.
+            </p>
+            <button
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-[6px] text-base font-medium shadow"
+              onClick={() => navigate(`/jugadores/${equipoId}`, { state: { equipoNombre, zonaId } })}
+            >
+              Asignar Capitán
+            </button>
           </div>
         </main>
         <Footer />
@@ -131,7 +175,7 @@ export default function VerPagos() {
         <div className="w-full flex mb-2">
           <button
             onClick={() => navigate(-1)}
-            className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center"
+            className="bg-black rounded-xl text-white py-2 px-3 text-sm flex items-center justify-center"
           >
             <ChevronLeft className="w-5" /> Atrás
           </button>
@@ -141,7 +185,7 @@ export default function VerPagos() {
             <h1 className="text-2xl font-bold">Historial de Pagos</h1>
             <button
               onClick={() => setModalOpen(true)}
-              className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white flex items-center gap-1"
+              className="bg-black hover:bg-black/80 py-2 px-3 text-sm rounded-[6px] text-white flex items-center gap-1"
             >
               <Plus size={16} /> Registrar Pago
             </button>
@@ -150,13 +194,13 @@ export default function VerPagos() {
           <div className="bg-white w-full rounded-[8px] shadow-md p-6 mb-6">
             {/* ... Info Equipo, Inscripción, Pagos por Fecha ... */}
             <h2 className="text-2xl font-medium mb-4">
-              Equipo: <span className="bg-blue-500 bg-opacity-30 rounded-3xl p-1">{equipoNombre}</span>
+              Equipo: <span className="text-blue-600 capitalize">{equipoNombre}</span>
             </h2>
 
             {/* Inscripción */}
             <div className="mb-6">
-              <h3 className="text-xl font-medium mb-3">Inscripción</h3>
-              <div className="bg-gray-50 p-4 rounded-lg flex justify-between items-center">
+              <h3 className="text-xl font-medium mb-3">Inscripción:</h3>
+              <div className="bg-gray-100 p-4 rounded-[6px] flex justify-between items-center">
                 <div>
                   <p className="font-medium">Valor: ${valorInscripcion}</p>
                 </div>
@@ -165,6 +209,10 @@ export default function VerPagos() {
                   {inscripcionPagada ? (
                     <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full flex items-center">
                       <Check size={16} className="mr-1" /> Pagado
+                      {/* Muestra la fecha de pago */}
+                      <span className="ml-2 text-xs text-gray-500">
+                        {formatFechaPago(inscripcionTransaccion?.created_at)}
+                      </span>
                     </span>
                   ) : (
                     <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full flex items-center">
@@ -177,16 +225,17 @@ export default function VerPagos() {
 
             {/* Pagos por fecha */}
             <div>
-              <h3 className="text-xl font-medium mb-3">Pagos por Fecha</h3>
-              <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                <thead className="bg-gray-50">
+              <h3 className="text-xl font-medium mb-3">Pagos por Fecha:</h3>
+              <table className="min-w-full bg-white border border-gray-200 rounded-[6px]">
+                <thead className="bg-gray-100">
                   <tr>
                     <th className="py-3 px-4 text-left text-sm font-medium text-gray-500">Fecha</th>
                     <th className="py-3 px-4 text-left text-sm font-medium text-gray-500">Valor</th>
                     <th className="py-3 px-4 text-left text-sm font-medium text-gray-500">Estado</th>
+                    <th className="py-3 px-4 text-left text-sm font-medium text-gray-500">Pagado el</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 ">
                   {estadoPagosPorFecha?.length > 0 ? (
                     estadoPagosPorFecha.map((pago) => (
                       <tr key={pago.fecha_id} className="hover:bg-gray-50">
@@ -202,6 +251,9 @@ export default function VerPagos() {
                               <X size={16} className="mr-1" /> Pendiente
                             </span>
                           )}
+                        </td>
+                        <td className="py-3 px-4 text-sm">
+                          {pago.transaccion ? formatFechaPago(pago.transaccion.created_at) : '-'}
                         </td>
                       </tr>
                     ))
@@ -293,9 +345,9 @@ export default function VerPagos() {
                     id="metodo-pago"
                     value={metodoPagoSeleccionado}
                     onChange={(e) => setMetodoPagoSeleccionado(e.target.value)}
-                    className="w-full border border-gray-300 rounded-[6px] p-2"
+                    className="w-full border capitalize border-gray-300 rounded-[6px] p-2"
                   >
-                    <option value="">Seleccionar método</option>
+                    <option className="capitalize" value="">Seleccionar método</option>
                     {metodosPago.length > 0 ? (
                       metodosPago.map((metodo) => (
                         <option key={metodo.id} value={metodo.id}>
@@ -303,7 +355,7 @@ export default function VerPagos() {
                         </option>
                       ))
                     ) : (
-                      <option value="loading" disabled>
+                      <option className="capitalize" value="loading" disabled>
                         Cargando métodos...
                       </option>
                     )}

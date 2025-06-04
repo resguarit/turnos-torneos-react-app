@@ -4,13 +4,14 @@ import { useState, useEffect, useCallback } from 'react'; // Import useCallback
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import { Input } from '@/components/ui/input';
-import { ChevronLeft, PlusCircle, Trash2, Check, Edit3, Search } from 'lucide-react'; // Add Search icon
+import { ChevronLeft, PlusCircle, Trash2, Check, Edit3, Search, X } from 'lucide-react'; // Add Search icon
 import BtnLoading from '@/components/BtnLoading';
 import { debounce } from 'lodash'; // Import debounce
 import { toast, ToastContainer } from 'react-toastify'; // Import ToastContainer
 import 'react-toastify/dist/ReactToastify.css';
 import { useLocation } from 'react-router-dom';
 import ConfirmDeleteModal from '@/views/Admin/Modals/ConfirmDeleteModal';
+import BackButton from '@/components/BackButton';
 
 
 export default function Jugadores() {
@@ -18,6 +19,7 @@ export default function Jugadores() {
   const [loading, setLoading] = useState(false);
   const [jugadoresNuevos, setJugadoresNuevos] = useState([]);
   const [jugadorEditando, setJugadorEditando] = useState(null);
+  const [jugadorEditandoBackup, setJugadorEditandoBackup] = useState(null); // Guarda el estado original
   const [equipo, setEquipo] = useState({});
   const { equipoId } = useParams();
   const location = useLocation();
@@ -29,6 +31,11 @@ export default function Jugadores() {
   const navigate = useNavigate();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [jugadorAEliminar, setJugadorAEliminar] = useState(null);
+  const [showModalCapitan, setShowModalCapitan] = useState(false);
+  const [nuevoCapitanId, setNuevoCapitanId] = useState('');
+  const [cambiandoCapitan, setCambiandoCapitan] = useState(false);
+  const [errorCapitan, setErrorCapitan] = useState('');
+  const [successCapitan, setSuccessCapitan] = useState('');
 
   useEffect(() => {
     const fetchJugadoresYEquipo = async () => {
@@ -125,6 +132,18 @@ export default function Jugadores() {
     try {
       setLoading(true);
 
+      // Validar que no haya más de un capitán
+      const yaHayCapitan = jugadores.some(j =>
+        j.capitan !== undefined ? j.capitan : j.pivot?.capitan
+      );
+      const nuevosCapitanes = jugadoresNuevos.filter(j => j.capitan);
+
+      if (yaHayCapitan && nuevosCapitanes.length > 0) {
+        toast.error('Ya hay un capitán en el equipo. Solo puede haber uno.');
+        setLoading(false);
+        return;
+      }
+
       // Dividir jugadores en seleccionados y manuales
       const jugadoresSeleccionados = jugadoresNuevos.filter(jugador => jugador.seleccionado);
       const jugadoresManuales = jugadoresNuevos.filter(jugador => !jugador.seleccionado);
@@ -186,14 +205,42 @@ export default function Jugadores() {
     }
   };
 
+  const handleEditarJugador = (id) => {
+    const jugador = jugadores.find(j => j.id === id);
+    setJugadorEditando(id);
+    setJugadorEditandoBackup({ ...jugador }); // Guarda el estado original para cancelar
+  };
+
+  const handleCancelarEdicion = () => {
+    // Restaura el jugador original
+    setJugadores(jugadores.map(j =>
+      j.id === jugadorEditando ? { ...jugadorEditandoBackup } : j
+    ));
+    setJugadorEditando(null);
+    setJugadorEditandoBackup(null);
+  };
+
   const handleActualizarJugador = async (id) => {
     const jugador = jugadores.find((jugador) => jugador.id === id);
+    // Si no se editó nada, no actualices
+    if (
+      jugador.nombre === jugadorEditandoBackup.nombre &&
+      jugador.apellido === jugadorEditandoBackup.apellido &&
+      jugador.dni === jugadorEditandoBackup.dni &&
+      jugador.telefono === jugadorEditandoBackup.telefono &&
+      jugador.fecha_nacimiento === jugadorEditandoBackup.fecha_nacimiento
+    ) {
+      setJugadorEditando(null);
+      setJugadorEditandoBackup(null);
+      return;
+    }
     try {
       setLoading(true);
       const response = await api.put(`/jugadores/${id}`, { ...jugador, equipo_id: equipoId });
       if (response.status === 200) {
         setJugadores(jugadores.map((jugador) => (jugador.id === id ? { ...response.data.jugador, editando: false } : jugador)));
         setJugadorEditando(null);
+        setJugadorEditandoBackup(null);
       }
     } catch (error) {
       console.error('Error updating player:', error);
@@ -202,24 +249,83 @@ export default function Jugadores() {
     }
   };
 
-  const handleEditarJugador = (id) => {
-    setJugadorEditando(id);
-  };
-
   const handleEliminarJugador = async () => {
   try {
     setLoading(true);
-    await api.delete(`/jugadores/${jugadorAEliminar}`);
+
+    // Verificar si el jugador a eliminar es el capitán
+    const jugadorAEliminarObj = jugadores.find(j => j.id === jugadorAEliminar);
+    const esCapitan = jugadorAEliminarObj && (jugadorAEliminarObj.capitan !== undefined
+      ? jugadorAEliminarObj.capitan
+      : jugadorAEliminarObj.pivot?.capitan);
+
+    if (esCapitan) {
+      toast.error('No se puede eliminar al capitán. Debe cambiar el capitán antes de desvincularlo del equipo.');
+      setShowDeleteModal(false);
+      setJugadorAEliminar(null);
+      setLoading(false);
+      return;
+    }
+
+    await api.post(`/equipos/${equipoId}/jugadores/${jugadorAEliminar}/desvincular-jugador`, {
+      jugador_id: jugadorAEliminar,
+      equipo_id: equipoId,
+    });
     setJugadores(jugadores.filter((jugador) => jugador.id !== jugadorAEliminar));
     setShowDeleteModal(false);
     setJugadorAEliminar(null);
+    toast.success('Jugador desvinculado del equipo.');
   } catch (error) {
-    console.error('Error deleting player:', error);
-    toast.error('Error al eliminar el jugador.');
+    console.error('Error desvinculando jugador:', error);
+    toast.error('Error al desvincular el jugador del equipo.');
   } finally {
     setLoading(false);
   }
 };
+
+  // Obtener el jugador actual capitán
+  const jugadorCapitan = jugadores.find(j =>
+    (j.capitan !== undefined ? j.capitan : j.pivot?.capitan)
+  );
+
+  // Handler para cambiar capitán
+  const handleCambiarCapitan = async () => {
+    setErrorCapitan('');
+    setSuccessCapitan('');
+    if (!nuevoCapitanId) {
+      setErrorCapitan('Debe seleccionar un jugador.');
+      return;
+    }
+    if (jugadorCapitan && nuevoCapitanId == jugadorCapitan.id) {
+      setErrorCapitan('El jugador seleccionado ya es el capitán.');
+      return;
+    }
+    setCambiandoCapitan(true);
+    try {
+      const res = await api.post('/jugadores/cambiar-capitan', {
+        equipo_id: equipoId,
+        jugador_nuevo_id: nuevoCapitanId,
+        zona_id: zonaId,
+      });
+      if (res.data.status === 200) {
+        setSuccessCapitan('Cambio de capitán realizado correctamente.');
+        // Refrescar jugadores para reflejar el nuevo capitán
+        const responseJugadores = await api.get(`/equipos/${equipoId}/jugadores`);
+        setJugadores(responseJugadores.data);
+        setNuevoCapitanId('');
+        setSuccessCapitan('');
+        setErrorCapitan('');
+        setShowModalCapitan(false);
+        toast.success('Cambio de capitán realizado correctamente.');
+      } else {
+        setErrorCapitan(res.data.message || 'Error al cambiar capitán.');
+      }
+    } catch (err) {
+      setErrorCapitan('Error al cambiar capitán.');
+    } finally {
+      setCambiandoCapitan(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -240,12 +346,16 @@ export default function Jugadores() {
       <Header />
       <main className="flex-1 grow p-6 bg-gray-100">
         <div className="w-full flex mb-2">
-          <button onClick={() => navigate(-1)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
-            <ChevronLeft className="w-5" /> Atrás
-          </button>
-        </div> 
-        <div className="justify-center"> 
-          <div className="flex justify-end items-center mb-6">
+          <BackButton ruta={`/detalle-zona/${zonaId}`} />
+        </div>
+        <div className="justify-center">
+          <div className="flex justify-end items-center mb-4">
+            <button
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-[6px] text-sm  shadow"
+              onClick={() => setShowModalCapitan(true)}
+            >
+              {jugadorCapitan === undefined ? 'Asignar Capitán' : 'Cambiar Capitán'}
+            </button>
           </div>
           <div className="bg-white w-full rounded-[12px] shadow-lg p-6 border border-gray-100">
             <h2 className="text-2xl font-medium mb-6 flex items-center">
@@ -352,32 +462,43 @@ export default function Jugadores() {
                             <td className="py-3 px-4">
                               <div className="flex justify-center space-x-2">
                                 {jugadorEditando === jugador.id ? (
-                                  <button
-                                    onClick={() => handleActualizarJugador(jugador.id)}
-                                    className="p-1.5 bg-green-100 text-green-600 hover:bg-green-200 rounded-full transition-colors"
-                                    title="Confirmar"
-                                  >
-                                    <Check className="h-5 w-5" />
-                                  </button>
+                                  <>
+                                    <button
+                                      onClick={() => handleActualizarJugador(jugador.id)}
+                                      className="p-1.5 bg-green-100 text-green-600 hover:bg-green-200 rounded-full transition-colors"
+                                      title="Confirmar"
+                                    >
+                                      <Check className="h-5 w-5" />
+                                    </button>
+                                    <button
+                                      onClick={handleCancelarEdicion}
+                                      className="p-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-full transition-colors"
+                                      title="Cancelar edición"
+                                    >
+                                      <X className="h-5 w-5" />
+                                    </button>
+                                  </>
                                 ) : (
-                                  <button
-                                    onClick={() => handleEditarJugador(jugador.id)}
-                                    className="p-1.5 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-full transition-colors"
-                                    title="Editar"
-                                  >
-                                    <Edit3 className="h-5 w-5" />
-                                  </button>
+                                  <>
+                                    <button
+                                      onClick={() => handleEditarJugador(jugador.id)}
+                                      className="p-1.5 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-full transition-colors"
+                                      title="Editar"
+                                    >
+                                      <Edit3 className="h-5 w-5" />
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setJugadorAEliminar(jugador.id);
+                                        setShowDeleteModal(true);
+                                      }}
+                                      className="p-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-full transition-colors"
+                                      title="Eliminar"
+                                    >
+                                      <Trash2 className="h-5 w-5" />
+                                    </button>
+                                  </>
                                 )}
-                                <button
-                                  onClick={() => {
-                                    setJugadorAEliminar(jugador.id);
-                                    setShowDeleteModal(true);
-                                  }}
-                                  className="p-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-full transition-colors"
-                                  title="Eliminar"
-                                >
-                                  <Trash2 className="h-5 w-5" />
-                                </button>
                               </div>
                             </td>
                           </tr>
@@ -472,7 +593,7 @@ export default function Jugadores() {
               <div className='w-full flex justify-end p-4'>
                 <button
                   onClick={handleAddFilaJugador}
-                  className="bg-black hover:bg-black/80 p-2 px-4 text-sm font-medium rounded-[6px] text-white flex items-center transition-colors shadow-sm" 
+                  className="bg-black hover:bg-black/80 p-2 px-4 text-sm  rounded-[6px] text-white flex items-center transition-colors shadow-sm" 
                 >
                   + Agregar Jugador
                 </button>
@@ -511,6 +632,80 @@ export default function Jugadores() {
         entidad="jugador"
         accionando="Eliminando"
       />
+
+      {/* Modal Cambiar Capitán */}
+      {showModalCapitan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md relative">
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+              onClick={() => {
+                setShowModalCapitan(false);
+                setNuevoCapitanId('');
+                setErrorCapitan('');
+                setSuccessCapitan('');
+              }}
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <h2 className="text-xl font-bold mb-4">Cambiar Capitán</h2>
+            <div className="mb-4">
+              <div className="mb-2 font-semibold">Capitán actual:</div>
+              {jugadorCapitan ? (
+                <div className="flex items-center gap-2 bg-blue-50 rounded px-3 py-2">
+                  <span className="font-medium">{jugadorCapitan.nombre} {jugadorCapitan.apellido}</span>
+                  <span className="text-xs text-gray-500">DNI: {jugadorCapitan.dni}</span>
+                </div>
+              ) : (
+                <div className="bg-yellow-100 text-yellow-800 px-3 py-2 rounded text-sm">
+                  No hay capitán asignado actualmente en este equipo.
+                </div>
+              )}
+            </div>
+            <div className="mb-4">
+              <label className="block font-semibold mb-1">Seleccionar nuevo capitán:</label>
+              <select
+                className="w-full border border-gray-300 p-2 rounded"
+                value={nuevoCapitanId}
+                onChange={e => setNuevoCapitanId(e.target.value)}
+              >
+                <option value="">Seleccionar jugador...</option>
+                {jugadores.map(j => (
+                  <option key={j.id} value={j.id}>
+                    {j.nombre} {j.apellido} (DNI: {j.dni})
+                  </option>
+                ))}
+              </select>
+            </div>
+            {errorCapitan && (
+              <div className="text-red-600 text-sm mb-2">{errorCapitan}</div>
+            )}
+            {successCapitan && (
+              <div className="text-green-600 text-sm mb-2">{successCapitan}</div>
+            )}
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded"
+                onClick={() => {
+                  setShowModalCapitan(false);
+                  setNuevoCapitanId('');
+                  setErrorCapitan('');
+                  setSuccessCapitan('');
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                onClick={handleCambiarCapitan}
+                disabled={cambiandoCapitan}
+              >
+                {cambiandoCapitan ? 'Cambiando...' : 'Confirmar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

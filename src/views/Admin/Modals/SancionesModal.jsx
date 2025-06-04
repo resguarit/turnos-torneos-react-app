@@ -19,6 +19,7 @@ export default function SancionesModal({
   const [selectedJugador, setSelectedJugador] = useState(null);
   const [showSancionForm, setShowSancionForm] = useState(false);
   const [fechas, setFechas] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [sancion, setSancion] = useState({
     motivo: '',
     tipo: '',
@@ -86,6 +87,7 @@ export default function SancionesModal({
 
   const handleEnviarSancion = async () => {
     try {
+      setLoading(true);
       for (const jugadorId in sancionesAplicadas) {
         const sancion = sancionesAplicadas[jugadorId];
   
@@ -127,6 +129,8 @@ export default function SancionesModal({
   
         // Enviar la sanción al backend usando api.post
         await api.post('/sanciones', data);
+
+        onClose();
       }
   
       toast.success('Sanciones creadas correctamente');
@@ -144,6 +148,8 @@ export default function SancionesModal({
     } catch (error) {
       console.error('Error al enviar la sanción:', error);
       toast.error('Error al conectar con el servidor');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -356,10 +362,10 @@ export default function SancionesModal({
             </button>
             <button
               onClick={handleEnviarSancion}
-              disabled={Object.keys(sancionesAplicadas).length === 0}
+              disabled={Object.keys(sancionesAplicadas).length === 0 || loading}
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed"
             >
-              Confirmar Sanciones
+              {loading ? 'Confirmando...' : 'Confirmar Sanciones'}
             </button>
           </div>
         </div>

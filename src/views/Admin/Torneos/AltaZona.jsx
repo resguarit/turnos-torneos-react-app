@@ -8,6 +8,8 @@ import BtnLoading from '@/components/BtnLoading';
 import { toast } from 'react-toastify'; // Importar react-toastify
 import 'react-toastify/dist/ReactToastify.css'; // Importar estilos de react-toastify
 import { useTorneos } from '@/context/TorneosContext';
+import ConfirmModal from '../Modals/ConfirmModal';
+import BackButton from '@/components/BackButton';
 
 export default function AltaZona() {
   const { id, torneoId } = useParams(); // Obtener el ID de la zona y el torneo desde la URL
@@ -20,6 +22,8 @@ export default function AltaZona() {
     año: new Date().getFullYear(),
     torneo_id: torneoId || '', // Asignar el torneo_id desde la URL
   });
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingSubmit, setPendingSubmit] = useState(false);
 
   useEffect(() => {
     const fetchZona = async () => {
@@ -50,26 +54,44 @@ export default function AltaZona() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (id) {
+      setShowConfirmModal(true);
+      setPendingSubmit(true);
+    } else {
+      await submitZona();
+    }
+  };
+
+  const submitZona = async () => {
     try {
       setLoading(true);
       if (id) {
-        // Editar zona
         await api.put(`/zonas/${id}`, formData);
-        toast.success('Zona actualizada correctamente'); // Mostrar éxito con toastify
+        toast.success('Zona actualizada correctamente');
       } else {
-        // Crear nueva zona
         await api.post('/zonas', formData);
-        toast.success('Zona creada correctamente'); // Mostrar éxito con toastify
+        toast.success('Zona creada correctamente');
       }
       const torneosResponse = await api.get('/torneos');
       setTorneos(torneosResponse.data);
       navigate(`/zonas-admi/${formData.torneo_id}`);
     } catch (error) {
       console.error('Error saving zona:', error);
-      toast.error('Error al guardar la zona'); // Mostrar error con toastify
+      toast.error('Error al guardar la zona');
     } finally {
       setLoading(false);
+      setShowConfirmModal(false);
+      setPendingSubmit(false);
     }
+  };
+
+    const handleConfirmUpdate = async () => {
+    await submitZona();
+  };
+
+    const handleCancelUpdate = () => {
+    setShowConfirmModal(false);
+    setPendingSubmit(false);
   };
 
   const handleChange = (e) => {
@@ -99,16 +121,14 @@ export default function AltaZona() {
       <Header />
       <main className="flex-col grow p-6 bg-gray-100 flex items-center ">
         <div className="w-full flex mb-2">
-          <button onClick={() => navigate(`/zonas-admi/${formData.torneo_id}`)} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
-            <ChevronLeft className="w-5" /> Atrás
-          </button>
+          <BackButton ruta={`/zonas-admi/${formData.torneo_id}`} />
         </div>
         <div className="bg-white text-black p-4 rounded-xl shadow-lg w-1/2">
-          <h2 className="text-2xl font-sans font-medium mb-1">{id ? 'Editar Zona' : 'Crear Nueva Zona'}</h2>
+          <h2 className="text-2xl  font-semibold mb-1">{id ? 'Editar Zona' : 'Crear Nueva Zona'}</h2>
           <p className="mb-4 text-sm text-gray-500">Complete los datos para {id ? 'editar la' : 'crear una nueva'} zona</p>
           <form className="flex flex-col space-y-3" onSubmit={handleSubmit}>
             <div>
-              <label className="font-medium font-sans text-lg">Nombre de la Zona:</label>
+              <label className="font-medium  text-lg">Nombre de la Zona:</label>
               <input
                 className="border-gray-300 border w-full px-2 rounded-xl"
                 name="nombre"
@@ -118,7 +138,7 @@ export default function AltaZona() {
               />
             </div>
             <div>
-              <label className="font-medium font-sans text-lg">Formato:</label>
+              <label className="font-medium  text-lg">Formato:</label>
               <select
                 className="border-gray-300 border w-full p-1 rounded-xl"
                 name="formato"
@@ -134,7 +154,7 @@ export default function AltaZona() {
               </select>
             </div>
             <div>
-              <label className="font-medium font-sans text-lg">Año:</label>
+              <label className="font-medium  text-lg">Año:</label>
               <select
                 className="border-gray-300 border w-full p-1 rounded-xl"
                 name="año"
@@ -162,6 +182,17 @@ export default function AltaZona() {
         </div>
       </main>
       <Footer />
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onClose={handleCancelUpdate}
+        onConfirm={handleConfirmUpdate}
+        loading={loading}
+        accionTitulo="actualización"
+        accion="actualizar"
+        pronombre="la"
+        entidad="zona"
+        accionando="Actualizando"
+      />
     </div>
   );
 }

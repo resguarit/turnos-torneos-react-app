@@ -41,8 +41,8 @@ export default function CrearFechaModal({ zonaId, equipos, onClose, onFechaCread
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-        <h2 className="text-xl font-sans font-bold mb-4">Crear Nueva Fecha</h2>
+      <div className="bg-white p-6 rounded-[8px] shadow-lg w-1/3">
+        <h2 className="text-xl font-bold mb-4">Crear Nueva Fecha</h2>
         <div className="mb-2">
           <label className="block  text-gray-700 ">Nombre</label>
           <input
@@ -52,14 +52,14 @@ export default function CrearFechaModal({ zonaId, equipos, onClose, onFechaCread
             className="w-full border border-gray-300 rounded-[6px] p-1"
           />
         </div>
-        <div className="flex w-full justify-between mb-2 gap-4">
+        <div className="flex w-full justify-between mb-6 gap-4">
         <div className="flex-col w-full">
           <label className="block text-gray-700 ">Fecha de Inicio</label>
           <input
             type="date"
             value={fechaInicio}
             onChange={(e) => setFechaInicio(e.target.value)}
-            className="w-full border border-gray-300 rounded-[6px] p-1"
+            className="w-full border border-gray-300 rounded-[6px] p-1 px-2"
           />
           </div>
           <div className="flex-col w-full">
@@ -68,7 +68,7 @@ export default function CrearFechaModal({ zonaId, equipos, onClose, onFechaCread
             type="date"
             value={fechaFin}
             onChange={(e) => setFechaFin(e.target.value)}
-            className="w-full border border-gray-300 rounded-[6px] p-1"
+            className="w-full border border-gray-300 rounded-[6px] p-1 px-2"
           />
           </div>
         </div>
@@ -76,13 +76,13 @@ export default function CrearFechaModal({ zonaId, equipos, onClose, onFechaCread
         <div className="flex justify-end space-x-4">
           <button
             onClick={onClose}
-            className="bg-gray-300 text-gray-700 px-4 py-2 rounded-[6px] hover:bg-gray-400"
+            className="bg-gray-300 text-gray-700 px-3 py-2 rounded-[6px] hover:bg-gray-400"
           >
             Cancelar
           </button>
           <button
             onClick={crearFecha}
-            className="bg-green-500 text-white px-4 py-2 rounded-[6px] hover:bg-green-600"
+            className="bg-green-500 text-white px-3 py-2 rounded-[6px] hover:bg-green-600"
           >
             Crear Fecha
           </button>

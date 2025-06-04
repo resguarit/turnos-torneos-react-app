@@ -35,7 +35,7 @@ useEffect(() => {
         <Header />
         <main className="flex-1 p-6 bg-gray-100">
           <div className="flex flex-col justify-center items-center h-full">
-            <h1 className="text-center text-2xl font-sans font-semibold ">Torneos</h1>
+            <h1 className="text-center text-2xl  font-semibold ">Torneos</h1>
             <div className='flex flex-col w-1/2'>
             {torneos.map((torneo) => (
                 <div key={torneo.id} className="bg-black text-white shadow-md rounded-[6px] p-2 mt-4">

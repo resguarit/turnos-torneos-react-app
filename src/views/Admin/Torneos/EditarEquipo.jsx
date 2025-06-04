@@ -6,6 +6,7 @@ import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { ChevronLeft } from 'lucide-react';
 import { toast } from 'react-toastify';
+import ConfirmModal from '../Modals/ConfirmModal';
 
 export default function EditarEquipo() {
   const { equipoId } = useParams();
@@ -14,6 +15,7 @@ export default function EditarEquipo() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [equipo, setEquipo] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   useEffect(() => {
     const fetchEquipo = async () => {
@@ -76,23 +78,30 @@ export default function EditarEquipo() {
     );
   }
 
+  const handleOpenModal = (e) => {
+    e.preventDefault();
+    setShowConfirmModal(true);
+  }
+
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
         <div className="w-full flex mb-2">
           <button 
-            onClick={() => navigate(`/detalle-zona/${equipo.zona_id}`)} 
+            onClick={() => navigate(`/detalle-zona/${equipo.zonas[0].id}`)} 
+            
             className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center"
           >
             <ChevronLeft className="w-5" /> Atrás
           </button>
+          {console.log(equipo)}
         </div>
         <div className="max-w-xl mx-auto">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h1 className="text-2xl font-bold mb-6">Editar Equipo</h1>
+          <div className="bg-white rounded-[8px] shadow-md p-6">
+            <h1 className="text-2xl font-semibold mb-6">Editar Equipo</h1>
             
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleOpenModal} className="space-y-4">
               <div className="mb-4">
                 <label htmlFor="nombreEquipo" className="block text-sm font-medium text-gray-700 mb-1">
                   Nombre del Equipo
@@ -102,7 +111,7 @@ export default function EditarEquipo() {
                   id="nombreEquipo"
                   value={nombreEquipo}
                   onChange={(e) => setNombreEquipo(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-1 px-2 border border-gray-300 rounded-[6px] focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Nombre del equipo"
                   required
                 />
@@ -112,13 +121,13 @@ export default function EditarEquipo() {
                 <button
                   type="submit"
                   disabled={saving || !nombreEquipo.trim()}
-                  className={`px-4 py-2 rounded-md ${
+                  className={`px-3 py-2 text-sm rounded-[6px] ${
                     saving || !nombreEquipo.trim() 
                       ? 'bg-gray-400 cursor-not-allowed' 
                       : 'bg-blue-500 hover:bg-blue-600 text-white'
                   }`}
                 >
-                  {saving ? 'Guardando...' : 'Guardar Cambios'}
+                  Guardar Cambios
                 </button>
               </div>
             </form>
@@ -126,6 +135,17 @@ export default function EditarEquipo() {
         </div>
       </main>
       <Footer />
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={handleSubmit}
+        loading={saving}
+        accionTitulo="Actualizar"
+        accion="actualizar"
+        pronombre="el"
+        entidad="equipo"
+        accionando="actualizando"
+      />
     </div>
   );
 }

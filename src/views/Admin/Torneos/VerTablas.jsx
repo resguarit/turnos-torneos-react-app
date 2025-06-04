@@ -11,6 +11,7 @@ import { TablaSanciones } from './Tablas/TablaSanciones';
 import api from '@/lib/axiosConfig';
 import { toast } from 'react-toastify'; // Import toast for error messages
 import ArañaEliminacionUsuario from './ArañaEliminacionUsuario';
+import BackButton from '@/components/BackButton';
 
 export default function VerTablas() {
   const { zonaId } = useParams();
@@ -135,9 +136,7 @@ export default function VerTablas() {
         <Header />
         <main className="flex-1 p-6 bg-gray-100">
            <div className="w-full flex mb-2">
-            <button onClick={() => navigate(-1)} className="bg-black rounded-xl text-white px-4 py-2 text-sm flex items-center justify-center hover:bg-gray-800 transition-colors">
-              <ChevronLeft className="w-5 mr-1" /> Atrás
-            </button>
+            <BackButton ruta={`/zonas-user/${zonaInfo?.torneo?.id || ''}`} />
            </div>
           <p className="text-center text-red-500">No se pudo cargar la información de la zona.</p>
         </main>
@@ -151,9 +150,7 @@ export default function VerTablas() {
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
         <div className="w-full flex mb-4"> {/* Increased margin-bottom */}
-          <button onClick={() => navigate(-1)} className="bg-black rounded-xl text-white px-4 py-2 text-sm flex items-center justify-center hover:bg-gray-800 transition-colors">
-            <ChevronLeft className="w-5 mr-1" /> Atrás
-          </button>
+          <BackButton ruta={`/zonas-user/${zonaInfo?.torneo?.id || ''}`} />
         </div>
         <div className="flex flex-col items-center w-full space-y-8"> {/* Use space-y for consistent spacing */}
           <h1 className="text-center text-3xl font-bold  mb-4">Tablas <span className='text-orange-600'> {zonaInfo.torneo.nombre} - {zonaInfo.nombre}</span></h1> {/* Larger title */}

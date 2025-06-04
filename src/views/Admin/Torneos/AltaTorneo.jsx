@@ -9,6 +9,8 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useTorneos } from '@/context/TorneosContext';
 import { useDeportes } from '@/context/DeportesContext'; // <-- Importa el contexto
+import ConfirmModal from '../Modals/ConfirmModal'; 
+import BackButton from '@/components/BackButton';
 
 export default function AltaTorneo() {
   const { id } = useParams();
@@ -25,6 +27,8 @@ export default function AltaTorneo() {
   const [modalVisible, setModalVisible] = useState(false);
   const [nuevoDeporte, setNuevoDeporte] = useState({ nombre: '', jugadores_por_equipo: '', duracion_turno: '' });
   const navigate = useNavigate();
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingSubmit, setPendingSubmit] = useState(false);
 
   useEffect(() => {
     const fetchTorneo = async () => {
@@ -57,6 +61,17 @@ export default function AltaTorneo() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (id) {
+      setShowConfirmModal(true);
+      setPendingSubmit(true);
+    } else {
+      await submitZona();
+    }
+  };
+
+
+  const submitZona = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!formData.deporte_id) {
       toast.error('Debe seleccionar un deporte');
       return;
@@ -78,7 +93,18 @@ export default function AltaTorneo() {
       toast.error('Error al guardar el torneo');
     } finally {
       setLoading(false);
+      setShowConfirmModal(false);
+      setPendingSubmit(false);
     }
+  };
+
+  const handleConfirmUpdate = async () => {
+    await submitZona();
+  };
+
+  const handleCancelUpdate = () => {
+    setShowConfirmModal(false);
+    setPendingSubmit(false);
   };
 
   const handleChange = (e) => {
@@ -126,18 +152,16 @@ export default function AltaTorneo() {
       <Header />
       <main className="flex-col grow p-6 bg-gray-100 flex items-center ">
         <div className="w-full flex mb-2">
-          <button onClick={() => navigate('/torneos-admi')} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
-            <ChevronLeft className="w-5" /> Atrás
-          </button>
+          <BackButton ruta={'/torneos-admi'} />
         </div>
         <div className="bg-white text-black p-4 rounded-xl shadow-lg w-1/2">
-          <h2 className="text-2xl font-sans font-medium mb-1">{id ? 'Editar Torneo' : 'Crear Nuevo Torneo'}</h2>
+          <h2 className="text-2xl font-semibold mb-1">{id ? 'Editar Torneo' : 'Crear Nuevo Torneo'}</h2>
           <p className="mb-4 text-sm text-gray-500">Complete los datos para {id ? 'editar el' : 'crear un nuevo'} torneo</p>
           <form className="flex flex-col space-y-3" onSubmit={handleSubmit}>
             <div>
-              <label className="font-medium font-sans text-lg">Nombre del Torneo:</label>
+              <label className="font-medium ">Nombre del Torneo:</label>
               <input
-                className="border-gray-300 border w-full px-2 rounded-xl"
+                className="border-gray-300 border w-full p-1 rounded-[6px]"
                 name="nombre"
                 value={formData.nombre}
                 onChange={handleChange}
@@ -145,9 +169,9 @@ export default function AltaTorneo() {
               />
             </div>
             <div>
-              <label className="font-medium font-sans text-lg">Año:</label>
+              <label className="font-medium ">Año:</label>
               <select
-                className="border-gray-300 border w-full p-1 rounded-xl"
+                className="border-gray-300 border w-full p-1 py-[5px] rounded-[6px]"
                 name="año"
                 value={formData.año}
                 onChange={handleChange}
@@ -161,9 +185,9 @@ export default function AltaTorneo() {
               </select>
             </div>
             <div>
-              <label className="font-medium font-sans text-lg">Deporte:</label>
+              <label className="font-medium ">Deporte:</label>
               <select
-                className="border-gray-300 border w-full p-1 rounded-xl"
+                className="border-gray-300 border w-full p-1 py-[5px] rounded-[6px]"
                 name="deporte_id"
                 value={formData.deporte_id}
                 onChange={(e) => {
@@ -180,17 +204,17 @@ export default function AltaTorneo() {
                 </option>
                 {deportes.map((deporte) => (
                   <option key={deporte.id} value={deporte.id}>
-                    {deporte.nombre} ({deporte.jugadores_por_equipo} jugadores por equipo)
+                    {deporte.nombre} {deporte.jugadores_por_equipo}
                   </option>
                 ))}
-                <option value="nuevo">+ Nuevo Deporte</option>
+                <option className="bg-gray-300" value="nuevo">+ Nuevo Deporte</option>
               </select>
             </div>
             <div>
-              <label className="font-medium font-sans text-lg">Precio Inscripción:</label>
+              <label className="font-medium">Precio Inscripción:</label>
               <input
                 type="number"
-                className="border-gray-300 border w-full px-2 rounded-xl"
+                className="border-gray-300 border w-full p-1 rounded-[6px]"
                 name="precio_inscripcion"
                 value={formData.precio_inscripcion}
                 onChange={handleChange}
@@ -199,10 +223,10 @@ export default function AltaTorneo() {
               />
             </div>
             <div>
-              <label className="font-medium font-sans text-lg">Precio por Fecha:</label>
+              <label className="font-medium">Precio por Fecha:</label>
               <input
                 type="number"
-                className="border-gray-300 border w-full px-2 rounded-xl"
+                className="border-gray-300 border w-full p-1 rounded-[6px]"
                 name="precio_por_fecha"
                 value={formData.precio_por_fecha}
                 onChange={handleChange}
@@ -223,6 +247,17 @@ export default function AltaTorneo() {
         </div>
       </main>
       <Footer />
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onClose={handleCancelUpdate}
+        onConfirm={handleConfirmUpdate}
+        loading={loading}
+        accionTitulo="actualización"
+        accion="actualizar"
+        pronombre="el"
+        entidad="torneo"
+        accionando="Actualizando"
+      />
 
       {/* Modal para crear un nuevo deporte */}
       {modalVisible && (

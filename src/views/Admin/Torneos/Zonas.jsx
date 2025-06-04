@@ -12,15 +12,16 @@ import { useTorneos } from '@/context/TorneosContext';
 import api from '@/lib/axiosConfig';
 import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal';
 import { formatearFechaCorta } from '@/utils/dateUtils';
+import BackButton from '@/components/BackButton';
 
 export default function Zonas() {
   const { torneoId } = useParams();
   const { torneos, setTorneos } = useTorneos();
   const [loading, setLoading] = useState(false);
-  const [zonaToDelete, setZonaToDelete] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [zonaIdFinalizar, setZonaIdFinalizar] = useState(null);
+  const [zonaIdReactivar, setZonaIdReactivar] = useState(null);
   const [modalFinalizarOpen, setModalFinalizarOpen] = useState(false);
+  const [modalReactivarOpen, setModalReactivarOpen] = useState(false);
   const [searchYear, setSearchYear] = useState('');
   const navigate = useNavigate();
 
@@ -43,39 +44,6 @@ export default function Zonas() {
   const zonasFiltradas = searchYear
     ? zonasConFecha.filter(z => String(z.año).includes(searchYear))
     : zonasConFecha.filter(z => z.activo === 1 || z.activo === true);
-
-  const handleDeleteZona = async (zonaId) => {
-    try {
-      setLoading(true);
-      // Aquí sí haces el delete al backend
-      const response = await api.delete(`/zonas/${zonaId}`);
-      if (response.status === 200) {
-        // Actualiza el contexto eliminando la zona del torneo correspondiente
-        const nuevosTorneos = torneos.map(t => {
-          if (String(t.id) === String(torneoId)) {
-            return {
-              ...t,
-              zonas: t.zonas.filter(z => z.id !== zonaId)
-            };
-          }
-          return t;
-        });
-        setTorneos(nuevosTorneos);
-        setShowDeleteModal(false);
-        toast.success('Zona eliminada correctamente');
-      }
-    } catch (error) {
-      console.error('Error al eliminar la zona:', error);
-      toast.error('Error al eliminar la zona');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const openDeleteModal = (zona) => {
-    setZonaToDelete(zona);
-    setShowDeleteModal(true);
-  };
 
   // Finalizar zona
   const finalizarZona = async (zonaId) => {
@@ -108,6 +76,36 @@ export default function Zonas() {
     }
   };
 
+  const reactivarZona = async (zonaId) => {
+    try {
+      setLoading(true);
+      const response = await api.put(`/zonas/${zonaId}`, { activo: true });
+      if (response.data.status === 200) {
+        // Actualiza el contexto eliminando la zona activa
+        const nuevosTorneos = torneos.map(t => {
+          if (String(t.id) === String(torneoId)) {
+            return {
+              ...t,
+              zonas: t.zonas.map(z =>
+                z.id === zonaId ? { ...z, activo: false } : z
+              ),
+            };
+          }
+          return t;
+        });
+        setTorneos(nuevosTorneos);
+        setModalReactivarOpen(false);
+        toast.success('Zona reactivada correctamente');
+      } else {
+        toast.error(response.data.message || 'Error al reactivar la zona');
+      }
+    } catch (error) {
+      toast.error('Error al reactivar la zona');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col font-inter">
@@ -127,13 +125,13 @@ export default function Zonas() {
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
         <div className="w-full flex mb-4">
-          <button onClick={() => navigate('/torneos-admi')} className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center">
-            <ChevronLeft className="w-5" /> Atrás
-          </button>
+          <BackButton ruta={'/torneos-admi'} />
         </div>
         <div className="max-w-7xl lg:max-w-full mx-auto">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl lg:text-2xl font-bold">Zonas del Torneo <span className='text-blue-600'>{torneo.nombre}</span></h1>
+            <h1 className="text-2xl lg:text-2xl font-bold">
+              Zonas del Torneo <span className='text-blue-600'>{torneo ? torneo.nombre : ''}</span>
+            </h1>
             <button onClick={() => navigate(`/alta-zona/${torneoId}`)} className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white">
               + Nueva Zona
             </button>
@@ -187,20 +185,19 @@ export default function Zonas() {
                         Editar
                       </button>
                       <button
-                        onClick={() => openDeleteModal(zona)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-                      >
-                        Eliminar
-                      </button>
-                      <button
                         onClick={() => {
-                          setZonaIdFinalizar(zona.id);
-                          setModalFinalizarOpen(true);
+                          if (zona.activo) {
+                            setZonaIdFinalizar(zona.id);
+                            setModalFinalizarOpen(true);
+                          }
+                          else {
+                            setZonaIdReactivar(zona.id);
+                            setModalReactivarOpen(true);
+                          }
                         }}
-                        className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded"
-                        disabled={zona.activo === false}
+                        className={`${zona.activo ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}  text-white px-4 py-2 rounded`}
                       >
-                        Finalizar
+                        {zona.activo ? 'Finalizar' : 'Reactivar'}
                       </button>
                     </div>
                   </CardContent>
@@ -211,35 +208,6 @@ export default function Zonas() {
         </div>
       </main>
 
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Confirmar Eliminación</h3>
-            <p className="mb-4">
-              ¿Estás seguro de que deseas eliminar la zona <strong>{zonaToDelete?.nombre}</strong>? 
-              Esta acción eliminará todos los equipos, grupos y fechas asociados a esta zona.
-            </p>
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => handleDeleteZona(zonaToDelete.id)}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                disabled={loading}
-              >
-                {loading ? 'Eliminando...' : 'Eliminar'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de confirmación para finalizar zona */}
-      {modalFinalizarOpen && (
         <ConfirmDeleteModal
           isOpen={modalFinalizarOpen}
           onClose={() => setModalFinalizarOpen(false)}
@@ -251,7 +219,18 @@ export default function Zonas() {
           entidad="zona"
           accionando="finalizando"
         />
-      )}
+
+        <ConfirmDeleteModal
+          isOpen={modalReactivarOpen}
+          onClose={() => setModalReactivarOpen(false)}
+          onConfirm={() => reactivarZona(zonaIdReactivar)}
+          loading={loading}
+          accionTitulo="Reactivación"
+          accion="reactivar"
+          pronombre="la"
+          entidad="zona"
+          accionando="reactivando"
+        />
       <Footer />
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { X } from "lucide-react";
+import { normalize } from "../../../utils/normalize"; 
 
 
 export default function AsociarJugadorModal({
@@ -33,9 +34,9 @@ export default function AsociarJugadorModal({
   // Filtrado local de equipos por nombre
   const equiposFiltrados = useMemo(() => {
     if (!busquedaEquipo.trim()) return equipos;
-    const term = busquedaEquipo.trim().toLowerCase();
+    const term = normalize(busquedaEquipo.trim());
     return equipos.filter(
-      (e) => e.nombre && e.nombre.toLowerCase().includes(term)
+      (e) => e.nombre && normalize(e.nombre).includes(term)
     );
   }, [busquedaEquipo, equipos]);
 

@@ -1,5 +1,7 @@
 import React, { useMemo, useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { normalize } from "../../../utils/normalize"; 
+
 
 export default function AgregarJugadorAEquipoModal({
   isOpen,
@@ -24,11 +26,11 @@ export default function AgregarJugadorAEquipoModal({
 
   const jugadoresFiltrados = useMemo(() => {
     if (!busquedaJugador.trim()) return jugadores;
-    const term = busquedaJugador.trim().toLowerCase();
+    const term = normalize(busquedaJugador.trim());
     return jugadores.filter(
       (j) =>
-        (j.nombre && j.nombre.toLowerCase().includes(term)) ||
-        (j.apellido && j.apellido.toLowerCase().includes(term)) ||
+        (j.nombre && normalize(j.nombre).includes(term)) ||
+        (j.apellido && normalize(j.apellido).includes(term)) ||
         (j.dni && j.dni.toString().includes(term))
     );
   }, [busquedaJugador, jugadores]);

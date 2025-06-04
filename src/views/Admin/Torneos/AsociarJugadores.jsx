@@ -140,7 +140,7 @@ const [loadingDesvincular, setLoadingDesvincular] = useState(false);
       const jugadoresRes = await api.get("/jugadores");
       setJugadores(jugadoresRes.data);
     } catch (err) {
-      toast.error("Error al asociar jugador");
+      toast.error(err.response.data.message);
     } finally {
       setLoading(false);
     }
@@ -167,7 +167,7 @@ const [loadingDesvincular, setLoadingDesvincular] = useState(false);
       if (err.response?.data?.message) {
         toast.error(err.response.data.message);
       } else {
-        toast.error("Error al asociar jugador");
+        toast.error("Error al asociar jugador:");
       }
     } finally {
       setLoading(false);

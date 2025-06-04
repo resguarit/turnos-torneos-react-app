@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react"
 import { Footer } from "@/components/Footer"
 import { Header } from "@/components/Header"
 import { Button } from "@/components/ui/button"
@@ -6,6 +5,7 @@ import { useNavigate } from "react-router-dom"
 import { Search, X, Filter, ChevronDown, Link } from "lucide-react"
 import api from '@/lib/axiosConfig'
 import BtnLoading from "@/components/BtnLoading"
+import { useState, useEffect } from "react"
 import { normalize } from "../../../utils/normalize"; 
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
@@ -24,6 +24,8 @@ function VerJugadores() {
   const [showZonaDropdown, setShowZonaDropdown] = useState(false)
   const [showTorneoDropdown, setShowTorneoDropdown] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [expulsadosPermanentes, setExpulsadosPermanentes] = useState([]);
+  const [showOnlyExpulsados, setShowOnlyExpulsados] = useState(false);
 
   useEffect(() => {
     const fetchJugadores = async () => {
@@ -40,6 +42,22 @@ function VerJugadores() {
     };
 
     fetchJugadores();
+  }, []);
+
+  useEffect(() => {
+    const fetchExpulsados = async () => {
+      try {
+        const response = await api.get('/expulsiones-permanentes');
+        // Filtra solo los jugadores que existen y saca sus IDs
+        const ids = (response.data.expulsiones_permanentes || [])
+          .map(item => item.jugador?.id)
+          .filter(Boolean);
+        setExpulsadosPermanentes(ids);
+      } catch (error) {
+        setExpulsadosPermanentes([]);
+      }
+    };
+    fetchExpulsados();
   }, []);
 
   // Add a filter
@@ -71,7 +89,7 @@ function VerJugadores() {
     let results = jugadores;
 
     // Si hay búsqueda o filtros activos, buscar sobre todos los jugadores
-    if (searchTerm || activeFilters.length > 0) {
+    if (searchTerm || activeFilters.length > 0 || showOnlyExpulsados) {
       if (searchTerm) {
         const term = searchTerm;
         results = jugadores.filter(
@@ -112,9 +130,14 @@ function VerJugadores() {
       }
     });
 
+    // Filtro de expulsados permanentes
+    if (showOnlyExpulsados) {
+      results = results.filter(jugador => expulsadosPermanentes.includes(jugador.id));
+    }
+
     setFilteredJugadores(results);
     setCurrentPage(1); // Reset to first page after filtering
-  }, [searchTerm, activeFilters, jugadores])
+  }, [searchTerm, activeFilters, jugadores, showOnlyExpulsados])
 
   // Pagination logic
   const indexOfLastItem = currentPage * ITEMS_PER_PAGE
@@ -189,7 +212,7 @@ function VerJugadores() {
 
           {/* Search Bar */}
           <div className="w-full flex gap-2">
-            <div className="w-1/2 mb-1">
+            <div className="w-1/2 mb-1 relative">
               <input
                 type="text"
                 placeholder="Buscar por nombre, apellido, DNI o equipo..."
@@ -252,7 +275,7 @@ function VerJugadores() {
           </div>
 
           {/* Filtros activos */}
-          <div className="w-full flex items-center mb-6">
+          <div className="w-full flex items-center mb-2">
             {activeFilters.length > 0 && (
               <button className="text-sm ml-1 text-red-500" onClick={clearFilters}>
                 Limpiar filtros
@@ -279,6 +302,17 @@ function VerJugadores() {
               </div>
             )}
           </div>
+               <div>
+              <label className="flex items-center gap-2 mb-4 ml-1 text-gray-700 text-sm select-none">
+                <input
+                  type="checkbox"
+                  checked={showOnlyExpulsados}
+                  onChange={e => setShowOnlyExpulsados(e.target.checked)}
+                  className="accent-red-600"
+                />
+                Mostrar solo expulsados permanentes
+              </label>
+              </div>
 
           {/* Resultados */}
           <div className="mb-2">
@@ -305,7 +339,16 @@ function VerJugadores() {
                 </thead>
                 <tbody className="text-gray-700">
                   {currentItems.map((jugador, index) => (
-                    <tr key={jugador.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <tr
+                      key={jugador.id}
+                      className={
+                        expulsadosPermanentes.includes(jugador.id)
+                          ? 'bg-red-200'
+                          : index % 2 === 0
+                            ? 'bg-white'
+                            : 'bg-gray-50'
+                      }
+                    >
                       <td className="py-2 px-3 border-b text-center text-sm">{jugador.dni}</td>
                       <td className="py-2 px-3 border-b text-center text-sm">{jugador.nombre}</td>
                       <td className="py-2 px-3 border-b text-center text-sm">{jugador.apellido}</td>

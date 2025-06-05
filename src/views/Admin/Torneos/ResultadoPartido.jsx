@@ -5,11 +5,13 @@ import { Footer } from '@/components/Footer';
 import BackButton from '@/components/BackButton';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
-import { toast } from 'react-toastify'; // Importar react-toastify
+import { toast } from 'react-toastify'; 
 import ResultadoModal from '../Modals/ResultadoModal';
 import { Info, Trash, ChevronLeft, TriangleAlert } from 'lucide-react';
-import { debounce } from 'lodash'; // Import debounce
+import { debounce } from 'lodash'; 
 import  SancionesModal  from '../Modals/SancionesModal';
+import {format, parseISO} from 'date-fns';
+import { es } from 'date-fns/locale'; 
 
 export default function ResultadoPartido() {
   const { zonaId, partidoId } = useParams();
@@ -239,7 +241,12 @@ export default function ResultadoPartido() {
           apellido: jugador.apellido,
           dni: jugador.dni,
           fecha_nacimiento: jugador.fecha_nacimiento,
-          equipo_ids: [verEquipo === 1 ? equipoLocal.id : equipoVisitante.id],
+          equipos: [
+            {
+              id: verEquipo === 1 ? equipoLocal.id : equipoVisitante.id,
+              capitan: false // o true si corresponde
+            }
+          ], // <--- CAMBIA AQUÍ
         });
         toast.success('Jugador creado y asociado correctamente al equipo.');
         setJugadoresEnAlta((prev) => prev.filter((j) => j.id !== jugadorId));
@@ -413,7 +420,12 @@ export default function ResultadoPartido() {
             apellido: jugador.apellido,
             dni: jugador.dni,
             fecha_nacimiento: jugador.fecha_nacimiento,
-            equipo_ids: [verEquipo === 1 ? equipoLocal.id : equipoVisitante.id],
+            equipos: [
+              {
+                id: verEquipo === 1 ? equipoLocal.id : equipoVisitante.id,
+                capitan: false // o true si corresponde
+              }
+            ],
           });
         }
       }
@@ -683,7 +695,7 @@ export default function ResultadoPartido() {
                         <td className="p-2 text-center">
                           {jugador.nombre} {jugador.apellido}
                         </td>
-                        <td className="p-2 text-center">{jugador.fecha_nacimiento}</td>
+                        <td className="p-2 text-center">{format(parseISO(jugador.fecha_nacimiento), 'dd/MM/yyyy', {locale: es})}</td>
                         <td className="p-2 text-center">
                           {chargingMode ? (
                             <input
@@ -791,23 +803,33 @@ export default function ResultadoPartido() {
                             disabled={!chargingMode || jugador.expulsado}
                             onChange={(e) => {
                               const isPresente = e.target.checked;
-                              if (isPresente && !estadisticas[jugador.id]) {
-                                setEstadisticas((prev) => ({
+                              setEstadisticas((prev) => {
+                                // Si se marca como presente y no existe, crear el objeto de estadísticas
+                                if (isPresente && !prev[jugador.id]) {
+                                  return {
+                                    ...prev,
+                                    [jugador.id]: {
+                                      nro_camiseta: null,
+                                      goles: 0,
+                                      asistencias: 0,
+                                      amarillas: 0,
+                                      rojas: 0,
+                                      partido_id: partidoId,
+                                      jugador_id: jugador.id,
+                                      presente: true,
+                                    },
+                                  };
+                                }
+                                // Si ya existe, solo actualizar el campo presente
+                                return {
                                   ...prev,
                                   [jugador.id]: {
-                                    nro_camiseta: null,
-                                    goles: 0,
-                                    asistencias: 0,
-                                    amarillas: 0,
-                                    rojas: 0,
-                                    partido_id: partidoId,
-                                    jugador_id: jugador.id,
-                                    presente: true,
+                                    ...prev[jugador.id],
+                                    presente: isPresente,
                                   },
-                                }));
-                              } else {
-                                handleInputChange(jugador.id, "presente", isPresente);
-                              }
+                                };
+                              });
+                              setChangesDetected(true);
                             }}
                             className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50"
                           />
@@ -938,23 +960,33 @@ export default function ResultadoPartido() {
                             disabled={!chargingMode || jugador.expulsado}
                             onChange={(e) => {
                               const isPresente = e.target.checked;
-                              if (isPresente && !estadisticas[jugador.id]) {
-                                setEstadisticas((prev) => ({
+                              setEstadisticas((prev) => {
+                                // Si se marca como presente y no existe, crear el objeto de estadísticas
+                                if (isPresente && !prev[jugador.id]) {
+                                  return {
+                                    ...prev,
+                                    [jugador.id]: {
+                                      nro_camiseta: null,
+                                      goles: 0,
+                                      asistencias: 0,
+                                      amarillas: 0,
+                                      rojas: 0,
+                                      partido_id: partidoId,
+                                      jugador_id: jugador.id,
+                                      presente: true,
+                                    },
+                                  };
+                                }
+                                // Si ya existe, solo actualizar el campo presente
+                                return {
                                   ...prev,
                                   [jugador.id]: {
-                                    nro_camiseta: null,
-                                    goles: 0,
-                                    asistencias: 0,
-                                    amarillas: 0,
-                                    rojas: 0,
-                                    partido_id: partidoId,
-                                    jugador_id: jugador.id,
-                                    presente: true,
+                                    ...prev[jugador.id],
+                                    presente: isPresente,
                                   },
-                                }));
-                              } else {
-                                handleInputChange(jugador.id, "presente", isPresente);
-                              }
+                                };
+                              });
+                              setChangesDetected(true);
                             }}
                             className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50"
                           />

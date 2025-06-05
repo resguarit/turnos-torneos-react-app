@@ -12,7 +12,7 @@ const InfoPagoTurnoDialog = ({ isOpen, onClose, turno }) => {
   const [mostrarHistorial, setMostrarHistorial] = useState(true); // Por defecto mostrar el historial
   
   // Determinar si el turno está cancelado
-  const isCancelado = turno?.estado?.toLowerCase() === 'cancelado';
+  const isCancelado = typeof turno?.estado === 'string' && turno.estado.toLowerCase() === 'cancelado';
 
   // Buscar la información al abrir el modal
   useEffect(() => {

@@ -374,7 +374,13 @@ function VerTurnos() {
     fetchTurnos();
   };
 
-  const handlePagoRegistrado = () => {
+  const handlePagoRegistrado = (data) => {
+    if (data && data.evento_id) {
+      setEventosPagados(prev => ({
+        ...prev,
+        [data.evento_id]: true
+      }));
+    }
     fetchTurnos();
   };
 

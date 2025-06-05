@@ -73,10 +73,11 @@ const SelectDeporteReserva = () => {
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
 
+      <div className="flex items-start justify-start p-4">
+          <BackButton ruta="/" />
+      </div>
+
       <main className="flex-1 container mx-auto px-4 py-6">
-        <div className="mb-6">
-          <BackButton />
-        </div>
 
         <div className="mb-8 text-center font-[Poppins]">
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-emerald-600">

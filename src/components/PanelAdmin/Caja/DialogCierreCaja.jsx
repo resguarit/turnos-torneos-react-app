@@ -43,8 +43,18 @@ const DialogCierreCaja = ({
           </div>
           <div className="flex justify-between items-center">
             <span>Pagos electrónicos:</span>
-            <span className="font-bold">${(balanceTotal - efectivoEnCaja).toFixed(2)}</span>
+            <span className="font-bold">${(
+              (resumenPagos?.transferencia || 0) + 
+              (resumenPagos?.tarjeta || 0) + 
+              (resumenPagos?.mercadopago || 0)
+            ).toFixed(2)}</span>
           </div>
+          {resumenPagos?.gastos > 0 && (
+            <div className="flex justify-between items-center">
+              <span>Gastos operativos:</span>
+              <span className="font-bold text-red-600">-${resumenPagos?.gastos.toFixed(2) || '0.00'}</span>
+            </div>
+          )}
         </div>
 
         <Alert>
@@ -71,13 +81,13 @@ const DialogCierreCaja = ({
           <Alert variant={parseFloat(conteoEfectivo) > efectivoEnCaja ? "destructive" : "default"}>
             <AlertTitle>
               {parseFloat(conteoEfectivo) > efectivoEnCaja
-                ? `Sobrante: $${(parseFloat(conteoEfectivo) - efectivoEnCaja).toFixed(2)}`
-                : `Faltante: $${(efectivoEnCaja - parseFloat(conteoEfectivo)).toFixed(2)}`}
+                ? `Sobrante de efectivo: $${(parseFloat(conteoEfectivo) - efectivoEnCaja).toFixed(2)}`
+                : `Faltante de efectivo: $${(efectivoEnCaja - parseFloat(conteoEfectivo)).toFixed(2)}`}
             </AlertTitle>
             <AlertDescription>
               {parseFloat(conteoEfectivo) > efectivoEnCaja
-                ? "Hay más efectivo del esperado. Verifique las transacciones."
-                : "Hay menos efectivo del esperado. Verifique las transacciones."}
+                ? "Hay más efectivo físico del esperado según las transacciones. Verifique los registros."
+                : "Hay menos efectivo físico del esperado según las transacciones. Verifique los registros."}
             </AlertDescription>
           </Alert>
         )}
@@ -109,6 +119,14 @@ const DialogCierreCaja = ({
               </span>
               <span>${resumenPagos?.mercadopago?.toFixed(2) || '0.00'}</span>
             </div>
+            {resumenPagos?.gastos > 0 && (
+              <div className="flex justify-between border-t pt-1 mt-1">
+                <span className="flex items-center gap-1 font-medium text-red-600">
+                  Gastos operativos:
+                </span>
+                <span className="text-red-600">-${resumenPagos?.gastos?.toFixed(2) || '0.00'}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -124,7 +142,7 @@ const DialogCierreCaja = ({
         <Button 
           onClick={cerrarCaja} 
           disabled={loading}
-          className="bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
+          className="bg-naranja hover:bg-naranja-oscuro text-white rounded-md transition-colors"
         >
           Confirmar Cierre
         </Button>

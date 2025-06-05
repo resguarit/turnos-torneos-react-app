@@ -17,12 +17,11 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
   const [cajaError, setCajaError] = useState(false);
   const [showPagoEvento, setShowPagoEvento] = useState(false);
 
-  // Ya no necesitas eventoPagado en el estado ni el useEffect
-  const eventoPagado = booking.tipo === 'evento'
-    ? eventosPagados?.[booking.evento_id] === true
-    : false;
+  // Determinar si el evento está pagado usando eventosPagados
+  const eventoPagado = booking.tipo === 'evento' && booking.evento_id && eventosPagados?.[booking.evento_id] === true;
 
   const handlePagoRegistrado = (data) => {
+    // Si el pago fue exitoso, notificamos al componente padre para que actualice
     if (onPagoRegistrado) {
       onPagoRegistrado(data);
     }
@@ -48,7 +47,11 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
     try {
       const response = await api.get('/caja-abierta');
       if (response.data && response.data.status === 200) {
-        setShowPaymentModal(true);
+        if (booking.tipo === 'evento') {
+          setShowPagoEvento(true);
+        } else {
+          setShowPaymentModal(true);
+        }
       } else {
         setCajaError(true);
       }
@@ -61,16 +64,16 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
   };
 
   const handlePagoClick = () => {
-    // Si el turno está pagado o cancelado, mostrar modal de información
-    if (booking.estado === 'Pagado' || booking.estado === 'Cancelado') {
+    // Si el turno está pagado o cancelado, o es un evento pagado, mostrar modal de información
+    if (booking.estado === 'Pagado' || booking.estado === 'Cancelado' || eventoPagado) {
+      // Para eventos pagados, no mostrar el modal de información
+      if (booking.tipo === 'evento' && eventoPagado) {
+        return; // No hacer nada si es un evento pagado
+      }
       setShowInfoModal(true);
     } else {
       // Si no está pagado ni cancelado, verificar caja y mostrar modal de registro
-      if (booking.tipo === 'evento') {
-        setShowPagoEvento(true);
-      } else {
-        verificarCajaAbierta();
-      }
+      verificarCajaAbierta();
     }
   };
 
@@ -122,16 +125,16 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
           )}
             <span
               className={`text-center px-3 py-1 rounded-xl capitalize text-sm ${
-                booking.estado === 'Pendiente'
+                (booking.estado === 'Pagado' || eventoPagado)
+                  ? 'bg-green-300'
+                  : booking.estado === 'Pendiente'
                   ? 'bg-yellow-300'
                   : booking.estado === 'Señado'
                   ? 'bg-blue-300'
-                  : booking.estado === 'Pagado'
-                  ? 'bg-green-300'
                   : 'bg-red-300'
               }`}
             >
-              {`Estado: ${booking.estado}`}
+              {`Estado: ${eventoPagado ? 'Pagado' : booking.estado}`}
             </span>
           {/* Mostrar canchas para eventos o para turnos normales */}
           {booking.tipo === 'evento' && booking.canchas && booking.canchas.length > 0 ? (
@@ -150,7 +153,7 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
 
       {/* BOTONES SIEMPRE ABAJO */}
       <div className="flex gap-2 justify-center w-full mt-auto">
-        {booking.estado !== 'Cancelado' && booking.estado !== 'Pagado' && booking.tipo !== 'torneo' && (
+        {booking.estado !== 'Cancelado' && booking.estado !== 'Pagado' && booking.tipo !== 'torneo' && !eventoPagado && (
           <button
             onClick={() => handleDeleteSubmit(booking)}
             size="icon"
@@ -192,30 +195,31 @@ const TurnoCard = ({ booking, handleDeleteSubmit, onPagoRegistrado, eventosPagad
           </div>
         )}
         
-        {/* Botón de pago/información - Lógica condicional mejorada */}
-        {(booking.estado === 'Pagado' || booking.estado === 'Cancelado') || (booking.estado !== 'Pagado' && booking.estado !== 'Cancelado' && (!eventoPagado || booking.tipo !== 'evento')) ? (
-            <button
-              onClick={handlePagoClick}
-              disabled={verificandoCaja}
-              className={`flex rounded-[4px] flex-row gap-2 items-center text-white p-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                (booking.estado === 'Pagado' || booking.estado === 'Cancelado')
-                  ? 'bg-blue-600 hover:bg-blue-700' // Estilo para "Ver Información"
-                  : 'bg-emerald-500 hover:bg-emerald-600' // Estilo para "Registrar Pago"
-              }`}
-            >
-              {(booking.estado === 'Pagado' || booking.estado === 'Cancelado') ? (
-                <>
-                  <Eye className="h-4 w-4" />
-                  Ver Información
-                </>
-              ) : (
-                <>
-                  <DollarSign className="h-4 w-4" />
-                  {verificandoCaja ? 'Verificando caja...' : 'Registrar Pago'}
-                </>
-              )}
-            </button>
-        ) : null}
+        {/* Botón de pago/información - No mostrar para eventos pagados */}
+        {/* Si es un evento pagado, no mostramos ningún botón */}
+        {!(booking.tipo === 'evento' && eventoPagado) && (
+          <button
+            onClick={handlePagoClick}
+            disabled={verificandoCaja}
+            className={`flex rounded-[4px] flex-row gap-2 items-center text-white p-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+              (booking.estado === 'Pagado' || booking.estado === 'Cancelado')
+                ? 'bg-blue-600 hover:bg-blue-700' // Estilo para "Ver Información"
+                : 'bg-emerald-500 hover:bg-emerald-600' // Estilo para "Registrar Pago"
+            }`}
+          >
+            {(booking.estado === 'Pagado' || booking.estado === 'Cancelado') ? (
+              <>
+                <Eye className="h-4 w-4" />
+                Ver Información
+              </>
+            ) : (
+              <>
+                <DollarSign className="h-4 w-4" />
+                {verificandoCaja ? 'Verificando caja...' : 'Registrar Pago'}
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Modal para registrar pago (cuando NO está pagado ni cancelado) */}

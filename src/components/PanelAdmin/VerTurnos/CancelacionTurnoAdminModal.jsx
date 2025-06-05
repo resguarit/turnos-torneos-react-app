@@ -72,7 +72,7 @@ const CancelacionTurnoAdminModal = ({ isOpen, onClose, onConfirm, turno }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-xl rounded-lg">
+      <DialogContent className="sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[90vh] overflow-y-auto rounded-lg">
         <DialogHeader>
           <DialogTitle>Confirmar Cancelación de Turno</DialogTitle>
           <DialogDescription className="text-sm text-gray-600">
@@ -80,54 +80,58 @@ const CancelacionTurnoAdminModal = ({ isOpen, onClose, onConfirm, turno }) => {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="border rounded-md p-4 space-y-3">
-            <h4 className="font-medium text-gray-800 mb-2">Detalles del Turno:</h4>
-            <div className="flex justify-between items-start text-sm">
-              <span className="text-gray-600 shrink-0 mr-2">Cliente:</span>
-              <span className="font-medium text-gray-900 text-right">{usuario?.nombre || 'No especificado'}</span>
-            </div>
-            <div className="flex justify-between items-start text-sm">
-              <span className="text-gray-600 shrink-0 mr-2">Turno para el:</span>
-              <span className="font-medium text-gray-900 text-right break-words">{fechaHoraInicioTurno ? formatearFechaYHoraDetallada(fechaHoraInicioTurno.toISOString()) : 'No disponible'}</span>
-            </div>
-            {fechaReserva && (
-              <div className="flex justify-between items-start text-sm">
-                <span className="text-gray-600 shrink-0 mr-2">Reserva hecha el:</span>
-                <span className="font-medium text-gray-900 text-right break-words">{fechaReserva ? formatearFechaYHoraDetallada(fechaReserva.toISOString()) : 'No disponible'}</span>
+        <div className="space-y-6 py-6">
+          <div className="border rounded-md p-6 space-y-4">
+            <h4 className="font-medium text-gray-800 text-lg mb-3">Detalles del Turno:</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex justify-between md:justify-start items-start text-sm">
+                <span className="text-gray-600 shrink-0 mr-2">Cliente:</span>
+                <span className="font-medium text-gray-900  ">{usuario?.nombre || 'No especificado'}</span>
               </div>
-            )}
-             <div className="flex justify-between items-start text-sm">
-              <span className="text-gray-600 shrink-0 mr-2">Estado actual:</span>
-              <span className="font-medium text-gray-900 text-right">{estado}</span>
+              <div className="flex justify-between md:justify-start items-start text-sm">
+                <span className="text-gray-600 shrink-0 mr-2">Estado actual:</span>
+                <span className="font-medium text-gray-900 text-right">{estado}</span>
+              </div>
+              <div className="flex justify-between md:justify-start items-start text-sm">
+                <span className="text-gray-600 shrink-0 mr-2">Turno para el:</span>
+                <span className="font-medium text-gray-900 text-right break-words">{fechaHoraInicioTurno ? formatearFechaYHoraDetallada(fechaHoraInicioTurno.toISOString()) : 'No disponible'}</span>
+              </div>
+              {fechaReserva && (
+                <div className="flex justify-between md:justify-start items-start text-sm">
+                  <span className="text-gray-600 shrink-0 mr-2">Reserva hecha el:</span>
+                  <span className="font-medium text-gray-900 text-right break-words">{fechaReserva ? formatearFechaYHoraDetallada(fechaReserva.toISOString()) : 'No disponible'}</span>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="border rounded-md p-4 space-y-3">
-            <h4 className="font-medium text-gray-800 mb-2">Condiciones de Cancelación:</h4>
-            {politicasMessages.map((msg, index) => (
-              <p key={index} className="text-sm text-gray-700 leading-relaxed">
-                {msg}
-              </p>
-            ))}
+          <div className="border rounded-md p-6 space-y-4">
+            <h4 className="font-medium text-gray-800 text-lg mb-3">Condiciones de Cancelación:</h4>
+            <div className="space-y-4">
+              {politicasMessages.map((msg, index) => (
+                <p key={index} className={`text-sm ${index === 0 ? 'text-gray-800 font-medium' : 'text-gray-700'} leading-relaxed bg-gray-50 p-3 rounded-md`}>
+                  {msg}
+                </p>
+              ))}
+            </div>
           </div>
         </div>
 
-        <p className="text-sm font-semibold text-center text-gray-800 mt-2 mb-4">
+        <p className="text-base font-semibold text-center text-gray-800 mt-4 mb-6">
           ¿Está seguro de que desea cancelar este turno?
         </p>
-        <DialogFooter className="gap-2 sm:gap-3">
+        <DialogFooter className="gap-4 sm:gap-6">
           <Button 
             variant="outline" 
             onClick={onClose}
-            className="bg-white hover:bg-gray-50 border-gray-300 text-gray-700 rounded-md transition-colors w-full sm:w-auto"
+            className="bg-white hover:bg-gray-50 border-gray-300 text-gray-700 rounded-md transition-colors w-full sm:w-auto px-6 py-5 text-base"
           >
             Volver
           </Button>
           <Button 
             variant="destructive" 
             onClick={onConfirm}
-            className="bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors w-full sm:w-auto"
+            className="bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors w-full sm:w-auto px-6 py-5 text-base"
           >
             Confirmar Cancelación
           </Button>

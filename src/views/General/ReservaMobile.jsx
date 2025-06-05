@@ -273,7 +273,7 @@ const ReservaMobile = () => {
     <div className="flex min-h-screen bg-gray-100 flex-col">
       <Header />
       <div className='flex items-start justify-start p-4'>
-        <BackButton />
+        <BackButton ruta="/select-deporte" />
       </div>
       <main className="flex-grow p-6 bg-gray-100">
         {/* Selector de Fechas */}

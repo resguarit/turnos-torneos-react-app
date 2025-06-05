@@ -5,7 +5,7 @@ import { useNavigate, Link, useLocation } from "react-router-dom"
 import { useEffect, useState, useRef } from "react"
 import { UserCog } from "lucide-react"
 import { LogOut } from "lucide-react"
-import ModalConfirmation from "./ModalConfirmation"
+import ConfirmModal from "@/views/Admin/Modals/ConfirmDeleteModal"
 import { Pencil } from "lucide-react"
 import { decryptRole } from "@/lib/getRole"
 import TorneosDropdown from "./TorneosDropdown"
@@ -223,12 +223,16 @@ export function Header() {
         <MenuMovil />
       </nav>
       {showModal && (
-        <ModalConfirmation
+        <ConfirmModal
+          isOpen={showModal}
+          onClose={closeConfirmModal}
           onConfirm={handleConfirmSubmit}
-          onCancel={closeConfirmModal}
-          title="¿Desea cerrar la sesión?"
-          botonText1={"Cancelar"}
-          botonText2={"Cerrar Sesión"}
+          loading={false}
+          accionTitulo="Cerrar Sesión"
+          accion="Cerrar Sesión"
+          pronombre=""
+          entidad=""
+          accionando="Cerrando"
         />
       )}
       {MenuTorneos && (

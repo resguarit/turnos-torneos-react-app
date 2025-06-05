@@ -172,33 +172,35 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
             </div>
           </div>
 
-          {/* Contenedor para los botones - ahora en columna */}
-          <div className="flex flex-col gap-2 mt-4">
-            {/* Primera fila de botones */}
-            <div className="flex flex-col lg:flex-row gap-2 w-full">
-              {turno.estado !== TurnoEstado.CANCELADO && turno.estado !== TurnoEstado.PAGADO && turno.estado !== TurnoEstado.SEÑADO && showCancelButton && (
-                <Button
-                  onClick={() => setShowCancelModal(true)}
-                  className="w-full bg-red-500 text-white hover:bg-red-600"
-                >
-                  Cancelar Turno
-                </Button>
-              )}
-              {showModifyButton && turno.estado !== TurnoEstado.CANCELADO && (
-                <Button
-                  onClick={() => setShowChangeModal(true)}
-                  className="w-full bg-cyan-400 text-white hover:bg-cyan-500"
-                >
-                  Solicitar Cambio del Turno  
-                </Button>
-              )}
-            </div>
+          <div className="flex flex-col gap-3 mt-6">
+            {(turno.estado !== TurnoEstado.CANCELADO && (showCancelButton || showModifyButton)) && (
+              <div className="flex flex-col sm:flex-row gap-2 w-full">
+                {turno.estado !== TurnoEstado.PAGADO && showCancelButton && (
+                  <Button
+                    onClick={() => setShowCancelModal(true)}
+                    variant="outline"
+                    className="w-full rounded-[6px] border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600"
+                  >
+                    Cancelar Turno
+                  </Button>
+                )}
+                {showModifyButton && (
+                  <Button
+                    onClick={() => setShowChangeModal(true)}
+                    variant="outline"
+                    className="w-full rounded-[6px] border-cyan-500 text-cyan-500 hover:bg-cyan-50 hover:text-cyan-600"
+                  >
+                    Solicitar Cambio
+                  </Button>
+                )}
+              </div>
+            )}
             
-            {/* Segunda fila - botón de pago solo cuando está pendiente */}
             {turno.estado === TurnoEstado.PENDIENTE && (
               <Button
                 onClick={() => setShowPaymentModal(true)}
-                className="w-full bg-green-500 text-white hover:bg-green-600"
+                variant="outline"
+                className="w-full rounded-[6px] border-green-500 text-green-500 hover:bg-green-50 hover:text-green-600"
               >
                 Coordinar Pago
               </Button>
@@ -206,7 +208,6 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
           </div>
         </CardContent>
         
-        {/* Modales */}
         <CancelacionTurnoDialog
           showCancelModal={showCancelModal}
           setShowCancelModal={setShowCancelModal}

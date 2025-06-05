@@ -363,7 +363,8 @@ export default function ContadorBloqueo() {
                   <ul className="text-sm text-orange-700 space-y-2 mt-2">
                     <li>• Si <span className="font-bold">NO </span>se señó la reserva, tienes 30 minutos para cancelarla sin costo.</li>
                     <li>• Si <span className="font-bold">NO </span>se señó la reserva, pasados los 30 minutos la reserva se libera automaticamente.</li>
-                    <li>• Si se señó la reserva, podes cancelarla 24hs antes del turno y se te reembolsará el monto de la seña, si se cancela en el mismo dia del turno se pierde la seña.</li>
+                    <li>• Si se señó la reserva, podes cancelarla 24hs antes del turno y se te reembolsará el monto de la seña, si se cancela dentro de las 24 horas 
+                      del turno se pierde la seña.</li>
                   </ul>
                 </div>
               </div>

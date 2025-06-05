@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '@/lib/axiosConfig';
 import { toast } from 'react-toastify';
-import { Calendar, Clock, User, FileText, Activity, AlertCircle, Eye, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, User, FileText, Activity, AlertCircle, Eye, MoreHorizontal, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import BtnLoading from '@/components/BtnLoading';
@@ -84,6 +84,14 @@ const SimpleDialog = ({ children }) => {
   return <div>{children}</div>;
 };
 
+const SimpleDialogHeader = ({ children }) => {
+  return <div className="mb-4 pb-2 border-b flex justify-between items-center">{children}</div>;
+};
+
+const SimpleDialogTitle = ({ children }) => {
+  return <h2 className="text-xl font-semibold text-gray-800">{children}</h2>;
+};
+
 const SimpleDialogContent = ({ children, onClose }) => {
   return (
     <div 
@@ -94,19 +102,18 @@ const SimpleDialogContent = ({ children, onClose }) => {
         }
       }}
     >
-      <div className="bg-white rounded-lg shadow-xl p-6 max-w-md mx-auto">
+      <div className="bg-white rounded-lg shadow-xl p-6 max-w-5xl mx-auto w-11/12">
         {children}
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 focus:outline-none transition-colors"
+          aria-label="Cerrar"
+        >
+          <X className="h-5 w-5 text-gray-500" />
+        </button>
       </div>
     </div>
   );
-};
-
-const SimpleDialogHeader = ({ children }) => {
-  return <div className="mb-4">{children}</div>;
-};
-
-const SimpleDialogTitle = ({ children }) => {
-  return <h2 className="text-lg font-semibold">{children}</h2>;
 };
 
 // Simples versiones de los componentes de menú desplegable
@@ -136,6 +143,46 @@ const DropdownMenuItem = ({ children, ...props }) => {
     >
       {children}
     </button>
+  );
+};
+
+// Componente para formatear y mostrar JSON de forma bonita
+const JSONFormatter = ({ data }) => {
+  if (!data) return null;
+
+  // Función para colorear diferentes partes del JSON
+  const syntaxHighlight = (json) => {
+    if (typeof json !== 'string') {
+      json = JSON.stringify(json, null, 2);
+    }
+    
+    // Reemplazar valores con clases de color
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+      let cls = 'text-purple-600'; // number o boolean
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) {
+          cls = 'text-red-600 font-medium'; // key
+        } else {
+          cls = 'text-green-600'; // string
+        }
+      } else if (/true|false/.test(match)) {
+        cls = 'text-blue-600'; // boolean
+      } else if (/null/.test(match)) {
+        cls = 'text-gray-500'; // null
+      }
+      return `<span class="${cls}">${match}</span>`;
+    })
+    .replace(/\n/g, '<br/>')
+    .replace(/\s{2}/g, '&nbsp;&nbsp;');
+  };
+
+  return (
+    <div className="bg-gray-50 p-4 rounded-md border border-gray-200 font-mono text-sm overflow-x-auto">
+      <div 
+        className="whitespace-pre" 
+        dangerouslySetInnerHTML={{ __html: syntaxHighlight(data) }} 
+      />
+    </div>
   );
 };
 
@@ -381,7 +428,7 @@ const PestanaAuditoria = () => {
               
               {/* Usa solo clases de Tailwind para el contenedor principal */}
               <div 
-                className="h-[60vh] rounded border border-gray-200 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
+                className="h-[70vh] rounded border border-gray-200 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
               >
                 <div className="grid gap-4 py-4 px-2 pr-4">
                   <div className="grid grid-cols-3 items-center gap-4">
@@ -397,7 +444,7 @@ const PestanaAuditoria = () => {
                   <div className="grid grid-cols-3 items-center gap-4">
                     <span className="text-sm font-medium">Usuario:</span>
                     <span className="col-span-2">
-                      {dialogOpen.usuario ? dialogOpen.usuario.name : 'Sistema'}
+                      {dialogOpen.usuario ? dialogOpen.usuario.persona.name : 'Sistema'}
                     </span>
                   </div>
                   <div className="grid grid-cols-3 items-center gap-4">
@@ -431,36 +478,30 @@ const PestanaAuditoria = () => {
 
                   {/* Datos Antiguos */}
                   {dialogOpen.datos_antiguos && Object.keys(dialogOpen.datos_antiguos).length > 0 && (
-                    <div className="grid grid-cols-1 gap-2">
-                      <span className="text-sm font-medium">Datos Anteriores:</span>
-                      <div className="bg-gray-50 p-2 rounded border border-gray-200 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-                        <pre className="text-xs whitespace-pre-wrap text-gray-800">
-                          {JSON.stringify(dialogOpen.datos_antiguos, null, 2)}
-                        </pre>
+                    <div className="grid grid-cols-1 gap-2 mb-4">
+                      <span className="text-base font-medium">Datos Anteriores:</span>
+                      <div className="bg-white rounded-md border border-gray-200 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                        <JSONFormatter data={dialogOpen.datos_antiguos} />
                       </div>
                     </div>
                   )}
 
                   {/* Datos Nuevos */}
                   {dialogOpen.datos_nuevos && Object.keys(dialogOpen.datos_nuevos).length > 0 && (
-                    <div className="grid grid-cols-1 gap-2">
-                      <span className="text-sm font-medium">Datos Nuevos:</span>
-                      <div className="bg-gray-50 p-2 rounded border border-gray-200 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-                        <pre className="text-xs whitespace-pre-wrap text-gray-800">
-                          {JSON.stringify(dialogOpen.datos_nuevos, null, 2)}
-                        </pre>
+                    <div className="grid grid-cols-1 gap-2 mb-4">
+                      <span className="text-base font-medium">Datos Nuevos:</span>
+                      <div className="bg-white rounded-md border border-gray-200 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                        <JSONFormatter data={dialogOpen.datos_nuevos} />
                       </div>
                     </div>
                   )}
 
                   {/* Detalles (mantiene el campo existente) */}
                   {dialogOpen.detalles && (
-                    <div className="grid grid-cols-1 gap-2">
-                      <span className="text-sm font-medium">Detalles:</span>
-                      <div className="bg-gray-50 p-2 rounded border border-gray-200 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-                        <pre className="text-xs whitespace-pre-wrap text-gray-800">
-                          {JSON.stringify(dialogOpen.detalles, null, 2)}
-                        </pre>
+                    <div className="grid grid-cols-1 gap-2 mb-4">
+                      <span className="text-base font-medium">Detalles:</span>
+                      <div className="bg-white rounded-md border border-gray-200 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                        <JSONFormatter data={dialogOpen.detalles} />
                       </div>
                     </div>
                   )}

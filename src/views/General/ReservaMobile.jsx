@@ -30,6 +30,7 @@ const ReservaMobile = () => {
   const { deporteId } = useParams();
   const [deporte, setDeporte] = useState(null);
   const [loadingDeporte, setLoadingDeporte] = useState(false);
+  const [isTodaySelected, setIsTodaySelected] = useState(false);
 
   const navigate = useNavigate(); // Inicializa useNavigate
 
@@ -89,7 +90,16 @@ const ReservaMobile = () => {
     setSelectedDate(date);
     setSelectedTime(null); // Reset time selection
     setSelectedCourt(null); // Reset court selection
-    
+
+    const todayForComparison = new Date(); // Hora actual local para comparación
+    console.log(todayForComparison);
+    const selectedDateObj = new Date(date.dateObj.getFullYear(), date.dateObj.getMonth(), date.dateObj.getDate());
+
+    const calculatedIsToday = selectedDateObj.getFullYear() === todayForComparison.getFullYear() &&
+                            selectedDateObj.getMonth() === todayForComparison.getMonth() &&
+                            selectedDateObj.getDate() === todayForComparison.getDate();
+    setIsTodaySelected(calculatedIsToday);
+
     try {
       setLoadingHorario(true);
       const response = await api.get(`/disponibilidad/fecha?fecha=${date.full}`, {
@@ -97,20 +107,31 @@ const ReservaMobile = () => {
           deporte_id: deporteId
         }
       });
-      const horarios = response.data.horarios
+      
+      let horariosFiltrados = response.data.horarios
         .filter(horario => horario.disponible)
         .map((horario) => ({
           id: horario.id,
-          time: `${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`
+          time: `${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`,
+          hora_inicio: horario.hora_inicio // Mantener hora_inicio para la lógica de filtrado
         }));
+
+      if (calculatedIsToday) {
+        const ahora = new Date(); // Hora actual local del cliente
+        horariosFiltrados = horariosFiltrados.filter(horario => {
+          const [hours, minutes] = horario.hora_inicio.split(':').map(Number);
+          // Construir la fecha/hora del turno usando los componentes de selectedDateObj para asegurar que es la fecha correcta sin corrupciones de zona horaria
+          const fechaHoraTurno = new Date(selectedDateObj.getFullYear(), selectedDateObj.getMonth(), selectedDateObj.getDate(), hours, minutes);
+          return fechaHoraTurno > ahora;
+        });
+      }
       
-      setAvailability(horarios);
+      setAvailability(horariosFiltrados);
       
-      // Autoseleccionar el primer horario disponible
-      if (horarios.length > 0) {
-        setSelectedTime(horarios[0].id);
-        // Buscar canchas disponibles para el primer horario
-        const canchasResponse = await api.get(`/disponibilidad/cancha?fecha=${date.full}&horario_id=${horarios[0].id}`, {
+      if (horariosFiltrados.length > 0) {
+        const primerHorarioDisponible = horariosFiltrados[0];
+        setSelectedTime(primerHorarioDisponible.id);
+        const canchasResponse = await api.get(`/disponibilidad/cancha?fecha=${date.full}&horario_id=${primerHorarioDisponible.id}`, {
           params: {
             deporte_id: deporteId
           }
@@ -252,7 +273,7 @@ const ReservaMobile = () => {
     <div className="flex min-h-screen bg-gray-100 flex-col">
       <Header />
       <div className='flex items-start justify-start p-4'>
-        <BackButton />
+        <BackButton ruta="/select-deporte" />
       </div>
       <main className="flex-grow p-6 bg-gray-100">
         {/* Selector de Fechas */}
@@ -305,7 +326,11 @@ const ReservaMobile = () => {
               </div>
             ) : (
               availability.length === 0 ? (
-                <p className="text-center text-gray-500">No hay horarios disponibles</p>
+                <p className="text-center text-gray-500 py-2">
+                  {isTodaySelected && selectedDate 
+                    ? "No hay más horarios disponibles para hoy."
+                    : "No hay horarios disponibles para la fecha seleccionada."}
+                </p>
               ) : (
                 <div className="flex overflow-x-auto py-2 -mx-2 scrollbar-hide">
                   {availability.map((horario, index) => (

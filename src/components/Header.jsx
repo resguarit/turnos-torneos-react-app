@@ -138,7 +138,7 @@ export function Header() {
             >
               {userRole === "admin" || userRole === "moderador" ? "Panel Admin" : "Inicio"}
             </Link>
-            {userRole === "admin" && (
+            {(userRole === "admin" || userRole === "moderador") && (
               <button 
               onClick={toggleMenuTorneos}
               ref={torneosBtnRef}
@@ -146,7 +146,7 @@ export function Header() {
                 Torneos
             </button>
             )}
-            {userRole !== "admin" && (
+            {(userRole !== "admin" && userRole !== "moderador") && (
             <Link to="/torneos-user" className="hover:opacity-80">
               Torneos
             </Link>

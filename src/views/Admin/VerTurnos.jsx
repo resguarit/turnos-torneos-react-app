@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ModalConfirmation from '@/components/ModalConfirmation';
+import CancelacionTurnoAdminModal from '@/components/PanelAdmin/VerTurnos/CancelacionTurnoAdminModal';
 import PageHeader from '@/components/PanelAdmin/VerTurnos/TurnoHeader';
 import UnifiedDateSelector from '@/components/PanelAdmin/VerTurnos/UnifiedDateSelector';
 import FilterControls from '@/components/PanelAdmin/VerTurnos/TurnoFilterControls';
@@ -38,6 +39,7 @@ function VerTurnos() {
   const [selectedTipos, setSelectedTipos] = useState([]);
   const [eventosPagados, setEventosPagados] = useState({});
   const [showModalEvento, setShowModalEvento] = useState(false);
+  const [showCancelTurnoAdminModal, setShowCancelTurnoAdminModal] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -273,59 +275,71 @@ function VerTurnos() {
     if (booking.tipo === 'evento') {
       setShowModalEvento(true);
     } else {
-      setShowModal(true);
+      setShowCancelTurnoAdminModal(true);
     }
-    console.log("Turno seleccionado:", booking);
+    console.log("Turno seleccionado para cancelar:", booking);
   };
 
   const closeDeleteModal = () => {
     setShowModal(false);
+    setShowCancelTurnoAdminModal(false);
+    setSelectedBooking(null);
   };
 
   const confirmDeleteSubmit = async () => {
-    setShowModal(false);
+    if (!selectedBooking || !selectedBooking.id) {
+      toast.error('Error: No se ha seleccionado ningún turno para cancelar.');
+      closeDeleteModal();
+      return;
+    }
+
+    setShowCancelTurnoAdminModal(false);
+
     try {
-      const response = await api.patch(`/turnos/${selectedBooking.id}`, { estado: 'Cancelado' });
+      const response = await api.post(`/turnos/cancelar/${selectedBooking.id}`);
+      
       if (response.status === 200) {
-        toast.success('Turno cancelado correctamente');
-        // Actualiza el estado para reflejar la cancelación
-        setSelectedBooking({ ...selectedBooking, estado: 'Cancelado' });
-        setGroupedBookings(prev => {
-          const updated = { ...prev };
-          const date = selectedBooking.fecha_turno.split('T')[0];
-          updated[date] = updated[date].map(booking => 
-            booking.id === selectedBooking.id ? { ...booking, estado: 'Cancelado' } : booking
-          );
-          return updated;
-        });
+        toast.success(response.data.message || 'Turno cancelado correctamente');
+        fetchTurnos();
+      } else {
+        toast.error(response.data.message || 'Error al cancelar el turno desde el backend');
       }
     } catch (error) {
-      toast.error('Error al cancelar el turno');
       console.error("Error canceling reservation:", error);
+      if (error.response && error.response.data && error.response.data.message) {
+        toast.error(`Error: ${error.response.data.message}`);
+      } else {
+        toast.error('Error al conectar con el servidor para cancelar el turno.');
+      }
+    } finally {
+      setSelectedBooking(null);
     }
   };
 
   const confirmDeleteEvento = async () => {
+    if (!selectedBooking || !selectedBooking.evento_id) {
+      toast.error('Error: No se ha seleccionado ningún evento para cancelar.');
+      closeDeleteModalEvento();
+      return;
+    }
     setShowModalEvento(false);
     try {
       const response = await api.delete(`/eventos/${selectedBooking.evento_id}`);
       if (response.status === 200) {
         toast.success('Evento cancelado correctamente');
-        setGroupedBookings(prev => {
-          const updated = { ...prev };
-          const date = selectedBooking.fecha_turno.split('T')[0];
-          updated[date] = updated[date].filter(booking => booking.evento_id !== selectedBooking.evento_id);
-          return updated;
-        });
+        fetchTurnos();
       }
     } catch (error) {
       toast.error('Error al cancelar el evento');
       console.error("Error canceling event:", error);
+    } finally {
+      setSelectedBooking(null);
     }
   };
 
   const closeDeleteModalEvento = () => {
     setShowModalEvento(false);
+    setSelectedBooking(null);
   };
 
   const clearFilters = () => {
@@ -360,7 +374,13 @@ function VerTurnos() {
     fetchTurnos();
   };
 
-  const handlePagoRegistrado = () => {
+  const handlePagoRegistrado = (data) => {
+    if (data && data.evento_id) {
+      setEventosPagados(prev => ({
+        ...prev,
+        [data.evento_id]: true
+      }));
+    }
     fetchTurnos();
   };
 
@@ -471,13 +491,29 @@ function VerTurnos() {
                 filteredBookings={filteredBookings}
                 handleDeleteSubmit={handleDeleteSubmit}
                 onPagoRegistrado={handlePagoRegistrado}
-                eventosPagados={eventosPagados} // <-- PASA EL OBJETO AQUÍ
+                eventosPagados={eventosPagados}
               />
               )}
             </div>
           </div>
-          {showModal && <ModalConfirmation onConfirm={confirmDeleteSubmit} onCancel={closeDeleteModal} title="Cancelar Turno" subtitle={"Desea Cancelar el turno?"} botonText1={"Volver"} botonText2={"Cancelar"} />}
-          {showModalEvento && <ModalConfirmation onConfirm={confirmDeleteEvento} onCancel={closeDeleteModalEvento} title="Cancelar Evento" subtitle={"Desea Cancelar el evento?"} botonText1={"Volver"} botonText2={"Cancelar"} />}
+          {showModalEvento && 
+            <ModalConfirmation 
+              onConfirm={confirmDeleteEvento} 
+              onCancel={closeDeleteModalEvento} 
+              title="Cancelar Evento" 
+              subtitle={"¿Está seguro de que desea cancelar este evento?"} 
+              botonText1={"Volver"} 
+              botonText2={"Confirmar Cancelación"} 
+            />
+          }
+          {selectedBooking && showCancelTurnoAdminModal && (
+            <CancelacionTurnoAdminModal
+              isOpen={showCancelTurnoAdminModal}
+              onClose={closeDeleteModal}
+              onConfirm={confirmDeleteSubmit}
+              turno={selectedBooking} 
+            />
+          )}
           {showTurnoFijoModal && (
           <CrearTurnoFijoModal
             isOpen={showTurnoFijoModal}

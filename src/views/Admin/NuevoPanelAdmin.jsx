@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays, ActivityIcon, Users, DollarSign, Box, LandPlot, Menu, X } from 'lucide-react';
+import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays, ActivityIcon, Users, DollarSign, Box, LandPlot, Menu, X, BarChart3 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import PestanaDashboard from './PestanaDashboard';
@@ -12,6 +12,7 @@ import PestanaAuditoria from './PestanaAuditoria';
 import PestanaPersonas from './PestanaPersonas';
 import PestanaCuentasCorrientes from './PestanaCuentasCorrientes';
 import PestanaCaja from './PestanaCaja';
+import PestanaBalance from './PestanaBalance';
 import { decryptRole } from '@/lib/getRole';
 
 const NuevoPanelAdmin = () => {
@@ -67,6 +68,8 @@ const NuevoPanelAdmin = () => {
         return <PestanaCuentasCorrientes />;
       case 'caja':
         return <PestanaCaja />;
+      case 'balance':
+        return isAdmin ? <PestanaBalance /> : null;
       default:
         return null;
     }
@@ -159,6 +162,17 @@ const NuevoPanelAdmin = () => {
         <Box className="mr-3" size={20} />
         Caja
       </button>
+      {isAdmin && (
+      <button
+        onClick={() => handleTabChange("balance")}
+        className={`px-4 py-3 rounded-lg text-left flex items-center ${
+          activeTab === "balance" ? "bg-naranja text-white" : "hover:bg-gray-100"
+        }`}
+      >
+        <BarChart3 className="mr-3" size={20} />
+          Balance
+        </button>
+      )}
     </div>
   );
 

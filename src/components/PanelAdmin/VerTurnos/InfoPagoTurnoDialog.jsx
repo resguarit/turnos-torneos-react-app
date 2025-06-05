@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, CreditCard, ChevronDown, ChevronUp, CheckCircle, DollarSign, Calendar, Clock, MapPin, User, Receipt } from "lucide-react";
+import { X, CreditCard, ChevronDown, ChevronUp, CheckCircle, DollarSign, Calendar, Clock, MapPin, User, Receipt, XCircle } from "lucide-react";
 import api from '@/lib/axiosConfig';
 import { toast } from 'react-toastify';
 import { formatearFechaCompleta, formatearFechaCorta, formatearHora, formatearMonto, formatearRangoHorario } from '@/utils/dateUtils';
@@ -11,6 +11,9 @@ const InfoPagoTurnoDialog = ({ isOpen, onClose, turno }) => {
   const [loadingTransacciones, setLoadingTransacciones] = useState(false);
   const [mostrarHistorial, setMostrarHistorial] = useState(true); // Por defecto mostrar el historial
   
+  // Determinar si el turno está cancelado
+  const isCancelado = typeof turno?.estado === 'string' && turno.estado.toLowerCase() === 'cancelado';
+
   // Buscar la información al abrir el modal
   useEffect(() => {
     if (isOpen && turno) {
@@ -95,10 +98,17 @@ const InfoPagoTurnoDialog = ({ isOpen, onClose, turno }) => {
 
           {/* Estado del Turno - Badge destacado */}
           <div className="mb-6 flex justify-center">
-            <div className="bg-green-100 border border-green-200 rounded-full px-4 py-2 flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              <span className="font-semibold text-green-800">Turno Pagado Completamente</span>
-            </div>
+            {isCancelado ? (
+              <div className="bg-red-100 border border-red-200 rounded-full px-4 py-2 flex items-center gap-2">
+                <XCircle className="h-5 w-5 text-red-600" />
+                <span className="font-semibold text-red-800">Turno Cancelado</span>
+              </div>
+            ) : (
+              <div className="bg-green-100 border border-green-200 rounded-full px-4 py-2 flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <span className="font-semibold text-green-800">Turno Pagado Completamente</span>
+              </div>
+            )}
           </div>
 
           {/* Información del Turno - Diseño mejorado */}
@@ -188,37 +198,47 @@ const InfoPagoTurnoDialog = ({ isOpen, onClose, turno }) => {
           ) : transaccionesTurno ? (
             <div className="mb-6">
               {/* Resumen del saldo */}
-              <div className="bg-green-50 rounded-lg p-4 border border-green-200 mb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                    <span className="font-semibold text-green-800">Pago Completado</span>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-green-600 uppercase tracking-wide">Saldo Restante</p>
-                    <p className="text-lg font-bold text-green-800">
-                      ${formatearMonto(transaccionesTurno.saldo)}
-                    </p>
+              {!isCancelado && ( // Solo mostrar si no está cancelado
+                <div className="bg-green-50 rounded-lg p-4 border border-green-200 mb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <span className="font-semibold text-green-800">Pago Completado</span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-green-600 uppercase tracking-wide">Saldo Restante</p>
+                      <p className="text-lg font-bold text-green-800">
+                        ${formatearMonto(transaccionesTurno.saldo)}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
+              {isCancelado && transaccionesTurno.transacciones && transaccionesTurno.transacciones.length > 0 && (
+                 <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200 mb-4 text-center">
+                    <p className="text-sm text-yellow-700">Este turno fue cancelado. A continuación se muestra el historial de transacciones previas si existen.</p>
+                 </div>
+              )}
+              
               {/* Botón para mostrar/ocultar historial */}
-              <button
-                type="button"
-                onClick={() => setMostrarHistorial(!mostrarHistorial)}
-                className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <span className="flex items-center gap-2">
-                  <Receipt className="h-4 w-4" />
-                  Historial Detallado de Pagos
-                </span>
-                {mostrarHistorial ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </button>
+              {transaccionesTurno.transacciones && transaccionesTurno.transacciones.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setMostrarHistorial(!mostrarHistorial)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <span className="flex items-center gap-2">
+                    <Receipt className="h-4 w-4" />
+                    Historial Detallado de Pagos
+                  </span>
+                  {mostrarHistorial ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </button>
+              )}
 
               {/* Historial desplegable */}
               {mostrarHistorial && transaccionesTurno.transacciones && transaccionesTurno.transacciones.length > 0 && (

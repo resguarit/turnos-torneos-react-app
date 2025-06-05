@@ -21,6 +21,10 @@ import { es } from 'date-fns/locale';
  * - Información secundaria en modales
  * - Fechas en formularios
  * Formato: "3 de junio, 2025"
+ *
+ * formatearFechaYHoraDetallada() - Para mostrar fecha y hora de forma completa y descriptiva:
+ * - Modales de confirmación, detalles de eventos.
+ * Formato: "lunes, 3 de junio, 2025 a las 14:30 hs"
  */
 
 /**
@@ -86,6 +90,26 @@ export const formatearHora = (fecha) => {
   } catch (error) {
     console.error('Error al formatear hora:', error);
     return fecha;
+  }
+};
+
+/**
+ * Formatea una fecha y hora de forma completa y descriptiva.
+ * Uso: Modales de confirmación, detalles de eventos.
+ * @param {string} dateString - Fecha en formato ISO
+ * @returns {string} - "lunes, 3 de junio, 2025 a las 14:30 hs"
+ */
+export const formatearFechaYHoraDetallada = (dateString) => {
+  if (!dateString) return 'Fecha no disponible';
+  try {
+    const dateObj = parseISO(dateString);
+    // formatearFechaCompleta ya maneja el parseISO internamente si se le pasa el string
+    const fechaParte = formatearFechaCompleta(dateString); 
+    const horaParte = formatearHora(dateObj); // formatearHora espera Date object o string parseable
+    return `${fechaParte} a las ${horaParte} hs`;
+  } catch (error) {
+    console.error("Error en formatearFechaYHoraDetallada:", error);
+    return 'Fecha inválida';
   }
 };
 

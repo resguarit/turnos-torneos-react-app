@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import api from '@/lib/axiosConfig';
-import { DollarSign, Lock, Unlock, PlusCircle, MinusCircle, ClipboardList, CreditCard, Banknote, ArrowDownToLine, History, ChevronDown, Search } from "lucide-react";
+import { DollarSign, Lock, Unlock, PlusCircle, MinusCircle, ClipboardList, CreditCard, Banknote, ArrowDownToLine, History, ChevronDown, Search, Calculator, Receipt } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +26,7 @@ import EstadoCaja from '@/components/PanelAdmin/Caja/EstadoCaja';
 import AperturaCaja from '@/components/PanelAdmin/Caja/AperturaCaja';
 import DialogCierreCaja from '@/components/PanelAdmin/Caja/DialogCierreCaja';
 import HistorialContent from '@/components/PanelAdmin/Caja/HistorialContent';
+import TipoGastoSelector from '@/components/PanelAdmin/Caja/TipoGastoSelector';
 
 // Componente principal
 const PestanaCaja = () => {
@@ -38,6 +39,7 @@ const PestanaCaja = () => {
   const [showClosingDialog, setShowClosingDialog] = useState(false);
   const [showHistorialCierres, setShowHistorialCierres] = useState(false);
   const [operador, setOperador] = useState('');
+  const [fechaApertura, setFechaApertura] = useState(null);
   const [balanceTotal, setBalanceTotal] = useState(0);
   const [efectivoEnCaja, setEfectivoEnCaja] = useState(0);
   const [transactions, setTransactions] = useState([]);
@@ -59,6 +61,7 @@ const PestanaCaja = () => {
   const [searchFechaHasta, setSearchFechaHasta] = useState('');
   const [searchCierres, setSearchCierres] = useState(false);
   const [showMovimientos, setShowMovimientos] = useState(false);
+  const [tipoGastoId, setTipoGastoId] = useState(null);
 
   // Efectos
   useEffect(() => {
@@ -82,6 +85,7 @@ const PestanaCaja = () => {
         setCajaAbierta(true);
         setCajaId(caja.id);
         setOperador(operador);
+        setFechaApertura(caja.fecha_apertura);
         setBalanceTotal(balance_total);
         setEfectivoEnCaja(efectivo_en_caja);
         setTransactions(transacciones);
@@ -225,6 +229,7 @@ const PestanaCaja = () => {
     setBalanceTotal(0);
     setEfectivoEnCaja(0);
     setOperador('');
+    setFechaApertura(null);
   };
 
   const fetchCierres = async () => {
@@ -279,6 +284,41 @@ const PestanaCaja = () => {
     setSearchCierres(!searchCierres);
   };
 
+  const handleGasto = async () => {
+    if (!amount || parseFloat(amount) <= 0) {
+      toast.error('Ingrese un monto válido');
+      return;
+    }
+    
+    if (!tipoGastoId) {
+      toast.error('Seleccione un tipo de gasto');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await api.post('/transacciones', {
+        caja_id: cajaId,
+        monto: -parseFloat(amount),
+        tipo: 'gasto',
+        descripcion: description || 'Gasto operativo',
+        tipo_gasto_id: tipoGastoId
+      });
+
+      if (response.data.success) {
+        verificarCajaAbierta();
+        setAmount('');
+        setDescription('');
+        setTipoGastoId(null);
+        toast.success('Gasto registrado correctamente');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Error al registrar el gasto');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto p-4 max-w-4xl">
       <ToastContainer position="top-right" />
@@ -306,38 +346,41 @@ const PestanaCaja = () => {
                 operador={operador}
                 balanceTotal={balanceTotal}
                 efectivoEnCaja={efectivoEnCaja}
+                fechaApertura={fechaApertura}
               />
 
               {!cajaAbierta ? (
-                <AperturaCaja 
-                  saldoInicial={saldoInicial}
-                  setSaldoInicial={setSaldoInicial}
-                  abrirCaja={abrirCaja}
-                  loading={loading}
-                  showHistorialCierres={showHistorialCierres}
-                  setShowHistorialCierres={setShowHistorialCierres}
-                  setPageCierres={setPageCierres}
-                  fetchCierres={fetchCierres}
-                  handleSearch={handleSearch}
-                  handleClearSearch={handleClearSearch}
-                  searchFechaDesde={searchFechaDesde}
-                  searchFechaHasta={searchFechaHasta}
-                  setSearchFechaDesde={setSearchFechaDesde}
-                  setSearchFechaHasta={setSearchFechaHasta}
-                  searchDni={searchDni}
-                  setSearchDni={setSearchDni}
-                  loadingCierres={loadingCierres}
-                  cashClosings={cashClosings}
-                  pageCierres={pageCierres}
-                  totalPagesCierres={totalPagesCierres}
-                  handlePageCierresChange={handlePageCierresChange}
-                />
+                <>
+                  <AperturaCaja 
+                    saldoInicial={saldoInicial}
+                    setSaldoInicial={setSaldoInicial}
+                    abrirCaja={abrirCaja}
+                    loading={loading}
+                    showHistorialCierres={showHistorialCierres}
+                    setShowHistorialCierres={setShowHistorialCierres}
+                    setPageCierres={setPageCierres}
+                    fetchCierres={fetchCierres}
+                    handleSearch={handleSearch}
+                    handleClearSearch={handleClearSearch}
+                    searchFechaDesde={searchFechaDesde}
+                    searchFechaHasta={searchFechaHasta}
+                    setSearchFechaDesde={setSearchFechaDesde}
+                    setSearchFechaHasta={setSearchFechaHasta}
+                    searchDni={searchDni}
+                    setSearchDni={setSearchDni}
+                    loadingCierres={loadingCierres}
+                    cashClosings={cashClosings}
+                    pageCierres={pageCierres}
+                    totalPagesCierres={totalPagesCierres}
+                    handlePageCierresChange={handlePageCierresChange}
+                  />
+                </>
               ) : (
                 <>
                   <div className="flex flex-col gap-4">
                     <Button
                       onClick={() => setShowMovimientos(!showMovimientos)}
-                      className="w-full bg-gray-600 hover:bg-gray-700 text-white rounded-md py-6 text-lg transition-colors flex items-center justify-center gap-2"
+                      className="w-full bg-gray-700 hover:bg-gray-800 text-white rounded-md py-6 text-lg transition-colors flex items-center justify-center gap-2"
                     >
                       <PlusCircle className="h-5 w-5" />
                       {showMovimientos ? 'Ocultar Registro de Movimientos' : 'Registrar Movimiento'}
@@ -345,12 +388,12 @@ const PestanaCaja = () => {
 
                     {showMovimientos && (
                       <Tabs defaultValue="deposit" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 rounded-lg gap-1">
+                        <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg gap-1">
                           <TabsTrigger 
                             value="deposit" 
                             className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
                           >
-                            Depósito
+                            Ingreso
                           </TabsTrigger>
                           <TabsTrigger 
                             value="withdrawal"
@@ -358,13 +401,19 @@ const PestanaCaja = () => {
                           >
                             Retiro
                           </TabsTrigger>
+                          <TabsTrigger 
+                            value="expense"
+                            className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+                          >
+                            Gasto
+                          </TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="deposit">
                           <Card className="border-0 shadow-sm">
                             <CardHeader>
-                              <CardTitle className="text-lg">Registrar Depósito</CardTitle>
-                              <CardDescription>Registre un pago o depósito del cliente</CardDescription>
+                              <CardTitle className="text-lg">Registrar Ingreso</CardTitle>
+                              <CardDescription>Registre un ingreso del cliente</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                               <div>
@@ -493,6 +542,59 @@ const PestanaCaja = () => {
                             </CardFooter>
                           </Card>
                         </TabsContent>
+                        
+                        <TabsContent value="expense">
+                          <Card className="border-0 shadow-sm">
+                            <CardHeader>
+                              <CardTitle className="text-lg">Registrar Gasto</CardTitle>
+                              <CardDescription>Registre un gasto operativo del negocio</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              <div>
+                                <Label htmlFor="tipoGasto" className="text-gray-700">Tipo de Gasto</Label>
+                                <div className="mt-1">
+                                  <TipoGastoSelector 
+                                    value={tipoGastoId} 
+                                    onChange={setTipoGastoId} 
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <Label htmlFor="expenseAmount" className="text-gray-700">Monto</Label>
+                                <Input
+                                  id="expenseAmount"
+                                  type="number"
+                                  min="0.01"
+                                  step="0.01"
+                                  value={amount}
+                                  onChange={(e) => setAmount(e.target.value)}
+                                  placeholder="0.00"
+                                  className="rounded-md border-gray-300 mt-1"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="expenseDescription" className="text-gray-700">Descripción</Label>
+                                <Input
+                                  id="expenseDescription"
+                                  value={description}
+                                  onChange={(e) => setDescription(e.target.value)}
+                                  placeholder="Detalle del gasto"
+                                  className="rounded-md border-gray-300 mt-1"
+                                />
+                              </div>
+                            </CardContent>
+                            <CardFooter>
+                              <Button
+                                onClick={handleGasto}
+                                className="w-full bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors"
+                                disabled={loading || !amount || parseFloat(amount) <= 0 || !tipoGastoId}
+                              >
+                                <Receipt className="h-4 w-4 mr-2" />
+                                Registrar Gasto
+                              </Button>
+                            </CardFooter>
+                          </Card>
+                        </TabsContent>
                       </Tabs>
                     )}
 
@@ -517,32 +619,47 @@ const PestanaCaja = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-4">
-                        {transactions.map((transaction) => (
-                          <div
-                            key={transaction.id}
-                            className="flex flex-col md:flex-row justify-between items-start md:items-center p-3 border rounded-lg gap-2"
-                          >
-                            <div>
-                              <p className="font-medium">{transaction.descripcion}</p>
-                              <p className="text-sm text-muted-foreground">{formatearFechaCorta(transaction.fecha)} {formatearHora(transaction.fecha)}</p>
-                              <div className="flex items-center gap-1 mt-1">
-                                {transaction.metodo_pago === 'efectivo' && <Banknote className="h-4 w-4" />}
-                                {transaction.metodo_pago === 'transferencia' && <ArrowDownToLine className="h-4 w-4" />}
-                                {transaction.metodo_pago === 'tarjeta' && <CreditCard className="h-4 w-4" />}
-                                {transaction.metodo_pago === 'mercadopago' && <CreditCard className="h-4 w-4" />}
-                                <span className="text-sm">
-                                  {transaction.metodo_pago === 'efectivo' ? 'Efectivo' : 
-                                   transaction.metodo_pago === 'transferencia' ? 'Transferencia' : 
-                                   transaction.metodo_pago === 'tarjeta' ? 'Tarjeta' : 'MercadoPago'}
-                                </span>
+                      <div className="max-h-[320px] overflow-y-auto border border-gray-100 rounded-lg shadow-sm relative">
+                        <div className="space-y-4 p-4">
+                          {transactions.map((transaction) => (
+                            <div
+                              key={transaction.id}
+                              className={`flex flex-col md:flex-row justify-between items-start md:items-center p-3 border rounded-lg gap-2 ${transaction.tipo === 'gasto' ? 'bg-gray-50' : ''}`}
+                            >
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium">{transaction.descripcion}</p>
+                                  {transaction.tipo === 'gasto' && transaction.tipo_gasto && (
+                                    <span className="text-xs font-medium bg-gray-200 text-gray-700 px-2 py-1 rounded-md">
+                                      {transaction.tipo_gasto}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm text-muted-foreground">{formatearFechaCorta(transaction.fecha)} {formatearHora(transaction.fecha)}</p>
+                                <div className="flex items-center gap-1 mt-1">
+                                  {transaction.tipo === 'gasto' ? (
+                                    <span className="text-sm text-gray-500">Gasto operativo</span>
+                                  ) : (
+                                    <>
+                                      {transaction.metodo_pago === 'efectivo' && <Banknote className="h-4 w-4" />}
+                                      {transaction.metodo_pago === 'transferencia' && <ArrowDownToLine className="h-4 w-4" />}
+                                      {transaction.metodo_pago === 'tarjeta' && <CreditCard className="h-4 w-4" />}
+                                      {transaction.metodo_pago === 'mercadopago' && <CreditCard className="h-4 w-4" />}
+                                      <span className="text-sm">
+                                        {transaction.metodo_pago === 'efectivo' ? 'Efectivo' : 
+                                         transaction.metodo_pago === 'transferencia' ? 'Transferencia' : 
+                                         transaction.metodo_pago === 'tarjeta' ? 'Tarjeta' : 'MercadoPago'}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                              <div className={`font-bold ${transaction.tipo === 'deposito' || transaction.tipo === 'ingreso' ? "text-green-600" : "text-red-600"}`}>
+                                {transaction.tipo === 'deposito' || transaction.tipo === 'ingreso' ? '+' : '-'}${Math.abs(transaction.monto).toFixed(2)}
                               </div>
                             </div>
-                            <div className={`font-bold ${transaction.tipo === 'deposito' ? "text-green-600" : "text-red-600"}`}>
-                              {transaction.tipo === 'deposito' ? '+' : '-'}${transaction.monto.toFixed(2)}
-                            </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -555,7 +672,7 @@ const PestanaCaja = () => {
                         fetchCierres();
                       }
                     }}
-                    className="w-full mt-4 bg-gray-600 hover:bg-gray-700 text-white rounded-md py-6 text-lg transition-colors flex items-center justify-center gap-2"
+                    className="w-full mt-4 bg-gray-700 hover:bg-gray-800 text-white rounded-md py-6 text-lg transition-colors flex items-center justify-center gap-2"
                   >
                     <History className="h-5 w-5" />
                     {showHistorialCierres ? 'Ocultar Historial de Cierres' : 'Ver Historial de Cierres'}

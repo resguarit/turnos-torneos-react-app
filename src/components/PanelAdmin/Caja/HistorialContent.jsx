@@ -128,9 +128,18 @@ const HistorialContent = ({
                           </div>
                         )}
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Pagos electrónicos:</span>
-                          <span>${parseFloat(cierre.balance_electronico || 0).toFixed(2)}</span>
+                          <span className="text-muted-foreground">Total pagos electrónicos:</span>
+                          <span>${(
+                            (cierre.resumen_pagos?.transferencia || 0) + 
+                            (cierre.resumen_pagos?.tarjeta || 0) + 
+                            (cierre.resumen_pagos?.mercadopago || 0)
+                          ).toFixed(2)}</span>
                         </div>
+                        {typeof cierre.diferencia === 'number' && cierre.diferencia !== 0 && (
+                          <div className="mt-2 mb-2 text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                            <span>Nota: La diferencia representa solo la variación entre el efectivo físico contado y el esperado según el sistema.</span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="mt-4 pt-4 border-t">
@@ -154,6 +163,20 @@ const HistorialContent = ({
                             </span>
                             <span>${cierre.resumen_pagos?.tarjeta?.toFixed(2) || '0.00'}</span>
                           </div>
+                          <div className="flex justify-between">
+                            <span className="flex items-center gap-1">
+                              <CreditCard className="h-4 w-4" /> Mercado Pago:
+                            </span>
+                            <span>${cierre.resumen_pagos?.mercadopago?.toFixed(2) || '0.00'}</span>
+                          </div>
+                          {cierre.resumen_pagos?.gastos > 0 && (
+                            <div className="flex justify-between border-t pt-1 mt-1">
+                              <span className="flex items-center gap-1 font-medium text-red-600">
+                                Gastos operativos:
+                              </span>
+                              <span className="text-red-600">-${cierre.resumen_pagos?.gastos?.toFixed(2) || '0.00'}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
 

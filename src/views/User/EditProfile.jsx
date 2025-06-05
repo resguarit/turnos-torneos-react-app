@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Label } from "@/components/ui/label"
-import { Eye, EyeOff, User, MapPin, Shield } from "lucide-react"
+import { Eye, EyeOff, User, MapPin, Shield, Pencil, SquarePen } from "lucide-react"
 import api from "@/lib/axiosConfig"
 import { useNavigate } from "react-router-dom"
 import { toast, ToastContainer } from "react-toastify"
@@ -38,8 +37,27 @@ export default function EditProfile() {
     password_confirmation: false,
   })
 
-  const [error, setError] = useState(null)
-  const [isLoading, setIsLoading] = useState(false) // Estado de carga
+  const [isLoading, setIsLoading] = useState(false)
+  const [editSection, setEditSection] = useState({
+    basic: false,
+    address: false,
+    password: false,
+  })
+  const [hasChanges, setHasChanges] = useState(false)
+
+  // Cambia el estado address para reflejar los nuevos campos
+  const [address, setAddress] = useState({
+    calle: "",
+    numero: "",
+    departamento: "",
+    ciudad: "",
+  })
+  const [originalAddress, setOriginalAddress] = useState({
+    calle: "",
+    numero: "",
+    departamento: "",
+    ciudad: "",
+  })
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -48,7 +66,24 @@ export default function EditProfile() {
         const response = await api.get(`/usuarios/${userId}`)
         const user = response.data.user
 
-        // Adaptamos la estructura a la nueva respuesta
+        // Parsear la dirección en partes (asumiendo formato: "Calle Numero [Depto] Ciudad")
+        const direccion = user.persona?.direccion || ""
+        const partes = direccion.split(" ")
+        let calle = "", numero = "", departamento = "", ciudad = ""
+        if (partes.length >= 2) {
+          calle = partes[0]
+          numero = partes[1]
+          // Si hay más partes, buscar si hay "Depto" o similar
+          if (partes.length === 3) {
+            ciudad = partes[2]
+          } else if (partes.length >= 4) {
+            departamento = partes[2]
+            ciudad = partes.slice(3).join(" ")
+          }
+        } else if (partes.length === 1) {
+          calle = partes[0]
+        }
+
         setUserData({
           name: user.persona?.name || "",
           email: user.email || "",
@@ -58,6 +93,18 @@ export default function EditProfile() {
           name: user.persona?.name || "",
           email: user.email || "",
           telefono: user.persona?.telefono || "",
+        })
+        setAddress({
+          calle,
+          numero,
+          departamento,
+          ciudad,
+        })
+        setOriginalAddress({
+          calle,
+          numero,
+          departamento,
+          ciudad,
         })
       } catch (error) {
         setError(error.message)
@@ -69,9 +116,34 @@ export default function EditProfile() {
     fetchUserData()
   }, [])
 
+  // Detectar cambios en los datos
+  useEffect(() => {
+    const basicChanged =
+      userData.name !== originalUserData.name ||
+      userData.email !== originalUserData.email ||
+      userData.telefono !== originalUserData.telefono
+    const addressChanged =
+      address.direccion !== originalAddress.direccion ||
+      address.ciudad !== originalAddress.ciudad ||
+      address.provincia !== originalAddress.provincia
+    const passwordChanged =
+      userPassword.current_password ||
+      userPassword.password ||
+      userPassword.password_confirmation
+
+    setHasChanges(basicChanged || addressChanged || passwordChanged)
+  }, [userData, originalUserData, address, originalAddress, userPassword])
+
   const handleChange = (e) => {
     setUserData({
       ...userData,
+      [e.target.name]: e.target.value,
+    })
+  }
+
+  const handleAddressChange = (e) => {
+    setAddress({
+      ...address,
       [e.target.name]: e.target.value,
     })
   }
@@ -90,35 +162,74 @@ export default function EditProfile() {
     })
   }
 
+  const handleEditSection = (section) => {
+    setEditSection((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }))
+    setError(null)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setIsLoading(true) // Iniciar estado de carga
+    setIsLoading(true)
     const userId = localStorage.getItem("user_id")
     const updatedData = {}
 
-    // Comparar los valores actuales con los originales y agregar solo los campos modificados y no vacíos
-    if (userData.name !== originalUserData.name && userData.name.trim() !== "") {
-      updatedData.name = userData.name // Debería ser plano, no updatedData.persona.name
+    // Validación: nombre, email y teléfono no pueden estar vacíos si se edita info básica
+    if (editSection.basic) {
+      if (
+        !userData.name.trim() ||
+        !userData.email.trim() ||
+        !userData.telefono.trim()
+      ) {
+        toast.error("Nombre, email y teléfono deben estar completos.")
+        setIsLoading(false)
+        return
+      }
+      if (userData.name !== originalUserData.name) {
+        updatedData.name = userData.name
+      }
+      if (userData.email !== originalUserData.email) {
+        updatedData.email = userData.email
+      }
+      if (userData.telefono !== originalUserData.telefono) {
+        updatedData.telefono = userData.telefono
+      }
     }
 
-    if (userData.email !== originalUserData.email && userData.email.trim() !== "") {
-      updatedData.email = userData.email
+    if (editSection.address) {
+      // Unir los campos en un solo string para la dirección
+      let direccion = `${address.calle || ""} ${address.numero || ""}`
+      if (address.departamento) direccion += ` ${address.departamento}`
+      if (address.ciudad) direccion += ` ${address.ciudad}`
+      direccion = direccion.trim()
+
+      let originalDireccion = `${originalAddress.calle || ""} ${originalAddress.numero || ""}`
+      if (originalAddress.departamento) originalDireccion += ` ${originalAddress.departamento}`
+      if (originalAddress.ciudad) originalDireccion += ` ${originalAddress.ciudad}`
+      originalDireccion = originalDireccion.trim()
+
+      if (direccion !== originalDireccion && direccion !== "") {
+        updatedData.direccion = direccion
+      }
     }
 
-    if (userData.telefono !== originalUserData.telefono && userData.telefono.trim() !== "") {
-      updatedData.telefono = userData.telefono // Debería ser plano, no updatedData.persona.telefono
-    }
-
-    // Validar contraseñas
-    if (userPassword.current_password) {
-      if (!userPassword.password || !userPassword.password_confirmation) {
-        setError("Debe ingresar la nueva contraseña y la confirmación de la contraseña.")
-        setIsLoading(false) // Finalizar estado de carga
+    if (editSection.password) {
+      // Validaciones de contraseña
+      if (!userPassword.current_password || !userPassword.password || !userPassword.password_confirmation) {
+        toast.error("Debe ingresar la contraseña actual, la nueva y la confirmación.")
+        setIsLoading(false)
+        return
+      }
+      if (userPassword.password.length < 8) {
+        toast.error("La nueva contraseña debe tener al menos 8 caracteres.")
+        setIsLoading(false)
         return
       }
       if (userPassword.password !== userPassword.password_confirmation) {
-        setError("Las contraseñas no coinciden")
-        setIsLoading(false) // Finalizar estado de carga
+        toast.error("La nueva contraseña y la confirmación deben coincidir.")
+        setIsLoading(false)
         return
       }
       updatedData.password = userPassword.password
@@ -126,33 +237,47 @@ export default function EditProfile() {
       updatedData.password_confirmation = userPassword.password_confirmation
     }
 
+    if (Object.keys(updatedData).length === 0) {
+      setIsLoading(false)
+      return
+    }
+
     try {
       await api.patch(`/usuarios/${userId}`, updatedData)
       toast.success("Usuario actualizado correctamente")
-      // Actualizar el nombre de usuario en el localStorage
       if (updatedData.name) {
         localStorage.setItem("username", updatedData.name)
-        window.dispatchEvent(new Event("storage")) // Disparar evento de almacenamiento
+        window.dispatchEvent(new Event("storage"))
       }
+      setOriginalUserData({ ...userData })
+      setOriginalAddress({ ...address })
+      setUserPassword({
+        password: "",
+        current_password: "",
+        password_confirmation: "",
+      })
+      setEditSection({ basic: false, address: false, password: false })
     } catch (error) {
-      toast.error(error.response.data.message || error.message)
+      // Si el backend devuelve error de contraseña actual incorrecta
+      if (error.response?.data?.message?.toLowerCase().includes("actual")) {
+        toast.error("La contraseña actual no es correcta.")
+      } else {
+        toast.error(error.response?.data?.message || error.message)
+      }
     } finally {
-      setIsLoading(false) // Finalizar estado de carga
+      setIsLoading(false)
     }
   }
 
   const handleCancelarClick = () => {
-    // Restaurar los datos del usuario al estado original
     setUserData({ ...originalUserData })
-
-    // Limpiar los campos de contraseña
+    setAddress({ ...originalAddress })
     setUserPassword({
       password: "",
       current_password: "",
       password_confirmation: "",
     })
-
-    // Limpiar posibles errores
+    setEditSection({ basic: false, address: false, password: false })
     setError(null)
   }
 
@@ -164,7 +289,6 @@ export default function EditProfile() {
           <div className="w-full flex justify-center items-center">
             <BtnLoading />
           </div>
-          ;
         </main>
         <Footer />
       </div>
@@ -179,17 +303,28 @@ export default function EditProfile() {
         <div className="max-w-4xl mx-auto space-y-6">
           <ToastContainer position="bottom-right" />
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Tarjeta de Información Básica */}
-            <div className="bg-white rounded-[8px] p-6 shadow-sm">
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-2">
+            {/* Información Básica */}
+            <div className="bg-white rounded-[8px] p-6 shadow-sm relative">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
                   <User className="w-5 h-5" />
                   <h2 className="text-xl font-semibold">Información Básica</h2>
                 </div>
-                <p className="text-gray-700">Actualiza tu información personal y de contacto.</p>
+                <button
+                  type="button"
+                  className="p-1 rounded-full hover:bg-gray-100"
+                  onClick={() => handleEditSection("basic")}
+                  aria-label="Editar información básica"
+                >
+                  <SquarePen  className={`w-5 h-5  ${editSection.basic
+                        ? "text-red-500 "
+                        : "text-gray-700"
+                      }`} />
+                </button>
               </div>
+              <p className="text-gray-700 mb-4">Actualiza tu información personal y de contacto.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className=" flex flex-col">
+                <div className="flex flex-col">
                   <label htmlFor="name" className="text-sm text-gray-700 font-medium">
                     Nombre
                   </label>
@@ -198,10 +333,15 @@ export default function EditProfile() {
                     name="name"
                     value={userData.name}
                     onChange={handleChange}
-                    className="bg-white p-1 px-2 rounded-[6px] border border-gray-300"
+                    className={`p-1 px-2 rounded-[6px] border border-gray-300 transition-colors
+                      ${editSection.basic
+                        ? "bg-yellow-50 focus:bg-white focus:border-naranja"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
+                    disabled={!editSection.basic}
                   />
                 </div>
-                <div className=" flex flex-col">
+                <div className="flex flex-col">
                   <label htmlFor="email" className="text-sm text-gray-700 font-medium">
                     Email
                   </label>
@@ -211,7 +351,12 @@ export default function EditProfile() {
                     type="email"
                     value={userData.email}
                     onChange={handleChange}
-                    className="bg-white p-1 px-2 border rounded-[6px] border-gray-300"
+                    className={`p-1 px-2 rounded-[6px] border border-gray-300 transition-colors
+                      ${editSection.basic
+                        ? "bg-yellow-50 focus:bg-white focus:border-naranja"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
+                    disabled={!editSection.basic}
                   />
                 </div>
                 <div className="flex flex-col">
@@ -224,27 +369,90 @@ export default function EditProfile() {
                     type="tel"
                     value={userData.telefono}
                     onChange={handleChange}
-                    className="bg-white p-1 px-2 border rounded-[6px] border-gray-300"
+                    className={`p-1 px-2 rounded-[6px] border border-gray-300 transition-colors
+                      ${editSection.basic
+                        ? "bg-yellow-50 focus:bg-white focus:border-naranja"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
+                    disabled={!editSection.basic}
                   />
                 </div>
               </div>
-              <div className="mb-6 mt-8">
-                <div className="flex items-center gap-2 mb-2">
+            </div>
+
+            {/* Dirección */}
+            <div className="bg-white rounded-[8px] p-6 shadow-sm relative">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
                   <MapPin className="w-5 h-5" />
                   <h2 className="text-xl font-semibold">Dirección</h2>
                 </div>
-                <p className="text-gray-700">Información de ubicación y dirección.</p>
+                <button
+                  type="button"
+                  className="p-1 rounded-full hover:bg-gray-100"
+                  onClick={() => handleEditSection("address")}
+                  aria-label="Editar dirección"
+                >
+                  <SquarePen className={`w-5 h-5  ${editSection.address
+                        ? "text-red-500 "
+                        : "text-gray-700"
+                      }`} />
+                </button>
               </div>
+              <p className="text-gray-700 mb-4">Información de ubicación y dirección.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex flex-col md:col-span-2">
-                  <label htmlFor="direccion" className="text-sm text-gray-700 font-medium">
-                    Dirección
+                <div className="flex flex-col">
+                  <label htmlFor="calle" className="text-sm text-gray-700 font-medium">
+                    Calle
                   </label>
                   <input
-                    id="direccion"
-                    name="direccion"
-                    placeholder="Calle, número, piso, departamento"
-                    className="bg-white p-1 px-2 rounded-[6px] border border-gray-300"
+                    id="calle"
+                    name="calle"
+                    placeholder="Ej: San Martín"
+                    value={address.calle}
+                    onChange={handleAddressChange}
+                    className={`p-1 px-2 rounded-[6px] border border-gray-300 transition-colors
+                      ${editSection.address
+                        ? "bg-yellow-50 focus:bg-white focus:border-naranja"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
+                    disabled={!editSection.address}
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label htmlFor="numero" className="text-sm text-gray-700 font-medium">
+                    Número
+                  </label>
+                  <input
+                    id="numero"
+                    name="numero"
+                    placeholder="Ej: 1234"
+                    value={address.numero}
+                    onChange={handleAddressChange}
+                    className={`p-1 px-2 rounded-[6px] border border-gray-300 transition-colors
+                      ${editSection.address
+                        ? "bg-yellow-50 focus:bg-white focus:border-naranja"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
+                    disabled={!editSection.address}
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label htmlFor="departamento" className="text-sm text-gray-700 font-medium">
+                    Departamento (opcional)
+                  </label>
+                  <input
+                    id="departamento"
+                    name="departamento"
+                    placeholder="Ej: 2B"
+                    value={address.departamento}
+                    onChange={handleAddressChange}
+                    className={`p-1 px-2 rounded-[6px] border border-gray-300 transition-colors
+                      ${editSection.address
+                        ? "bg-yellow-50 focus:bg-white focus:border-naranja"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
+                    disabled={!editSection.address}
                   />
                 </div>
                 <div className="flex flex-col">
@@ -254,29 +462,48 @@ export default function EditProfile() {
                   <input
                     id="ciudad"
                     name="ciudad"
-                    placeholder="Buenos Aires"
-                    className="bg-white p-1 px-2 rounded-[6px] border border-gray-300"
-                  />
-                </div>
-                <div className=" flex flex-col">
-                  <label htmlFor="provincia" className="text-sm text-gray-700 font-medium">
-                    Provincia
-                  </label>
-                  <input
-                    id="provincia"
-                    name="provincia"
-                    placeholder="Buenos Aires"
-                    className="bg-white p-1 px-2 rounded-[6px] border border-gray-300"
+                    placeholder="Ej: Buenos Aires"
+                    value={address.ciudad}
+                    onChange={handleAddressChange}
+                    className={`p-1 px-2 rounded-[6px] border border-gray-300 transition-colors
+                      ${editSection.address
+                        ? "bg-yellow-50 focus:bg-white focus:border-naranja"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
+                    disabled={!editSection.address}
                   />
                 </div>
               </div>
-              <div className="mb-6 mt-8">
-                <div className="flex items-center gap-2 mb-2">
+            </div>
+
+            {/* Cambiar Contraseña */}
+            <div className="bg-white rounded-[8px] p-6 shadow-sm relative">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
                   <Shield className="w-5 h-5" />
                   <h2 className="text-xl font-semibold">Cambiar Contraseña</h2>
                 </div>
-                <p className="text-gray-700">Asegúrate de usar una contraseña segura.</p>
+                <button
+                  type="button"
+                  className="p-1 rounded-full hover:bg-gray-100"
+                  onClick={() => handleEditSection("password")}
+                  aria-label="Editar contraseña"
+                >
+                  <SquarePen className={`w-5 h-5  ${editSection.password
+                        ? "text-red-500 "
+                        : "text-gray-700"
+                      }`} />
+                </button>
               </div>
+              <div className="bg-blue-50 p-3 mb-2 rounded-[8px]">
+                  <h4 className="font-medium text-blue-900 mb-2">Para una contraseña segura:</h4>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• Al menos 8 caracteres de longitud</li>
+                    <li>• Incluye mayúsculas y minúsculas</li>
+                    <li>• Usa números y símbolos especiales</li>
+                    <li>• Evita información personal obvia</li>
+                  </ul>
+                </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col relative md:col-span-2">
                   <label htmlFor="current_password" className="text-sm text-gray-700 font-medium">
@@ -288,12 +515,18 @@ export default function EditProfile() {
                     type={showPassword.current_password ? "text" : "password"}
                     value={userPassword.current_password}
                     onChange={handlePasswordChange}
-                    className="bg-white p-1 px-2 rounded-[6px] border border-gray-300 pr-12"
+                    className={`p-1 px-2 rounded-[6px] border border-gray-300 pr-12 transition-colors
+                      ${editSection.password
+                        ? "bg-yellow-50 focus:bg-white focus:border-naranja"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
+                    disabled={!editSection.password}
                   />
                   <button
                     type="button"
                     onClick={() => toggleShowPassword("current_password")}
                     className="absolute right-3 top-[37px] transform -translate-y-1/2"
+                    tabIndex={-1}
                   >
                     {showPassword.current_password ? <EyeOff className="h-5 w-5 text-gray-700" /> : <Eye className="h-5 w-5 text-gray-700" />}
                   </button>
@@ -308,12 +541,18 @@ export default function EditProfile() {
                     type={showPassword.password ? "text" : "password"}
                     value={userPassword.password}
                     onChange={handlePasswordChange}
-                    className="bg-white p-1 px-2 rounded-[6px] border border-gray-300 pr-12"
+                    className={`p-1 px-2 rounded-[6px] border border-gray-300 pr-12 transition-colors
+                      ${editSection.password
+                        ? "bg-yellow-50 focus:bg-white focus:border-naranja"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
+                    disabled={!editSection.password}
                   />
                   <button
                     type="button"
                     onClick={() => toggleShowPassword("password")}
                     className="absolute right-3 top-[37px] transform -translate-y-1/2"
+                    tabIndex={-1}
                   >
                     {showPassword.password ? <EyeOff className="h-5 w-5 text-gray-700" /> : <Eye className="h-5 w-5 text-gray-700" />}
                   </button>
@@ -328,23 +567,24 @@ export default function EditProfile() {
                     type={showPassword.password_confirmation ? "text" : "password"}
                     value={userPassword.password_confirmation}
                     onChange={handlePasswordChange}
-                    className="bg-white p-1 px-2 rounded-[6px] border border-gray-300 pr-12"
+                    className={`p-1 px-2 rounded-[6px] border border-gray-300 pr-12 transition-colors
+                      ${editSection.password
+                        ? "bg-yellow-50 focus:bg-white focus:border-naranja"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
+                    disabled={!editSection.password}
                   />
                   <button
                     type="button"
                     onClick={() => toggleShowPassword("password_confirmation")}
                     className="absolute right-3 top-[37px] transform -translate-y-1/2"
+                    tabIndex={-1}
                   >
                     {showPassword.password_confirmation ? <EyeOff className="h-5 w-5 text-gray-700" /> : <Eye className="h-5 w-5 text-gray-700" />}
                   </button>
                 </div>
               </div>
             </div>
-
-            
-
-            {/* Error message display */}
-            {error && <div className="text-red-500 bg-red-100 border border-red-200 p-3 rounded-md">{error}</div>}
 
             {/* Acciones del Formulario */}
             <div className="flex justify-between pt-4">
@@ -357,10 +597,14 @@ export default function EditProfile() {
               </button>
               <button
                 type="submit"
-                className="bg-naranja px-3 py-2 text-white items-center flex rounded-[6px] hover:opacity-90 transition-opacity"
-                disabled={isLoading}
+                className={`bg-naranja px-3 py-2 text-white items-center flex rounded-[6px] transition-opacity ${hasChanges ? "hover:opacity-90" : "opacity-60 cursor-not-allowed"}`}
+                disabled={!hasChanges || isLoading}
               >
-                {isLoading ? "Guardando..." : "Guardar Cambios"}
+                {isLoading
+                  ? "Guardando..."
+                  : hasChanges
+                  ? "Guardar Cambios"
+                  : "Sin cambios"}
               </button>
             </div>
           </form>

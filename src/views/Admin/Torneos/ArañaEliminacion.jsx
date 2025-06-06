@@ -111,18 +111,20 @@ export default function ArañaEliminacion({ equipos }) {
   return (
     <div className="p-4 bg-white rounded-lg shadow-md mt-4">
       <h3 className="text-xl font-bold mb-2">Araña Eliminación</h3>
-      <p className="text-xs mb-4 text-green-700 bg-green-200 p-1 border-l-2 border-green-500">Para avanzar a la siguiente ronda, debes seleccionar un ganador para cada partido de la ronda actual. Una vez seleccionados todos los ganadores, se generará automáticamente la nueva fecha con los nuevos cruces.</p>
-      <div className="flex overflow-x-auto justify-center gap-8 p-4">
+      <p className="text-xs mb-4 text-green-700 bg-green-200 p-1 border-l-2 border-green-500">
+        Para avanzar a la siguiente ronda, debes seleccionar un ganador para cada partido de la ronda actual. Una vez seleccionados todos los ganadores, se generará automáticamente la nueva fecha con los nuevos cruces.
+      </p>
+      <div className="flex overflow-x-auto justify-center gap-8 p-4 relative">
         {rounds.map((round, roundIndex) => (
           <div key={round.id} className="flex flex-col gap-4 justify-center">
-            <div className="text-center font-semibold ">{round.nombre || 'No definido'}</div>            
-              <div className="flex flex-col gap-6">
+            <div className="text-center font-semibold ">{round.nombre || 'No definido'}</div>
+            <div className="flex flex-col gap-6">
               {round.matches.map((match, matchIndex) => (
                 <div key={match.id} className="relative">
                   <div className="flex flex-col gap-2 border p-2 rounded-[6px] min-w-[200px]">
                     {match.teams.map(teamId => (
-                      <div 
-                        key={teamId} 
+                      <div
+                        key={teamId}
                         className={`p-2 rounded-[6px] cursor-pointer ${
                           isFinalRound() ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-200 hover:bg-gray-300'
                         }`}
@@ -157,19 +159,19 @@ export default function ArañaEliminacion({ equipos }) {
             )}
           </div>
         ))}
+        {/* Botón generar siguiente ronda a la derecha de la última columna */}
+        {rounds.length > 0 && canGenerateNextRound() && (
+          <div className="flex flex-col justify-center items-center ml-8">
+            <button
+              onClick={handleGenerateNextRound}
+              className="bg-blue-500 text-white px-4 py-2 rounded-[6px] hover:bg-blue-600 disabled:bg-gray-400"
+              disabled={loading}
+            >
+              {loading ? 'Generando...' : 'Generar Siguiente Ronda'}
+            </button>
+          </div>
+        )}
       </div>
-      
-      {rounds.length > 0 && canGenerateNextRound() && (
-        <div className="mt-4 flex justify-center">
-          <button 
-            onClick={handleGenerateNextRound}
-            className="bg-blue-500 text-white px-4 py-2 rounded-[6px] hover:bg-blue-600 disabled:bg-gray-400"
-            disabled={loading}
-          >
-            {loading ? 'Generando...' : 'Generar Siguiente Ronda'}
-          </button>
-        </div>
-      )}
 
       <ConfirmDeleteModal
         isOpen={showDeleteModal}

@@ -259,10 +259,10 @@ const PestanaPistas = () => {
               activa: true,
             });
           }}
-          className="inline-flex items-center text-sm sm:text-base px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-[10px] shadow transition-colors duration-200 transform hover:scale-105"
+          className="inline-flex items-center text-sm px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-[6px] shadow transition-colors duration-200 transform hover:scale-105"
           disabled={isSaving}
         >
-          <Plus className="h-5 w-5 mr-2" />
+          <Plus className="h-4 w-4 mr-2" />
           Añadir Cancha
         </button>
         </div>
@@ -278,10 +278,10 @@ const PestanaPistas = () => {
               duracion_turno: ''
             });
           }}
-          className="inline-flex items-center text-sm sm:text-base px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-[10px] shadow transition-colors duration-200 transform hover:scale-105"
+          className="inline-flex items-center text-sm px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-[6px] shadow transition-colors duration-200 transform hover:scale-105"
           disabled={isSaving}
         >
-          <Plus className="h-5 w-5 mr-2" />
+          <Plus className="h-4 w-4 mr-2" />
           Añadir Deporte
         </button>
         </div>
@@ -302,7 +302,7 @@ const PestanaPistas = () => {
                     type="text"
                     value={newPista.nro}
                     onChange={(e) => setNewPista({ ...newPista, nro: e.target.value })}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm"
                     required
                   />
                 </div>
@@ -311,7 +311,7 @@ const PestanaPistas = () => {
                   <select
                     value={newPista.deporte_id}
                     onChange={(e) => setNewPista({ ...newPista, deporte_id: e.target.value })}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm"
                     required
                   >
                     <option value="">Seleccionar deporte</option>
@@ -328,7 +328,7 @@ const PestanaPistas = () => {
                     type="number"
                     value={newPista.precio_por_hora}
                     onChange={(e) => setNewPista({ ...newPista, precio_por_hora: e.target.value })}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm"
                     required
                   />
                 </div>
@@ -338,7 +338,7 @@ const PestanaPistas = () => {
                     type="number"
                     value={newPista.seña}
                     onChange={(e) => setNewPista({ ...newPista, seña: e.target.value })}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm"
                     required
                   />
                 </div>
@@ -348,7 +348,7 @@ const PestanaPistas = () => {
                     type="text"
                     value={newPista.descripcion}
                     onChange={(e) => setNewPista({ ...newPista, descripcion: e.target.value })}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm"
                   />
                 </div>
                 
@@ -357,7 +357,7 @@ const PestanaPistas = () => {
                     type="checkbox"
                     checked={newPista.activa}
                     onChange={(e) => setNewPista({ ...newPista, activa: e.target.checked })}
-                    className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                    className="h-4 w-4 text-blue-600 border-gray-300 px-2 py-1 border rounded"
                   />
                   <label className="ml-2 block text-sm font-medium text-gray-700">Activa</label>
                 </div>
@@ -366,14 +366,14 @@ const PestanaPistas = () => {
                 <button
                   type="button"
                   onClick={() => setAgregando(false)}
-                  className="mr-4 inline-flex items-center px-4 py-2 border border-gray-300 rounded-[8px] shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  className="mr-4 inline-flex items-center px-3 py-2 border border-gray-300 rounded-[6px] shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                   disabled={isSaving}
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-[8px] shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                  className="inline-flex items-center px-3 py-2 border border-transparent rounded-[6px] shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                   disabled={isSaving}
                 >
                   {isSaving ? 'Guardando...' : (editando ? 'Guardar Cambios' : 'Guardar')}
@@ -391,7 +391,7 @@ const PestanaPistas = () => {
                     type="text"
                     value={newDeporte.nombre}
                     onChange={(e) => setNewDeporte({ ...newDeporte, nombre: e.target.value })}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm"
                     required
                   />
                 </div>
@@ -401,7 +401,7 @@ const PestanaPistas = () => {
                     type="number"
                     value={newDeporte.jugadores_por_equipo}
                     onChange={(e) => setNewDeporte({ ...newDeporte, jugadores_por_equipo: e.target.value })}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm"
                     required
                   />
                 </div>
@@ -411,7 +411,7 @@ const PestanaPistas = () => {
                     type="number"
                     value={newDeporte.duracion_turno}
                     onChange={(e) => setNewDeporte({ ...newDeporte, duracion_turno: e.target.value })}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                    className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm"
                     required  
                   />
                 </div>

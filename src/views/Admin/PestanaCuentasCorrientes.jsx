@@ -418,7 +418,7 @@ const PestanaCuentasCorrientes = () => {
 
           <button
             onClick={() => handleSearch(localSearchTerm)}
-            className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-green-600 border border-green-600 rounded-[10px] shadow hover:bg-white hover:text-green-600"
+            className="flex items-center justify-center px-3 py-2 text-sm text-white bg-green-600 border border-green-600 rounded-[6px] shadow hover:bg-white hover:text-green-600"
           >
             <Search className="w-5 h-5 sm:hidden" />
             <span className="hidden sm:block">Buscar</span>
@@ -426,7 +426,7 @@ const PestanaCuentasCorrientes = () => {
 
           <button
             onClick={handleClearSearch}
-            className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-red-600 border border-red-600 rounded-[10px] shadow hover:bg-white hover:text-red-600"
+            className="flex items-center justify-center px-3 py-2 text-sm text-white bg-red-600 border border-red-600 rounded-[6px] shadow hover:bg-white hover:text-red-600"
           >
             <Eraser className="w-5 h-5 sm:hidden"/>
             <span className="hidden sm:block">Limpiar</span>

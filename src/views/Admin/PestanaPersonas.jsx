@@ -291,10 +291,10 @@ const PestanaPersonas = () => {
               setEditando(null);
               initNewPersonaForm();
             }}
-            className="inline-flex sm:text-base text-sm rounded-[10px] items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow transition-colors duration-200 transform hover:scale-105"
+            className="inline-flex text-sm rounded-[6px] items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow transition-colors duration-200 transform hover:scale-105"
             disabled={isSaving}
           >
-            <Plus className="h-5 w-5 mr-2" />
+            <Plus className="h-4 w-4 mr-2" />
             Añadir Persona
           </button>
         )}
@@ -306,7 +306,7 @@ const PestanaPersonas = () => {
           <select
             value={searchType}
             onChange={(e) => setSearchType(e.target.value)}
-            className="w-full text-sm sm:text-base px-2 py-1 border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full text-sm px-3 py-2 border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="name">Nombre</option>
             <option value="dni">DNI</option>
@@ -326,7 +326,7 @@ const PestanaPersonas = () => {
           <Search className="absolute left-2 top-2 h-5 w-5 text-gray-400" />
           <button
             onClick={handleSearch}
-            className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-green-600 border border-green-600 rounded-[10px] shadow hover:bg-white hover:text-green-600"
+            className="flex items-center justify-center text-sm px-3 py-2 text-white bg-green-600 border border-green-600 rounded-[6px] shadow hover:bg-white hover:text-green-600"
             disabled={isSaving}
           >
             <Search className="w-5 h-5 sm:hidden" />
@@ -335,7 +335,7 @@ const PestanaPersonas = () => {
 
           <button
             onClick={handleClearSearch}
-            className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-red-600 border border-red-600 rounded-[10px] shadow hover:bg-white hover:text-red-600"
+            className="flex items-center justify-center text-sm px-3 py-2 text-white bg-red-600 border border-red-600 rounded-[6px] shadow hover:bg-white hover:text-red-600"
             disabled={isSaving}
           >
             <Eraser className="w-5 h-5 sm:hidden"/>

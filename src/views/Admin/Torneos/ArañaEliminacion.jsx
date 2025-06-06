@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from '@/lib/axiosConfig';
 import { ChevronRight } from "lucide-react";
+import ConfirmDeleteModal from "../Modals/ConfirmDeleteModal";
 
 export default function ArañaEliminacion({ equipos }) {
   const { zonaId } = useParams();
   const [rounds, setRounds] = useState([]);
   const [selectedWinners, setSelectedWinners] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [loadingDelete, setLoadingDelete] = useState(false);
 
   useEffect(() => {
     const fetchFechas = async () => {
@@ -64,12 +67,26 @@ export default function ArañaEliminacion({ equipos }) {
         };
         setRounds([...rounds, newRound]);
         setSelectedWinners({});
-        /* window.location.reload(); */
       }
     } catch (error) {
       console.error('Error generating next round:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteFecha = async () => {
+    if (!rounds.length) return;
+    const lastFecha = rounds[rounds.length - 1];
+    try {
+      setLoadingDelete(true);
+      await api.delete(`/fechas/${lastFecha.id}`);
+      setRounds(rounds.slice(0, -1));
+      setShowDeleteModal(false);
+    } catch (error) {
+      console.error('Error deleting fecha:', error);
+    } finally {
+      setLoadingDelete(false);
     }
   };
 
@@ -126,6 +143,18 @@ export default function ArañaEliminacion({ equipos }) {
                 </div>
               ))}
             </div>
+            {/* Botón eliminar solo debajo de la última columna */}
+            {roundIndex === rounds.length - 1 && (
+              <div className="flex justify-center mt-4">
+                <button
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-[6px] text-sm"
+                  onClick={() => setShowDeleteModal(true)}
+                  disabled={loadingDelete}
+                >
+                  {loadingDelete ? "Eliminando..." : "Eliminar Fecha"}
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -141,6 +170,18 @@ export default function ArañaEliminacion({ equipos }) {
           </button>
         </div>
       )}
+
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteFecha}
+        loading={loadingDelete}
+        accionTitulo="eliminación"
+        accion="eliminar"
+        pronombre="la"
+        entidad="fecha"
+        accionando="Eliminando"
+      />
     </div>
   );
 }

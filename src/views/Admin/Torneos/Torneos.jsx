@@ -20,12 +20,15 @@ export default function Torneos() {
   const [torneoIdFinalizar, setTorneoIdFinalizar] = useState(null);    // guarda el id del torneo
   const [torneoIdReactivar, setTorneoIdReactivar] = useState(null);    // guarda el id del torneo
   const [loading, setLoading] = useState(false);
+  const [mostrarTodos, setMostrarTodos] = useState(false);
   const navigate = useNavigate();
 
   // Filtrar torneos activos si no hay búsqueda, o todos los que coincidan con el año si hay búsqueda
   const torneosFiltrados = searchYear
     ? torneos.filter(t => String(t.año).includes(searchYear))
-    : torneos.filter(t => t.activo === 1 || t.activo === true);
+    : mostrarTodos
+      ? torneos
+      : torneos.filter(t => t.activo === 1 || t.activo === true);
 
   // Calcular la cantidad de zonas por torneo
   const zonasCount = torneosFiltrados.reduce((acc, torneo) => {
@@ -107,7 +110,7 @@ export default function Torneos() {
               + Nuevo Torneo
             </button>
           </div>
-          <div className="flex mb-6 gap-4">
+          <div className="flex justify-between mb-6 items-center">
             <input
               type="number"
               placeholder="Buscar por año (ej: 2025)"
@@ -123,6 +126,15 @@ export default function Torneos() {
                 Limpiar búsqueda
               </button>
             )}
+            <label className="flex items-center gap-2 ml-4">
+              <input
+                type="checkbox"
+                checked={mostrarTodos}
+                onChange={e => setMostrarTodos(e.target.checked)}
+                className="accent-naranja"
+              />
+              <span className="text-sm text-gray-700">Mostrar todos los torneos</span>
+            </label>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {torneosFiltrados.length === 0 ? (

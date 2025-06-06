@@ -23,6 +23,7 @@ export default function Zonas() {
   const [modalFinalizarOpen, setModalFinalizarOpen] = useState(false);
   const [modalReactivarOpen, setModalReactivarOpen] = useState(false);
   const [searchYear, setSearchYear] = useState('');
+  const [mostrarTodos, setMostrarTodos] = useState(false);
   const navigate = useNavigate();
 
   // Buscar el torneo y sus zonas desde el contexto
@@ -40,10 +41,12 @@ export default function Zonas() {
     };
   });
 
-  // FILTRO: solo zonas activas por defecto, o todas las que coincidan con el año si hay búsqueda
+  // FILTRO: solo zonas activas por defecto, o todas si se marca el checkbox
   const zonasFiltradas = searchYear
     ? zonasConFecha.filter(z => String(z.año).includes(searchYear))
-    : zonasConFecha.filter(z => z.activo === 1 || z.activo === true);
+    : mostrarTodos
+      ? zonasConFecha
+      : zonasConFecha.filter(z => z.activo === 1 || z.activo === true);
 
   // Finalizar zona
   const finalizarZona = async (zonaId) => {
@@ -136,7 +139,7 @@ export default function Zonas() {
               + Nueva Zona
             </button>
           </div>
-          <div className="flex mb-6 gap-4">
+          <div className="flex mb-6 justify-between items-center">
             <input
               type="number"
               placeholder="Buscar por año (ej: 2025)"
@@ -152,6 +155,15 @@ export default function Zonas() {
                 Limpiar búsqueda
               </button>
             )}
+            <label className="flex items-center gap-2 ml-4">
+              <input
+                type="checkbox"
+                checked={mostrarTodos}
+                onChange={e => setMostrarTodos(e.target.checked)}
+                className="accent-naranja"
+              />
+              <span className="text-sm text-gray-700">Mostrar todas las zonas</span>
+            </label>
           </div>
           {zonasFiltradas.length === 0 ? (
             <p className="text-center text-gray-500">No se encontraron zonas {searchYear ? `para el año ${searchYear}` : 'activas'}.</p>

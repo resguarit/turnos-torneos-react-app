@@ -4,7 +4,7 @@ import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import BtnLoading from '@/components/BtnLoading';
-import ModalConfirmation from '@/components/ModalConfirmation';
+import ConfirmDeleteModal from '../Admin/Modals/ConfirmDeleteModal';
 import { useNavigate } from 'react-router-dom';
 import { decryptRole } from '@/lib/getRole';
 import { formatearFechaSinDia } from '@/utils/dateUtils';
@@ -18,6 +18,7 @@ const PestanaPersonas = () => {
   const [userRole, setUserRole] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [personaToDelete, setPersonaToDelete] = useState(null);
+  const [loadingDelete, setLoadingDelete] = useState(false);
   // Estructura para datos de la persona
   const [newPersona, setNewPersona] = useState({
     name: '',
@@ -256,6 +257,7 @@ const PestanaPersonas = () => {
 
   const handleDeletePersona = async (personaId) => {
     try {
+      setLoadingDelete(true);
       const response = await api.delete(`/personas/${personaId}`);
       if (response.status === 200) {
         setPersonas(personas.filter(persona => persona.id !== personaId));
@@ -265,6 +267,7 @@ const PestanaPersonas = () => {
       console.error('Error al eliminar persona:', error);
       toast.error('Error al eliminar la persona');
     } finally {
+      setLoadingDelete(false);
       setShowDeleteModal(false);
       setPersonaToDelete(null);
     }
@@ -560,20 +563,21 @@ const PestanaPersonas = () => {
         </div>
       )}
 
-      {/* Modal de Confirmación de Eliminación */}
-      {showDeleteModal && (
-        <ModalConfirmation
+
+        <ConfirmDeleteModal
+          isOpen={showDeleteModal}
           onConfirm={() => handleDeletePersona(personaToDelete.id)}
-          onCancel={() => {
+          onClose={() => {
             setShowDeleteModal(false);
             setPersonaToDelete(null);
           }}
-          title="Eliminar Persona"
-          subtitle={`¿Estás seguro que deseas eliminar a ${personaToDelete?.name}?`}
-          botonText1="Cancelar"
-          botonText2="Eliminar"
+          accionTitulo="Eliminación"
+          accion="eliminar"
+          pronombre="la"
+          entidad="persona"
+          accionando="Eliminando"
+          loading={loadingDelete}
         />
-      )}
     </div>
   );
 };

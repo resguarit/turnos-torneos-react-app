@@ -8,31 +8,48 @@ export default function ArañaEliminacion({ equipos }) {
   const { zonaId } = useParams();
   const [rounds, setRounds] = useState([]);
   const [selectedWinners, setSelectedWinners] = useState({});
+  const [historicWinners, setHistoricWinners] = useState({});
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [loadingDelete, setLoadingDelete] = useState(false);
 
+  // Cargar ganadores históricos desde el backend
   useEffect(() => {
     const fetchFechas = async () => {
       try {
         const response = await api.get(`/zonas/${zonaId}/fechas`);
-        const eliminatoriaFechas = response.data.sort((a, b) => 
-          new Date(a.fecha_inicio) - new Date(b.fecha_inicio))
+        const eliminatoriaFechas = response.data.sort((a, b) =>
+          new Date(a.fecha_inicio) - new Date(b.fecha_inicio)
+        );
         const roundsData = eliminatoriaFechas.map(fecha => ({
           id: fecha.id,
           nombre: fecha.nombre,
           matches: fecha.partidos.map(p => ({
             id: p.id,
             teams: [p.equipo_local_id, p.equipo_visitante_id],
-            winner: null
+            winner: p.ganador_id || null // <-- El backend debe devolver el ganador del partido si existe
           }))
         }));
+
+        // Construir historicWinners a partir de los partidos que ya tienen ganador
+        const newHistoricWinners = {};
+        roundsData.forEach((round, roundIndex) => {
+          round.matches.forEach((match, matchIndex) => {
+            if (match.winner) {
+              if (!newHistoricWinners[roundIndex]) newHistoricWinners[roundIndex] = {};
+              newHistoricWinners[roundIndex][`${roundIndex}-${matchIndex}`] = match.winner;
+            }
+          });
+        });
+
         setRounds(roundsData);
+        setHistoricWinners(newHistoricWinners);
+        setSelectedWinners({});
       } catch (error) {
         console.error('Error fetching fechas:', error);
       }
     };
-    
+
     fetchFechas();
   }, [zonaId]);
 
@@ -47,9 +64,15 @@ export default function ArañaEliminacion({ equipos }) {
     try {
       setLoading(true);
       const currentRound = rounds[rounds.length - 1];
-      const winners = currentRound.matches.map((match, index) => 
+      const winners = currentRound.matches.map((match, index) =>
         selectedWinners[`${rounds.length - 1}-${index}`]
       );
+
+      // Guardar los ganadores actuales en el histórico (en memoria)
+      setHistoricWinners(prev => ({
+        ...prev,
+        [rounds.length - 1]: { ...selectedWinners }
+      }));
 
       const response = await api.post(`/zona/${zonaId}/generar-siguiente-ronda`, {
         fecha_anterior_id: currentRound.id,
@@ -62,7 +85,7 @@ export default function ArañaEliminacion({ equipos }) {
           matches: response.data.fecha.partidos.map(p => ({
             id: p.id,
             teams: [p.equipo_local_id, p.equipo_visitante_id],
-            winner: null
+            winner: p.ganador_id || null
           }))
         };
         setRounds([...rounds, newRound]);
@@ -83,6 +106,12 @@ export default function ArañaEliminacion({ equipos }) {
       await api.delete(`/fechas/${lastFecha.id}`);
       setRounds(rounds.slice(0, -1));
       setShowDeleteModal(false);
+      // También eliminar del histórico
+      setHistoricWinners(prev => {
+        const copy = { ...prev };
+        delete copy[rounds.length - 1];
+        return copy;
+      });
     } catch (error) {
       console.error('Error deleting fecha:', error);
     } finally {
@@ -97,7 +126,7 @@ export default function ArañaEliminacion({ equipos }) {
   const canGenerateNextRound = () => {
     if (!rounds.length) return false;
     const currentRound = rounds[rounds.length - 1];
-    return currentRound.matches.every((_, index) => 
+    return currentRound.matches.every((_, index) =>
       selectedWinners.hasOwnProperty(`${rounds.length - 1}-${index}`)
     );
   };
@@ -119,31 +148,60 @@ export default function ArañaEliminacion({ equipos }) {
           <div key={round.id} className="flex flex-col gap-4 justify-center">
             <div className="text-center font-semibold ">{round.nombre || 'No definido'}</div>
             <div className="flex flex-col gap-6">
-              {round.matches.map((match, matchIndex) => (
-                <div key={match.id} className="relative">
-                  <div className="flex flex-col gap-2 border p-2 rounded-[6px] min-w-[200px]">
-                    {match.teams.map(teamId => (
-                      <div
-                        key={teamId}
-                        className={`p-2 rounded-[6px] cursor-pointer ${
-                          isFinalRound() ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-200 hover:bg-gray-300'
-                        }`}
-                        onClick={() => !isFinalRound() && handleWinnerSelect(roundIndex, matchIndex, teamId)}
-                      >
-                        {getTeamName(teamId)}
-                        {selectedWinners[`${roundIndex}-${matchIndex}`] === teamId && (
-                          <ChevronRight className="inline-block ml-2 text-green-500" />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  {roundIndex < rounds.length - 1 && (
-                    <div className="absolute right-[-35px] top-1/2 transform -translate-y-1/2">
-                      <div className="h-[1px] w-8 bg-gray-300"></div>
+              {round.matches.map((match, matchIndex) => {
+                // Usar historicWinners para todas las columnas menos la última, y selectedWinners solo para la última
+                let winnerId = null;
+                if (roundIndex === rounds.length - 1) {
+                  winnerId = selectedWinners[`${roundIndex}-${matchIndex}`] ?? historicWinners[roundIndex]?.[`${roundIndex}-${matchIndex}`];
+                } else {
+                  winnerId = historicWinners[roundIndex]?.[`${roundIndex}-${matchIndex}`];
+                }
+
+                return (
+                  <div key={match.id} className="relative">
+                    <div className="flex flex-col gap-2 border p-2 rounded-[6px] min-w-[200px] bg-gray-50">
+                      {match.teams.map(teamId => {
+                        let className =
+                          "p-2 rounded text-sm cursor-pointer transition-colors ";
+                        if (winnerId) {
+                          if (winnerId === teamId) {
+                            className += "bg-green-100 border border-green-300 font-semibold text-green-800";
+                          } else {
+                            className += "bg-red-50 text-gray-500 line-through border border-gray-200";
+                          }
+                        } else {
+                          className += isFinalRound()
+                            ? "bg-gray-300 cursor-not-allowed"
+                            : "bg-white border border-gray-200 hover:bg-gray-200";
+                        }
+                        return (
+                          <div
+                            key={teamId}
+                            className={className}
+                            onClick={() =>
+                              roundIndex === rounds.length - 1 &&
+                              !isFinalRound() &&
+                              handleWinnerSelect(roundIndex, matchIndex, teamId)
+                            }
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="truncate">{getTeamName(teamId)}</span>
+                              {winnerId === teamId && (
+                                <ChevronRight className="inline-block ml-2 text-green-500" />
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  )}
-                </div>
-              ))}
+                    {roundIndex < rounds.length - 1 && (
+                      <div className="absolute right-[-35px] top-1/2 transform -translate-y-1/2">
+                        <div className="h-[1px] w-8 bg-gray-300"></div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             {/* Botón eliminar solo debajo de la última columna */}
             {roundIndex === rounds.length - 1 && (

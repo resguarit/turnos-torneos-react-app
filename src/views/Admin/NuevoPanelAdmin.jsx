@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays, ActivityIcon, Users, DollarSign, Box, LandPlot, Menu, X, BarChart3 } from 'lucide-react';
+import { BarChart, Clock, Shield, PencilIcon as Pitch, CalendarDays, ActivityIcon, Users, DollarSign, Box, LandPlot, Menu, X, BarChart3, Settings } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import PestanaDashboard from './PestanaDashboard';
@@ -13,6 +13,7 @@ import PestanaPersonas from './PestanaPersonas';
 import PestanaCuentasCorrientes from './PestanaCuentasCorrientes';
 import PestanaCaja from './PestanaCaja';
 import PestanaBalance from './PestanaBalance';
+import PestanaConfiguracion from './PestanaConfiguracion';
 import { decryptRole } from '@/lib/getRole';
 
 const NuevoPanelAdmin = () => {
@@ -70,6 +71,8 @@ const NuevoPanelAdmin = () => {
         return <PestanaCaja />;
       case 'balance':
         return isAdmin ? <PestanaBalance /> : null;
+      case 'configuracion':
+        return <PestanaConfiguracion />;
       default:
         return null;
     }
@@ -173,6 +176,15 @@ const NuevoPanelAdmin = () => {
           Balance
         </button>
       )}
+      <button
+        onClick={() => handleTabChange('configuracion')}
+        className={`flex items-center space-x-2 w-full text-left px-4 py-2 rounded-lg ${
+          activeTab === 'configuracion' ? 'bg-naranja text-white' : 'hover:bg-gray-100'
+        }`}
+      >
+        <Settings className="w-5 h-5" />
+        <span>Configuración</span>
+      </button>
     </div>
   );
 

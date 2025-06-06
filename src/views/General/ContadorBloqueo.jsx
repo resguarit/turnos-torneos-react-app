@@ -10,6 +10,7 @@ import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { MapPin, Calendar, Clock, User, CreditCard, Loader2, Check } from "lucide-react";
 import { formatearFechaCompleta, calcularDuracion, formatearRangoHorario } from '@/utils/dateUtils';
+import { useConfiguration } from '@/context/ConfigurationContext';
 
 export default function ContadorBloqueo() {
   // 3 minutos (180 segundos)
@@ -23,6 +24,7 @@ export default function ContadorBloqueo() {
   const [userDetails, setUserDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(true);
   const [timerExpired, setTimerExpired] = useState(false); // Nuevo estado para controlar cuando expira el timer
+  const { config } = useConfiguration();
   
   const navigate = useNavigate();
   const location = useLocation(); // Obtener la ubicación actual
@@ -168,7 +170,11 @@ export default function ContadorBloqueo() {
       if (response.status === 201) {
         toast.success('Reserva creada exitosamente');
         cleanupStorage();
-        navigate('/checkout', { state: { turno: response.data.turno } });
+        if (config.habilitar_mercado_pago) {
+          navigate('/checkout', { state: { turno: response.data.turno } });
+        } else {
+          navigate('/user-profile');
+        }
       }
     } catch (error) {
       console.error('Error al crear la reserva:', error);

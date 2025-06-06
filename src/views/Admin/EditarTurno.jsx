@@ -285,7 +285,7 @@ function EditarTurno() {
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
       <main className="flex-1 grow p-3 md:p-6 bg-gray-100">
-        <BackButton />
+        <BackButton ruta='/panel-admin?tab=turnos'/>
         <h1 className='text-xl md:text-2xl font-semibold '>Detalles del Turno</h1>
         <Card className="max-w-full md:max-w-7xl mx-0 md:mx-auto border-0 shadow-none">
           <CardContent className="space-y-6 pt-0  md:pt-4 ">

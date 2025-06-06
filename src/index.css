@@ -11,3 +11,9 @@ html, body {
   box-sizing: border-box;
 }
 
+:root {
+  /* Colores de respaldo (fallback) */
+  --color-primary: #000000;   /* Un gris neutral */
+  --color-secondary: #F3F4F6; /* Un gris muy claro */
+}
+

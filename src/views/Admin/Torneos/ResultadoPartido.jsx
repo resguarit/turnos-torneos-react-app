@@ -462,7 +462,7 @@ export default function ResultadoPartido() {
       <Header />
       <main className="max-w-7xl lg:max-w-full p-6 grow">
         <div className="w-full flex mb-4">
-          <BackButton ruta={'/cargar-partido'} />
+          <BackButton /> 
         </div>
         <h1 className=" font-bold mb-4 text-2xl">Resultado Partido</h1>
         <div className='w-full  flex gap-4'>

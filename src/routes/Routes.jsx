@@ -89,10 +89,10 @@ const AppRoutes = () => {
       <Route path={`/detalle-zona/:zonaId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><DetalleZona /></ProtectedRoute>} />
       <Route path={`/alta-equipo/:zonaId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><AltaEquipo /></ProtectedRoute>} />
       <Route path={`/jugadores/:equipoId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><Jugadores /></ProtectedRoute>} />
-      <Route path={`/resultado-partido/:zonaId/:partidoId`} element={<ProtectedRoute requiredRole={ROLES.ADMIN}><ResultadoPartido /></ProtectedRoute>} />
-      <Route path={`/editar-torneo/:id`}element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaTorneo /></ProtectedRoute>}/>
-      <Route path="/editar-zona/:id" element={<ProtectedRoute requiredRole={ROLES.ADMIN}><AltaZona /></ProtectedRoute>} />
-      <Route path="/editar-partido/:partidoId" element={<ProtectedRoute requiredRole={ROLES.ADMIN}><CargaPartido /></ProtectedRoute>} />
+      <Route path={`/resultado-partido/:zonaId/:partidoId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><ResultadoPartido /></ProtectedRoute>} />
+      <Route path={`/editar-torneo/:id`}element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><AltaTorneo /></ProtectedRoute>}/>
+      <Route path="/editar-zona/:id" element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><AltaZona /></ProtectedRoute>} />
+      <Route path="/editar-partido/:partidoId" element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><CargaPartido /></ProtectedRoute>} />
       <Route path="/editar-equipo/:equipoId" element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><EditarEquipo /></ProtectedRoute>} />
       <Route path={`/pagos/:equipoId`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><VerPagos /></ProtectedRoute>} />
       <Route path={`/crear-evento`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR]}><CrearEvento /></ProtectedRoute>} />
@@ -105,11 +105,11 @@ const AppRoutes = () => {
       {/* Rutas protegidas para usuarios y administradores */}
       <Route path={`/user-profile`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><UserProfile /></ProtectedRoute>} />
       <Route path={`/reserva-mobile/:deporteId`} element={<ReservaMobile />} />
-      <Route path={`/partidos`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Partidos /></ProtectedRoute>} />
-      <Route path={`/cargar-partido`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><CargaPartido /></ProtectedRoute>} />
-      <Route path={`/reglamento`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Reglamento /></ProtectedRoute>} />
-      <Route path={`/premios`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><Premios /></ProtectedRoute>} />
-      <Route path={`/editar-perfil`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.USER]}><EditProfile /></ProtectedRoute>} />
+      <Route path={`/partidos`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR, ROLES.USER]}><Partidos /></ProtectedRoute>} />
+      <Route path={`/cargar-partido`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR, ROLES.USER]}><CargaPartido /></ProtectedRoute>} />
+      <Route path={`/reglamento`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR, ROLES.USER]}><Reglamento /></ProtectedRoute>} />
+      <Route path={`/premios`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR, ROLES.USER]}><Premios /></ProtectedRoute>} />
+      <Route path={`/editar-perfil`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR, ROLES.USER]}><EditProfile /></ProtectedRoute>} />
       <Route path={`/checkout`} element={<ProtectedRoute requiredRole={[ROLES.ADMIN, ROLES.MODERADOR, ROLES.USER]}><Checkout /></ProtectedRoute>} />
     </Routes>
   );

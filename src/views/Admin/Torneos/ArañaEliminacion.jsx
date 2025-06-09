@@ -143,6 +143,7 @@ export default function ArañaEliminacion({ equipos }) {
       setLoading(false);
     }
   };
+  
    // Confirmar generación con tercer puesto
   const handleConfirmThirdPlace = (includeThirdPlace) => {
     setShowThirdPlaceModal(false);

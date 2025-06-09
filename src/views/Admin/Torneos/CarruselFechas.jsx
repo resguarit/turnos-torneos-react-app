@@ -15,6 +15,7 @@ import AgregarPartidoModal from "../Modals/AgregarPartidoModal"; // Importar el 
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { formatearFechaCorta, formatearRangoHorario } from '@/utils/dateUtils'
+import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal'
 
 export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortController, deporteId }) {
   const [fechas, setFechas] = useState([]);
@@ -263,9 +264,6 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
 
   const currentFecha = fechas[currentFechaIndex]
 
-  const formattedDate = currentFecha.fecha_inicio
-    ? formatearFechaCorta(currentFecha.fecha_inicio)
-    : ""
 
   return (
     <div className="mt-10 w-full  mx-auto bg-gray-100 overflow-hidden">
@@ -288,7 +286,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
         </button>
         <div className="gap-2 flex items-center">
           <h2 className="text-lg font-medium">
-            {currentFecha.nombre} - {formattedDate}
+            {currentFecha.nombre} - {currentFecha.fecha_inicio ? format(parseISO(currentFecha.fecha_inicio), 'dd/MM/yyyy', { locale: es }) : ""}
           </h2>
           <span
             className={`text-xs p-1 rounded-xl ${
@@ -365,6 +363,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
                     onClick={(e) => { 
                       e.stopPropagation();
                       setSelectedPartidoEliminar(partido.id);
+                      {console.log(partido)}
                       setModalEliminarPartido(true);
                     }}
                     className="text-black text-sm py-1 rounded-[6px] hover:text-red-600"
@@ -465,33 +464,19 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
         {loadingAsignar ? 'Asignando...' : 'Asignar Cancha y Hora'}
       </button>
 
-      {/* Modal de confirmación */}
-      {showDeleteAllModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-[8px] shadow-lg w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Confirmar Eliminación</h3>
-            <p className="mb-4">
-              ¿Estás seguro de que deseas eliminar <strong>todas las fechas</strong>? 
-              Esta acción no se puede deshacer.
-            </p>
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={() => setShowDeleteAllModal(false)} // Cerrar el modal
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-[6px] hover:bg-gray-300"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleDeleteAllFechas} // Llamar a la función para eliminar todas las fechas
-                className="px-4 py-2 bg-red-600 text-white rounded-[6px] hover:bg-red-700"
-                disabled={loadingDeleteAll}
-              >
-                {loadingDeleteAll ? 'Eliminando...' : 'Eliminar'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal de confirmación de eliminacion de todas las fechas */}
+      <ConfirmDeleteModal
+        isOpen={showDeleteAllModal}
+        onConfirm={handleDeleteAllFechas}
+        onClose={() => setShowDeleteAllModal(false)}
+        accionTitulo="Eliminación"
+        accion="eliminar"
+        pronombre="todas las"
+        entidad="fechas"
+        accionando="Eliminando"
+        loading={loadingDeleteAll}
+      />
+      
 
       {modalEditVisible && (
         <EditFechaModal
@@ -502,29 +487,23 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
         />
       )}
 
-      {modalDeleteVisible && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-[8px] shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Eliminar Fecha</h2>
-            <p>¿Estás seguro de que deseas eliminar esta fecha?</p>
-            <div className="flex justify-end space-x-4 mt-4">
-              <button
-                onClick={() => setModalDeleteVisible(false)}
-                className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-[6px]"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => handleDeleteFecha(selectedFecha.id)}
-                className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-[6px]"
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
+      {/*Modal de confirmacion de eliminacion de una fecha especifica*/ }
+      <ConfirmDeleteModal
+        isOpen={modalDeleteVisible}
+        onConfirm={() => handleDeleteFecha(selectedFecha.id)}
+        onClose={() => setModalDeleteVisible(false)}
+        accionTitulo="Eliminación"
+        accion="eliminar"
+        pronombre="la"
+        entidad="fecha"
+        accionando="Eliminando"
+        nombreElemento={
+            selectedFecha
+              ? `${selectedFecha.nombre} - ${format(parseISO(selectedFecha.fecha_inicio), 'dd/MM/yyyy', { locale: es })}`
+              : undefined
+          }      
+        />
+      
       {modalPostergarVisible && (
         <PostergarFechasModal
           fechas={fechas}
@@ -571,28 +550,23 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
         />
       )}
 
-      {modalEliminarPartido && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="bg-white p-6 rounded-[8px] shadow-lg">
-          <h2 className="text-xl font-bold mb-4">Eliminar Partido</h2>
-          <p>¿Estás seguro de que deseas eliminar este partido?</p>
-          <div className="flex justify-end space-x-4 mt-4">
-            <button
-              onClick={() => setModalEliminarPartido(false)}
-              className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-[6px]"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={handleDeletePartido}
-              className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-[6px]"
-            >
-              Eliminar
-            </button>
-          </div>
-        </div>
-      </div>
-      )}
+
+      {/* Modal para eliminar partido */}
+      <ConfirmDeleteModal
+        isOpen={modalEliminarPartido}
+        onConfirm={handleDeletePartido}
+        onClose={() => setModalEliminarPartido(false)}
+        accionTitulo="Eliminación"
+        accion="eliminar"
+        pronombre="el"
+        entidad="partido"
+        accionando="Eliminando"
+        nombreElemento={
+          selectedPartidoEliminar
+            ? currentFecha.partidos.find(p => p.id === selectedPartidoEliminar)?.equipos[0]?.nombre + ' vs ' + currentFecha.partidos.find(p => p.id === selectedPartidoEliminar)?.equipos[1]?.nombre
+            : undefined
+        }    
+        />
 
     </div>
   )

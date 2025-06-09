@@ -418,6 +418,9 @@ export default function DetalleZona() {
         const gruposResponse = await api.get(`/zonas/${zonaId}/grupos`);
         setGrupos(gruposResponse.data);
         toast.success('Equipo agregado al grupo correctamente.');
+        setTimeout(() => {
+          toast.warn('Recuerda que deberás modificar manualmente los partidos de la zona, ya que pueden haber inconsistencias.');
+        }, 100);
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error al agregar el equipo.');
@@ -450,6 +453,9 @@ export default function DetalleZona() {
           toast.info('El grupo ha quedado vacío.');
         } else {
           toast.success('Equipo eliminado del grupo correctamente.');
+          setTimeout(() => {
+                    toast.warn('Recuerda que deberás modificar manualmente los partidos de la zona, ya que pueden haber inconsistencias.');
+                  }, 100); 
         }
       }
     } catch (error) {

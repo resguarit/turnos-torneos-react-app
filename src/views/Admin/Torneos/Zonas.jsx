@@ -230,6 +230,14 @@ export default function Zonas() {
           pronombre="la"
           entidad="zona"
           accionando="finalizando"
+          nombreElemento={
+            zonaIdFinalizar
+              ? (() => {
+                  const zona = zonas.find(z => z.id === zonaIdFinalizar);
+                  return zona ? `${zona.nombre} ${zona.año}` : undefined;
+                })()
+              : undefined
+          }
         />
 
         <ConfirmDeleteModal
@@ -242,6 +250,14 @@ export default function Zonas() {
           pronombre="la"
           entidad="zona"
           accionando="reactivando"
+          nombreElemento={
+            zonaIdReactivar
+              ? (() => {
+                  const zona = zonas.find(z => z.id === zonaIdReactivar);
+                  return zona ? `${zona.nombre} ${zona.año}` : undefined;
+                })()
+              : undefined
+          }
         />
       <Footer />
     </div>

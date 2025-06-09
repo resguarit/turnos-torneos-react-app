@@ -191,9 +191,17 @@ export default function Torneos() {
                 loading={loading}
                 accionTitulo="Finalización"
                 accion="finalizar"
-                pronombre="este"
+                pronombre="el"
                 entidad="torneo"
                 accionando="Finalizando"
+                nombreElemento={
+                            torneoIdFinalizar
+                              ? (() => {
+                                  const torneo = torneos.find(j => j.id === torneoIdFinalizar);
+                                  return torneo ? `${torneo.nombre} ${torneo.año}` : undefined;
+                                })()
+                              : undefined
+                          }   
       />
       <ConfirmDeleteModal 
                 isOpen={modalReactivarOpen}
@@ -202,9 +210,17 @@ export default function Torneos() {
                 loading={loading}
                 accionTitulo="Activación"
                 accion="activar"
-                pronombre="este"
+                pronombre="el"
                 entidad="torneo"
                 accionando="Reactivando"
+                nombreElemento={
+                            torneoIdReactivar
+                              ? (() => {
+                                  const torneo = torneos.find(j => j.id === torneoIdReactivar);
+                                  return torneo ? `${torneo.nombre} ${torneo.año}` : undefined;
+                                })()
+                              : undefined
+                          }
       />
     </div>
   );

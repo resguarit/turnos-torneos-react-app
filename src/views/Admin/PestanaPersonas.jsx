@@ -577,6 +577,7 @@ const PestanaPersonas = () => {
           entidad="persona"
           accionando="Eliminando"
           loading={loadingDelete}
+          nombreElemento={personaToDelete ? `${personaToDelete.name} (${personaToDelete.dni})` : undefined}
         />
     </div>
   );

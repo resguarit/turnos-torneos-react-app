@@ -162,6 +162,7 @@ export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handl
         pronombre="el"
         entidad="equipo"
         accionando="Eliminando"
+        nombreElemento={equipoAEliminar ? zona.equipos.find(e => e.id === equipoAEliminar)?.nombre : undefined}
       />
     </div>
   );

@@ -631,7 +631,15 @@ export default function Jugadores() {
         pronombre="al"
         entidad="jugador"
         accionando="Eliminando"
-      />
+        nombreElemento={
+            jugadorAEliminar
+              ? (() => {
+                  const jugador = jugadores.find(j => j.id === jugadorAEliminar);
+                  return jugador ? `${jugador.nombre} ${jugador.apellido}` : undefined;
+                })()
+              : undefined
+          }      
+        />
 
       {/* Modal Cambiar Capitán */}
       {showModalCapitan && (

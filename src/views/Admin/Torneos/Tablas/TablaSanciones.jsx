@@ -148,6 +148,7 @@ export function TablaSanciones({ sanciones, onEdit, fechas = [], onRefresh }) {
         pronombre="la"
         entidad="sanción"
         accionando="Eliminando"
+        nombreElemento={`${sancionSeleccionada?.jugador?.nombre} ${sancionSeleccionada?.jugador?.apellido} - ${sancionSeleccionada?.sancion?.tipo_sancion}: ${sancionSeleccionada?.sancion?.motivo}` || 'sanción desconocida'}
       />
 
     </div>

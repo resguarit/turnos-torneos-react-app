@@ -767,8 +767,8 @@ export default function DetalleZona() {
           loading={loading}
           accionTitulo="Eliminación"
           accion="eliminar"
-          pronombre="este"
-          entidad="grupo"
+          pronombre="los"
+          entidad="grupos"
           accionando="Eliminando"
         />
       )}

@@ -241,6 +241,7 @@ export default function ArañaEliminacion({ equipos }) {
         pronombre="la"
         entidad="fecha"
         accionando="Eliminando"
+        nombreElemento={rounds.length > 0 ? rounds[rounds.length - 1].nombre : undefined}
       />
     </div>
   );

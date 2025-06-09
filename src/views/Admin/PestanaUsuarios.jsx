@@ -520,7 +520,7 @@ const PestanaUsuarios = () => {
                         <UserCircle className="h-6 w-6 text-blue-600" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{usuario.name}</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">{usuario.persona.name}</h3>
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             usuario.rol === 'admin' ? 'bg-green-100 text-green-800' : usuario.rol === 'moderador' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
@@ -619,6 +619,7 @@ const PestanaUsuarios = () => {
         entidad="usuario"
         accionando="Eliminando"
         loading={loadingDelete}
+        nombreElemento={usuarioToDelete ? `${usuarioToDelete.persona.name} (${usuarioToDelete.dni})` : undefined}
       />
     </div>
   );

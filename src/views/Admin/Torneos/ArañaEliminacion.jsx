@@ -12,6 +12,9 @@ export default function ArañaEliminacion({ equipos }) {
   const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [loadingDelete, setLoadingDelete] = useState(false);
+  const [showThirdPlaceModal, setShowThirdPlaceModal] = useState(false);
+  const [pendingRoundData, setPendingRoundData] = useState(null);
+  const [pendingLosers, setPendingLosers] = useState([]);
 
   // Cargar ganadores históricos desde el backend
   useEffect(() => {
@@ -60,7 +63,7 @@ export default function ArañaEliminacion({ equipos }) {
     }));
   };
 
-  const handleGenerateNextRound = async () => {
+   const handleGenerateNextRound = async () => {
     try {
       setLoading(true);
       const currentRound = rounds[rounds.length - 1];
@@ -68,34 +71,86 @@ export default function ArañaEliminacion({ equipos }) {
         selectedWinners[`${rounds.length - 1}-${index}`]
       );
 
-      // Guardar los ganadores actuales en el histórico (en memoria)
+      // Calcular perdedores para la ronda actual
+      const losers = currentRound.matches.map((match, index) => {
+        const winnerId = selectedWinners[`${rounds.length - 1}-${index}`];
+        return match.teams.find(teamId => teamId !== winnerId);
+      });
+
+      // Guardar datos temporalmente
+      setPendingRoundData({
+        fecha_anterior_id: currentRound.id,
+        winners,
+        losers
+      });
+
+      // Guardar en histórico
       setHistoricWinners(prev => ({
         ...prev,
         [rounds.length - 1]: { ...selectedWinners }
       }));
 
-      const response = await api.post(`/zona/${zonaId}/generar-siguiente-ronda`, {
+      // Si es semifinal (4 equipos -> 2 partidos), preguntar por tercer puesto
+      if (winners.length === 2 && currentRound.matches.length === 2) {
+        setPendingLosers(losers);
+        setShowThirdPlaceModal(true);
+        setLoading(false);
+        return;
+      }
+
+      // Si no necesita confirmación, generar directamente
+      await generateNextRound({
         fecha_anterior_id: currentRound.id,
-        winners: winners
+        winners,
+        crear_tercer_puesto: false,
+        perdedores: []
+      });
+      
+    } catch (error) {
+      console.error('Error generating next round:', error);
+      setLoading(false);
+    }
+  };
+  // Función para generar la ronda con parámetros
+  const generateNextRound = async (data) => {
+    try {
+      setLoading(true);
+      const response = await api.post(`/zonas/${zonaId}/siguiente-ronda`, {
+        ...data,
+        crear_tercer_puesto: data.crear_tercer_puesto || false,
+        perdedores: data.perdedores || []
       });
 
-      if (response.data.fecha) {
-        const newRound = {
-          id: response.data.fecha.id,
-          matches: response.data.fecha.partidos.map(p => ({
-            id: p.id,
-            teams: [p.equipo_local_id, p.equipo_visitante_id],
-            winner: p.ganador_id || null
-          }))
-        };
-        setRounds([...rounds, newRound]);
-        setSelectedWinners({});
-      }
+      // Manejar respuesta (puede devolver 1 o 2 fechas)
+      const createdRounds = response.data.fechas || [response.data.fecha];
+      
+      const newRounds = createdRounds.map(fecha => ({
+        id: fecha.id,
+        nombre: fecha.nombre,
+        matches: fecha.partidos.map(p => ({
+          id: p.id,
+          teams: [p.equipo_local_id, p.equipo_visitante_id],
+          winner: p.ganador_id || null
+        }))
+      }));
+
+      setRounds([...rounds, ...newRounds]);
+      setSelectedWinners({});
+      
     } catch (error) {
       console.error('Error generating next round:', error);
     } finally {
       setLoading(false);
     }
+  };
+   // Confirmar generación con tercer puesto
+  const handleConfirmThirdPlace = (includeThirdPlace) => {
+    setShowThirdPlaceModal(false);
+    generateNextRound({
+      ...pendingRoundData,
+      crear_tercer_puesto: includeThirdPlace,
+      perdedores: pendingLosers // SIEMPRE pasa los perdedores
+    });
   };
 
   const handleDeleteFecha = async () => {
@@ -243,6 +298,30 @@ export default function ArañaEliminacion({ equipos }) {
         accionando="Eliminando"
         nombreElemento={rounds.length > 0 ? rounds[rounds.length - 1].nombre : undefined}
       />
+
+        {/* Modal para tercer puesto */}
+      {showThirdPlaceModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-md">
+            <h3 className="text-lg font-bold mb-4">Generar Final</h3>
+            <p>¿Deseas crear un partido por el tercer puesto?</p>
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                onClick={() => handleConfirmThirdPlace(false)}
+              >
+                No
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                onClick={() => handleConfirmThirdPlace(true)}
+              >
+                Sí
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

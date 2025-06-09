@@ -204,17 +204,11 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
       setLoading(true);
       const response = await api.delete(`/partidos/${selectedPartidoEliminar}`);
       if (response.status === 200) {
-        setFechas((prevFechas) =>
-          prevFechas.map((fecha) =>
-            fecha.id === selectedFecha.id
-              ? {
-                  ...fecha,
-                  partidos: fecha.partidos.filter((partido) => partido.id !== selectedPartidoEliminar),
-                }
-              : fecha
-          )
-        );
+        // Recarga las fechas desde el backend para reflejar el cambio
+        const fechasActualizadas = await api.get(`/zonas/${zonaId}/fechas`);
+        setFechas(fechasActualizadas.data);
         setModalEliminarPartido(false);
+        setSelectedPartidoEliminar(null);
       }
     } catch (error) {
       console.error('Error deleting match:', error);
@@ -262,7 +256,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
     )
   }
 
-  const currentFecha = fechas[currentFechaIndex]
+  const currentFecha = fechas[currentFechaIndex] || {};
 
 
   return (
@@ -314,7 +308,7 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
       </div>
 
       <div className="divide-y divide-gray-200">
-        {currentFecha.partidos && currentFecha.partidos.length > 0 ? (
+        {currentFecha && currentFecha.partidos && currentFecha.partidos.length > 0 ? (
           currentFecha.partidos.map((partido) => {
 
             return (

@@ -7,20 +7,32 @@ export default function EditPartidoModal({ partido, onClose, onSave, equipos, de
   const [canchas, setCanchas] = useState([]);
   const [formData, setFormData] = useState({
     fecha: partido.fecha || "",
-    horario_id: partido.horario?.id || null, // Mantener el valor actual o null
-    cancha_id: partido.cancha?.id || null, // Mantener el valor actual o null
+    horario_id: partido.horario?.id || null,
+    cancha_id: partido.cancha?.id || null,
     estado: partido.estado || "",
     equipo_local_id: partido.equipo_local_id || "",
     equipo_visitante_id: partido.equipo_visitante_id || "",
   });
   const [loading, setLoading] = useState(false);
-  const [canchaDisabled, setCanchaDisabled] = useState(true); // Controla si el select de cancha está deshabilitado
+  const [canchaDisabled, setCanchaDisabled] = useState(true);
+  const [loadingHorarios, setLoadingHorarios] = useState(false);
+  const [loadingCanchas, setLoadingCanchas] = useState(false);
+
+  // Helper para obtener la cancha actual (aunque no esté disponible)
+  const canchaActual =
+    partido.cancha && partido.cancha.id
+      ? {
+          id: partido.cancha.id,
+          nro: partido.cancha.nro,
+          tipo: partido.cancha.tipo_cancha,
+        }
+      : null;
 
   useEffect(() => {
     const fetchHorarios = async () => {
       try {
-        if (!formData.fecha) return; // No cargar si no hay fecha seleccionada
-
+        setLoadingHorarios(true);
+        if (!formData.fecha) return;
         const response = await api.get(`/disponibilidad/fecha`, {
           params: { fecha: formData.fecha, deporte_id: deporteId },
         });
@@ -29,6 +41,8 @@ export default function EditPartidoModal({ partido, onClose, onSave, equipos, de
       } catch (error) {
         console.error("Error fetching horarios:", error);
         toast.error("Error al cargar los horarios disponibles");
+      } finally {
+        setLoadingHorarios(false);
       }
     };
 
@@ -38,17 +52,19 @@ export default function EditPartidoModal({ partido, onClose, onSave, equipos, de
   useEffect(() => {
     const fetchCanchas = async () => {
       try {
-        if (!formData.fecha || !formData.horario_id) return; // No cargar si no hay fecha u horario seleccionado
-
+        setLoadingCanchas(true);
+        if (!formData.fecha || !formData.horario_id) return;
         const response = await api.get(`/disponibilidad/cancha`, {
           params: { fecha: formData.fecha, horario_id: formData.horario_id, deporte_id: deporteId },
         });
         const canchasDisponibles = response.data.canchas.filter((cancha) => cancha.disponible);
         setCanchas(canchasDisponibles);
-        setCanchaDisabled(false); // Habilitar el select de cancha
+        setCanchaDisabled(false);
       } catch (error) {
         console.error("Error fetching canchas:", error);
         toast.error("Error al cargar las canchas disponibles");
+      } finally {
+        setLoadingCanchas(false);
       }
     };
 
@@ -61,20 +77,19 @@ export default function EditPartidoModal({ partido, onClose, onSave, equipos, de
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Reset dependent fields
     if (name === "fecha") {
       setFormData((prev) => ({
         ...prev,
         horario_id: null,
         cancha_id: null,
       }));
-      setCanchaDisabled(true); // Deshabilitar el select de cancha hasta que se seleccione un horario
+      setCanchaDisabled(true);
     } else if (name === "horario_id") {
       setFormData((prev) => ({
         ...prev,
         cancha_id: null,
       }));
-      setCanchaDisabled(true); // Deshabilitar el select de cancha hasta que se carguen las canchas
+      setCanchaDisabled(true);
     }
   };
 
@@ -111,40 +126,60 @@ export default function EditPartidoModal({ partido, onClose, onSave, equipos, de
         </div>
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Horario</label>
-          <select
-            name="horario_id"
-            value={formData.horario_id || ""}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-[6px] p-2"
-          >
-            <option value="" disabled>
-              Seleccionar horario
-            </option>
-            {horarios.map((horario) => (
-              <option key={horario.id} value={horario.id}>
-                {horario.hora_inicio} - {horario.hora_fin}
+          {loadingHorarios ? (
+            <div className="w-full border border-gray-300 rounded-[6px] p-2 bg-gray-50 text-gray-500">
+              Cargando horarios...
+            </div>
+          ) : (
+            <select
+              name="horario_id"
+              value={formData.horario_id || ""}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-[6px] p-2"
+            >
+              <option value="" disabled>
+                Seleccionar horario
               </option>
-            ))}
-          </select>
+              {horarios.map((horario) => (
+                <option key={horario.id} value={horario.id}>
+                  {horario.hora_inicio} - {horario.hora_fin}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Cancha</label>
-          <select
-            name="cancha_id"
-            value={formData.cancha_id || ""}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-[6px] p-2"
-            disabled={canchaDisabled} // Deshabilitar si no se ha seleccionado un horario
-          >
-            <option value="" disabled>
-              Seleccionar cancha
-            </option>
-            {canchas.map((cancha) => (
-              <option key={cancha.id} value={cancha.id}>
-                {`Cancha ${cancha.nro} - ${cancha.tipo}`}
+          {loadingCanchas ? (
+            <div className="w-full border border-gray-300 rounded-[6px] p-2 bg-gray-50 text-gray-500">
+              Cargando canchas...
+            </div>
+          ) : (
+            <select
+              name="cancha_id"
+              value={formData.cancha_id || ""}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-[6px] p-2"
+              disabled={canchaDisabled}
+            >
+              <option value="" disabled>
+                Seleccionar cancha
               </option>
-            ))}
-          </select>
+              {/* Mostrar primero la cancha actual si existe y no está en la lista de disponibles */}
+              {canchaActual &&
+                !canchas.some((c) => c.id === canchaActual.id) && (
+                  <option value={canchaActual.id}>
+                    {`Cancha ${canchaActual.nro} - ${canchaActual.tipo} (Actual)`}
+                  </option>
+                )}
+              {/* Luego las canchas disponibles */}
+              {canchas.map((cancha) => (
+                <option key={cancha.id} value={cancha.id}>
+                  {`Cancha ${cancha.nro} - ${cancha.tipo}`}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Estado</label>
@@ -167,7 +202,6 @@ export default function EditPartidoModal({ partido, onClose, onSave, equipos, de
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Equipos</label>
           <div className="flex items-center space-x-2">
-            {/* Selector de equipo local */}
             <select
               name="equipo_local_id"
               value={formData.equipo_local_id || partido.equipo_local_id}
@@ -186,7 +220,6 @@ export default function EditPartidoModal({ partido, onClose, onSave, equipos, de
 
             <span className="font-bold">vs</span>
 
-            {/* Selector de equipo visitante */}
             <select
               name="equipo_visitante_id"
               value={formData.equipo_visitante_id || partido.equipo_visitante_id}

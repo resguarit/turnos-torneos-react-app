@@ -369,6 +369,19 @@ export default function DetalleZona() {
           setGrupos(gruposResponse.data);
           setGruposCreados(true);
           toast.success('Grupos actualizados correctamente.');
+
+          // Eliminar todas las fechas creadas si existen
+          if (fechas && fechas.length > 0) {
+            const fechaIds = fechas.map(fecha => fecha.id);
+            try {
+              await api.delete('/fechas', { data: { fecha_ids: fechaIds } });
+              setFechas([]);
+              setFechasSorteadas(false);
+              toast.success('Todas las fechas fueron eliminadas porque se actualizaron los grupos.');
+            } catch (error) {
+              toast.error('Error al eliminar las fechas al actualizar los grupos.');
+            }
+          }
         } else {
           toast.error('Error al obtener los grupos actualizados.');
         }
@@ -751,7 +764,6 @@ export default function DetalleZona() {
         </Modal>
       )}
       
-      {modalConfirmVisible && (
         <ConfirmDeleteModal
           isOpen={modalConfirmVisible}
           onClose={() => setModalConfirmVisible(false)}
@@ -762,8 +774,8 @@ export default function DetalleZona() {
           pronombre="los"
           entidad="grupos"
           accionando="Eliminando"
+          advertencia="Al eliminar los grupos se eliminarán las fechas creadas de la zona"
         />
-      )}
       
     </div>
   );

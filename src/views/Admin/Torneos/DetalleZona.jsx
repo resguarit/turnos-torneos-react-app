@@ -20,6 +20,8 @@ import {TabResultadosGrupos} from './Tabs/TabResultadosGrupos';
 import {TabEliminatoria} from './Tabs/TabResultadosEliminatoria';
 import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal';
 import BackButton from '@/components/BackButton';
+import CrearGruposModal from '../Modals/CrearGruposModal';
+
 
 export default function DetalleZona() {
   const { zonaId } = useParams();
@@ -660,37 +662,14 @@ export default function DetalleZona() {
     <Footer />
 
       
-      {modalVisible && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Crear Grupos</h2>
-            <label className="block mb-2">
-              Cantidad de Grupos:
-              <input
-                type="number"
-                min="1"
-                value={numGrupos}
-                onChange={(e) => setNumGrupos(e.target.value)}
-                className="border border-gray-300 rounded-md p-2 w-full"
-              />
-            </label>
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={() => setModalVisible(false)}
-                className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleCrearGrupos}
-                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md"
-              >
-                Crear
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CrearGruposModal
+        isOpen={modalVisible}
+        numGrupos={numGrupos}
+        setNumGrupos={setNumGrupos}
+        onClose={() => setModalVisible(false)}
+        onCrearGrupos={handleCrearGrupos}
+        loading={loading}
+      />
 
       {modalDeleteEquipoVisible && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">

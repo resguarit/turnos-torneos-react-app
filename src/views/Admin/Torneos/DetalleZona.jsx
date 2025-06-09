@@ -480,14 +480,27 @@ export default function DetalleZona() {
   const confirmarEliminarGrupos = async () => {
     try {
       setLoading(true);
-  
-      // Realizar la solicitud DELETE al endpoint para eliminar los grupos de la zona
+
+      // Eliminar los grupos de la zona
       const response = await api.delete(`/zonas/${zonaId}/eliminar-grupos-zona`);
-  
+
       if (response.status === 200) {
         toast.success('Grupos eliminados correctamente.');
-        setGrupos([]); // Limpiar los grupos en el estado local
-        setGruposCreados(false); // Indicar que los grupos ya no están creados
+        setGrupos([]);
+        setGruposCreados(false);
+
+        // Si hay fechas creadas, eliminarlas usando el endpoint de "eliminar todas las fechas"
+        if (fechas && fechas.length > 0) {
+          const fechaIds = fechas.map(fecha => fecha.id);
+          try {
+            await api.delete('/fechas', { data: { fecha_ids: fechaIds } });
+            setFechas([]);
+            setFechasSorteadas(false);
+            toast.success('Fechas eliminadas correctamente.');
+          } catch (error) {
+            toast.error('Error al eliminar las fechas de la zona.');
+          }
+        }
       } else {
         toast.error('Error al eliminar los grupos.');
       }
@@ -496,7 +509,7 @@ export default function DetalleZona() {
       toast.error(error.response?.data?.message || 'Error al eliminar los grupos.');
     } finally {
       setLoading(false);
-      setModalConfirmVisible(false); // Cerrar el modal
+      setModalConfirmVisible(false);
     }
   };
 

@@ -413,7 +413,7 @@ const PestanaCaja = () => {
                           <Card className="border-0 shadow-sm">
                             <CardHeader>
                               <CardTitle className="text-lg">Registrar Ingreso</CardTitle>
-                              <CardDescription>Registre un ingreso del cliente</CardDescription>
+                              <CardDescription>Registre un ingreso a la caja</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                               <div>
@@ -477,7 +477,7 @@ const PestanaCaja = () => {
                                 disabled={loading || !amount || parseFloat(amount) <= 0}
                               >
                                 <PlusCircle className="h-4 w-4 mr-2" />
-                                Registrar Depósito
+                                Registrar Ingreso
                               </Button>
                             </CardFooter>
                           </Card>
@@ -486,8 +486,8 @@ const PestanaCaja = () => {
                         <TabsContent value="withdrawal">
                           <Card className="border-0 shadow-sm">
                             <CardHeader>
-                              <CardTitle className="text-lg">Registrar Devolución</CardTitle>
-                              <CardDescription>Registre una devolución o retiro al cliente</CardDescription>
+                              <CardTitle className="text-lg">Registrar Retiro</CardTitle>
+                              <CardDescription>Registre una devolución o retiro de efectivo de la caja</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                               <div>
@@ -509,7 +509,7 @@ const PestanaCaja = () => {
                                   id="withdrawalDescription"
                                   value={description}
                                   onChange={(e) => setDescription(e.target.value)}
-                                  placeholder="Motivo de la devolución"
+                                  placeholder="Motivo del retiro"
                                   className="rounded-md border-gray-300 mt-1"
                                 />
                               </div>
@@ -537,7 +537,7 @@ const PestanaCaja = () => {
                                 disabled={loading || !amount || parseFloat(amount) <= 0}
                               >
                                 <MinusCircle className="h-4 w-4 mr-2" />
-                                Registrar Devolución
+                                Registrar Retiro
                               </Button>
                             </CardFooter>
                           </Card>

@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import BackButton from '@/components/BackButton';
 import BtnLoading from '@/components/BtnLoading';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { useDeportes } from '@/context/DeportesContext'; // Usa el contexto
 import { useConfiguration } from '@/context/ConfigurationContext';
+import api from '@/lib/axiosConfig';
 
 const sportIcons = {
   futbol: "⚽",
@@ -21,21 +22,78 @@ const sportIcons = {
 
 const SelectDeporteReserva = () => {
   const navigate = useNavigate();
-  const { deportes, isLoading: isLoadingDeportes } = useDeportes(); // Usa el contexto con estado de carga
+  const { deportes, setDeportes, isLoading: isLoadingDeportes } = useDeportes(); // Usa el contexto con estado de carga
   const [selectedSport, setSelectedSport] = useState(null);
+  const [localConfig, setLocalConfig] = useState(null);
+  const [isLoadingLocalConfig, setIsLoadingLocalConfig] = useState(true);
+  const [localDeportes, setLocalDeportes] = useState(null);
+  const [isLoadingLocalDeportes, setIsLoadingLocalDeportes] = useState(true);
+  // Usamos un ref para controlar que solo se haga una llamada a la API
+  const deportesApiCalled = useRef(false);
 
   const { config, isLoading: isLoadingConfig } = useConfiguration();
+
+  // Efecto para obtener la configuración actualizada al montar el componente
+  useEffect(() => {
+    const fetchConfiguracion = async () => {
+      try {
+        const response = await api.get('/configuracion-usuario');
+        setLocalConfig(response.data);
+      } catch (error) {
+        console.error('Error al obtener la configuración directa:', error);
+      } finally {
+        setIsLoadingLocalConfig(false);
+      }
+    };
+
+    fetchConfiguracion();
+  }, []);
   
-  // Verificar de forma segura si los turnos están habilitados
-  const turnosHabilitados = config ? (config.habilitar_turnos === true || config.habilitar_turnos === "1" || config.habilitar_turnos === 1) : false;
+  // Efecto para obtener los deportes actualizados al montar el componente (una sola vez)
+  useEffect(() => {
+    // Solo ejecutamos si no se ha llamado a la API antes
+    if (!deportesApiCalled.current) {
+      const fetchDeportes = async () => {
+        try {
+          const response = await api.get('/deportes');
+          setLocalDeportes(response.data);
+          
+          // También actualizar el contexto global para el resto de la aplicación
+          if (setDeportes) {
+            setDeportes(response.data);
+          }
+        } catch (error) {
+          console.error('Error al obtener deportes directamente:', error);
+        } finally {
+          setIsLoadingLocalDeportes(false);
+          deportesApiCalled.current = true; // Marcamos que ya se llamó a la API
+        }
+      };
+
+      fetchDeportes();
+    } else {
+      // Si ya se llamó a la API, simplemente marcamos como no cargando
+      setIsLoadingLocalDeportes(false);
+    }
+  }, []); // Sin dependencias para que solo se ejecute una vez al montar
   
-  // Solo hacer console.log si config existe
-  if (config) {
-    console.log(config.habilitar_turnos);
+  // Usar la configuración local si está disponible, de lo contrario usar la del contexto
+  const configActual = localConfig || config;
+  
+  // Usar los deportes locales si están disponibles, de lo contrario usar los del contexto
+  const deportesActuales = localDeportes || deportes;
+  
+  // Verificar de forma segura si los turnos están habilitados usando la configuración más actual
+  const turnosHabilitados = configActual ? (configActual.habilitar_turnos === true || configActual.habilitar_turnos === "1" || configActual.habilitar_turnos === 1) : false;
+  
+  // Solo hacer console.log si configActual existe
+  if (configActual) {
+    console.log('Estado actual de habilitar_turnos:', configActual.habilitar_turnos);
   }
   
   // Determinar si la aplicación está cargando
-  const isLoading = isLoadingDeportes || isLoadingConfig || !config;
+  const isLoading = isLoadingDeportes || isLoadingConfig || isLoadingLocalConfig || isLoadingLocalDeportes || 
+                  (!config && !localConfig) || (!deportes && !localDeportes);
 
   // Function to format sport display name
   const formatDeporteName = (deporte) => {
@@ -81,7 +139,7 @@ const SelectDeporteReserva = () => {
   }
 
   // Filtra deportes que tengan canchas disponibles
-  const deportesConCanchas = deportes ? deportes.filter(d => d.canchas && d.canchas.length > 0) : [];
+  const deportesConCanchas = deportesActuales ? deportesActuales.filter(d => d.canchas && d.canchas.length > 0) : [];
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">

@@ -1,47 +1,51 @@
 import React from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { MessageCircle } from "lucide-react";
+import { CreditCard, CircleAlert } from "lucide-react";
+import { useConfiguration } from '@/context/ConfigurationContext';
 
 const CoordinarPagoDialog = ({ showPaymentModal, setShowPaymentModal, turno, handleWhatsAppRedirect }) => {
-  if (!showPaymentModal) return null;
-
+  const { config, isLoading: isLoadingConfig } = useConfiguration();
+  
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
-        <h3 className="text-xl font-semibold mb-4 flex items-center">
-          <MessageCircle className="mr-2 h-5 w-5 text-green-500" />
-          Coordinar pago por WhatsApp
-        </h3>
-        
-        <div className="mb-6">
-          <p className="mb-4">
-            Para coordinar el pago de la seña de <strong className="text-green-600">${turno.monto_seña}</strong> puedes contactarnos por WhatsApp.
-          </p>
-          <p className="mb-4">
-            El resto del pago (<strong>${turno.monto_total - turno.monto_seña}</strong>) se abonará en el lugar el día del turno.
-          </p>
-          <p className="text-sm text-gray-600">
-            Al hacer clic en "Ir a WhatsApp" serás redirigido a la app con un mensaje predefinido.
-          </p>
-        </div>
-        
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
-          <Button
+    <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+      <DialogContent className="w-full max-w-4xl mx-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl">Coordinar Pago de Seña</DialogTitle>
+          <DialogDescription className="pt-4 space-y-4">
+            <div className="flex gap-2">
+              <CircleAlert className="size-5 " />
+              <p className="text-sm">
+                <span className="font-bold">Aviso:</span> La coordinación de pago se realiza a través de WhatsApp.
+              </p>
+            </div>
+            <div className="bg-blue-100 p-4 rounded-lg">
+              <p className="font-semibold text-blue-800">Información del Pago:</p>
+              <p className="text-sm text-blue-700">
+                Para confirmar su reserva, es necesario abonar la seña de ${turno.monto_seña}.
+                Al hacer clic en el botón, será redirigido a WhatsApp para coordinar el pago con el complejo.
+              </p>
+            </div>  
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="gap-2 mt-4">
+          <Button 
+            className="w-full md:w-1/4 bg-gray-200 text-gray-800 hover:bg-gray-300" 
             onClick={() => setShowPaymentModal(false)}
-            className="bg-gray-200 text-gray-800 hover:bg-gray-300"
           >
             Volver
           </Button>
-          <Button
+          <Button 
+            className="w-full bg-green-500 text-white hover:bg-green-600"
             onClick={handleWhatsAppRedirect}
-            className="bg-green-500 text-white hover:bg-green-600 flex items-center"
+            disabled={isLoadingConfig || !config || !config.telefono_complejo}
           >
-            Ir a WhatsApp
+            Contactar por WhatsApp
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
-};
+}
 
 export default CoordinarPagoDialog;

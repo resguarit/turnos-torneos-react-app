@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { useNavigate, useLocation } from 'react-router-dom'; // Añadir useLocation
@@ -8,7 +8,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { MapPin, Calendar, Clock, User, CreditCard, Loader2, Check } from "lucide-react";
+import { MapPin, Calendar, Clock, User, CreditCard, Loader2, Check, MessageSquare } from "lucide-react";
 import { formatearFechaCompleta, calcularDuracion, formatearRangoHorario } from '@/utils/dateUtils';
 import { useConfiguration } from '@/context/ConfigurationContext';
 
@@ -24,10 +24,44 @@ export default function ContadorBloqueo() {
   const [userDetails, setUserDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(true);
   const [timerExpired, setTimerExpired] = useState(false); // Nuevo estado para controlar cuando expira el timer
-  const { config } = useConfiguration();
+  const [localConfig, setLocalConfig] = useState(null);
+  const [isLoadingLocalConfig, setIsLoadingLocalConfig] = useState(true);
+  // Usamos un ref para controlar que solo se haga una llamada a la API
+  const configApiCalled = useRef(false);
+  
+  const { config, isLoading: isLoadingConfig } = useConfiguration();
   
   const navigate = useNavigate();
   const location = useLocation(); // Obtener la ubicación actual
+  
+  // Efecto para obtener la configuración actualizada al montar el componente (una sola vez)
+  useEffect(() => {
+    // Solo ejecutamos si no se ha llamado a la API antes
+    if (!configApiCalled.current) {
+      const fetchConfiguracion = async () => {
+        try {
+          const response = await api.get('/configuracion-usuario');
+          setLocalConfig(response.data);
+        } catch (error) {
+          console.error('Error al obtener la configuración directa:', error);
+        } finally {
+          setIsLoadingLocalConfig(false);
+          configApiCalled.current = true; // Marcamos que ya se llamó a la API
+        }
+      };
+
+      fetchConfiguracion();
+    } else {
+      // Si ya se llamó a la API, simplemente marcamos como no cargando
+      setIsLoadingLocalConfig(false);
+    }
+  }, []);
+  
+  // Usar la configuración local si está disponible, de lo contrario usar la del contexto
+  const configActual = localConfig || config;
+  
+  // Verificar si mercado pago está habilitado usando la configuración más actual
+  const mercadoPagoHabilitado = configActual ? (configActual.habilitar_mercado_pago === true || configActual.habilitar_mercado_pago === "1" || configActual.habilitar_mercado_pago === 1) : false;
   
   // Función auxiliar para limpiar localStorage
   const cleanupStorage = () => {
@@ -170,7 +204,8 @@ export default function ContadorBloqueo() {
       if (response.status === 201) {
         toast.success('Reserva creada exitosamente');
         cleanupStorage();
-        if (config.habilitar_mercado_pago) {
+        // Usar la configuración actual para decidir a dónde navegar
+        if (mercadoPagoHabilitado) {
           navigate('/checkout', { state: { turno: response.data.turno } });
         } else {
           navigate('/user-profile');
@@ -232,6 +267,9 @@ export default function ContadorBloqueo() {
   const señaPercentage = reservaData && reservaData.monto_seña && reservaData.monto_total 
     ? (reservaData.monto_seña / reservaData.monto_total) * 100 
     : 0;
+    
+  // Verificar si todos los datos están cargando
+  const isLoadingAll = loadingDetails || isLoadingConfig || isLoadingLocalConfig;
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
@@ -241,7 +279,7 @@ export default function ContadorBloqueo() {
         
         <div className="max-w-6xl mx-auto bg-white shadow-md rounded-lg overflow-hidden relative">
           {/* Mostramos el overlay de carga cuando está cargando detalles o cuando el timer ha expirado */}
-          {(loadingDetails || timerExpired) && (
+          {(isLoadingAll || timerExpired) && (
             <div className="absolute inset-0 bg-white bg-opacity-80 z-10 flex flex-col items-center justify-center">
               <Loader2 className="w-12 h-12 text-naranja animate-spin mb-3" />
               <p className="text-lg font-medium">
@@ -258,7 +296,7 @@ export default function ContadorBloqueo() {
               <div className="space-y-6">
                 <div className="flex items-center justify-center text-sm text-muted-foreground mb-4">
                   <MapPin className="w-4 h-4 mr-1" />
-                  Resguar IT, Calle 47 entre 5 y 6 nro 676.
+                  {isLoadingAll || !configActual ? 'Cargando...' : configActual.direccion_complejo || 'Dirección no disponible'}
                 </div>
                 
                 <div className="space-y-4">
@@ -335,18 +373,33 @@ export default function ContadorBloqueo() {
                     </div>
                   </div>
                   
-                  {/* Cuadro verde con información del pago */}
-                  <div className="mt-5 bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div className="flex items-center text-green-800 font-medium mb-2">
-                      <Check className="h-5 w-5 mr-2 text-green-600" />
-                      <span>Cómo realizar el pago</span>
+                  {/* Cuadro con información del pago - Diferente según la config de MercadoPago */}
+                  {mercadoPagoHabilitado ? (
+                    <div className="mt-5 bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center text-green-800 font-medium mb-2">
+                        <Check className="h-5 w-5 mr-2 text-green-600" />
+                        <span>Cómo realizar el pago</span>
+                      </div>
+                      <ul className="text-sm text-green-700 space-y-1">
+                        <li>1. Al confirmar, el pago se realiza en la siguiente ventana a través de Mercado Pago</li>
+                        <li>2. Una vez pagada la seña el turno estará confirmado</li>
+                        <li>3. El saldo restante se abona al momento de jugar</li>
+                      </ul>
                     </div>
-                    <ul className="text-sm text-green-700 space-y-1">
-                      <li>1. Al confirmar, el pago se realiza en la siguiente ventana a traves de Mercado Pago</li>
-                      <li>2. Una vez pagada la seña el turno estará confirmado</li>
-                      <li>3. El saldo restante se abona al momento de jugar</li>
-                    </ul>
-                  </div>
+                  ) : (
+                    <div className="mt-5 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-center text-blue-800 font-medium mb-2">
+                        <MessageSquare className="h-5 w-5 mr-2 text-blue-600" />
+                        <span>Cómo realizar el pago</span>
+                      </div>
+                      <ul className="text-sm text-blue-700 space-y-1">
+                        <li>1. Al confirmar, serás redirigido a tus turnos donde podrás coordinar el pago</li>
+                        <li>2. Deberás contactar por WhatsApp para coordinar el pago de la seña</li>
+                        <li>3. Envía el comprobante de pago para confirmar tu turno</li>
+                        <li>4. El saldo restante se abona al momento de jugar</li>
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -381,17 +434,17 @@ export default function ContadorBloqueo() {
           <div className="p-6 bg-gray-50 border-t flex flex-col md:flex-row gap-4 justify-center items-center">
             <Button 
               onClick={handleCancelarClick}
-              disabled={loading || isCancelling || !timeLeft || timeLeft <= 0 || loadingDetails || timerExpired}
+              disabled={loading || isCancelling || !timeLeft || timeLeft <= 0 || isLoadingAll || timerExpired}
               className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-xl text-lg w-full md:w-auto order-2 md:order-1"
             >
               {isCancelling ? 'Cancelando...' : 'Cancelar Reserva'}
             </Button>
             <Button 
               onClick={handlePagarClick}
-              disabled={loading || isCancelling || !timeLeft || timeLeft <= 0 || loadingDetails || timerExpired}
+              disabled={loading || isCancelling || !timeLeft || timeLeft <= 0 || isLoadingAll || timerExpired}
               className="bg-naranja hover:bg-naranja/90 text-white px-8 py-3 rounded-xl text-lg w-full md:w-auto order-1 md:order-2"
             >
-              {loading ? 'Procesando...' : 'Confirmar Reserva'}
+              {loading ? 'Procesando...' : mercadoPagoHabilitado ? 'Confirmar y Pagar' : 'Confirmar Reserva'}
             </Button>
           </div>
         </div>

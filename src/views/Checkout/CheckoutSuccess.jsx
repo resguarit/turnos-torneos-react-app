@@ -7,12 +7,14 @@ import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import BtnLoading from '@/components/BtnLoading';
 import { formatearFechaCompleta, calcularDuracion, formatearRangoHorario } from '@/utils/dateUtils';
+import { useConfiguration } from '@/context/ConfigurationContext';
 
 const CheckoutSuccess = () => {
   const [turno, setTurno] = useState(null);
   const [estado, setEstado] = useState(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { config, isLoading: isLoadingConfig } = useConfiguration();
 
   const query = new URLSearchParams(window.location.search);
   const payment_id = query.get('payment_id');
@@ -68,7 +70,10 @@ const CheckoutSuccess = () => {
     }).format(amount);
   };
 
-  if (loading) {
+  // Verificar si estamos cargando cualquier información
+  const isLoading = loading || isLoadingConfig;
+
+  if (isLoading) {
     return <CheckoutLayout status="success">   
       <div className="flex items-center justify-center h-32">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-100"></div>
@@ -162,7 +167,11 @@ const CheckoutSuccess = () => {
               <MapPin className="w-5 h-5 text-gray-500 mt-0.5" />
               <div>
                 <p className="text-sm font-medium">Ubicación</p>
-                <p className="text-sm text-gray-600">Calle 47 Nº 537 entre 5 y 6, La Plata, Buenos Aires</p>
+                <p className="text-sm text-gray-600">
+                  {config && config.direccion_complejo 
+                    ? config.direccion_complejo 
+                    : 'Dirección no disponible'}
+                </p>
               </div>
             </div>
           </div>

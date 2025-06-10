@@ -4,14 +4,53 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, CircleAlert } from "lucide-react";
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useConfiguration } from '@/context/ConfigurationContext';
+import { formatearFechaCompleta } from '@/utils/dateUtils';
 
 const SolicitudCambioTurnoDialog = ({ showChangeModal, setShowChangeModal, turno, isSubmitting }) => {
+  const { config, isLoading: isLoadingConfig } = useConfiguration();
+
+  // Función para formatear el nombre del deporte correctamente
+  const formatDeporteName = (deporte) => {
+    if (!deporte) return 'Deporte no disponible';
+    
+    if (typeof deporte === 'string') {
+      return deporte;
+    }
+    
+    const nombreDeporte = deporte.nombre || '';
+    
+    if (nombreDeporte.toLowerCase().includes("futbol") || nombreDeporte.toLowerCase().includes("fútbol")) {
+      return `${nombreDeporte} ${deporte.jugadores_por_equipo || ''}`.trim();
+    }
+    
+    return nombreDeporte;
+  };
+
   const handleWhatsAppRedirect = () => {
-    const phoneNumber = "2213587143"; // Replace with the desired phone number
-    const fechaFormateada = format(new Date(turno.fecha_turno), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es });
+    if (isLoadingConfig || !config) {
+      // Mostrar un toast o alguna notificación de error
+      console.error('La configuración no está disponible');
+      return;
+    }
+    
+    // Verificar si existe el teléfono en la configuración
+    const phoneNumber = config.telefono_complejo;
+    if (!phoneNumber) {
+      console.error('No hay número de teléfono configurado');
+      return;
+    }
+    
+    // Formatear el nombre del deporte correctamente
+    const deporteFormateado = formatDeporteName(turno.cancha.deporte);
+    
+    // Usar formatearFechaCompleta para consistencia con el resto de la aplicación
+    const fechaFormateada = formatearFechaCompleta(turno.fecha_turno);
+    
     const message = `Hola, me gustaría solicitar un cambio de turno para la reserva:\n\n` +
                     `Usuario: ${turno.usuario.nombre}\n` +
                     `DNI: ${turno.usuario.dni}\n` +
+                    `Deporte: ${deporteFormateado}\n` +
                     `Fecha y Hora: ${fechaFormateada} de ${turno.horario.hora_inicio} a ${turno.horario.hora_fin}\n` +
                     `Cancha: ${turno.cancha.tipo_cancha} #${turno.cancha.nro}\n\n` +
                     `Gracias.`;
@@ -52,7 +91,7 @@ const SolicitudCambioTurnoDialog = ({ showChangeModal, setShowChangeModal, turno
           <Button 
             className="w-full bg-green-500 text-white hover:bg-green-600"
             onClick={handleWhatsAppRedirect}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isLoadingConfig || !config || !config.telefono_complejo}
           >
             {isSubmitting ? 'Enviando...' : 'Enviar Solicitud de Cambio'}
           </Button>

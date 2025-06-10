@@ -3,11 +3,13 @@ import { XCircle, AlertTriangle } from "lucide-react"
 import CheckoutLayout from './layout';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
+import { useConfiguration } from '@/context/ConfigurationContext';
 
 const CheckoutFailure = () => {
   const [estado, setEstado] = useState(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { config, isLoading: isLoadingConfig } = useConfiguration();
   
   const navigate = useNavigate();
 
@@ -72,7 +74,10 @@ const CheckoutFailure = () => {
 
   }, []);
 
-  if(loading){
+  // Verificar si estamos cargando cualquier información
+  const isLoading = loading || isLoadingConfig;
+
+  if(isLoading){
     return (
       <CheckoutLayout status="failure">
         <div className="flex items-center justify-center h-32">

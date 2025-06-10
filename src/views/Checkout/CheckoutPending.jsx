@@ -7,13 +7,14 @@ import { parseISO, format } from 'date-fns';
 import es from 'date-fns/locale/es';
 import { DollarSign, MapPin, Calendar } from "lucide-react"
 import { formatearFechaCompleta, calcularDuracion, formatearRangoHorario } from '@/utils/dateUtils';
-
+import { useConfiguration } from '@/context/ConfigurationContext';
 
 const CheckoutPending = () => {
   const [turno, setTurno] = useState(null);
   const [estado, setEstado] = useState(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { config, isLoading: isLoadingConfig } = useConfiguration();
 
   const query = new URLSearchParams(window.location.search);
   const payment_id = query.get('payment_id');
@@ -66,7 +67,10 @@ const CheckoutPending = () => {
 
   }, []);
 
-  if (loading) {
+  // Verificar si estamos cargando cualquier información
+  const isLoading = loading || isLoadingConfig;
+
+  if (isLoading) {
     return (
       <CheckoutLayout status="pending">
         <div className="flex items-center justify-center h-32">
@@ -172,7 +176,11 @@ const CheckoutPending = () => {
               <MapPin className="w-5 h-5 text-gray-500 mt-0.5" />
               <div>
                 <p className="text-sm font-medium">Ubicación</p>
-                <p className="text-sm text-gray-600">Calle 47 Nº 537 entre 5 y 6, La Plata, Buenos Aires</p>
+                <p className="text-sm text-gray-600">
+                  {config && config.direccion_complejo 
+                    ? config.direccion_complejo 
+                    : 'Dirección no disponible'}
+                </p>
               </div>
             </div>
           </div>

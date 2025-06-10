@@ -12,16 +12,35 @@ import { useNavigate } from "react-router-dom";
 import { TurnoEstado } from '@/constants/estadoTurno';
 import CoordinarPagoDialog from "./CoordinarPagoDialog";
 import { formatearFechaCompleta, calcularDuracion, formatearRangoHorario } from '@/utils/dateUtils';
+import { useConfiguration } from "@/context/ConfigurationContext";
 
 const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton }) => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showChangeModal, setShowChangeModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const { config, isLoading: isLoadingConfig } = useConfiguration();
   // Fix date formatting by using parseISO
   const fechaFormateada = turno?.fecha_turno ? formatearFechaCompleta(turno.fecha_turno) : 'Fecha no disponible';
   const señaPorcentaje = turno.cancha ? (turno.monto_seña / turno.monto_total) * 100 : 0;
   const navigate = useNavigate();
+
+  // Función para formatear el nombre del deporte correctamente
+  const formatDeporteName = (deporte) => {
+    if (!deporte) return 'Deporte no disponible';
+    
+    if (typeof deporte === 'string') {
+      return deporte;
+    }
+    
+    const nombreDeporte = deporte.nombre || '';
+    
+    if (nombreDeporte.toLowerCase().includes("futbol") || nombreDeporte.toLowerCase().includes("fútbol")) {
+      return `${nombreDeporte} ${deporte.jugadores_por_equipo || ''}`.trim();
+    }
+    
+    return nombreDeporte;
+  };
 
   const handleCancelTurno = async (cancelReason) => {
     setIsCancelling(true);
@@ -48,11 +67,24 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
   };
 
   const handleWhatsAppRedirect = () => {
-    // Número de teléfono al que se enviará el mensaje (sin espacios ni caracteres especiales)
-    const phoneNumber = "542214567890"; // Reemplazar con el número real
+    // Verificar si la configuración está cargando o no existe
+    if (isLoadingConfig || !config) {
+      console.error('La configuración no está disponible');
+      return;
+    }
+    
+    // Verificar si existe el teléfono en la configuración
+    const phoneNumber = config.telefono_complejo;
+    if (!phoneNumber) {
+      console.error('No hay número de teléfono configurado');
+      return;
+    }
+    
+    // Formatear el nombre del deporte correctamente
+    const deporteFormateado = formatDeporteName(turno.cancha.deporte);
     
     // Mensaje predefinido para WhatsApp
-    const message = `Hola, quisiera coordinar el pago de la seña para mi turno a nombre de ${turno.usuario.nombre} del ${fechaFormateada} a las ${turno.horario.hora_inicio}. El monto de la seña es $${turno.monto_seña}. Gracias!`;
+    const message = `Hola, quisiera coordinar el pago de la seña para mi turno de ${deporteFormateado} a nombre de ${turno.usuario.nombre} del ${fechaFormateada} a las ${turno.horario.hora_inicio} para la cancha ${turno.cancha.tipo_cancha} #${turno.cancha.nro}. El monto de la seña es $${turno.monto_seña}. Gracias!`;
     
     // Codificar el mensaje para URL
     const encodedMessage = encodeURIComponent(message);
@@ -201,6 +233,7 @@ const TurnoCard = ({ turno, onTurnoCanceled, showCancelButton, showModifyButton 
                 onClick={() => setShowPaymentModal(true)}
                 variant="outline"
                 className="w-full rounded-[6px] border-green-500 text-green-500 hover:bg-green-50 hover:text-green-600"
+                disabled={isLoadingConfig || !config || !config.telefono_complejo}
               >
                 Coordinar Pago
               </Button>

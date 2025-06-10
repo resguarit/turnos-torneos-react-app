@@ -12,10 +12,16 @@ const PestanaConfiguracion = () => {
     },
     habilitar_turnos: true,
     habilitar_mercado_pago: false,
-    mercado_pago_access_token: '••••••••••••••••',
-    mercado_pago_webhook_secret: '••••••••••••••••',
+    mercado_pago_access_token: '',
+    mercado_pago_webhook_secret: '',
     direccion_complejo: '',
     telefono_complejo: ''
+  });
+  
+  // Almacenamos las credenciales enmascaradas originales
+  const [maskedCredentials, setMaskedCredentials] = useState({
+    access_token: '',
+    webhook_secret: ''
   });
   
   const [originalConfig, setOriginalConfig] = useState(null);
@@ -27,6 +33,17 @@ const PestanaConfiguracion = () => {
   // Estados para controlar si las credenciales han sido modificadas
   const [accessTokenModified, setAccessTokenModified] = useState(false);
   const [webhookSecretModified, setWebhookSecretModified] = useState(false);
+  
+  // Estados para controlar si el usuario está enfocado en los campos de credenciales
+  const [accessTokenFocused, setAccessTokenFocused] = useState(false);
+  const [webhookSecretFocused, setWebhookSecretFocused] = useState(false);
+
+  // Estilos para los campos de credenciales
+  const credentialInputStyle = {
+    fontFamily: 'monospace',
+    letterSpacing: '0.5px',
+    fontSize: '14px'
+  };
 
   useEffect(() => {
     fetchConfiguracion();
@@ -38,13 +55,26 @@ const PestanaConfiguracion = () => {
       const response = await api.get('/configuracion-usuario');
       
       const configData = {
-        ...response.data,
-        mercado_pago_access_token: '••••••••••••••••',
-        mercado_pago_webhook_secret: '••••••••••••••••'
+        ...response.data
       };
+      
+      // Guardamos las credenciales enmascaradas para mostrarlas
+      setMaskedCredentials({
+        access_token: response.data.mercado_pago_access_token || '',
+        webhook_secret: response.data.mercado_pago_webhook_secret || ''
+      });
+      
+      // Inicializamos las credenciales en el estado config como vacías
+      // para cuando el usuario comience a escribir
+      configData.mercado_pago_access_token = '';
+      configData.mercado_pago_webhook_secret = '';
       
       setConfig(configData);
       setOriginalConfig(configData);
+      
+      // Resetear los estados de modificación después de cargar nuevos datos
+      setAccessTokenModified(false);
+      setWebhookSecretModified(false);
     } catch (error) {
       console.error('Error al obtener la configuración:', error);
       setErrorMessage('Error al cargar la configuración. Intente nuevamente.');
@@ -71,10 +101,10 @@ const PestanaConfiguracion = () => {
   const handleCredentialChange = (e) => {
     const { name, value } = e.target;
     
-    // Marcar como modificado solo si el valor cambia
-    if (name === 'mercado_pago_access_token' && value !== '••••••••••••••••') {
+    // Marcar como modificado
+    if (name === 'mercado_pago_access_token') {
       setAccessTokenModified(true);
-    } else if (name === 'mercado_pago_webhook_secret' && value !== '••••••••••••••••') {
+    } else if (name === 'mercado_pago_webhook_secret') {
       setWebhookSecretModified(true);
     }
     
@@ -82,6 +112,36 @@ const PestanaConfiguracion = () => {
       ...prev,
       [name]: value
     }));
+  };
+  
+  const handleCredentialFocus = (field) => {
+    if (field === 'access_token') {
+      setAccessTokenFocused(true);
+      // Si no ha sido modificado, limpiamos el campo para que pueda escribir
+      if (!accessTokenModified) {
+        setConfig(prev => ({
+          ...prev,
+          mercado_pago_access_token: ''
+        }));
+      }
+    } else if (field === 'webhook_secret') {
+      setWebhookSecretFocused(true);
+      // Si no ha sido modificado, limpiamos el campo para que pueda escribir
+      if (!webhookSecretModified) {
+        setConfig(prev => ({
+          ...prev,
+          mercado_pago_webhook_secret: ''
+        }));
+      }
+    }
+  };
+  
+  const handleCredentialBlur = (field) => {
+    if (field === 'access_token') {
+      setAccessTokenFocused(false);
+    } else if (field === 'webhook_secret') {
+      setWebhookSecretFocused(false);
+    }
   };
 
   // Función para manejar cambios desde el HexColorPicker
@@ -143,9 +203,8 @@ const PestanaConfiguracion = () => {
       document.documentElement.style.setProperty('--color-primary', config.colores.primary);
       document.documentElement.style.setProperty('--color-secondary', config.colores.secondary);
       
-      // Resetear estados de modificación
-      setAccessTokenModified(false);
-      setWebhookSecretModified(false);
+      // Volvemos a cargar la configuración para obtener las nuevas credenciales enmascaradas
+      fetchConfiguracion();
       
       setTimeout(() => {
         setSuccessMessage('');
@@ -165,6 +224,15 @@ const PestanaConfiguracion = () => {
       </div>
     );
   }
+
+  // Determinamos qué valor mostrar para cada credencial
+  const displayAccessToken = accessTokenFocused || accessTokenModified 
+    ? config.mercado_pago_access_token 
+    : maskedCredentials.access_token;
+  
+  const displayWebhookSecret = webhookSecretFocused || webhookSecretModified 
+    ? config.mercado_pago_webhook_secret 
+    : maskedCredentials.webhook_secret;
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -329,18 +397,21 @@ const PestanaConfiguracion = () => {
                 <Info className="w-4 h-4 ml-1 text-gray-400" title="Credencial privada necesaria para conectar con Mercado Pago" />
               </label>
               <input
-                type="password"
+                type="text"
                 name="mercado_pago_access_token"
-                value={config.mercado_pago_access_token}
+                value={displayAccessToken}
                 onChange={handleCredentialChange}
+                onFocus={() => handleCredentialFocus('access_token')}
+                onBlur={() => handleCredentialBlur('access_token')}
                 placeholder="Ingrese su Access Token de Mercado Pago"
+                style={credentialInputStyle}
                 className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 ${!config.habilitar_mercado_pago ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 disabled={!config.habilitar_mercado_pago}
               />
               <p className="mt-1 text-sm text-gray-500">
                 {accessTokenModified 
                   ? "Token modificado, se guardará al guardar la configuración" 
-                  : "Para actualizar, ingrese un nuevo token. Deje con asteriscos para mantener el actual."}
+                  : "Haga clic para editar. Verá los primeros y últimos caracteres de su token actual."}
               </p>
             </div>
             
@@ -350,18 +421,21 @@ const PestanaConfiguracion = () => {
                 <Info className="w-4 h-4 ml-1 text-gray-400" title="Clave secreta para validar notificaciones desde Mercado Pago" />
               </label>
               <input
-                type="password"
+                type="text"
                 name="mercado_pago_webhook_secret"
-                value={config.mercado_pago_webhook_secret}
+                value={displayWebhookSecret}
                 onChange={handleCredentialChange}
+                onFocus={() => handleCredentialFocus('webhook_secret')}
+                onBlur={() => handleCredentialBlur('webhook_secret')}
                 placeholder="Ingrese su Webhook Secret de Mercado Pago"
+                style={credentialInputStyle}
                 className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 ${!config.habilitar_mercado_pago ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 disabled={!config.habilitar_mercado_pago}
               />
               <p className="mt-1 text-sm text-gray-500">
                 {webhookSecretModified 
                   ? "Secret modificado, se guardará al guardar la configuración" 
-                  : "Para actualizar, ingrese un nuevo secret. Deje con asteriscos para mantener el actual."}
+                  : "Haga clic para editar. Verá los primeros y últimos caracteres de su secret actual."}
               </p>
             </div>
           </div>

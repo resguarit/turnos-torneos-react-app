@@ -4,10 +4,11 @@ import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import BtnLoading from '@/components/BtnLoading';
-import ModalConfirmation from '@/components/ModalConfirmation';
+import ConfirmDeleteModal from './/Modals/ConfirmDeleteModal';
 import { useNavigate } from 'react-router-dom';
 import { decryptRole } from '@/lib/getRole';
 import { formatearFechaSinDia } from '@/utils/dateUtils';
+import { set } from 'date-fns';
 
 const PestanaUsuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -41,6 +42,7 @@ const PestanaUsuarios = () => {
   const [clear, setClear] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+  const [loadingDelete, setLoadingDelete] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,6 +55,7 @@ const PestanaUsuarios = () => {
 
   const handleDeleteUser = async (usuarioId) => {
     try {
+      setLoadingDelete(true);
       const response = await api.delete(`/usuarios/${usuarioId}`);
       if (response.status === 200) {
         setUsuarios(usuarios.filter(usuario => usuario.id !== usuarioId));
@@ -64,6 +67,7 @@ const PestanaUsuarios = () => {
     } finally {
       setShowDeleteModal(false);
       setUsuarioToDelete(null);
+      setLoadingDelete(false);
     }
   };
 
@@ -284,10 +288,10 @@ const PestanaUsuarios = () => {
               setEditando(null);
               initNewUserForm();
             }}
-            className="inline-flex sm:text-base text-sm rounded-[10px] items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow transition-colors duration-200 transform hover:scale-105"
+            className="inline-flex  text-sm rounded-[6px] items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow transition-colors duration-200 transform hover:scale-105"
             disabled={isSaving}
           >
-            <Plus className="h-5 w-5 mr-2" />
+            <Plus className="h-4 w-4 mr-2" />
             Añadir Usuario
           </button>
         )}
@@ -299,7 +303,7 @@ const PestanaUsuarios = () => {
         <select
           value={searchType}
           onChange={(e) => setSearchType(e.target.value)}
-          className="w-full text-sm sm:text-base px-2 py-1 border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full text-sm  px-3 py-2 border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="name">Nombre</option>
           <option value="dni">DNI</option>
@@ -320,7 +324,7 @@ const PestanaUsuarios = () => {
           <Search className="absolute left-2 top-2 h-5 w-5 text-gray-400" />
           <button
             onClick={handleSearch}
-            className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-green-600 border border-green-600 rounded-[10px] shadow hover:bg-white hover:text-green-600"
+            className="flex text-sm items-center justify-center px-3 py-2 text-white bg-green-600 border border-green-600 rounded-[6px] shadow hover:bg-white hover:text-green-600"
             disabled={isSaving}
           >
             <Search className="w-5 h-5 sm:hidden" />
@@ -329,7 +333,7 @@ const PestanaUsuarios = () => {
 
         <button
           onClick={handleClearSearch}
-          className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-red-600 border border-red-600 rounded-[10px] shadow hover:bg-white hover:text-red-600"
+          className="flex text-sm items-center justify-center px-3 py-2 text-white bg-red-600 border border-red-600 rounded-[6px] shadow hover:bg-white hover:text-red-600"
           disabled={isSaving}
         >
           <Eraser className="w-5 h-5 sm:hidden"/>
@@ -348,8 +352,8 @@ const PestanaUsuarios = () => {
 
       {/* Formulario de Creación/Edición */}
       {!loading && agregando && (
-        <form onSubmit={editando ? handleEditUsuario : handleAddUsuario} className="mb-6 bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-bold mb-4">{editando ? 'Editar Usuario' : 'Crear Nuevo Usuario'}</h2>
+        <form onSubmit={editando ? handleEditUsuario : handleAddUsuario} className="mb-6 bg-white p-4 rounded-[8px] shadow">
+          <h2 className="text-xl font-bold mb-1">{editando ? 'Editar Usuario' : 'Crear Nuevo Usuario'}</h2>
           <p className="text-sm text-gray-600 mb-4">
             {editando ? 'Modifica los datos del usuario seleccionado.' : 'Completa todos los campos para crear un nuevo usuario en el sistema.'}
           </p>
@@ -364,7 +368,7 @@ const PestanaUsuarios = () => {
                   ? setEditUsuario({ ...editUsuario, name: e.target.value }) 
                   : setNewUsuario({ ...newUsuario, name: e.target.value })
                 }
-                className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm ${
+                className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
                   validationErrors.name ? 'border-red-500 text-red-500' : ''
                 }`}
                 required
@@ -380,7 +384,7 @@ const PestanaUsuarios = () => {
                   ? setEditUsuario({ ...editUsuario, email: e.target.value }) 
                   : setNewUsuario({ ...newUsuario, email: e.target.value })
                 }
-                className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm ${
+                className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
                   validationErrors.email ? 'border-red-500 text-red-500' : ''
                 }`}
                 required
@@ -398,7 +402,7 @@ const PestanaUsuarios = () => {
                     ? setEditUsuario({ ...editUsuario, dni: value })
                     : setNewUsuario({ ...newUsuario, dni: value });
                 }}
-                className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm ${
+                className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
                   validationErrors.dni ? 'border-red-500 text-red-500' : ''
                 }`}
                 required
@@ -421,7 +425,7 @@ const PestanaUsuarios = () => {
                   ? setEditUsuario({ ...editUsuario, telefono: e.target.value }) 
                   : setNewUsuario({ ...newUsuario, telefono: e.target.value })
                 }
-                className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm ${
+                className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
                   validationErrors.telefono ? 'border-red-500 text-red-500' : ''
                 }`}
                 required
@@ -436,7 +440,7 @@ const PestanaUsuarios = () => {
                     type="password"
                     value={newUsuario.password}
                     onChange={(e) => setNewUsuario({ ...newUsuario, password: e.target.value })}
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm ${
+                    className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
                       validationErrors.password ? 'border-red-500 text-red-500' : ''
                     }`}
                     required
@@ -449,7 +453,7 @@ const PestanaUsuarios = () => {
                     type="password"
                     value={newUsuario.password_confirmation}
                     onChange={(e) => setNewUsuario({ ...newUsuario, password_confirmation: e.target.value })}
-                    className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm ${
+                    className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
                       validationErrors.password_confirmation ? 'border-red-500 text-red-500' : ''
                     }`}
                     required
@@ -466,7 +470,7 @@ const PestanaUsuarios = () => {
                   ? setEditUsuario({ ...editUsuario, rol: e.target.value }) 
                   : setNewUsuario({ ...newUsuario, rol: e.target.value })
                 }
-                className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm ${
+                className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
                   validationErrors.rol ? 'border-red-500 text-red-500' : ''
                 }`}
                 required
@@ -486,14 +490,14 @@ const PestanaUsuarios = () => {
                 setEditando(null);
                 setValidationErrors({});
               }}
-              className="mr-4 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              className="mr-4 inline-flex items-center px-3 py-2 border border-gray-300 rounded-[6px] shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
               disabled={isSaving}
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+              className="inline-flex items-center px-3 py-2 border border-transparent rounded-[6px] shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
               disabled={isSaving}
             >
               {isSaving ? 'Guardando...' : (editando ? 'Guardar Cambios' : 'Guardar')}
@@ -516,7 +520,7 @@ const PestanaUsuarios = () => {
                         <UserCircle className="h-6 w-6 text-blue-600" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{usuario.name}</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">{usuario.persona.name}</h3>
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             usuario.rol === 'admin' ? 'bg-green-100 text-green-800' : usuario.rol === 'moderador' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
@@ -602,20 +606,21 @@ const PestanaUsuarios = () => {
         </div>
       )}
 
-      {/* Modal de Confirmación de Eliminación */}
-      {showDeleteModal && (
-        <ModalConfirmation
-          onConfirm={() => handleDeleteUser(usuarioToDelete.id)}
-          onCancel={() => {
-            setShowDeleteModal(false);
-            setUsuarioToDelete(null);
-          }}
-          title="Eliminar Usuario"
-          subtitle={`¿Estás seguro que deseas eliminar al usuario ${usuarioToDelete?.persona?.name}?`}
-          botonText1="Cancelar"
-          botonText2="Eliminar"
-        />
-      )}
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        onConfirm={() => handleDeleteUser(usuarioToDelete.id)}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setUsuarioToDelete(null);
+        }}
+        accionTitulo="Eliminación"
+        accion="eliminar"
+        pronombre="el"
+        entidad="usuario"
+        accionando="Eliminando"
+        loading={loadingDelete}
+        nombreElemento={usuarioToDelete ? `${usuarioToDelete.persona.name} (${usuarioToDelete.dni})` : undefined}
+      />
     </div>
   );
 };

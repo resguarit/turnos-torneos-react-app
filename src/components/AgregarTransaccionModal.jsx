@@ -199,13 +199,13 @@ const AgregarTransaccionModal = ({ isOpen, onClose, cuentaCorrienteId = null, pe
                     value={busqueda}
                     onChange={(e) => setBusqueda(e.target.value)}
                     placeholder="Nombre, apellido o DNI"
-                    className="w-full p-2 pl-9 border border-gray-300 rounded-l-lg"
+                    className="w-full p-1 pl-9 border border-gray-300 rounded-l-[6px]"
                   />
-                  <Search className="absolute left-2 top-2.5 h-5 w-5 text-gray-400" />
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
                   <button
                     type="button"
                     onClick={handleBuscar}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600"
+                    className="px-3 py-1 bg-blue-500 text-white rounded-r-[6px] hover:bg-blue-600"
                   >
                     Buscar
                   </button>
@@ -291,7 +291,7 @@ const AgregarTransaccionModal = ({ isOpen, onClose, cuentaCorrienteId = null, pe
                   name="tipo"
                   value={formData.tipo}
                   onChange={handleInputChange}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full px-3 py-1 text-sm border border-gray-300 rounded-[6px] shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   required
                 >
                   <option value="ingreso">Ingreso</option>
@@ -351,7 +351,7 @@ const AgregarTransaccionModal = ({ isOpen, onClose, cuentaCorrienteId = null, pe
                     value={formData.monto}
                     onChange={handleInputChange}
                     placeholder="0.00"
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    className="block w-full pl-10 pr-3 py-1 text-sm rounded-[6px] border border-gray-300  shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     required
                   />
                 </div>
@@ -377,7 +377,7 @@ const AgregarTransaccionModal = ({ isOpen, onClose, cuentaCorrienteId = null, pe
                     value={formData.descripcion}
                     onChange={handleInputChange}
                     placeholder="Descripción de la transacción"
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    className="block w-full pl-10 pr-3 py-1 rounded-[6px] text-sm border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -388,7 +388,7 @@ const AgregarTransaccionModal = ({ isOpen, onClose, cuentaCorrienteId = null, pe
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50"
+                className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-[6px] shadow-sm hover:bg-gray-50"
                 disabled={loading}
               >
                 Cancelar
@@ -396,7 +396,7 @@ const AgregarTransaccionModal = ({ isOpen, onClose, cuentaCorrienteId = null, pe
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none"
+                className="px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-[6px] shadow-sm hover:bg-blue-700 focus:outline-none"
               >
                 {loading ? 'Guardando...' : 'Guardar'}
               </button>

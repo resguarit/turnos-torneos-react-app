@@ -9,11 +9,15 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
   const [horarios, setHorarios] = useState([]);
   const [cancha, setCancha] = useState("");
   const [canchas, setCanchas] = useState([]);
+  const [loadingHorarios, setLoadingHorarios] = useState(false);
+  const [loadingCanchas, setLoadingCanchas] = useState(false);
+  const [loadingConfirm, setLoadingConfirm] = useState(false);
 
   // Obtener horarios disponibles según la fecha
   useEffect(() => {
     const fetchHorariosDisponibles = async () => {
       try {
+        setLoadingHorarios(true);
         const response = await api.get("/disponibilidad/fecha", {
           params: { fecha: fecha.fecha_inicio, deporte_id: fecha.zona.torneo.deporte_id },
         });
@@ -23,6 +27,8 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
         }
       } catch (error) {
         console.error("Error al obtener los horarios disponibles:", error);
+      } finally {
+        setLoadingHorarios(false);
       }
     };
 
@@ -37,6 +43,7 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
 
     const fetchCanchasDisponibles = async () => {
       try {
+        setLoadingCanchas(true);
         const response = await api.get("/disponibilidad/cancha", {
           params: { fecha: fecha.fecha_inicio, horario_id: horario, deporte_id: fecha.zona.torneo.deporte_id },
         });
@@ -46,6 +53,8 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
         }
       } catch (error) {
         console.error("Error al obtener las canchas disponibles:", error);
+      } finally {
+        setLoadingCanchas(false);
       }
     };
 
@@ -59,6 +68,7 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
     }
 
     try {
+      setLoadingConfirm(true)
       const response = await api.post("/partidos", {
         equipo_local_id: equipoLocal,
         equipo_visitante_id: equipoVisitante,
@@ -74,6 +84,8 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
       onClose();
     } catch (error) {
       console.error("Error al agregar el partido:", error);
+    } finally{
+      setLoadingConfirm(false);
     }
   };
 
@@ -114,51 +126,65 @@ export default function AgregarPartidoModal({ fecha, equipos, onClose, onPartido
         {/* Selector de horario */}
         <p className="text-sm text-red-500 mb-1">Opcional *</p>
         <div className="rounded-[8px] border border-gray-300 p-1 justify-center flex flex-col mb-4">
-        <div className="mb-4">
-          <select
-            value={horario}
-            onChange={(e) => setHorario(e.target.value)}
-            className="border border-gray-300 rounded-[6px] text-sm p-1 w-full"
-          >
-            <option value="">Seleccionar Horario</option>
-            {horarios.map((h) => (
-              <option key={h.id} value={h.id}>
-                {h.hora_inicio} - {h.hora_fin}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div className="mb-4">
+            {loadingHorarios ? (
+              <div className="border border-gray-300 rounded-[6px] text-sm p-2 w-full bg-gray-50 text-gray-500">
+                Cargando horarios...
+              </div>
+            ) : (
+              <select
+                value={horario}
+                onChange={(e) => setHorario(e.target.value)}
+                className="border border-gray-300 rounded-[6px] text-sm p-1 w-full"
+              >
+                <option value="">Seleccionar Horario</option>
+                {horarios.map((h) => (
+                  <option key={h.id} value={h.id}>
+                    {h.hora_inicio} - {h.hora_fin}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
 
-        {/* Selector de cancha */}
-        <div className="">
-          <select
-            value={cancha}
-            onChange={(e) => setCancha(e.target.value)}
-            className="border border-gray-300 rounded-[6px] text-sm p-1 w-full"
-            disabled={!horario} // Deshabilitar si no hay horario seleccionado
-          >
-            <option value="">Seleccionar Cancha</option>
-            {canchas.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nro} - {c.tipo}
-              </option>
-            ))}
-          </select>
-        </div>
+          {/* Selector de cancha */}
+          <div>
+            {loadingCanchas ? (
+              <div className="border border-gray-300 rounded-[6px] text-sm p-2 w-full bg-gray-50 text-gray-500">
+                Cargando canchas...
+              </div>
+            ) : (
+              <select
+                value={cancha}
+                onChange={(e) => setCancha(e.target.value)}
+                className="border border-gray-300 rounded-[6px] text-sm p-1 w-full"
+                disabled={!horario}
+              >
+                <option value="">Seleccionar Cancha</option>
+                {canchas.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nro} - {c.tipo}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
         </div>
         {/* Botones de acción */}
         <div className="flex justify-end space-x-4">
           <button
             onClick={onClose}
+            disabled={loadingConfirm}
             className="bg-gray-300 text-gray-700 px-4 py-2 rounded-[6px] hover:bg-gray-400"
           >
             Cancelar
           </button>
           <button
             onClick={agregarPartido}
+            disabled={loadingConfirm}
             className="bg-green-500 text-white px-4 py-2 rounded-[6px] hover:bg-green-600"
           >
-            Agregar Partido
+            {loadingConfirm ? 'Agregando Partido...' : 'Agregar Partido'}
           </button>
         </div>
       </div>

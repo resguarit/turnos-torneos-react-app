@@ -20,6 +20,8 @@ import {TabResultadosGrupos} from './Tabs/TabResultadosGrupos';
 import {TabEliminatoria} from './Tabs/TabResultadosEliminatoria';
 import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal';
 import BackButton from '@/components/BackButton';
+import CrearGruposModal from '../Modals/CrearGruposModal';
+
 
 export default function DetalleZona() {
   const { zonaId } = useParams();
@@ -367,6 +369,19 @@ export default function DetalleZona() {
           setGrupos(gruposResponse.data);
           setGruposCreados(true);
           toast.success('Grupos actualizados correctamente.');
+
+          // Eliminar todas las fechas creadas si existen
+          if (fechas && fechas.length > 0) {
+            const fechaIds = fechas.map(fecha => fecha.id);
+            try {
+              await api.delete('/fechas', { data: { fecha_ids: fechaIds } });
+              setFechas([]);
+              setFechasSorteadas(false);
+              toast.success('Todas las fechas fueron eliminadas porque se actualizaron los grupos.');
+            } catch (error) {
+              toast.error('Error al eliminar las fechas al actualizar los grupos.');
+            }
+          }
         } else {
           toast.error('Error al obtener los grupos actualizados.');
         }
@@ -403,6 +418,9 @@ export default function DetalleZona() {
         const gruposResponse = await api.get(`/zonas/${zonaId}/grupos`);
         setGrupos(gruposResponse.data);
         toast.success('Equipo agregado al grupo correctamente.');
+        setTimeout(() => {
+          toast.warn('Recuerda que deberás modificar manualmente los partidos de la zona, ya que pueden haber inconsistencias.');
+        }, 100);
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error al agregar el equipo.');
@@ -435,6 +453,9 @@ export default function DetalleZona() {
           toast.info('El grupo ha quedado vacío.');
         } else {
           toast.success('Equipo eliminado del grupo correctamente.');
+          setTimeout(() => {
+                    toast.warn('Recuerda que deberás modificar manualmente los partidos de la zona, ya que pueden haber inconsistencias.');
+                  }, 100); 
         }
       }
     } catch (error) {
@@ -478,14 +499,27 @@ export default function DetalleZona() {
   const confirmarEliminarGrupos = async () => {
     try {
       setLoading(true);
-  
-      // Realizar la solicitud DELETE al endpoint para eliminar los grupos de la zona
+
+      // Eliminar los grupos de la zona
       const response = await api.delete(`/zonas/${zonaId}/eliminar-grupos-zona`);
-  
+
       if (response.status === 200) {
         toast.success('Grupos eliminados correctamente.');
-        setGrupos([]); // Limpiar los grupos en el estado local
-        setGruposCreados(false); // Indicar que los grupos ya no están creados
+        setGrupos([]);
+        setGruposCreados(false);
+
+        // Si hay fechas creadas, eliminarlas usando el endpoint de "eliminar todas las fechas"
+        if (fechas && fechas.length > 0) {
+          const fechaIds = fechas.map(fecha => fecha.id);
+          try {
+            await api.delete('/fechas', { data: { fecha_ids: fechaIds } });
+            setFechas([]);
+            setFechasSorteadas(false);
+            toast.success('Fechas eliminadas correctamente.');
+          } catch (error) {
+            toast.error('Error al eliminar las fechas de la zona.');
+          }
+        }
       } else {
         toast.error('Error al eliminar los grupos.');
       }
@@ -494,7 +528,7 @@ export default function DetalleZona() {
       toast.error(error.response?.data?.message || 'Error al eliminar los grupos.');
     } finally {
       setLoading(false);
-      setModalConfirmVisible(false); // Cerrar el modal
+      setModalConfirmVisible(false);
     }
   };
 
@@ -660,37 +694,14 @@ export default function DetalleZona() {
     <Footer />
 
       
-      {modalVisible && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Crear Grupos</h2>
-            <label className="block mb-2">
-              Cantidad de Grupos:
-              <input
-                type="number"
-                min="1"
-                value={numGrupos}
-                onChange={(e) => setNumGrupos(e.target.value)}
-                className="border border-gray-300 rounded-md p-2 w-full"
-              />
-            </label>
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={() => setModalVisible(false)}
-                className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-md"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleCrearGrupos}
-                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md"
-              >
-                Crear
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CrearGruposModal
+        isOpen={modalVisible}
+        numGrupos={numGrupos}
+        setNumGrupos={setNumGrupos}
+        onClose={() => setModalVisible(false)}
+        onCrearGrupos={handleCrearGrupos}
+        loading={loading}
+      />
 
       {modalDeleteEquipoVisible && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -759,7 +770,6 @@ export default function DetalleZona() {
         </Modal>
       )}
       
-      {modalConfirmVisible && (
         <ConfirmDeleteModal
           isOpen={modalConfirmVisible}
           onClose={() => setModalConfirmVisible(false)}
@@ -767,11 +777,11 @@ export default function DetalleZona() {
           loading={loading}
           accionTitulo="Eliminación"
           accion="eliminar"
-          pronombre="este"
-          entidad="grupo"
+          pronombre="los"
+          entidad="grupos"
           accionando="Eliminando"
+          advertencia="Al eliminar los grupos se eliminarán las fechas creadas de la zona"
         />
-      )}
       
     </div>
   );

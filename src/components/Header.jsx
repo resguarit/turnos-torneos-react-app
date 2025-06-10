@@ -178,34 +178,34 @@ export function Header() {
                   <CircleUserRound className="h-5 w-5" />
                 </button>
                 {isOpen && (
-                  <div className="absolute font-inter text-base -left-20 right-0 mt-2 w-44 bg-black text-white rounded-[6px] shadow-lg z-50">
+                  <div className="absolute font-inter text-base -left-20 right-0 mt-2 w-44 bg-black text-white shadow-lg z-50">
                     <div className="flex flex-col items-start p-2 space-y-1">
                       <button
                         onClick={() => {
                           navigate("/editar-perfil")
                           closeMenu()
                         }}
-                        className="w-full flex justify-between text-left hover:bg-gray-700 px-3 py-2  rounded-[4px]"
+                        className="w-full flex justify-between text-left hover:bg-gray-700 px-3 py-2"
                       >
                         Editar Perfil <Pencil className="w-5" />
                       </button>
-                      <span className="w-full h-[1px] bg-gray-300 my-2"></span>
+                      <span className="w-full h-[1px] bg-gray-700 my-2"></span>
                       <button
                         onClick={() => {
                           navigate("/user-profile")
                           closeMenu()
                         }}
-                        className="w-full flex justify-between text-left hover:bg-gray-700 px-3 py-2 rounded-[4px]"
+                        className="w-full flex justify-between text-left hover:bg-gray-700 px-3 py-2 "
                       >
                         Mi Panel <UserCog className="w-5" />
                       </button>
-                      <span className="w-full h-[1px] bg-gray-300 my-2"></span>
+                      <span className="w-full h-[1px] bg-gray-700 my-2"></span>
                       <button
                         onClick={() => {
                           handleModal()
                           closeMenu()
                         }}
-                        className="w-full flex justify-between text-left hover:bg-gray-700 px-3 py-2 rounded-[4px]"
+                        className="w-full flex justify-between text-left hover:bg-gray-700 px-3 py-2 "
                       >
                         Cerrar Sesión <LogOut className="w-5" />
                       </button>

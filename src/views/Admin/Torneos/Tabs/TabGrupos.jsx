@@ -45,7 +45,7 @@ export function TabGrupos({
               onClick={handleActualizarGrupos}
               className="py-2 px-4 text-sm rounded-[6px] items-center flex gap-2 bg-green-500  hover:bg-green-600 text-white"
             >
-              Sortear Grupos de Nuevo <Shuffle size={16}  />
+              Sortear Grupos <Shuffle size={16}  />
             </button>
           </div>
           )}
@@ -57,12 +57,15 @@ export function TabGrupos({
             <div key={grupo.id || index} className="bg-white p-4 rounded-[6px] shadow-md">
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-lg font-bold">Grupo {index + 1}</h3>
-                <button
-                  onClick={() => setEditingGroupId(grupo.id === editingGroupId ? null : grupo.id)}
-                  className="text-gray-500 hover:text-blue-500"
-                >
-                  <Edit3 size={16} />
-                </button>
+                {/* Mostrar botón de editar solo si el grupo tiene equipos */}
+                {Array.isArray(grupo.equipos) && grupo.equipos.length > 0 && (
+                  <button
+                    onClick={() => setEditingGroupId(grupo.id === editingGroupId ? null : grupo.id)}
+                    className="text-gray-500 hover:text-blue-500"
+                  >
+                    <Edit3 size={16} />
+                  </button>
+                )}
               </div>
               <div className="space-y-2 w-full">
                 {(grupo.equipos || []).map((equipo) => (
@@ -88,7 +91,7 @@ export function TabGrupos({
                   </div>
                 ))}
                 {/* Dropdown para agregar equipos */}
-                {editingGroupId === grupo.id && (
+                {editingGroupId === grupo.id && Array.isArray(grupo.equipos) && grupo.equipos.length > 0 && (
                   <div className="mt-2">
                     <select
                       onChange={(e) => {
@@ -102,7 +105,11 @@ export function TabGrupos({
                     >
                       <option value="">Agregar equipo...</option>
                       {zona.equipos
-                        .filter((equipo) => !grupo.equipos.some((e) => e.id === equipo.id))
+                        .filter(
+                          (equipo) =>
+                            Array.isArray(grupo.equipos) &&
+                            !grupo.equipos.some((e) => e.id === equipo.id)
+                        )
                         .map((equipo) => (
                           <option key={equipo.id} value={equipo.id}>
                             {equipo.nombre}

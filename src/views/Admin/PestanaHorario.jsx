@@ -361,7 +361,7 @@ const PestanaHorario = () => {
             ) : (
               <button
                 onClick={() => setShowDisableModal(true)}
-                className="px-3 sm:text-base text-sm py-2 bg-red-600 hover:bg-red-600 text-white rounded-[10px] transition-colors mr-2"
+                className="px-3 text-sm py-2 bg-red-600 hover:bg-red-600 text-white rounded-[6px] transition-colors mr-2"
                 disabled={loading || loadingHorarios || !selectedDeporteId}
               >
                 Deshabilitar franja horaria
@@ -370,9 +370,9 @@ const PestanaHorario = () => {
           </div>
           <button
             onClick={hasChanges ? handleSubmitConfig : () => setShowConfigModal(true)}
-            className={`px-3 sm:text-base text-sm py-2 ${
+            className={`px-3 text-sm py-2 ${
               hasChanges ? "bg-green-600  hover:bg-green-600" : "bg-blue-600 hover:bg-blue-700"
-            } text-white rounded-[10px] transition-colors`}
+            } text-white rounded-[6px] transition-colors`}
             disabled={loading || loadingHorarios || !selectedDeporteId}
           >
             {hasChanges ? "Aplicar cambios" : "Configurar Horarios"}
@@ -531,8 +531,8 @@ const PestanaHorario = () => {
       {/* Modal para deshabilitar franja específica */}
       {showDisableModal && (
         <div className="fixed inset-0 flex items-center justify-center z-10 bg-gray-900 bg-opacity-50">
-          <div className="bg-white rounded-xl p-4 md:p-6 w-60 md:w-80">
-            <h2 className="text-base md:text-lg font-bold mb-4">Deshabilitar franja horaria</h2>
+          <div className="bg-white rounded-[8px] p-4 md:p-6 w-60 md:w-80">
+            <h2 className="text-base md:text-lg font-semibold mb-4">Deshabilitar franja horaria</h2>
 
             {showError && (
               <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4">
@@ -546,7 +546,7 @@ const PestanaHorario = () => {
             <label className="block mb-2 ">
               Día:
               <select
-                className="border rounded-[8px] px-2 py-1 w-full"
+                className="border rounded-[6px] px-2 py-1 w-full"
                 value={disableDay}
                 onChange={(e) => setDisableDay(e.target.value)}
               >
@@ -560,7 +560,7 @@ const PestanaHorario = () => {
             <label className="block mb-2">
               Hora inicio:
               <select
-                className="border rounded-[8px] px-2 py-1 w-full"
+                className="border rounded-[6px] px-2 py-1 w-full"
                 value={disableStart}
                 onChange={(e) => setDisableStart(e.target.value)}
               >
@@ -574,7 +574,7 @@ const PestanaHorario = () => {
             <label className="block mb-4">
               Hora fin:
               <select
-                className="border rounded-[8px] px-2 py-1 w-full"
+                className="border rounded-[6px] px-2 py-1 w-full"
                 value={disableEnd}
                 onChange={(e) => setDisableEnd(e.target.value)}
               >
@@ -585,16 +585,16 @@ const PestanaHorario = () => {
                 ))}
               </select>
             </label>
-            <div className="flex justify-between space-x-3">
+            <div className="flex justify-between space-x-3 mt-4">
               <button
                 onClick={() => setShowDisableModal(false)}
-                className="px-4 py-2 text-sm md:text-base bg-gray-200 rounded-[8px] hover:bg-gray-300"
+                className="px-3 py-2 text-sm  bg-gray-200 rounded-[6px] hover:bg-gray-300"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleDisableRange}
-                className="px-4 py-2 text-sm md:text-base bg-red-500 text-white rounded-[8px] hover:bg-red-600"
+                className="px-3 py-2 text-sm bg-red-500 text-white rounded-[6px] hover:bg-red-600"
                 disabled={loading} // Deshabilitar botón si está cargando
               >
                 Deshabilitar
@@ -658,18 +658,18 @@ const PestanaHorario = () => {
       {/* Modal de configurar horarios */}
       {showConfigModal && (
         <div className="fixed inset-0 flex items-center justify-center z-10 bg-black bg-opacity-50">
-          <div className="bg-white rounded-md p-6 w-80">
+          <div className="bg-white rounded-[8px] p-6 w-80">
             <h2 className="text-lg font-bold mb-4">Configurar Horarios</h2>
             <p className="mb-4">Ajusta las horas de apertura/cierre para cada día.</p>
             <button
               onClick={() => setShowConfigModal(false)}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition-colors mr-2"
+              className="px-3 py-2 text-sm bg-green-600 hover:bg-green-700 text-white rounded-[6px] font-medium transition-colors mr-2"
             >
               Confirmar
             </button>
             <button
               onClick={() => setShowConfigModal(false)}
-              className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md font-medium transition-colors"
+              className="px-3 py-2 text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-[6px] font-medium transition-colors"
             >
               Cancelar
             </button>

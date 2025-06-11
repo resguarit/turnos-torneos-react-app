@@ -34,7 +34,7 @@ jobs:
 
       # 5. Desplegar los archivos al servidor
       - name: Sincronizar archivos con el servidor
-        uses: easing-themes/ssh-deploy@main
+        uses: easing-themes/ssh-deploy@v5
         with:
           # Secretos que configuraste en GitHub
           SSH_PRIVATE_KEY: ${{ secrets.SSH_KEY }}

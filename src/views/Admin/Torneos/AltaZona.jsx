@@ -1,5 +1,5 @@
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import { useState, useEffect } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Plus, X } from 'lucide-react';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';

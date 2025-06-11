@@ -1,5 +1,5 @@
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import { useState, useEffect, useCallback } from 'react'; // Import useCallback
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';

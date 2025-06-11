@@ -26,11 +26,7 @@ jobs:
       
       # 3. Instalar dependencias de forma limpia y rapida
       - name: Instalar dependencias
-        run: npm ci
-
-      # 3.5. (NUEVO PASO) Reconstruir dependencias nativas para solucionar el error de SWC
-      - name: Reconstruir dependencias nativas
-        run: npm rebuild
+        run: npm install --legacy-peer-deps
 
       # 4. Construir la aplicación para producción
       - name: Hacer el build de la aplicación

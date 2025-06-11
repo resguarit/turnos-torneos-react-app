@@ -28,6 +28,10 @@ jobs:
       - name: Instalar dependencias
         run: npm install
 
+      # 3.5. (NUEVO PASO) Reconstruir dependencias nativas para solucionar el error de SWC
+      - name: Reconstruir dependencias nativas
+        run: npm rebuild
+
       # 4. Construir la aplicación para producción
       - name: Hacer el build de la aplicación
         run: npm run build

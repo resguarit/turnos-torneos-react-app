@@ -578,9 +578,9 @@ export default function ResultadoPartido() {
               </p>
             ) : (
               <div className="flex flex-col items-center w-full">
-                <div className="grid grid-cols-3 items-center justify-center gap-4 text-2xl font-bold mb-2">
+                <div className="grid w-full grid-cols-3 items-center justify-center gap-4 text-2xl font-bold mb-2">
                   <div>
-                    <span className="text-gray-700 text-base ">{partido.equipos[0].nombre}</span>
+                    <span className="text-gray-700 text-base text-left">{partido.equipos[0].nombre}</span>
                   </div>
                   <div className='flex w-full gap-4 justify-center text-center'>
                     <span
@@ -595,8 +595,8 @@ export default function ResultadoPartido() {
                       {partido.marcador_visitante ?? 0}
                     </span>
                   </div>
-                  <div>
-                    <span className="text-gray-700 text-base">{partido.equipos[1].nombre}</span>
+                  <div className="flex w-full justify-end">
+                    <span className="text-gray-700 text-base text-right">{partido.equipos[1].nombre}</span>
                   </div>
                 </div>
                 {/* Mostrar penales debajo del marcador si existen */}

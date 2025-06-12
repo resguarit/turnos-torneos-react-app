@@ -49,4 +49,5 @@ jobs:
           TARGET: "/home/rgturnos.com.ar/public_html"
           
           # Argumento para que rsync elimine archivos viejos en el destino
-          ARGS: "--delete" 
+          ARGS: "--delete"
+          EXCLUDE: ".htaccess"

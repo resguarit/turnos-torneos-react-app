@@ -36,6 +36,11 @@ export default function ResultadoPartido() {
   const [refreshKey, setRefreshKey] = useState(0); // Estado disparador
   const [searchResults, setSearchResults] = useState([]);
   const [searchingDniForId, setSearchingDniForId] = useState(null);
+  const [showPenalesModal, setShowPenalesModal] = useState(false);
+  const [penalesLocal, setPenalesLocal] = useState('');
+  const [penalesVisitante, setPenalesVisitante] = useState('');
+  const [loadingPenales, setLoadingPenales] = useState(false);
+  const [penalesData, setPenalesData] = useState(null);
 
   // Nueva función para traer ambos equipos en un solo llamado
   const fetchDosEquipos = async (id1, id2) => {
@@ -81,6 +86,32 @@ export default function ResultadoPartido() {
       setLoading(false);
     }
   };
+
+  // Nueva función para traer penales si el partido está finalizado
+  const fetchPenales = async () => {
+    try {
+      const response = await api.get(`/penales/partido/${partidoId}`);
+      if (Array.isArray(response.data) && response.data.length > 0) {
+        setPenalesData(response.data[0]); // Asume que solo hay un registro de penales por partido
+        setPenalesLocal(response.data[0].penales_local ?? '');
+        setPenalesVisitante(response.data[0].penales_visitante ?? '');
+      } else {
+        setPenalesData(null);
+      }
+    } catch (error) {
+      setPenalesData(null);
+    }
+  };
+
+  // Llama a fetchPenales solo si el partido está finalizado
+  useEffect(() => {
+    if (partido && partido.estado === "Finalizado") {
+      fetchPenales();
+    } else {
+      setPenalesData(null);
+    }
+    // eslint-disable-next-line
+  }, [partidoId, partido && partido.estado]);
 
   useEffect(() => {
     fetchPartido();
@@ -441,6 +472,40 @@ export default function ResultadoPartido() {
     }
   };
 
+  // Función para cargar penales
+  const handleCargarPenales = async () => {
+    if (
+      penalesLocal === '' ||
+      penalesVisitante === '' ||
+      isNaN(penalesLocal) ||
+      isNaN(penalesVisitante)
+    ) {
+      toast.error('Debes ingresar la cantidad de penales para ambos equipos.');
+      return;
+    }
+    try {
+      setLoadingPenales(true);
+      await api.post('/penales', {
+        partido_id: partido.id,
+        equipo_local_id: equipoLocal.id,
+        equipo_visitante_id: equipoVisitante.id,
+        penales_local: Number(penalesLocal),
+        penales_visitante: Number(penalesVisitante),
+      });
+      toast.success('Penales cargados correctamente.');
+      setShowPenalesModal(false);
+      setPenalesLocal('');
+      setPenalesVisitante('');
+      // Refrescar penales y partido
+      await fetchPenales();
+      await fetchPartido();
+    } catch (error) {
+      toast.error('Error al cargar penales.');
+    } finally {
+      setLoadingPenales(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col font-inter">
@@ -513,23 +578,57 @@ export default function ResultadoPartido() {
               </p>
             ) : (
               <div className="flex flex-col items-center w-full">
-                <div className="flex w-full items-center justify-between gap-4 text-2xl font-bold mb-2">
-                  <span className="text-gray-700 text-base text-left">{partido.equipos[0].nombre}</span>
-                  <span className="text-black">{partido.marcador_local ?? 0}</span>
-                  <span className="text-gray-600">-</span>
-                  <span className="text-black">{partido.marcador_visitante ?? 0}</span>
-                  <span className="text-gray-700 text-base text-right">{partido.equipos[1].nombre}</span>
+                <div className="grid w-full grid-cols-3 items-center justify-center gap-4 text-2xl font-bold mb-2">
+                  <div>
+                    <span className="text-gray-700 text-base text-left">{partido.equipos[0].nombre}</span>
+                  </div>
+                  <div className='flex w-full gap-4 justify-center text-center'>
+                    <span
+                      className={`text-black ${penalesData ? "line-through decoration-2 decoration-red-500" : ""}`}
+                    >
+                      {partido.marcador_local ?? 0}
+                    </span>
+                    <span className="text-gray-600">-</span>
+                    <span
+                      className={`text-black ${penalesData ? "line-through decoration-2 decoration-red-500" : ""}`}
+                    >
+                      {partido.marcador_visitante ?? 0}
+                    </span>
+                  </div>
+                  <div className="flex w-full justify-end">
+                    <span className="text-gray-700 text-base text-right">{partido.equipos[1].nombre}</span>
+                  </div>
                 </div>
-                {partido.marcador_local === partido.marcador_visitante ? (
-                  <span className="text-gray-700 font-medium">Empate</span>
-                ) : (
-                  <span className="text-green-700 font-medium">
-                    Ganador:{" "}
-                    {partido.marcador_local > partido.marcador_visitante
-                      ? partido.equipos[0].nombre
-                      : partido.equipos[1].nombre}
-                  </span>
+                {/* Mostrar penales debajo del marcador si existen */}
+                {penalesData && (
+                  <div className="flex  items-center justify-between gap-2 text-lg font-semibold mb-2">
+                    <span className="text-gray-600 text-base text-left">({penalesData.penales_local ?? 0} - </span>
+                    <span className="text-gray-600 text-base text-left">{penalesData.penales_visitante ?? 0})</span>
+                  </div>
                 )}
+                {/* Ganador */}
+                <span className="text-green-700 font-medium">
+                  {penalesData ? (
+                    <>
+                      Ganador:{" "}
+                      {penalesData.penales_local > penalesData.penales_visitante
+                        ? partido.equipos[0].nombre
+                        : penalesData.penales_visitante > penalesData.penales_local
+                        ? partido.equipos[1].nombre
+                        : "Empate"}
+                    </>
+                  ) : partido.marcador_local > partido.marcador_visitante ? (
+                    <>
+                      Ganador: {partido.equipos[0].nombre}
+                    </>
+                  ) : partido.marcador_local < partido.marcador_visitante ? (
+                    <>
+                      Ganador: {partido.equipos[1].nombre}
+                    </>
+                  ) : (
+                    <>Empate</>
+                  )}
+                </span>
               </div>
             )}
           </div>
@@ -560,6 +659,27 @@ export default function ResultadoPartido() {
               </button>
             </div>
             <div className='flex gap-3'>
+                      {/* Botón para cargar/ver penales */}
+              {partido.estado === "Finalizado" && (
+                <div className="flex justify-center">
+                  {penalesData ? (
+                    <button
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-[6px] shadow"
+                      onClick={() => setShowPenalesModal(true)}
+                    >
+                      Ver Penales
+                    </button>
+                  ) : (
+                    <button
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-[6px] shadow"
+                      onClick={() => setShowPenalesModal(true)}
+                    >
+                      Cargar Penales
+                    </button>
+                  )}
+                </div>
+              )}
+
               <button
                 onClick={() => setModalSanciones(true)}
                 className="rounded-[6px] px-3 py-2 bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm flex items-center gap-1"
@@ -1080,6 +1200,59 @@ export default function ResultadoPartido() {
           equipoVisitante={equipoVisitante}
           zonaId={zonaId}
           />
+
+        {/* Modal para cargar/ver penales */}
+        {showPenalesModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-[8px] shadow-lg w-full max-w-xs">
+              <h2 className="text-lg font-semibold mb-4 text-center">
+                {penalesData ? "Penales" : "Cargar Penales"}
+              </h2>
+              <div className="mb-3">
+                <label className="block text-sm font-medium mb-1">{equipoLocal.nombre}</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={penalesLocal}
+                  onChange={e => setPenalesLocal(e.target.value)}
+                  className="w-full border border-gray-300 rounded-[6px] px-2 py-1"
+                  placeholder="Penales convertidos"
+                  disabled={!!penalesData}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="block text-sm font-medium mb-1">{equipoVisitante.nombre}</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={penalesVisitante}
+                  onChange={e => setPenalesVisitante(e.target.value)}
+                  className="w-full border border-gray-300 rounded-[6px] px-2 py-1"
+                  placeholder="Penales convertidos"
+                  disabled={!!penalesData}
+                />
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                <button
+                  className="px-3 py-2 bg-gray-300 rounded-[6px] hover:bg-gray-400"
+                  onClick={() => setShowPenalesModal(false)}
+                  disabled={loadingPenales}
+                >
+                  Cerrar
+                </button>
+                {!penalesData && (
+                  <button
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    onClick={handleCargarPenales}
+                    disabled={loadingPenales}
+                  >
+                    {loadingPenales ? "Guardando..." : "Guardar"}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </main>
       <Footer />
     </div>

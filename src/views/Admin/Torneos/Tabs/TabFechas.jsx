@@ -8,6 +8,7 @@ import { toast } from 'react-toastify'
 import { useState, useEffect } from 'react'
 import CrearPlayoffModal from '../../Modals/CrearPlayoffModal';
 import { format as formatDate } from 'date-fns';
+import { useTorneos } from '@/context/TorneosContext';
 
 export function TabFechas({ 
   zona, 
@@ -28,6 +29,7 @@ export function TabFechas({
 }) {
   const [loadingPlayoff, setLoadingPlayoff] = useState(false);
   const [showPlayoffModal, setShowPlayoffModal] = useState(false);
+  const { torneos, setTorneos } = useTorneos();
 
   const puedeCrearPlayoff = zona?.formato === 'Liga + Playoff';
   console.log("Puede crear playoff:", puedeCrearPlayoff);
@@ -116,7 +118,7 @@ export function TabFechas({
                   className="bg-black text-white text-sm px-3 py-2 rounded-[6px] hover:bg-green-700"
                   disabled={loadingPlayoff}
                 >
-                  Crear Playoff
+                  Crear Playoffs
                 </button>
 
               </div>
@@ -146,6 +148,11 @@ export function TabFechas({
               });
               toast.success("Playoff creado correctamente");
               setShowPlayoffModal(false);
+              
+              // Actualizar el contexto de torneos después de crear el playoff
+              const torneosResponse = await api.get('/torneos');
+              setTorneos(torneosResponse.data);
+              
               if (onFechasDeleted) onFechasDeleted();
             } catch (err) {
               toast.error(err.response?.data?.message || "Error al crear playoff");

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import BackButton from '@/components/BackButton';
@@ -474,7 +474,7 @@ export default function ResultadoPartido() {
       <Header />
       <main className="max-w-7xl lg:max-w-full p-6 grow">
         <div className="w-full flex mb-4">
-          <BackButton /> 
+          <BackButton ruta={`/detalle-zona/${zonaId}?tab=fechas`} /> 
         </div>
         <h1 className=" font-bold mb-4 text-2xl">Resultado Partido</h1>
         <div className='w-full  flex gap-4'>

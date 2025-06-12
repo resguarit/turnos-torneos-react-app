@@ -101,7 +101,7 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
 
       if (response.status === 200) {
         toast.success('Equipos agregados a la zona correctamente.');
-        navigate(`/detalle-zona/${zonaId}`);
+        navigate(`/detalle-zona/${zonaId}?tab=equipos`);
       }
     } catch (error) {
       console.error('Error al guardar los equipos:', error);
@@ -115,7 +115,7 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
     <div className="min-h-screen flex flex-col font-inter bg-gray-100">
       <Header />
       <main className="w-full  p-6 grow">
-        <BackButton ruta={`/detalle-zona/${zonaId}`}/>
+        <BackButton ruta={`/detalle-zona/${zonaId}?tab=equipos`}/>
         <div className="flex   flex-col w-full">
         <h1 className="text-2xl px-40 font-bold mb-6 lg:text-2xl">
           Cargar Equipos

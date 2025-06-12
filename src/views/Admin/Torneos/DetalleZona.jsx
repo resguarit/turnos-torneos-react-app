@@ -1,7 +1,7 @@
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { Users, ChevronLeft, Edit3, Trash2, Shuffle, Calendar } from 'lucide-react';
@@ -43,7 +43,8 @@ export default function DetalleZona() {
   const [modalRondaVisible, setModalRondaVisible] = useState(false);
   const [equiposSeleccionados, setEquiposSeleccionados] = useState([]);
   const [fechaAnteriorId, setFechaAnteriorId] = useState(null);
-  const [activeTab, setActiveTab] = useState('equipos');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'equipos');
   const abortControllerRef = useRef(null);
   const [modalConfirmVisible, setModalConfirmVisible] = useState(false);
 
@@ -94,6 +95,12 @@ export default function DetalleZona() {
         } else {
           setFechasSorteadas(false);
         }
+        
+        // Verificar si hay una pestaña en la URL y actualizarla
+        const tabParam = searchParams.get('tab');
+        if (tabParam && ['equipos', 'fechas', 'grupos', 'arana', 'resultados'].includes(tabParam)) {
+          setActiveTab(tabParam);
+        }
       } catch (error) {
         if (error.name === 'AbortError') {
           console.log('Petición cancelada');
@@ -107,7 +114,7 @@ export default function DetalleZona() {
     };
   
     fetchZona();
-  }, [zonaId]);
+  }, [zonaId, searchParams]);
 
   // Función para manejar el cambio de pestaña
   const handleTabChange = (tab) => {
@@ -118,6 +125,8 @@ export default function DetalleZona() {
     // Crear nuevo controlador
     abortControllerRef.current = new AbortController();
     setActiveTab(tab);
+    // Actualizar URL con el parámetro de la pestaña
+    setSearchParams({ tab });
   };
 
   const handleToggleEditMode = () => {
@@ -484,6 +493,11 @@ export default function DetalleZona() {
           setFechas(fechasResponse.data);
         } else {
           setFechas([]);
+        }
+        
+        // Mantener la pestaña actual en la URL
+        if (!searchParams.has('tab')) {
+          setSearchParams({ tab: activeTab });
         }
       }
     } catch (error) {

@@ -1,5 +1,5 @@
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BtnLoading from '@/components/BtnLoading';
@@ -189,7 +189,7 @@ export default function Zonas() {
                       <p className="w-full flex gap-2 items-center "><CalendarDays size={18} />Siguiente Fecha: {zona.siguienteFecha}</p>
                     </div>
                     <div className="flex mt-4 gap-3 text-sm justify-center">
-                      <button onClick={() => navigate(`/detalle-zona/${zona.id}`)} className="flex-1 border text-center border-gray-300 p-1 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Ver Detalles</button>
+                      <button onClick={() => navigate(`/detalle-zona/${zona.id}?tab=equipos`)} className="flex-1 border text-center border-gray-300 p-1 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Ver Detalles</button>
                       <button
                         onClick={() => navigate(`/editar-zona/${zona.id}`)}
                         className="bg-blue-500 text-white px-4 py-2 rounded"

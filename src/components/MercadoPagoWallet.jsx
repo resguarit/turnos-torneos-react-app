@@ -4,7 +4,7 @@ import api from '@/lib/axiosConfig';
 import BtnLoading from "./BtnLoading";
 import { Loader2 } from "lucide-react";
 
-const PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY;
+const PUBLIC_KEY = 'APP_USR-ea10856b-f68f-4e56-a05b-a2621a1f2ff1';
 
 const MercadoPagoWallet = ({ turnoId, onReady }) => {
     const [preferenceId, setPreferenceId] = useState(null);

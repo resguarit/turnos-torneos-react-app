@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Trash2, Shuffle } from 'lucide-react';
 import { Liga } from '@/components/Liga'

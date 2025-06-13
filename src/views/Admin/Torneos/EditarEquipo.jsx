@@ -1,5 +1,5 @@
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
@@ -54,7 +54,7 @@ export default function EditarEquipo() {
       if (response.status === 200) {
         toast.success('Equipo actualizado correctamente');
         // Navegar de vuelta a la página de la zona
-        navigate(`/detalle-zona/${zonaId}`);
+        navigate(`/detalle-zona/${zonaId}?tab=equipos`);
       }
     } catch (error) {
       console.error('Error al actualizar el equipo:', error);
@@ -89,7 +89,7 @@ export default function EditarEquipo() {
       <main className="flex-1 p-6 bg-gray-100">
         <div className="w-full flex mb-2">
           <button 
-            onClick={() => navigate(`/detalle-zona/${equipo.zonas[0].id}`)} 
+            onClick={() => navigate(`/detalle-zona/${equipo.zonas[0].id}?tab=equipos`)} 
             
             className="bg-black rounded-xl text-white p-2 text-sm flex items-center justify-center"
           >

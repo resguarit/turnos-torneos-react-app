@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Trash2, Plus, ChevronLeft } from 'lucide-react';
-import { Header } from '@/components/header';
-import { Footer } from '@/components/footer';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import api from '@/lib/axiosConfig';
 import { toast, ToastContainer } from 'react-toastify';
 import CrearPersonaModal from './Modals/CrearPersonaModal';

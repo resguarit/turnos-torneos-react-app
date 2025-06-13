@@ -1,0 +1,53 @@
+# Nombre del workflow
+name: Desplegar Frontend en producción
+
+# Disparador: se ejecuta en cada push a la rama main (tambien en los pull requests)
+on:
+  push:
+    branches:
+      - master
+
+# Tareas a ejecutar
+jobs:
+  build-and-deploy:
+    # Usar un servidor Linux de GitHub para correr los pasos
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Descargar código del repositorio
+      - name: Descargar codigo fuente
+        uses: actions/checkout@v4
+
+      # 2. Configurar el entorno de Node.js v20
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      
+      # 3. Instalar dependencias de forma limpia y rapida
+      - name: Instalar dependencias
+        run: npm ci
+
+      # 4. Construir la aplicación para producción
+      - name: Hacer el build de la aplicación
+        run: npm run build
+
+      # 5. Desplegar los archivos al servidor
+      - name: Sincronizar archivos con el servidor
+        uses: easingthemes/ssh-deploy@main
+        with:
+          # Secretos que configuraste en GitHub
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_PORT: ${{ secrets.SSH_PORT }}
+          
+          # Carpeta que se va a subir ('dist/')
+          SOURCE: "dist/"
+          
+          # Carpeta de destino en tu servidor
+          TARGET: "/home/rgturnos.com.ar/public_html"
+          
+          # Argumento para que rsync elimine archivos viejos en el destino
+          ARGS: "--delete"
+          EXCLUDE: ".htaccess"

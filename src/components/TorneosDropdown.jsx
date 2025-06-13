@@ -49,7 +49,7 @@ export default function TorneosDropdown({ anchorRef, closeMenuTorneos }) {
                 key={zona.id}
                 className="w-full text-left px-3 py-2 hover:bg-gray-700 rounded-md"
                 onClick={() => {
-                  navigate(`/detalle-zona/${zona.id}`)
+                  navigate(`/detalle-zona/${zona.id}?tab=equipos`)
                   closeMenuTorneos()
                 }}
               >

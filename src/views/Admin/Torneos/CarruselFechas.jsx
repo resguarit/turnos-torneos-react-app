@@ -316,6 +316,8 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
       <div className="divide-y divide-gray-200">
         {currentFecha.partidos && currentFecha.partidos.length > 0 ? (
           currentFecha.partidos.map((partido) => {
+            // Si hay penales cargados para este partido
+            const penales = Array.isArray(partido.penales) && partido.penales.length > 0 ? partido.penales[0] : null;
 
             return (
               <div 
@@ -335,8 +337,10 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
                   </div>
 
                   {partido.estado === 'Finalizado' ? (
-                    <span className="mx-2 font-bold">
-                      {partido.marcador_local ?? '-'} - {partido.marcador_visitante ?? '-'}
+                    <span className="mx-2 font-bold flex flex-col items-center">
+                      <span className={penales ? "line-through decoration-2 decoration-red-500" : ""}>
+                        {partido.marcador_local ?? '-'} - {partido.marcador_visitante ?? '-'}
+                      </span>
                     </span>
                   ) : (
                     <span className="mx-2 font-bold">-</span>
@@ -352,9 +356,18 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
                     />
                   </div>
                 </div>
-                <div className="flex justify-between mt-2 text-sm text-gray-600">
-                  <span>Cancha: {partido.cancha?.nro || 'No Definido'}</span>
-                  <span>
+                <div className="grid grid-cols-3 mt-2 text-sm text-gray-600">
+                  <span className="text-left">Cancha: {partido.cancha?.nro || 'No Definido'}</span>
+                  <div>
+                    {penales && (
+                        <span className="text-sm font-semibold text-gray-700 flex items-center justify-center mt-1">
+                          <span className="">({penales.penales_local ?? 0}</span>
+                          <span className="mx-1 ">-</span>
+                          <span className="">{penales.penales_visitante ?? 0})</span>
+                        </span>
+                      )}
+                  </div>
+                  <span className="text-right">
                     Hora: {partido.horario?.hora_inicio && partido.horario?.hora_fin ? formatearRangoHorario(partido.horario.hora_inicio, partido.horario.hora_fin) : "No Definido"}
                   </span>
                 </div>

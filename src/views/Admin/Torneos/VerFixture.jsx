@@ -126,6 +126,8 @@ export default function VerFixture() {
             {currentFecha.partidos && currentFecha.partidos.length > 0 ? (
               currentFecha.partidos.map((partido, index) => {
                 const horario = horarios[partido.horario_id] || {};
+                // Penales: igual que en CarruselFechas.jsx
+                const penales = Array.isArray(partido.penales) && partido.penales.length > 0 ? partido.penales[0] : null;
                 return (
                   <div key={index} className="p-3 bg-gray-200 rounded-lg my-1">
                     <div className="flex items-center justify-between">
@@ -133,13 +135,21 @@ export default function VerFixture() {
                         <span className="font-medium">{partido.equipos[0]?.nombre || 'Equipo Local'}</span>
                       </div>
                       {partido.estado === 'Finalizado' ? (
-                    <span className="mx-2 font-bold">
-                      {partido.marcador_local ?? '-'} - {partido.marcador_visitante ?? '-'}
-                    </span>
-                  ) : (
-                    <span className="mx-2 font-bold">-</span>
-                  )}
-
+                        <span className="mx-2 font-bold flex flex-col items-center">
+                          <span className={penales ? "line-through decoration-2 decoration-red-500" : ""}>
+                            {partido.marcador_local ?? '-'} - {partido.marcador_visitante ?? '-'}
+                          </span>
+                          {penales && (
+                            <span className="text-sm font-semibold text-gray-700 flex items-center justify-center mt-1">
+                              <span>({penales.penales_local ?? 0}</span>
+                              <span className="mx-1">-</span>
+                              <span>{penales.penales_visitante ?? 0})</span>
+                            </span>
+                          )}
+                        </span>
+                      ) : (
+                        <span className="mx-2 font-bold">-</span>
+                      )}
                       <div className="flex items-center space-x-2 flex-1 justify-end">
                         <span className="font-medium">{partido.equipos[1]?.nombre || 'Equipo Visitante'}</span>
                       </div>

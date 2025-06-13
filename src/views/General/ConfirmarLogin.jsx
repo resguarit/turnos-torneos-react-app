@@ -16,6 +16,7 @@ import { format, parseISO, isValid } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { encryptRole } from '@/lib/getRole';
 import { formatearFechaCompleta, formatearRangoHorario, calcularDuracion } from '@/utils/dateUtils';
+import { useConfiguration } from '@/context/ConfigurationContext';
 
 export default function ConfirmarLogin() {
   const [formData, setFormData] = useState({
@@ -38,6 +39,8 @@ export default function ConfirmarLogin() {
   const selectedTime = queryParams.get("time");
   const selectedDate = queryParams.get("date");
   const selectedCourt = queryParams.get("court");
+
+  const { config, loading: loadingConfig } = useConfiguration();
 
   const validateForm = () => {
     const newErrors = {};
@@ -268,7 +271,9 @@ export default function ConfirmarLogin() {
                   <>
                     <div className="flex items-center justify-center text-sm text-muted-foreground space-y-3 md:space-y-6 mb-4 ">
                       <MapPin className="w-4 h-4 mr-1" />
-                      Rock & Gol 520 esq. 20
+                      {loadingConfig
+                        ? 'Cargando...'
+                        : config?.direccion_complejo || 'Dirección no disponible'}
                     </div>
                     <div className="space-y-4 md:space-y-6 mb-4">
                       <div className="space-y-4">
@@ -337,7 +342,7 @@ export default function ConfirmarLogin() {
                 Registrarse
               </button>
               <button 
-                className="w-full bg-red-500 text-white text-sm p-2 rounded-[10px] hover:bg-red-600"
+                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-[10px] text-sm w-full md:w-auto"
                 onClick={handleCancel}
                 disabled={loading}
               >

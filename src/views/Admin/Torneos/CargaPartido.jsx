@@ -217,6 +217,8 @@ export default function CargaPartido() {
                   const horario = partido.horario ? formatearRangoHorario(partido.horario.hora_inicio, partido.horario.hora_fin) : "No Definido";
                   const marcadorLocal = partido.marcador_local ?? "-";
                   const marcadorVisitante = partido.marcador_visitante ?? "-";
+                  // Penales: igual que en CarruselFechas.jsx
+                  const penales = Array.isArray(partido.penales) && partido.penales.length > 0 ? partido.penales[0] : null;
 
                   return (
                     <div
@@ -235,9 +237,22 @@ export default function CargaPartido() {
                           </span>
                         </div>
 
-                        <span className="mx-2 font-bold">
-                          {marcadorLocal} - {marcadorVisitante}
-                        </span>
+                        {partido.estado === 'Finalizado' ? (
+                          <span className="mx-2 font-bold flex flex-col items-center">
+                            <span className={penales ? "line-through decoration-2 decoration-red-500" : ""}>
+                              {marcadorLocal} - {marcadorVisitante}
+                            </span>
+                            {penales && (
+                              <span className="text-sm font-semibold text-gray-700 flex items-center justify-center mt-1">
+                                <span>({penales.penales_local ?? 0}</span>
+                                <span className="mx-1">-</span>
+                                <span>{penales.penales_visitante ?? 0})</span>
+                              </span>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="mx-2 font-bold">-</span>
+                        )}
 
                         <div className="flex items-center space-x-2 flex-1 justify-end">
                           <span className="font-medium">

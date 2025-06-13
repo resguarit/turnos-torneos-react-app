@@ -49,7 +49,7 @@ export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handl
           <span className="text-sm text-gray-500">
             Total de equipos: {zona.equipos?.length || 0}
           </span>
-          <button onClick={() => navigate(`/alta-equipo/${zonaId}`)} className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white">
+          <button onClick={() => navigate(`/alta-equipo/${zonaId}`)} className="bg-secundario hover:bg-secundario/80 p-2 text-sm font-inter rounded-[6px] text-white">
             + Cargar Equipo
           </button>
         </div>

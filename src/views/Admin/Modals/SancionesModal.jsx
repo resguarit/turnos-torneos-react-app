@@ -75,7 +75,7 @@ export default function SancionesModal({
       setSancion({
         motivo: '',
         tipo: '',
-        cantidadFechas: 1,
+        cantidadFechas: null,
         fechaDesde: '',
         fechaHasta: '',
         estado: 'Activa',
@@ -83,7 +83,16 @@ export default function SancionesModal({
     }
   };
 
-  
+  // Calcular cantidad de fechas automáticamente si no es expulsión permanente y hay fechas seleccionadas
+  useEffect(() => {
+    if (sancion.tipo !== 'expulsión permanente' && sancion.fechaDesde && sancion.fechaHasta && fechas.length > 0) {
+      const desdeIdx = fechas.findIndex(f => String(f.id) === String(sancion.fechaDesde));
+      const hastaIdx = fechas.findIndex(f => String(f.id) === String(sancion.fechaHasta));
+      if (desdeIdx !== -1 && hastaIdx !== -1 && hastaIdx >= desdeIdx) {
+        handleSancionChange('cantidadFechas', hastaIdx - desdeIdx + 1);
+      }
+    }
+  }, [sancion.fechaDesde, sancion.fechaHasta, sancion.tipo, fechas]);
 
   const handleEnviarSancion = async () => {
     try {
@@ -246,14 +255,23 @@ export default function SancionesModal({
                   <label htmlFor="cantidadFechas" className="block text-sm font-medium text-gray-700">
                     Cantidad de Fechas
                   </label>
-                  <input
-                    id="cantidadFechas"
-                    type="number"
-                    min="1"
-                    value={sancion.cantidadFechas}
-                    onChange={(e) => handleSancionChange('cantidadFechas', Number(e.target.value))}
-                    className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
+                  {sancion.tipo === 'expulsión permanente' ? (
+                    <input
+                      id="cantidadFechas"
+                      type="text"
+                      value="Ilimitada"
+                      disabled
+                      className="block w-full px-2 border-gray-300 rounded-[6px] shadow-sm bg-gray-200 text-gray-500 cursor-not-allowed"
+                    />
+                  ) : (
+                    <input
+                      id="cantidadFechas"
+                      type="number"
+                      value={sancion.cantidadFechas}
+                      readOnly
+                      className="block w-full px-2 border-gray-300 rounded-[6px] shadow-sm bg-gray-200 text-gray-700 cursor-not-allowed"
+                    />
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -265,6 +283,7 @@ export default function SancionesModal({
                     value={sancion.fechaDesde}
                     onChange={(e) => handleSancionChange('fechaDesde', e.target.value)}
                     className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    disabled={sancion.tipo === 'expulsión permanente'}
                   >
                     <option value="">Seleccionar fecha</option>
                     {fechas.map((fecha) => (
@@ -284,6 +303,7 @@ export default function SancionesModal({
                     value={sancion.fechaHasta}
                     onChange={(e) => handleSancionChange('fechaHasta', e.target.value)}
                     className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    disabled={sancion.tipo === 'expulsión permanente'}
                   >
                     <option value="">Seleccionar fecha</option>
                     {fechas.map((fecha) => (
@@ -298,7 +318,7 @@ export default function SancionesModal({
               <div className="flex justify-end  ">
                 <button
                   onClick={handleGuardarSancion}
-                  disabled={!sancion.tipo || !sancion.motivo || !sancion.fechaDesde || !sancion.fechaHasta}
+                  disabled={!sancion.tipo || !sancion.motivo }
                   className="px-4 py-2 mb-4 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed"
                 >
                   Guardar Sanción

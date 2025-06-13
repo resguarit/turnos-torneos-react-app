@@ -19,7 +19,6 @@ export default function ResultadoPartido() {
   const [partido, setPartido] = useState(null);
   const [equipoLocal, setEquipoLocal] = useState(null);
   const [equipoVisitante, setEquipoVisitante] = useState(null);
-  const [verEquipo, setVerEquipo] = useState(1);
   const [loading, setLoading] = useState(false);
   const [estadisticas, setEstadisticas] = useState({});
   const [originalEstadisticas, setOriginalEstadisticas] = useState({});
@@ -543,7 +542,7 @@ export default function ResultadoPartido() {
         </div>
         <h1 className=" font-bold mb-4 text-2xl">Resultado Partido</h1>
         <div className='w-full  flex gap-4'>
-        <div className="bg-white w-1/2 rounded-[8px] shadow-md p-4 mb-6">
+        <div className="bg-white w-full rounded-[8px] shadow-md p-4 mb-6">
           <h2 className="text-xl font-bold text-center mb-3 text-black">
             {partido.equipos[0].nombre} <span className="text-gray-500">vs</span> {partido.equipos[1].nombre}
           </h2>
@@ -636,42 +635,20 @@ export default function ResultadoPartido() {
         </div>
         <div className="mt-2">
           <div className="w-full flex flex-col sm:flex-row justify-between gap-4 mb-4">
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => setVerEquipo(1)}
-                className={`rounded-[6px] px-3 py-2 font-medium transition-colors shadow-sm ${
-                  verEquipo === 1
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
-                }`}
-              >
-                {equipoLocal.nombre}
-              </button>
-              <button
-                onClick={() => setVerEquipo(2)}
-                className={`rounded-[6px] px-3 py-2 font-medium transition-colors shadow-sm ${
-                  verEquipo === 2
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
-                }`}
-              >
-                {equipoVisitante.nombre}
-              </button>
-            </div>
             <div className='flex gap-3'>
                       {/* Botón para cargar/ver penales */}
               {partido.estado === "Finalizado" && (
                 <div className="flex justify-center">
                   {penalesData ? (
                     <button
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-[6px] shadow"
+                      className="bg-blue-600 text-sm hover:bg-blue-700 text-white px-4 py-2 rounded-[6px] shadow"
                       onClick={() => setShowPenalesModal(true)}
                     >
                       Ver Penales
                     </button>
                   ) : (
                     <button
-                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-[6px] shadow"
+                      className="bg-green-600 text-sm hover:bg-green-700 text-white px-4 py-2 rounded-[6px] shadow"
                       onClick={() => setShowPenalesModal(true)}
                     >
                       Cargar Penales
@@ -682,20 +659,22 @@ export default function ResultadoPartido() {
 
               <button
                 onClick={() => setModalSanciones(true)}
-                className="rounded-[6px] px-3 py-2 bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm flex items-center gap-1"
+                className="rounded-[6px] px-3 py-2 bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm flex items-center text-sm gap-1"
               >
                 <span className="text-lg">+</span> Cargar Sanciones
               </button>
-              <button
+              
+            </div>
+            <button
                 onClick={handleAddJugador}
                 disabled={jugadoresEnAlta.length > 0}
-                className="rounded-[6px] px-3 py-2 bg-black text-white hover:bg-gray-900 transition-colors shadow-sm flex items-center gap-1"
+                className="rounded-[6px] px-3 py-2 bg-black text-white hover:bg-gray-900 transition-colors shadow-sm flex text-sm items-center gap-1"
               >
                 <span className="text-lg">+</span> Agregar Jugador
               </button>
-            </div>
           </div>
-          <div className="overflow-x-auto rounded-[8px] shadow">
+          <div className="overflow-x-auto rounded-[8px] shadow mb-8">
+            <h2 className="text-lg font-bold  bg-gray-200 px-4 py-2 rounded-t">{equipoLocal.nombre}</h2>
             <table className="w-full bg-white">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
@@ -801,8 +780,7 @@ export default function ResultadoPartido() {
                     </td>
                   </tr>
                 ))}
-                {verEquipo === 1
-                  ? equipoLocal.jugadores.map((jugador) => (
+                {equipoLocal.jugadores.map((jugador) => (
                       <tr
                         key={jugador.id}
                         className={
@@ -958,8 +936,41 @@ export default function ResultadoPartido() {
                           {/* Ya no hay botones de acción aquí */}
                         </td>
                       </tr>
-                    ))
-                  : equipoVisitante.jugadores.map((jugador) => (
+                    ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="overflow-x-auto rounded-[8px] shadow mb-8">
+            <h2 className="text-lg font-bold  bg-gray-200 px-4 py-2 rounded-t">{equipoVisitante.nombre}</h2>
+            <table className="w-full bg-white">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">DNI</th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nombre y Apellido
+                  </th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Fecha Nacimiento
+                  </th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Numero Camiseta
+                  </th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Goles</th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Asistencias
+                  </th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Amarillas
+                  </th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Rojas</th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Presente
+                  </th>
+                  <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {equipoVisitante.jugadores.map((jugador) => (
                       <tr
                         key={jugador.id}
                         className={

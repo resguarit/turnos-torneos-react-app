@@ -5,9 +5,10 @@ import { es } from 'date-fns/locale';
 import { DayPicker } from 'react-day-picker';
 import api from '@/lib/axiosConfig'
 import { toast } from 'react-toastify'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import CrearPlayoffModal from '../../Modals/CrearPlayoffModal';
 import { format as formatDate } from 'date-fns';
+import CrearPlayoffGruposModal from '../../Modals/CrearPlayoffGruposModal'; // Asegúrate de tener este modal
 import { useTorneos } from '@/context/TorneosContext';
 
 export function TabFechas({ 
@@ -29,10 +30,15 @@ export function TabFechas({
 }) {
   const [loadingPlayoff, setLoadingPlayoff] = useState(false);
   const [showPlayoffModal, setShowPlayoffModal] = useState(false);
+  const [showPlayoffGruposModal, setShowPlayoffGruposModal] = useState(false);
+  const [loadingPlayoffGrupos, setLoadingPlayoffGrupos] = useState(false);
   const { torneos, setTorneos } = useTorneos();
 
   const puedeCrearPlayoff = zona?.formato === 'Liga + Playoff';
+  const puedeCrearPlayoffGrupos = zona?.formato === 'Grupos';
+
   console.log("Puede crear playoff:", puedeCrearPlayoff);
+  console.log("Puede crear playoff grupos:", puedeCrearPlayoffGrupos);
   console.log("Fechas", fechas);
   console.log("Fechas sorteadas", fechasSorteadas)
   const handleCrearPlayoff = async () => {
@@ -52,6 +58,28 @@ export function TabFechas({
       toast.error(err.response?.data?.message || "Error al crear playoff");
     } finally {
       setLoadingPlayoff(false);
+    }
+  };
+
+  const ultimaFecha = useMemo(() => {
+    if (!fechas || fechas.length === 0) return null;
+    return fechas.reduce((max, f) => (f.fecha_inicio > max ? f.fecha_inicio : max), fechas[0].fecha_inicio);
+  }, [fechas]);
+
+  const handleCrearPlayoffGrupos = async (fecha, equiposPorGrupo) => {
+    setLoadingPlayoffGrupos(true);
+    try {
+      const res = await api.post(`/zonas/${zonaId}/crear-playoff-en-grupos`, {
+        fecha_inicial: formatDate(fecha, 'yyyy-MM-dd'),
+        equipos_por_grupo: equiposPorGrupo
+      });
+      toast.success("Playoff de grupos creado correctamente");
+      setShowPlayoffGruposModal(false);
+      if (onFechasDeleted) onFechasDeleted();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Error al crear playoff de grupos");
+    } finally {
+      setLoadingPlayoffGrupos(false);
     }
   };
 
@@ -123,6 +151,18 @@ export function TabFechas({
 
               </div>
             )}
+            {/* Botón para crear playoff de grupos */}
+            {puedeCrearPlayoffGrupos && (
+              <div className="flex items-center gap-4 mt-2">
+                <button
+                  onClick={() => setShowPlayoffGruposModal(true)}
+                  className="bg-black text-white text-sm px-3 py-2 rounded-[6px] hover:bg-green-700"
+                  disabled={loadingPlayoffGrupos}
+                >
+                  Generar Ronda Eliminatoria
+                </button>
+              </div>
+            )}
             </div>
           </div>
         )}
@@ -160,6 +200,14 @@ export function TabFechas({
               setLoadingPlayoff(false);
             }
           }}
+        />
+        <CrearPlayoffGruposModal
+          open={showPlayoffGruposModal}
+          onClose={() => setShowPlayoffGruposModal(false)}
+          loading={loadingPlayoffGrupos}
+          ultimaFecha={ultimaFecha}
+          onConfirm={handleCrearPlayoffGrupos}
+          zonaId={zonaId}
         />
       </div>
   )

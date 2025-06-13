@@ -189,7 +189,7 @@ const PestanaBalance = () => {
                 </CardHeader>
                 <CardContent>
                   <p className={`text-2xl font-bold ${balanceData.balance_neto >= 0 ? "text-blue-700" : "text-orange-700"}`}>
-                    ${Math.abs(balanceData.balance_neto).toFixed(2)}
+                    {balanceData.balance_neto < 0 ? "-$" : "$"}{Math.abs(balanceData.balance_neto).toFixed(2)}
                     {balanceData.balance_neto < 0 && <span className="text-sm ml-1">(Pérdida)</span>}
                   </p>
                 </CardContent>

@@ -135,7 +135,7 @@ export default function Zonas() {
             <h1 className="text-2xl lg:text-2xl font-bold">
               Zonas del Torneo <span className='text-blue-600'>{torneo ? torneo.nombre : ''}</span>
             </h1>
-            <button onClick={() => navigate(`/alta-zona/${torneoId}`)} className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white">
+            <button onClick={() => navigate(`/alta-zona/${torneoId}`)} className="bg-secundario hover:bg-secundario/80 p-2 text-sm font-inter rounded-[6px] text-white">
               + Nueva Zona
             </button>
           </div>

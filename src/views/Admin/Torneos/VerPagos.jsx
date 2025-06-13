@@ -175,7 +175,7 @@ export default function VerPagos() {
         <div className="w-full flex mb-2">
           <button
             onClick={() => navigate(-1)}
-            className="bg-black rounded-xl text-white py-2 px-3 text-sm flex items-center justify-center"
+            className="bg-secundario rounded-xl text-white py-2 px-3 text-sm flex items-center justify-center"
           >
             <ChevronLeft className="w-5" /> Atrás
           </button>
@@ -185,7 +185,7 @@ export default function VerPagos() {
             <h1 className="text-2xl font-bold">Historial de Pagos</h1>
             <button
               onClick={() => setModalOpen(true)}
-              className="bg-black hover:bg-black/80 py-2 px-3 text-sm rounded-[6px] text-white flex items-center gap-1"
+              className="bg-secundario hover:bg-secundario/80 py-2 px-3 text-sm rounded-[6px] text-white flex items-center gap-1"
             >
               <Plus size={16} /> Registrar Pago
             </button>

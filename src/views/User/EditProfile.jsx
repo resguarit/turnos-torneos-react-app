@@ -590,7 +590,7 @@ export default function EditProfile() {
             <div className="flex justify-between pt-4">
               <button
                 type="button"
-                className="bg-red-500 px-3 py-2 items-center flex text-white  rounded-[6px] hover:bg-red-600 transition-colors"
+                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 items-center flex rounded-[6px] transition-colors"
                 onClick={handleCancelarClick}
               >
                 Cancelar

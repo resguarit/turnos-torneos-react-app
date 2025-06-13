@@ -6,10 +6,12 @@ import BtnLoading from "@/components/BtnLoading";
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { formatearFechaCompleta } from '@/utils/dateUtils';
+import { useNavigate } from 'react-router-dom';
 
 export default function MisTorneos() {
   const [tarjetas, setTarjetas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const dni = localStorage.getItem("dni");
@@ -47,6 +49,7 @@ export default function MisTorneos() {
             tarjetas.push({
               torneo: torneoNombre,
               zona: zonaNombre,
+              zonaId: comp.zona?.id,
               equipo: equipoNombre,
               fecha,
               rival,
@@ -60,6 +63,12 @@ export default function MisTorneos() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const handleClick = (zonaId) => {
+    if (zonaId) {
+      navigate(`/tablas/${zonaId}`);
+    }
+  };
 
   if (loading) {
     return (
@@ -78,7 +87,14 @@ export default function MisTorneos() {
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {tarjetas.map((t, idx) => (
-          <div key={idx} className="bg-white p-6 rounded-xl shadow-md border border-gray-100 flex flex-col gap-2">
+          <div
+            key={idx}
+            className={`bg-white p-6 rounded-xl shadow-md border border-gray-100 flex flex-col gap-2 transition cursor-pointer hover:shadow-lg hover:border-naranja ${t.zonaId ? '' : 'opacity-60 cursor-not-allowed'}`}
+            onClick={() => handleClick(t.zonaId)}
+            tabIndex={t.zonaId ? 0 : -1}
+            role="button"
+            aria-disabled={!t.zonaId}
+          >
             <div className="flex flex-col gap-1 mb-2">
               <span className="text-naranja text-lg font-bold">{t.torneo}</span>
               <span className="text-gray-700 font-semibold">Zona: <span className="font-normal">{t.zona}</span></span>

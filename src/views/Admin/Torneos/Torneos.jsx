@@ -106,7 +106,7 @@ export default function Torneos() {
         <div className="max-w-7xl lg:max-w-full mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Torneos</h1>
-            <button variant="default" className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white" onClick={handleNuevoTorneo}>
+            <button variant="default" className="bg-secundario hover:bg-secundario/80 p-2 text-sm font-inter rounded-[6px] text-white" onClick={handleNuevoTorneo}>
               + Nuevo Torneo
             </button>
           </div>

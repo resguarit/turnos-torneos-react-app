@@ -49,7 +49,7 @@ export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handl
           <span className="text-sm text-gray-500">
             Total de equipos: {zona.equipos?.length || 0}
           </span>
-          <button onClick={() => navigate(`/alta-equipo/${zonaId}`)} className="bg-black hover:bg-black/80 p-2 text-sm font-inter rounded-[6px] text-white">
+          <button onClick={() => navigate(`/alta-equipo/${zonaId}`)} className="bg-secundario hover:bg-secundario/80 p-2 text-sm font-inter rounded-[6px] text-white">
             + Cargar Equipo
           </button>
         </div>
@@ -73,7 +73,7 @@ export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handl
                           <Button
                             variant="outline"
                             size="sm"
-                            className="text-blue-600 rounded-[6px] border-blue-200 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                            className="text-blue-600 rounded-[6px] border-blue-200 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 transition-colors"
                             onClick={() => {
                               localStorage.setItem('zona_id', zonaId);
                               navigate(`/jugadores/${equipo.id}`, {
@@ -90,7 +90,7 @@ export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handl
                           <Button
                             variant="outline"
                             size="sm"
-                            className="text-green-600 rounded-[6px] border-green-200 hover:bg-green-50 hover:border-green-300 transition-colors"
+                            className="text-green-600 rounded-[6px] border-green-200 hover:bg-green-50 hover:border-green-300 hover:text-green-600 transition-colors"
                             onClick={() => handleNavigateToVerPagos(equipo.id)}
                           >
                             <CreditCard className="w-4 h-4 mr-2" />
@@ -99,7 +99,7 @@ export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handl
                           <Button
                             variant="outline"
                             size="sm"
-                            className="text-orange-600 rounded-[6px] border-orange-200 hover:bg-orange-50 hover:border-orange-300 transition-colors"
+                            className="text-orange-600 rounded-[6px] border-orange-200 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors"
                             onClick={() => handleReemplazarEquipo(equipo.id)}
                           >
                             <RefreshCw className="w-4 h-4 mr-2" />

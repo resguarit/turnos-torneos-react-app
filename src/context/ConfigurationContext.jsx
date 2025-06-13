@@ -18,7 +18,7 @@ export const ConfigurationProvider = ({ children }) => {
                 if (response.data && response.data.colores) {
                     document.documentElement.style.setProperty('--color-primary', response.data.colores.primary);
                     console.log(response.data.colores.primary);
-                    document.documentElement.style.setProperty('--color-secondary', response.data.colores.secondary);
+                    document.documentElement.style.setProperty('--color-secundario', response.data.colores.secondary);
                     console.log(response.data.colores.secondary);
                 }
             } catch (error) {

@@ -665,14 +665,52 @@ export default function ResultadoPartido() {
               </button>
               
             </div>
-            <button
+                        <div className="flex gap-3">
+              {!chargingMode && Object.keys(originalEstadisticas).length === 0 && (
+                <button
+                  onClick={() => setChargingMode(true)}
+                  className="px-3 py-2 bg-green-600 text-white rounded-[6px] shadow-sm hover:bg-green-700 transition-colors"
+                  disabled={jugadoresEnAlta.length > 0}
+                >
+                  Cargar Resultados
+                </button>
+              )}
+              {!chargingMode && Object.keys(originalEstadisticas).length > 0 && (
+                <button
+                  onClick={() => setChargingMode(true)} 
+                  className="px-4 py-2.5 bg-yellow-500 text-white font-medium rounded-[8px] shadow-sm hover:bg-yellow-600 transition-colors"
+                  disabled={jugadoresEnAlta.length > 0}
+                >
+                  Editar Resultados
+                </button>
+              )}
+              {chargingMode && changesDetected && (
+                <button
+                  onClick={handleOpenConfirmation}
+                  disabled={loadingApply}
+                  className={`px-4 py-2.5 text-white font-medium rounded-[8px] shadow-sm transition-colors ${loadingApply ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
+                >
+                  {loadingApply ? "Aplicando Cambios..." : "Aplicar Cambios"}
+                </button>
+              )}
+              {chargingMode && (
+                <button
+                  onClick={handleCancelChanges}
+                  className="px-4 py-2.5 bg-red-600 text-white font-medium rounded-[8px] shadow-sm hover:bg-red-700 transition-colors"
+                >
+                  Cancelar
+                </button>
+              )}
+            </div>
+
+          </div>
+                      <button
                 onClick={handleAddJugador}
                 disabled={jugadoresEnAlta.length > 0}
                 className="rounded-[6px] px-3 py-2 bg-black text-white hover:bg-gray-900 transition-colors shadow-sm flex text-sm items-center gap-1"
               >
                 <span className="text-lg">+</span> Agregar Jugador
               </button>
-          </div>
           <div className="overflow-x-auto rounded-[8px] shadow mb-8">
             <h2 className="text-lg font-bold  bg-gray-200 px-4 py-2 rounded-t">{equipoLocal.nombre}</h2>
             <table className="w-full bg-white">
@@ -1151,43 +1189,7 @@ export default function ResultadoPartido() {
               </p>
             </div>
             </div>
-            <div className="flex gap-3">
-              {!chargingMode && Object.keys(originalEstadisticas).length === 0 && (
-                <button
-                  onClick={() => setChargingMode(true)}
-                  className="px-3 py-2 bg-green-600 text-white rounded-[6px] shadow-sm hover:bg-green-700 transition-colors"
-                  disabled={jugadoresEnAlta.length > 0}
-                >
-                  Cargar Resultados
-                </button>
-              )}
-              {!chargingMode && Object.keys(originalEstadisticas).length > 0 && (
-                <button
-                  onClick={() => setChargingMode(true)} 
-                  className="px-4 py-2.5 bg-yellow-500 text-white font-medium rounded-[8px] shadow-sm hover:bg-yellow-600 transition-colors"
-                  disabled={jugadoresEnAlta.length > 0}
-                >
-                  Editar Resultados
-                </button>
-              )}
-              {chargingMode && changesDetected && (
-                <button
-                  onClick={handleOpenConfirmation}
-                  disabled={loadingApply}
-                  className={`px-4 py-2.5 text-white font-medium rounded-[8px] shadow-sm transition-colors ${loadingApply ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
-                >
-                  {loadingApply ? "Aplicando Cambios..." : "Aplicar Cambios"}
-                </button>
-              )}
-              {chargingMode && (
-                <button
-                  onClick={handleCancelChanges}
-                  className="px-4 py-2.5 bg-red-600 text-white font-medium rounded-[8px] shadow-sm hover:bg-red-700 transition-colors"
-                >
-                  Cancelar
-                </button>
-              )}
-            </div>
+
           </div>
         </div>
         <ResultadoModal

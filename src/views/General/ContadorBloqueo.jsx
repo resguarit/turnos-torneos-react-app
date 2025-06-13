@@ -435,7 +435,7 @@ export default function ContadorBloqueo() {
             <Button 
               onClick={handleCancelarClick}
               disabled={loading || isCancelling || !timeLeft || timeLeft <= 0 || isLoadingAll || timerExpired}
-              className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-xl text-lg w-full md:w-auto order-2 md:order-1"
+              className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-8 py-3 rounded-xl text-lg w-full md:w-auto order-2 md:order-1"
             >
               {isCancelling ? 'Cancelando...' : 'Cancelar Reserva'}
             </Button>

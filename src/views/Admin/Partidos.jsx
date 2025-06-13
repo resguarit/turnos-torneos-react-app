@@ -335,9 +335,16 @@ function Partidos() {
                       <td className="py-2 px-3 border-b text-sm truncate">
                         <div className="grid grid-cols-3 items-center w-full">
                           <span className="text-left truncate">{partido.equipos[0]?.nombre}</span>
-                          <span className="text-center min-w-[50px]">{partido.marcador_visitante ?? '-'} - {partido.marcador_local ?? '-'}</span>
+                          <span className={`text-center min-w-[50px] ${partido.penales.length > 0 ? "line-through decoration-1 decoration-red-500" : ""}`}>{partido.marcador_visitante ?? '-'} - {partido.marcador_local ?? '-'}</span>
                           <span className="text-right truncate">{partido.equipos[1]?.nombre}</span>
                         </div>
+                        <div className="w-full justify-center flex items-center">
+                          {partido.penales && partido.penales.length > 0 && (
+                            <span className="text-xs text-red-500">
+                              ({partido.penales[0].penales_local ?? '-'} - {partido.penales[0].penales_visitante ?? '-'})
+                            </span>
+                          )}
+                          </div>
                       </td>
                       <td className="py-2 px-3 border-b text-center text-sm">
                         {partido.horario ? `${partido.horario.hora_inicio} - ${partido.horario.hora_fin}` : 'No Definido'}

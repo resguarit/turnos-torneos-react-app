@@ -437,19 +437,19 @@ function VerTurnos() {
               <div className="flex gap-6 items-center">
                 <button
                   onClick={() => navigate('/nuevo-turno-admi')}
-                  className="p-2 text-sm rounded-[6px] bg-naranja hover:bg-naranja/90 text-white"
+                  className="p-2 text-sm rounded-[6px] bg-secundario hover:bg-secundario/90 text-white"
                 >
                   Crear Turno 
                 </button>
                 <button
                   onClick={() => navigate('/crear-evento')}
-                  className="p-2 text-sm rounded-[6px] bg-naranja hover:bg-naranja/90 text-white"
+                  className="p-2 text-sm rounded-[6px] bg-secundario hover:bg-secundario/90 text-white"
                 >
                   Crear Evento 
                 </button>
                 <button
                   onClick={() => navigate('/bloquear-turnos')}
-                  className="p-2 text-sm rounded-[6px] bg-red-600 hover:bg-red-600/90 text-white"
+                  className="p-2 text-sm rounded-[6px] bg-secundario hover:bg-secundario/90 text-white"
                 >
                   Bloquear Turnos
                 </button>

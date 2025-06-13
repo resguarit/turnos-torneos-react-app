@@ -32,7 +32,7 @@ export default {
   		colors: {
         footer: '#2E2626',
         naranja: 'var(--color-primary)',
-        secondary: 'var(--color-secondary)',
+        secundario: 'var(--color-secundario)',
 		verde: '#32AE41',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

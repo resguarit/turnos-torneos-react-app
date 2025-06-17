@@ -576,13 +576,14 @@ export default function DetalleZona() {
       <div className="w-full flex mb-2">
         <BackButton ruta={`/zonas-admi/${zona.torneo_id}`} />
       </div>
-      <div className="w-full px-40">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl lg:text-2xl font-bold">{zona.torneo.nombre} - {zona.nombre} - {zona.año} <span className="text-sm text-gray-500 font-normal">({zona.formato})</span></h1>
+      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-20 xl:px-40">
+        <div className="mb-6">
+          <h1 className="text-xl md:text-2xl font-bold">{zona.torneo.nombre} - {zona.nombre} - {zona.año}</h1>
+          <p className="text-md text-gray-500">({zona.formato})</p>
         </div>
         
         {/* Tabs Navigation */}
-        <div className="flex border-b mb-6">
+        <div className="flex border-b mb-6 text-xs sm:text-sm lg:text-base">
           <button 
             className={`px-4 py-2 font-medium ${activeTab === 'equipos' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-700'}`}
             onClick={() => handleTabChange('equipos')}

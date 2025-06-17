@@ -86,8 +86,8 @@ export function TabFechas({
         
 
         {!fechasSorteadas && fechas.length === 0 && (
-          <div className="mt-6 justify-between flex w-full items-center">
-          <div className=" flex gap-2 items-center">
+          <div className="mt-6 flex flex-wrap w-full items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-2 items-center">
               {/* Datepicker */}
               <div className="relative" ref={calendarRef}>
                 <button
@@ -135,10 +135,10 @@ export function TabFechas({
                 {loading ? 'Sorteando...' : 'Sortear Fechas'} <Shuffle size={18} />
               </button>
           </div>
-          <div>
+          <div className="flex flex-wrap gap-2">
             {/* Botón para crear playoff en liga */}
             {puedeCrearPlayoff && (
-              <div className="flex items-center gap-4 ">
+              <div className="flex items-center">
                 <button
                   onClick={() => setShowPlayoffModal(true)}
                   className="bg-secundario text-white text-sm px-3 py-2 rounded-[6px] hover:bg-secundario/80"
@@ -151,7 +151,7 @@ export function TabFechas({
             )}
             {/* Botón para crear playoff de grupos */}
             {puedeCrearPlayoffGrupos && (
-              <div className="flex items-center gap-4 mt-2">
+              <div className="flex items-center">
                 <button
                   onClick={() => setShowPlayoffGruposModal(true)}
                   className="bg-black text-white text-sm px-3 py-2 rounded-[6px] hover:bg-green-700"

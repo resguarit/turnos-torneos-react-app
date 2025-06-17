@@ -77,7 +77,7 @@ export default function VerFixture() {
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
-      <main className="flex-1 p-6 bg-gray-100">
+      <main className="flex-1 p-2 sm:p-6 bg-gray-100">
         <div className="w-full flex mb-2">
           <button
             onClick={() => navigate(-1)}
@@ -86,8 +86,8 @@ export default function VerFixture() {
             <ChevronLeft className="w-5" /> Atrás
           </button>
         </div>
-        <div className="flex flex-col justify-center items-center h-full">
-          <div className="flex items-center justify-between w-1/2 p-3 bg-white border-b rounded-t-[8px]">
+        <div className="flex py-2 flex-col justify-center items-center h-full">
+          <div className="flex items-center justify-between w-full lg:w-1/2 p-3 bg-white border-b rounded-t-[8px]">
             <button
               onClick={goToPrevious}
               disabled={currentFechaIndex === 0}
@@ -122,7 +122,7 @@ export default function VerFixture() {
             </button>
           </div>
 
-          <div className="divide-y divide-gray-200 w-1/2 ">
+          <div className="divide-y divide-gray-200 w-full lg:w-1/2 ">
             {currentFecha.partidos && currentFecha.partidos.length > 0 ? (
               currentFecha.partidos.map((partido, index) => {
                 const horario = horarios[partido.horario_id] || {};

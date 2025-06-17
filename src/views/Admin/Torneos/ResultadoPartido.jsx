@@ -692,9 +692,9 @@ export default function ResultadoPartido() {
 
               <button
                 onClick={() => setModalSanciones(true)}
-                className="rounded-[6px] px-3 py-2 bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm flex items-center text-sm gap-1"
+                className="rounded-[6px] px-3 py-2 bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm flex items-center gap-1"
               >
-                <span className="text-lg">+</span> Cargar Sanciones
+              Cargar Sanciones
               </button>
               
             </div>
@@ -711,7 +711,7 @@ export default function ResultadoPartido() {
               {!chargingMode && Object.keys(originalEstadisticas).length > 0 && (
                 <button
                   onClick={() => setChargingMode(true)} 
-                  className="px-4 py-2.5 bg-yellow-500 text-white font-medium rounded-[8px] shadow-sm hover:bg-yellow-600 transition-colores"
+                  className="px-3 py-2 bg-yellow-500 text-white rounded-[6px] shadow-sm hover:bg-yellow-600 transition-colores"
                   disabled={jugadoresEnAltaLocal.length > 0 || jugadoresEnAltaVisitante.length > 0}
                 >
                   Editar Resultados
@@ -721,7 +721,7 @@ export default function ResultadoPartido() {
                 <button
                   onClick={handleOpenConfirmation}
                   disabled={loadingApply}
-                  className={`px-4 py-2.5 text-white font-medium rounded-[8px] shadow-sm transition-colores ${loadingApply ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
+                  className={`px-3 py-2 text-white rounded-[6px] shadow-sm transition-colores ${loadingApply ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
                 >
                   {loadingApply ? "Aplicando Cambios..." : "Aplicar Cambios"}
                 </button>
@@ -729,7 +729,7 @@ export default function ResultadoPartido() {
               {chargingMode && (
                 <button
                   onClick={handleCancelChanges}
-                  className="px-4 py-2.5 bg-red-600 text-white font-medium rounded-[8px] shadow-sm hover:bg-red-700 transition-colores"
+                  className="px-3 py-2 bg-red-600 text-white rounded-[6px] shadow-sm hover:bg-red-700 transition-colores"
                 >
                   Cancelar
                 </button>
@@ -743,7 +743,7 @@ export default function ResultadoPartido() {
               <button
                 onClick={handleAddJugadorLocal}
                 disabled={jugadoresEnAltaLocal.length > 0 || jugadoresEnAltaVisitante.length > 0}
-                className="rounded-[6px] px-3 py-2 bg-black text-white hover:bg-gray-900 transition-colores shadow-sm flex text-sm items-center gap-1 mr-4"
+                className="rounded-t-[6px] px-3 py-2 bg-black text-white hover:bg-gray-900 transition-colores shadow-sm flex text-sm items-center gap-1 "
               >
                 <span className="text-lg">+</span> Agregar Jugador
               </button>
@@ -1023,7 +1023,7 @@ export default function ResultadoPartido() {
               <button
                 onClick={handleAddJugadorVisitante}
                 disabled={jugadoresEnAltaLocal.length > 0 || jugadoresEnAltaVisitante.length > 0}
-                className="rounded-[6px] px-3 py-2 bg-black text-white hover:bg-gray-900 transition-colores shadow-sm flex text-sm items-center gap-1 mr-4"
+                className="rounded-t-[6px] px-3 py-2 bg-black text-white hover:bg-gray-900 transition-colores shadow-sm flex text-sm items-center gap-1 "
               >
                 <span className="text-lg">+</span> Agregar Jugador
               </button>

@@ -7,8 +7,8 @@ import { Popover } from '@headlessui/react';
 const PestanaConfiguracion = () => {
   const [config, setConfig] = useState({
     colores: {
-      primary: '#4A90E2',
-      secondary: '#F4F4F7'
+      primary: '#000000',
+      secondary: '#000000'
     },
     habilitar_turnos: true,
     habilitar_mercado_pago: false,

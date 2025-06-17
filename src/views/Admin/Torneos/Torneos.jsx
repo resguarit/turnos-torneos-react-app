@@ -2,35 +2,47 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Trophy, List } from 'lucide-react';
 import BtnLoading from '@/components/BtnLoading';
-import { useTorneos } from '@/context/TorneosContext';
 import { toast } from 'react-toastify';
 import api from '@/lib/axiosConfig';
 import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal';
 
 export default function Torneos() {
-  const { torneos, setTorneos } = useTorneos();
-  const [loadingTorneos, setLoadingTorneos] = useState(false);
-  const [loadingZonas, setLoadingZonas] = useState(false);
+  const [torneos, setTorneos] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchYear, setSearchYear] = useState('');
-  const [modalFinalizarOpen, setModalFinalizarOpen] = useState(false); // solo para mostrar/ocultar modal
-  const [modalReactivarOpen, setModalReactivarOpen] = useState(false); // solo para mostrar/ocultar modal
-  const [torneoIdFinalizar, setTorneoIdFinalizar] = useState(null);    // guarda el id del torneo
-  const [torneoIdReactivar, setTorneoIdReactivar] = useState(null);    // guarda el id del torneo
-  const [loading, setLoading] = useState(false);
+  const [modalFinalizarOpen, setModalFinalizarOpen] = useState(false);
+  const [modalReactivarOpen, setModalReactivarOpen] = useState(false);
+  const [torneoIdFinalizar, setTorneoIdFinalizar] = useState(null);
+  const [torneoIdReactivar, setTorneoIdReactivar] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
   const [mostrarTodos, setMostrarTodos] = useState(false);
   const navigate = useNavigate();
 
-  // Filtrar torneos activos si no hay búsqueda, o todos los que coincidan con el año si hay búsqueda
+  const fetchTorneos = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/torneos');
+      setTorneos(response.data);
+    } catch (error) {
+      toast.error('Error al cargar los torneos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTorneos();
+  }, []);
+
   const torneosFiltrados = searchYear
     ? torneos.filter(t => String(t.año).includes(searchYear))
     : mostrarTodos
       ? torneos
       : torneos.filter(t => t.activo === 1 || t.activo === true);
 
-  // Calcular la cantidad de zonas por torneo
   const zonasCount = torneosFiltrados.reduce((acc, torneo) => {
     acc[torneo.id] = torneo.zonas ? torneo.zonas.length : 0;
     return acc;
@@ -47,45 +59,41 @@ export default function Torneos() {
 
   const finalizarTorneo = async (torneoId) => {
     try {
-      setLoading(true);
+      setActionLoading(true);
       const response = await api.put(`/torneos/${torneoId}`, { activo: false });
       if (response.data.status === 200) {
         toast.success('Torneo finalizado correctamente');
         setModalFinalizarOpen(false);
-        // Refrescar torneos en el contexto
-        const torneosResponse = await api.get('/torneos');
-        setTorneos(torneosResponse.data);
+        fetchTorneos();
       } else {
         toast.error(response.data.message || 'Error al finalizar el torneo');
       }
     } catch (error) {
       toast.error('Error al finalizar el torneo');
     } finally {
-      setLoading(false);
+      setActionLoading(false);
     }
   };
 
   const reactivarTorneo = async (torneoId) => {
     try {
-      setLoading(true);
+      setActionLoading(true);
       const response = await api.put(`/torneos/${torneoId}`, { activo: true });
       if (response.data.status === 200) {
         toast.success('Torneo reactivado correctamente');
         setModalReactivarOpen(false);
-        // Refrescar torneos en el contexto
-        const torneosResponse = await api.get('/torneos');
-        setTorneos(torneosResponse.data);
+        fetchTorneos();
       } else {
         toast.error(response.data.message || 'Error al reactivar el torneo');
       }
     } catch (error) {
       toast.error('Error al reactivar el torneo');
     } finally {
-      setLoading(false);
+      setActionLoading(false);
     }
   };
 
-  if (loadingTorneos || loadingZonas) {
+  if (loading) {
     return (
       <div className="min-h-screen flex flex-col font-inter">
         <Header />
@@ -188,7 +196,7 @@ export default function Torneos() {
                 isOpen={modalFinalizarOpen}
                 onClose={() => setModalFinalizarOpen(false)}
                 onConfirm={() => finalizarTorneo(torneoIdFinalizar)}
-                loading={loading}
+                loading={actionLoading}
                 accionTitulo="Finalización"
                 accion="finalizar"
                 pronombre="el"
@@ -207,7 +215,7 @@ export default function Torneos() {
                 isOpen={modalReactivarOpen}
                 onClose={() => setModalReactivarOpen(false)}
                 onConfirm={() => reactivarTorneo(torneoIdReactivar)}
-                loading={loading}
+                loading={actionLoading}
                 accionTitulo="Activación"
                 accion="activar"
                 pronombre="el"

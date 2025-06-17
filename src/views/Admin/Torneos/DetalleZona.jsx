@@ -107,7 +107,6 @@ export default function DetalleZona() {
           return;
         }
         console.error('Error fetching zone details:', error);
-        toast.error('Error al cargar los datos de la zona');
       } finally {
         setLoading(false);
       }
@@ -546,7 +545,7 @@ export default function DetalleZona() {
     }
   };
 
-  if (loading) {
+  if (!zona) {
     return (
       <div className="min-h-screen flex flex-col font-inter">
         <Header />
@@ -569,20 +568,6 @@ export default function DetalleZona() {
     // Mostrar el modal de confirmación
     setModalConfirmVisible(true);
   };
-
-  if (!zona) {
-    return (
-      <div className="min-h-screen flex flex-col font-inter">
-        <Header />
-        <main className="flex-1 p-6 bg-gray-100">
-          <div className="flex justify-center items-center h-full">
-            <BtnLoading />
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col font-inter">
@@ -638,69 +623,77 @@ export default function DetalleZona() {
         
 
         {/* Tab Content */}
-        {activeTab === 'equipos' && (
-          <TabEquipos 
-            zona={zona} 
-            navigate={navigate} 
-            zonaId={zonaId} 
-            handleEliminarEquipo={handleEliminarEquipo}
-            handleReemplazarEquipo={handleReemplazarEquipo}
-            abortController={abortControllerRef.current}
-            handleNavigateToVerPagos={handleNavigateToVerPagos}
-          />
-        )}
-        
-        {activeTab === 'fechas' && (
-          <TabFechas 
-            zona={zona}
-            fechas={fechas}
-            fechaInicial={fechaInicial}
-            setFechaInicial={setFechaInicial}
-            calendarOpen={calendarOpen}
-            setCalendarOpen={setCalendarOpen}
-            calendarRef={calendarRef}
-            handleSortearFechas={handleSortearFechas}
-            loading={loading}
-            zonaId={zonaId}
-            equipos={zona.equipos}
-            fechasSorteadas={fechasSorteadas}
-            onFechasDeleted={recargarDatosZona}
-            abortController={abortControllerRef.current}
-          />
-        )}
-        
-        {activeTab === 'grupos' && zona.formato === 'Grupos' && (
-          <TabGrupos 
-            zona={zona}
-            grupos={grupos}
-            gruposCreados={gruposCreados}
-            numGrupos={numGrupos}
-            setNumGrupos={setNumGrupos}
-            handleActualizarGrupos={handleActualizarGrupos}
-            handleCrearGrupos={handleCrearGrupos}
-            setModalVisible={setModalVisible}
-            editMode={editMode}
-            handleEliminarEquipoDeGrupo={handleEliminarEquipoDeGrupo}
-            handleEliminarGrupos={handleEliminarGrupos}
-            handleAgregarEquipoAGrupo={handleAgregarEquipoAGrupo}
-            abortController={abortControllerRef.current}
-          />
-        )}
-        
-        {activeTab === 'arana' && zona.formato === 'Eliminatoria' && (
-          <TabArania 
-            equipos={zona.equipos} 
-            abortController={abortControllerRef.current}
-          />
-        )}
-        
-        {activeTab === 'resultados' && (
+        {loading ? (
+          <div className="mt-8 flex justify-center">
+            <BtnLoading />
+          </div>
+        ) : (
           <>
-          {(zona.formato === 'Liga' || zona.formato === 'Liga + Playoff') && <TabResultados zonaId={zonaId} abortController={abortControllerRef.current} />}
-          {zona.formato === 'Grupos' && (
-            <TabResultadosGrupos zonaId={zonaId} grupos={grupos} abortController={abortControllerRef.current} />
-          )}
-        </>
+            {activeTab === 'equipos' && (
+              <TabEquipos 
+                zona={zona} 
+                navigate={navigate} 
+                zonaId={zonaId} 
+                handleEliminarEquipo={handleEliminarEquipo}
+                handleReemplazarEquipo={handleReemplazarEquipo}
+                abortController={abortControllerRef.current}
+                handleNavigateToVerPagos={handleNavigateToVerPagos}
+              />
+            )}
+            
+            {activeTab === 'fechas' && (
+              <TabFechas 
+                zona={zona}
+                fechas={fechas}
+                fechaInicial={fechaInicial}
+                setFechaInicial={setFechaInicial}
+                calendarOpen={calendarOpen}
+                setCalendarOpen={setCalendarOpen}
+                calendarRef={calendarRef}
+                handleSortearFechas={handleSortearFechas}
+                loading={loading}
+                zonaId={zonaId}
+                equipos={zona.equipos}
+                fechasSorteadas={fechasSorteadas}
+                onFechasDeleted={recargarDatosZona}
+                abortController={abortControllerRef.current}
+              />
+            )}
+            
+            {activeTab === 'grupos' && zona.formato === 'Grupos' && (
+              <TabGrupos 
+                zona={zona}
+                grupos={grupos}
+                gruposCreados={gruposCreados}
+                numGrupos={numGrupos}
+                setNumGrupos={setNumGrupos}
+                handleActualizarGrupos={handleActualizarGrupos}
+                handleCrearGrupos={handleCrearGrupos}
+                setModalVisible={setModalVisible}
+                editMode={editMode}
+                handleEliminarEquipoDeGrupo={handleEliminarEquipoDeGrupo}
+                handleEliminarGrupos={handleEliminarGrupos}
+                handleAgregarEquipoAGrupo={handleAgregarEquipoAGrupo}
+                abortController={abortControllerRef.current}
+              />
+            )}
+            
+            {activeTab === 'arana' && zona.formato === 'Eliminatoria' && (
+              <TabArania 
+                equipos={zona.equipos} 
+                abortController={abortControllerRef.current}
+              />
+            )}
+            
+            {activeTab === 'resultados' && (
+              <>
+              {(zona.formato === 'Liga' || zona.formato === 'Liga + Playoff') && <TabResultados zonaId={zonaId} abortController={abortControllerRef.current} />}
+              {zona.formato === 'Grupos' && (
+                <TabResultadosGrupos zonaId={zonaId} grupos={grupos} abortController={abortControllerRef.current} />
+              )}
+            </>
+            )}
+          </>
         )}
       </div>
       <ToastContainer position="top-right" />

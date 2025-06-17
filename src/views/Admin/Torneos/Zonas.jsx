@@ -1,6 +1,6 @@
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BtnLoading from '@/components/BtnLoading';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
@@ -8,7 +8,6 @@ import { Star, Users, ChevronLeft, CalendarDays } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'react-toastify';
-import { useTorneos } from '@/context/TorneosContext';
 import api from '@/lib/axiosConfig';
 import ConfirmDeleteModal from '../Modals/ConfirmDeleteModal';
 import { formatearFechaCorta } from '@/utils/dateUtils';
@@ -16,7 +15,8 @@ import BackButton from '@/components/BackButton';
 
 export default function Zonas() {
   const { torneoId } = useParams();
-  const { torneos, setTorneos } = useTorneos();
+  const [torneo, setTorneo] = useState(null);
+  const [pageLoading, setPageLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [zonaIdFinalizar, setZonaIdFinalizar] = useState(null);
   const [zonaIdReactivar, setZonaIdReactivar] = useState(null);
@@ -26,8 +26,25 @@ export default function Zonas() {
   const [mostrarTodos, setMostrarTodos] = useState(false);
   const navigate = useNavigate();
 
-  // Buscar el torneo y sus zonas desde el contexto
-  const torneo = torneos.find(t => String(t.id) === String(torneoId));
+  const fetchTorneoData = async () => {
+    setPageLoading(true);
+    try {
+      // Como no hay un endpoint para un solo torneo con sus zonas, traemos todos y filtramos.
+      const response = await api.get('/torneos');
+      const currentTorneo = response.data.find(t => String(t.id) === String(torneoId));
+      setTorneo(currentTorneo);
+    } catch (error) {
+      toast.error("Error al cargar los datos del torneo.");
+      console.error(error);
+    } finally {
+      setPageLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTorneoData();
+  }, [torneoId]);
+
   const zonas = torneo?.zonas || [];
 
   // Procesar zonas para agregar siguienteFecha (como antes)
@@ -54,21 +71,9 @@ export default function Zonas() {
       setLoading(true);
       const response = await api.put(`/zonas/${zonaId}`, { activo: false });
       if (response.data.status === 200) {
-        // Actualiza el contexto eliminando la zona activa
-        const nuevosTorneos = torneos.map(t => {
-          if (String(t.id) === String(torneoId)) {
-            return {
-              ...t,
-              zonas: t.zonas.map(z =>
-                z.id === zonaId ? { ...z, activo: false } : z
-              ),
-            };
-          }
-          return t;
-        });
-        setTorneos(nuevosTorneos);
-        setModalFinalizarOpen(false);
         toast.success('Zona finalizada correctamente');
+        fetchTorneoData(); // Refetch
+        setModalFinalizarOpen(false);
       } else {
         toast.error(response.data.message || 'Error al finalizar la zona');
       }
@@ -84,21 +89,9 @@ export default function Zonas() {
       setLoading(true);
       const response = await api.put(`/zonas/${zonaId}`, { activo: true });
       if (response.data.status === 200) {
-        // Actualiza el contexto eliminando la zona activa
-        const nuevosTorneos = torneos.map(t => {
-          if (String(t.id) === String(torneoId)) {
-            return {
-              ...t,
-              zonas: t.zonas.map(z =>
-                z.id === zonaId ? { ...z, activo: false } : z
-              ),
-            };
-          }
-          return t;
-        });
-        setTorneos(nuevosTorneos);
-        setModalReactivarOpen(false);
         toast.success('Zona reactivada correctamente');
+        fetchTorneoData(); // Refetch
+        setModalReactivarOpen(false);
       } else {
         toast.error(response.data.message || 'Error al reactivar la zona');
       }
@@ -109,7 +102,7 @@ export default function Zonas() {
     }
   };
 
-  if (loading) {
+  if (pageLoading) {
     return (
       <div className="min-h-screen flex flex-col font-inter">
         <Header />
@@ -133,7 +126,7 @@ export default function Zonas() {
         <div className="max-w-7xl lg:max-w-full mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl lg:text-2xl font-bold">
-              Zonas del Torneo <span className='text-blue-600'>{torneo ? torneo.nombre : ''}</span>
+              Zonas del Torneo <span className='text-naranja'>{torneo ? torneo.nombre : ''}</span>
             </h1>
             <button onClick={() => navigate(`/alta-zona/${torneoId}`)} className="bg-secundario hover:bg-secundario/80 p-2 text-sm font-inter rounded-[6px] text-white">
               + Nueva Zona

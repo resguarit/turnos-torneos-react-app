@@ -7,14 +7,12 @@ import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useTorneos } from '@/context/TorneosContext';
 import { useDeportes } from '@/context/DeportesContext'; // <-- Importa el contexto
 import ConfirmModal from '../Modals/ConfirmModal'; 
 import BackButton from '@/components/BackButton';
 
 export default function AltaTorneo() {
   const { id } = useParams();
-  const { setTorneos } = useTorneos();
   const { deportes, setDeportes } = useDeportes(); // <-- Usa el contexto
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -85,8 +83,6 @@ export default function AltaTorneo() {
         await api.post('/torneos', formData);
         toast.success('Torneo creado correctamente');
       }
-      const torneosResponse = await api.get('/torneos');
-      setTorneos(torneosResponse.data);
       navigate('/torneos-admi');
     } catch (error) {
       console.error('Error saving torneo:', error);

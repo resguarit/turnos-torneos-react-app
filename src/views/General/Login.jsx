@@ -8,7 +8,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Eye, EyeOff, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { encryptRole } from '@/lib/getRole';
-import { useTorneos } from "@/context/TorneosContext";
 import { useDeportes } from "@/context/DeportesContext";
 
 const Login = () => {
@@ -16,7 +15,6 @@ const Login = () => {
         identifier: '',
         password: ''
     });
-    const { setTorneos } = useTorneos();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [inputErrors, setInputErrors] = useState({
@@ -53,8 +51,6 @@ const Login = () => {
             localStorage.setItem('dni', response.dni);
 
             if (response.rol === "admin" || response.rol === "moderador") { // Si es admin, cargar torneos y setear en contexto
-                const torneosResponse = await api.get("/torneos");
-                setTorneos(torneosResponse.data);
                 const deportesResponse = await api.get("/deportes");
                 setDeportes(deportesResponse.data);
             }

@@ -14,7 +14,8 @@ export default function Torneos() {
   const { torneos, setTorneos } = useTorneos();
   const [loadingTorneos, setLoadingTorneos] = useState(false);
   const [loadingZonas, setLoadingZonas] = useState(false);
-  const [searchYear, setSearchYear] = useState('');
+  const [searchCriterion, setSearchCriterion] = useState('nombre'); // 'nombre' o 'año'
+  const [searchValue, setSearchValue] = useState('');
   const [modalFinalizarOpen, setModalFinalizarOpen] = useState(false); // solo para mostrar/ocultar modal
   const [modalReactivarOpen, setModalReactivarOpen] = useState(false); // solo para mostrar/ocultar modal
   const [torneoIdFinalizar, setTorneoIdFinalizar] = useState(null);    // guarda el id del torneo
@@ -23,9 +24,17 @@ export default function Torneos() {
   const [mostrarTodos, setMostrarTodos] = useState(false);
   const navigate = useNavigate();
 
-  // Filtrar torneos activos si no hay búsqueda, o todos los que coincidan con el año si hay búsqueda
-  const torneosFiltrados = searchYear
-    ? torneos.filter(t => String(t.año).includes(searchYear))
+  // Filtrar torneos según el criterio seleccionado
+  const torneosFiltrados = searchValue
+    ? torneos.filter(t => {
+        if (searchCriterion === 'nombre') {
+          return t.nombre.toLowerCase().includes(searchValue.toLowerCase());
+        }
+        if (searchCriterion === 'año') {
+          return String(t.año).includes(searchValue);
+        }
+        return true;
+      })
     : mostrarTodos
       ? torneos
       : torneos.filter(t => t.activo === 1 || t.activo === true);
@@ -111,21 +120,35 @@ export default function Torneos() {
             </button>
           </div>
           <div className="flex justify-between mb-6 items-center">
-            <input
-              type="number"
-              placeholder="Buscar por año (ej: 2025)"
-              value={searchYear}
-              onChange={e => setSearchYear(e.target.value)}
-              className="border border-gray-300 rounded-[6px] py-1 px-2 text-sm"
-            />
-            {searchYear && (
-              <button
-                onClick={() => setSearchYear('')}
-                className="text-sm px-3 py-2 rounded bg-gray-200 hover:bg-gray-300"
+            <div className="flex gap-2 items-center">
+              <select
+                value={searchCriterion}
+                onChange={e => setSearchCriterion(e.target.value)}
+                className="border border-gray-300 text-gray-600 rounded-[6px] py-1 px-2 text-sm"
               >
-                Limpiar búsqueda
-              </button>
-            )}
+                <option value="nombre">Nombre</option>
+                <option value="año">Año</option>
+              </select>
+              <input
+                type={searchCriterion === 'año' ? 'number' : 'text'}
+                placeholder={
+                  searchCriterion === 'nombre'
+                    ? 'Buscar por nombre'
+                    : 'Buscar por año (ej: 2025)'
+                }
+                value={searchValue}
+                onChange={e => setSearchValue(e.target.value)}
+                className="border border-gray-300 rounded-[6px] py-1 px-2 text-sm"
+              />
+              {searchValue && (
+                <button
+                  onClick={() => setSearchValue('')}
+                  className="text-sm px-3 py-2 rounded bg-gray-200 hover:bg-gray-300"
+                >
+                  Limpiar búsqueda
+                </button>
+              )}
+            </div>
             <label className="flex items-center gap-2 ml-4">
               <input
                 type="checkbox"
@@ -139,7 +162,7 @@ export default function Torneos() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {torneosFiltrados.length === 0 ? (
               <div className="col-span-full text-center text-gray-500 py-8">
-                No se encontraron torneos {searchYear ? `para el año ${searchYear}` : 'activos'}.
+                No se encontraron torneos {searchValue ? `para el año ${searchValue}` : 'activos'}.
               </div>
             ) : (
               torneosFiltrados.map((torneo) => (

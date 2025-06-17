@@ -143,7 +143,7 @@ export function TabFechas({
               <div className="flex items-center gap-4 ">
                 <button
                   onClick={() => setShowPlayoffModal(true)}
-                  className="bg-black text-white text-sm px-3 py-2 rounded-[6px] hover:bg-green-700"
+                  className="bg-secundario text-white text-sm px-3 py-2 rounded-[6px] hover:bg-secundario/80"
                   disabled={loadingPlayoff}
                 >
                   Crear Playoffs

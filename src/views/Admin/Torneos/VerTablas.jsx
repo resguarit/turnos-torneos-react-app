@@ -153,7 +153,7 @@ export default function VerTablas() {
           <BackButton ruta={`/zonas-user/${zonaInfo?.torneo?.id || ''}`} />
         </div>
         <div className="flex flex-col items-center w-full space-y-8"> {/* Use space-y for consistent spacing */}
-          <h1 className="text-center text-3xl font-bold  mb-4">Tablas <span className='text-orange-600'> {zonaInfo.torneo.nombre} - {zonaInfo.nombre}</span></h1> {/* Larger title */}
+          <h1 className="text-center text-3xl font-bold  mb-4">Tablas <span className='text-naranja'> {zonaInfo.torneo.nombre} - {zonaInfo.nombre}</span></h1> {/* Larger title */}
 
           {/* Render Standings based on format */}
           {zonaInfo.formato === 'Grupos' ? (

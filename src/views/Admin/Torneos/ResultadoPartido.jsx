@@ -35,7 +35,8 @@ export default function ResultadoPartido() {
   });
   const [refreshKey, setRefreshKey] = useState(0); // Estado disparador
   const [searchResults, setSearchResults] = useState([]);
-  const [searchingDniForId, setSearchingDniForId] = useState(null);
+  const [searchingDniForIdLocal, setSearchingDniForIdLocal] = useState(null);
+  const [searchingDniForIdVisitante, setSearchingDniForIdVisitante] = useState(null);
   const [showPenalesModal, setShowPenalesModal] = useState(false);
   const [penalesLocal, setPenalesLocal] = useState('');
   const [penalesVisitante, setPenalesVisitante] = useState('');
@@ -275,12 +276,14 @@ export default function ResultadoPartido() {
     try {
       let jugadorFinal = jugador;
       if (jugador.seleccionado) {
+        // Asociar jugador existente
         await api.post(`/jugadores/asociar-a-equipo`, {
           jugador_id: jugador.id,
           equipo_id: equipo.id,
         });
         toast.success('Jugador asociado correctamente al equipo.');
       } else {
+        // Crear y asociar jugador nuevo
         const response = await api.post(`/jugadores`, {
           nombre: jugador.nombre,
           apellido: jugador.apellido,
@@ -294,10 +297,12 @@ export default function ResultadoPartido() {
 
       // Quitar del array de alta
       setJugadoresEnAlta(prev => prev.filter(j => j.id !== jugadorId));
-      // Agregar al equipo
+      // Agregar al equipo solo si no está ya
       setEquipo(prev => ({
         ...prev,
-        jugadores: [...prev.jugadores, jugadorFinal],
+        jugadores: prev.jugadores.some(j => j.id === jugadorFinal.id)
+          ? prev.jugadores
+          : [...prev.jugadores, jugadorFinal],
       }));
     } catch (error) {
       console.error('Error al confirmar el alta del jugador:', error);
@@ -361,72 +366,93 @@ export default function ResultadoPartido() {
   };
 
   // --- Debounced Search Function ---
-  const fetchJugadoresByDni = async (dni, jugadorNuevoId) => {
-    if (!dni || dni.length < 3) {
-      setSearchResults([]);
-      setSearchingDniForId(null);
-      return;
+  const fetchJugadoresByDni = async (dni, jugadorNuevoId, esLocal) => {
+  if (!dni || dni.length < 3) {
+    setSearchResults([]);
+    setSearchingDniForIdLocal(null);
+    setSearchingDniForIdVisitante(null);
+    return;
+  }
+
+  const zonaId = localStorage.getItem('zona_id');
+  if (!zonaId) {
+    console.error('Zona ID no encontrado en localStorage.');
+    setSearchResults([]);
+    setSearchingDniForIdLocal(null);
+    setSearchingDniForIdVisitante(null);
+    return;
+  }
+
+  try {
+    if (esLocal) {
+      setSearchingDniForIdLocal(jugadorNuevoId);
+      setSearchingDniForIdVisitante(null);
+    } else {
+      setSearchingDniForIdVisitante(jugadorNuevoId);
+      setSearchingDniForIdLocal(null);
     }
 
-    const zonaId = localStorage.getItem('zona_id'); // Obtener zona_id desde localStorage
-    if (!zonaId) {
-      console.error('Zona ID no encontrado en localStorage.');
-      setSearchResults([]);
-      setSearchingDniForId(null);
-      return;
-    }
-
-    try {
-      setSearchingDniForId(jugadorNuevoId);
-      const response = await api.get(`/jugadores/search/dni?dni=${dni}&zona_id=${zonaId}`);
-      setSearchResults(response.data);
-    } catch (error) {
-      console.error('Error searching players by DNI:', error);
-      setSearchResults([]);
-    }
-  };
+    const response = await api.get(`/jugadores/search/dni?dni=${dni}&zona_id=${zonaId}`);
+    setSearchResults(response.data);
+  } catch (error) {
+    console.error('Error searching players by DNI:', error);
+    setSearchResults([]);
+  }
+};
 
   const debouncedFetchJugadores = useCallback(debounce(fetchJugadoresByDni, 500), []);
 
    const handleInputChangeNuevo = (e, id, campo, esLocal) => {
-    const setJugadoresEnAlta = esLocal ? setJugadoresEnAltaLocal : setJugadoresEnAltaVisitante;
-    
-    const valor = e.target.value;
-    setJugadoresEnAlta(prev =>
-      prev.map(jugador => 
-        jugador.id === id ? { ...jugador, [campo]: valor } : jugador
-      )
-    );
+  const setJugadoresEnAlta = esLocal ? setJugadoresEnAltaLocal : setJugadoresEnAltaVisitante;
 
-    if (campo === 'dni') {
-      debouncedFetchJugadores(valor, id, esLocal);
-    } else if (searchingDniForId === id) {
+  const valor = e.target.value;
+  setJugadoresEnAlta(prev =>
+    prev.map(jugador =>
+      jugador.id === id ? { ...jugador, [campo]: valor } : jugador
+    )
+  );
+
+  if (campo === 'dni') {
+    debouncedFetchJugadores(valor, id, esLocal);
+  } else {
+    if (esLocal && searchingDniForIdLocal === id) {
       setSearchResults([]);
-      setSearchingDniForId(null);
+      setSearchingDniForIdLocal(null);
     }
-  };
+    if (!esLocal && searchingDniForIdVisitante === id) {
+      setSearchResults([]);
+      setSearchingDniForIdVisitante(null);
+    }
+  }
+};
 
   const handleSelectPlayer = (selectedJugador, jugadorNuevoId, esLocal) => {
-    const setJugadoresEnAlta = esLocal ? setJugadoresEnAltaLocal : setJugadoresEnAltaVisitante;
-    setJugadoresEnAlta(prev =>
-      prev.map(jugador =>
-        jugador.id === jugadorNuevoId
-          ? {
-              ...jugador,
-              id: selectedJugador.id,
-              dni: selectedJugador.dni || '',
-              nombre: selectedJugador.nombre || '',
-              apellido: selectedJugador.apellido || '',
-              fecha_nacimiento: selectedJugador.fecha_nacimiento || '',
-              equipo_actual: selectedJugador.equipos?.[0]?.nombre || 'Sin equipo',
-              seleccionado: true,
-            }
-          : jugador
-      )
-    );
-    setSearchResults([]);
-    setSearchingDniForId(null);
-  };
+  const setJugadoresEnAlta = esLocal ? setJugadoresEnAltaLocal : setJugadoresEnAltaVisitante;
+
+  setJugadoresEnAlta(prev =>
+    prev.map(jugador =>
+      jugador.id === jugadorNuevoId
+        ? {
+            ...jugador,
+            id: selectedJugador.id,
+            dni: selectedJugador.dni || '',
+            nombre: selectedJugador.nombre || '',
+            apellido: selectedJugador.apellido || '',
+            fecha_nacimiento: selectedJugador.fecha_nacimiento || '',
+            seleccionado: true,
+          }
+        : jugador
+    )
+  );
+
+  setSearchResults([]);
+
+  if (esLocal) {
+    setSearchingDniForIdLocal(null);
+  } else {
+    setSearchingDniForIdVisitante(null);
+  }
+};
 
 
   const handleGuardarJugadores = async () => {
@@ -676,7 +702,7 @@ export default function ResultadoPartido() {
               {!chargingMode && Object.keys(originalEstadisticas).length === 0 && (
                 <button
                   onClick={() => setChargingMode(true)}
-                  className="px-3 py-2 bg-green-600 text-white rounded-[6px] shadow-sm hover:bg-green-700 transition-colors"
+                  className="px-3 py-2 bg-green-600 text-white rounded-[6px] shadow-sm hover:bg-green-700 transition-colores"
                   disabled={jugadoresEnAltaLocal.length > 0 || jugadoresEnAltaVisitante.length > 0}
                 >
                   Cargar Resultados
@@ -685,7 +711,7 @@ export default function ResultadoPartido() {
               {!chargingMode && Object.keys(originalEstadisticas).length > 0 && (
                 <button
                   onClick={() => setChargingMode(true)} 
-                  className="px-4 py-2.5 bg-yellow-500 text-white font-medium rounded-[8px] shadow-sm hover:bg-yellow-600 transition-colors"
+                  className="px-4 py-2.5 bg-yellow-500 text-white font-medium rounded-[8px] shadow-sm hover:bg-yellow-600 transition-colores"
                   disabled={jugadoresEnAltaLocal.length > 0 || jugadoresEnAltaVisitante.length > 0}
                 >
                   Editar Resultados
@@ -695,7 +721,7 @@ export default function ResultadoPartido() {
                 <button
                   onClick={handleOpenConfirmation}
                   disabled={loadingApply}
-                  className={`px-4 py-2.5 text-white font-medium rounded-[8px] shadow-sm transition-colors ${loadingApply ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
+                  className={`px-4 py-2.5 text-white font-medium rounded-[8px] shadow-sm transition-colores ${loadingApply ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
                 >
                   {loadingApply ? "Aplicando Cambios..." : "Aplicar Cambios"}
                 </button>
@@ -703,7 +729,7 @@ export default function ResultadoPartido() {
               {chargingMode && (
                 <button
                   onClick={handleCancelChanges}
-                  className="px-4 py-2.5 bg-red-600 text-white font-medium rounded-[8px] shadow-sm hover:bg-red-700 transition-colors"
+                  className="px-4 py-2.5 bg-red-600 text-white font-medium rounded-[8px] shadow-sm hover:bg-red-700 transition-colores"
                 >
                   Cancelar
                 </button>
@@ -717,7 +743,7 @@ export default function ResultadoPartido() {
               <button
                 onClick={handleAddJugadorLocal}
                 disabled={jugadoresEnAltaLocal.length > 0 || jugadoresEnAltaVisitante.length > 0}
-                className="rounded-[6px] px-3 py-2 bg-black text-white hover:bg-gray-900 transition-colors shadow-sm flex text-sm items-center gap-1 mr-4"
+                className="rounded-[6px] px-3 py-2 bg-black text-white hover:bg-gray-900 transition-colores shadow-sm flex text-sm items-center gap-1 mr-4"
               >
                 <span className="text-lg">+</span> Agregar Jugador
               </button>
@@ -749,7 +775,7 @@ export default function ResultadoPartido() {
                   <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className='min-h-40'>
                 {jugadoresEnAltaLocal.map((jugador) => (
                   <tr key={jugador.id}>
                     <td className="p-2 text-center">
@@ -762,13 +788,15 @@ export default function ResultadoPartido() {
                           className="w-full text-center border border-gray-300 rounded-[6px] p-1"
                           autoComplete="off"
                         />
-                        {searchingDniForId === jugador.id && searchResults.length > 0 && (
-                          <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto shadow-lg">
+                        {searchingDniForIdLocal === jugador.id && searchResults.length > 0 && (
+                          <ul
+                            className="absolute left-0 top-full z-50 min-w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto shadow-lg"
+                          >
                             {searchResults.map((result) => (
                               <li
                                 key={result.id}
                                 className="p-2 text-sm hover:bg-gray-100 cursor-pointer"
-                                onClick={() => handleSelectPlayer(result, jugador.id)}
+                                onClick={() => handleSelectPlayer(result, jugador.id, true)}
                               >
                                 {result.dni} - {result.nombre} {result.apellido}
                               </li>
@@ -781,7 +809,7 @@ export default function ResultadoPartido() {
                       <input
                         type="text"
                         placeholder="Nombre"
-                        value={jugador.nombre}
+                        value={jugador.nombre || ''}
                         onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'nombre', true)}
                         className="w-full text-center border border-gray-300 rounded-[6px] p-1"
                       />
@@ -790,7 +818,7 @@ export default function ResultadoPartido() {
                       <input
                         type="text"
                         placeholder="Apellido"
-                        value={jugador.apellido}
+                        value={jugador.apellido || ''}
                         onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'apellido', true)}
                         className="w-full text-center border border-gray-300 rounded-[6px] p-1"
                       />
@@ -814,7 +842,7 @@ export default function ResultadoPartido() {
                       <div className="flex justify-center space-x-2">
                         <button
                           onClick={() => handleConfirmAlta(jugador.id, true)}
-                          className="bg-green-200 text-green-600 rounded-[6px] p-1 px-3 hover:bg-green-500 hover:text-white transition-colors"
+                          className="bg-green-200 text-green-600 rounded-[6px] p-1 px-3 hover:bg-green-500 hover:text-white transition-colores"
                         >
                           ✓
                         </button>
@@ -1027,7 +1055,7 @@ export default function ResultadoPartido() {
                   <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className='min-h-40'>
                 {jugadoresEnAltaVisitante.map((jugador) => (
                   <tr key={jugador.id}>
                     <td className="p-2 text-center">
@@ -1040,13 +1068,15 @@ export default function ResultadoPartido() {
                           className="w-full text-center border border-gray-300 rounded-[6px] p-1"
                           autoComplete="off"
                         />
-                        {searchingDniForId === jugador.id && searchResults.length > 0 && (
-                          <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto shadow-lg">
+                        {searchingDniForIdVisitante === jugador.id && searchResults.length > 0 && (
+                          <ul
+                            className="absolute left-0 top-full z-50 min-w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto shadow-lg"
+                          >
                             {searchResults.map((result) => (
                               <li
                                 key={result.id}
                                 className="p-2 text-sm hover:bg-gray-100 cursor-pointer"
-                                onClick={() => handleSelectPlayer(result, jugador.id)}
+                                onClick={() => handleSelectPlayer(result, jugador.id, false)}
                               >
                                 {result.dni} - {result.nombre} {result.apellido}
                               </li>
@@ -1059,7 +1089,7 @@ export default function ResultadoPartido() {
                       <input
                         type="text"
                         placeholder="Nombre"
-                        value={jugador.nombre}
+                        value={jugador.nombre || ''}
                         onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'nombre', false)}
                         className="w-full text-center border border-gray-300 rounded-[6px] p-1"
                       />
@@ -1068,7 +1098,7 @@ export default function ResultadoPartido() {
                       <input
                         type="text"
                         placeholder="Apellido"
-                        value={jugador.apellido}
+                        value={jugador.apellido || ''}
                         onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'apellido', false)}
                         className="w-full text-center border border-gray-300 rounded-[6px] p-1"
                       />

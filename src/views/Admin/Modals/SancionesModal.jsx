@@ -170,7 +170,7 @@ export default function SancionesModal({
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="bg-white p-6 rounded-[8px] shadow-lg  w-[40%] max-h-[90vh] flex flex-col"
+        className="bg-white p-6 rounded-[8px] shadow-lg  w-[50%] max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
@@ -203,7 +203,7 @@ export default function SancionesModal({
                     id="tipo"
                     value={sancion.tipo}
                     onChange={(e) => handleSancionChange('tipo', e.target.value)}
-                    className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    className="block w-full px-2 p-1 border border-gray-300 rounded-[6px]  focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="" disabled>
                         Seleccionar Tipo
@@ -223,7 +223,7 @@ export default function SancionesModal({
                     id="estado"
                     value={sancion.estado}
                     onChange={(e) => handleSancionChange('estado', e.target.value)}
-                    className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    className="block w-full px-2 p-1 border border-gray-300 rounded-[6px]  focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="" disabled>
                         Seleccionar Estado
@@ -245,7 +245,7 @@ export default function SancionesModal({
                   type="text"
                   value={sancion.motivo}
                   onChange={(e) => handleSancionChange('motivo', e.target.value)}
-                  className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full px-2 p-1 border border-gray-300 rounded-[6px]  focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Describa el motivo de la sanción"
                 />
               </div>
@@ -261,7 +261,7 @@ export default function SancionesModal({
                       type="text"
                       value="Ilimitada"
                       disabled
-                      className="block w-full px-2 border-gray-300 rounded-[6px] shadow-sm bg-gray-200 text-gray-500 cursor-not-allowed"
+                      className="block w-full px-2 p-1 border border-gray-300 rounded-[6px]  bg-gray-200 text-gray-500 cursor-not-allowed"
                     />
                   ) : (
                     <input
@@ -269,7 +269,7 @@ export default function SancionesModal({
                       type="number"
                       value={sancion.cantidadFechas}
                       readOnly
-                      className="block w-full px-2 border-gray-300 rounded-[6px] shadow-sm bg-gray-200 text-gray-700 cursor-not-allowed"
+                      className="block w-full px-2 p-1 border border-gray-300 rounded-[6px]  bg-gray-200 text-gray-700 cursor-not-allowed"
                     />
                   )}
                 </div>
@@ -282,7 +282,7 @@ export default function SancionesModal({
                     id="fechaDesde"
                     value={sancion.fechaDesde}
                     onChange={(e) => handleSancionChange('fechaDesde', e.target.value)}
-                    className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    className="block w-full border p-1 px-2 border-gray-300 rounded-[6px]  focus:ring-blue-500 focus:border-blue-500"
                     disabled={sancion.tipo === 'expulsión permanente'}
                   >
                     <option value="">Seleccionar fecha</option>
@@ -302,7 +302,7 @@ export default function SancionesModal({
                     id="fechaHasta"
                     value={sancion.fechaHasta}
                     onChange={(e) => handleSancionChange('fechaHasta', e.target.value)}
-                    className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    className="block w-full p-1 px-2 border border-gray-300 rounded-[6px] focus:ring-blue-500 focus:border-blue-500"
                     disabled={sancion.tipo === 'expulsión permanente'}
                   >
                     <option value="">Seleccionar fecha</option>

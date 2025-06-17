@@ -22,7 +22,8 @@ export default function Zonas() {
   const [zonaIdReactivar, setZonaIdReactivar] = useState(null);
   const [modalFinalizarOpen, setModalFinalizarOpen] = useState(false);
   const [modalReactivarOpen, setModalReactivarOpen] = useState(false);
-  const [searchYear, setSearchYear] = useState('');
+  const [searchCriterion, setSearchCriterion] = useState('nombre'); // 'nombre' o 'año'
+  const [searchValue, setSearchValue] = useState('');
   const [mostrarTodos, setMostrarTodos] = useState(false);
   const navigate = useNavigate();
 
@@ -58,12 +59,18 @@ export default function Zonas() {
     };
   });
 
-  // FILTRO: solo zonas activas por defecto, o todas si se marca el checkbox
-  const zonasFiltradas = searchYear
-    ? zonasConFecha.filter(z => String(z.año).includes(searchYear))
-    : mostrarTodos
-      ? zonasConFecha
-      : zonasConFecha.filter(z => z.activo === 1 || z.activo === true);
+  // Filtrar zonas según el criterio seleccionado
+  const zonasFiltradas = searchValue
+    ? zonas.filter(z => {
+        if (searchCriterion === 'nombre') {
+          return z.nombre.toLowerCase().includes(searchValue.toLowerCase());
+        }
+        if (searchCriterion === 'año') {
+          return String(z.año).includes(searchValue);
+        }
+        return true;
+      })
+    : zonas;
 
   // Finalizar zona
   const finalizarZona = async (zonaId) => {
@@ -126,28 +133,42 @@ export default function Zonas() {
         <div className="max-w-7xl lg:max-w-full mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl lg:text-2xl font-bold">
-              Zonas del Torneo <span className='text-naranja'>{torneo ? torneo.nombre : ''}</span>
+              Zonas del Torneo <span className='text-secundario'>{torneo ? torneo.nombre : ''}</span>
             </h1>
             <button onClick={() => navigate(`/alta-zona/${torneoId}`)} className="bg-secundario hover:bg-secundario/80 p-2 text-sm font-inter rounded-[6px] text-white">
               + Nueva Zona
             </button>
           </div>
           <div className="flex mb-6 justify-between items-center">
-            <input
-              type="number"
-              placeholder="Buscar por año (ej: 2025)"
-              value={searchYear}
-              onChange={e => setSearchYear(e.target.value)}
-              className="border border-gray-300 rounded-[6px] py-1 px-2 text-sm"
-            />
-            {searchYear && (
-              <button
-                onClick={() => setSearchYear('')}
-                className="text-sm px-3 py-2 rounded bg-gray-200 hover:bg-gray-300"
+            <div className="flex gap-2 items-center mb-4">
+              <select
+                value={searchCriterion}
+                onChange={e => setSearchCriterion(e.target.value)}
+                className="border border-gray-300 text-gray-600 rounded-[6px] py-1 px-2 text-sm"
               >
-                Limpiar búsqueda
-              </button>
-            )}
+                <option value="nombre">Nombre</option>
+                <option value="año">Año</option>
+              </select>
+              <input
+                type={searchCriterion === 'año' ? 'number' : 'text'}
+                placeholder={
+                  searchCriterion === 'nombre'
+                    ? 'Buscar por nombre'
+                    : 'Buscar por año (ej: 2025)'
+                }
+                value={searchValue}
+                onChange={e => setSearchValue(e.target.value)}
+                className="border border-gray-300 rounded-[6px] py-1 px-2 text-sm"
+              />
+              {searchValue && (
+                <button
+                  onClick={() => setSearchValue('')}
+                  className="text-sm px-3 py-2 rounded bg-gray-200 hover:bg-gray-300"
+                >
+                  Limpiar búsqueda
+                </button>
+              )}
+            </div>
             <label className="flex items-center gap-2 ml-4">
               <input
                 type="checkbox"
@@ -159,7 +180,7 @@ export default function Zonas() {
             </label>
           </div>
           {zonasFiltradas.length === 0 ? (
-            <p className="text-center text-gray-500">No se encontraron zonas {searchYear ? `para el año ${searchYear}` : 'activas'}.</p>
+            <p className="text-center text-gray-500">No se encontraron zonas {searchValue ? `para el año ${searchValue}` : 'activas'}.</p>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {zonasFiltradas.map((zona) => (

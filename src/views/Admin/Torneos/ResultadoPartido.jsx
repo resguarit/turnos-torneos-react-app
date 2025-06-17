@@ -24,7 +24,8 @@ export default function ResultadoPartido() {
   const [originalEstadisticas, setOriginalEstadisticas] = useState({});
   const [changesDetected, setChangesDetected] = useState(false);
   const [chargingMode, setChargingMode] = useState(false);
-  const [jugadoresEnAlta, setJugadoresEnAlta] = useState([]); // Estado para jugadores en alta
+  const [jugadoresEnAltaLocal, setJugadoresEnAltaLocal] = useState([]);
+  const [jugadoresEnAltaVisitante, setJugadoresEnAltaVisitante] = useState([]);
   const [loadingApply, setLoadingApply] = useState(false); // Estado para el botón de aplicar cambios
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [modalSanciones, setModalSanciones] = useState(false); // Estado para el modal de sanciones
@@ -230,84 +231,86 @@ export default function ResultadoPartido() {
     toast.success('Sanciones guardadas correctamente.');
   }
 
-  const handleAddJugador = () => {
+  // Cambia las funciones de alta para manejar equipo local/visitante
+  const handleAddJugadorLocal = () => {
     const nuevoJugador = {
-      id: Date.now(), // ID único temporal
+      id: Date.now(),
       dni: '',
       nombre: '',
       apellido: '',
       fecha_nacimiento: '',
     };
-    setJugadoresEnAlta((prev) => [...prev, nuevoJugador]);
+    setJugadoresEnAltaLocal(prev => [...prev, nuevoJugador]);
   };
 
-  const handleConfirmAlta = async (jugadorId) => {
-    const jugador = jugadoresEnAlta.find((j) => j.id === jugadorId);
+  const handleAddJugadorVisitante = () => {
+    const nuevoJugador = {
+      id: Date.now(),
+      dni: '',
+      nombre: '',
+      apellido: '',
+      fecha_nacimiento: '',
+    };
+    setJugadoresEnAltaVisitante(prev => [...prev, nuevoJugador]);
+  };
+
+  const handleConfirmAlta = async (jugadorId, esLocal) => {
+    const jugadoresEnAlta = esLocal ? jugadoresEnAltaLocal : jugadoresEnAltaVisitante;
+    const setJugadoresEnAlta = esLocal ? setJugadoresEnAltaLocal : setJugadoresEnAltaVisitante;
+    const setEquipo = esLocal ? setEquipoLocal : setEquipoVisitante;
+    const equipo = esLocal ? equipoLocal : equipoVisitante;
+
+    const jugador = jugadoresEnAlta.find(j => j.id === jugadorId);
 
     if (!jugador) {
       toast.error('Jugador no encontrado.');
       return;
     }
 
-    // Validar campos obligatorios
     if (!jugador.dni || !jugador.nombre || !jugador.apellido || !jugador.fecha_nacimiento) {
       toast.error('Por favor, completa todos los campos del jugador antes de confirmar.');
       return;
     }
 
     try {
+      let jugadorFinal = jugador;
       if (jugador.seleccionado) {
-        // Si el jugador fue seleccionado desde el buscador, asociarlo al equipo
         await api.post(`/jugadores/asociar-a-equipo`, {
           jugador_id: jugador.id,
-          equipo_id: verEquipo === 1 ? equipoLocal.id : equipoVisitante.id,
+          equipo_id: equipo.id,
         });
         toast.success('Jugador asociado correctamente al equipo.');
-        setJugadoresEnAlta((prev) => prev.filter((j) => j.id !== jugadorId));
       } else {
-        // Si el jugador fue ingresado manualmente, crearlo y asociarlo al equipo
         const response = await api.post(`/jugadores`, {
           nombre: jugador.nombre,
           apellido: jugador.apellido,
           dni: jugador.dni,
           fecha_nacimiento: jugador.fecha_nacimiento,
-          equipos: [
-            {
-              id: verEquipo === 1 ? equipoLocal.id : equipoVisitante.id,
-              capitan: false // o true si corresponde
-            }
-          ], // <--- CAMBIA AQUÍ
+          equipos: [{ id: equipo.id, capitan: false }],
         });
         toast.success('Jugador creado y asociado correctamente al equipo.');
-        setJugadoresEnAlta((prev) => prev.filter((j) => j.id !== jugadorId));
-
-        // Actualizar el ID del jugador con el ID real devuelto por el backend
-        jugador.id = response.data.jugador.id;
+        jugadorFinal = { ...jugador, id: response.data.jugador.id };
       }
 
-      // Eliminar el jugador de la lista de alta
-
-      // Actualizar la lista de jugadores del equipo
-      if (verEquipo === 1) {
-        setEquipoLocal((prev) => ({
-          ...prev,
-          jugadores: [...prev.jugadores, jugador],
-        }));
-      } else {
-        setEquipoVisitante((prev) => ({
-          ...prev,
-          jugadores: [...prev.jugadores, jugador],
-        }));
-      }
+      // Quitar del array de alta
+      setJugadoresEnAlta(prev => prev.filter(j => j.id !== jugadorId));
+      // Agregar al equipo
+      setEquipo(prev => ({
+        ...prev,
+        jugadores: [...prev.jugadores, jugadorFinal],
+      }));
     } catch (error) {
       console.error('Error al confirmar el alta del jugador:', error);
       toast.error('Error al confirmar el alta del jugador. Verifica los datos e inténtalo nuevamente.');
     }
   };
 
-  const handleCancelAlta = (jugadorId) => {
-    // Cancelar el alta del jugador
-    setJugadoresEnAlta((prev) => prev.filter((jugador) => jugador.id !== jugadorId));
+  const handleCancelAlta = (jugadorId, esLocal) => {
+    if (esLocal) {
+      setJugadoresEnAltaLocal(prev => prev.filter(jugador => jugador.id !== jugadorId));
+    } else {
+      setJugadoresEnAltaVisitante(prev => prev.filter(jugador => jugador.id !== jugadorId));
+    }
   };
 
   const handleOpenConfirmation = () => {
@@ -385,25 +388,28 @@ export default function ResultadoPartido() {
 
   const debouncedFetchJugadores = useCallback(debounce(fetchJugadoresByDni, 500), []);
 
-  const handleInputChangeNuevo = (e, id, campo) => {
+   const handleInputChangeNuevo = (e, id, campo, esLocal) => {
+    const setJugadoresEnAlta = esLocal ? setJugadoresEnAltaLocal : setJugadoresEnAltaVisitante;
+    
     const valor = e.target.value;
-    setJugadoresEnAlta((prev) =>
-      prev.map((jugador) => (jugador.id === id ? { ...jugador, [campo]: valor } : jugador))
+    setJugadoresEnAlta(prev =>
+      prev.map(jugador => 
+        jugador.id === id ? { ...jugador, [campo]: valor } : jugador
+      )
     );
 
     if (campo === 'dni') {
-      debouncedFetchJugadores(valor, id);
-    } else {
-      if (searchingDniForId === id) {
-        setSearchResults([]);
-        setSearchingDniForId(null);
-      }
+      debouncedFetchJugadores(valor, id, esLocal);
+    } else if (searchingDniForId === id) {
+      setSearchResults([]);
+      setSearchingDniForId(null);
     }
   };
 
-  const handleSelectPlayer = (selectedJugador, jugadorNuevoId) => {
-    setJugadoresEnAlta((prev) =>
-      prev.map((jugador) =>
+  const handleSelectPlayer = (selectedJugador, jugadorNuevoId, esLocal) => {
+    const setJugadoresEnAlta = esLocal ? setJugadoresEnAltaLocal : setJugadoresEnAltaVisitante;
+    setJugadoresEnAlta(prev =>
+      prev.map(jugador =>
         jugador.id === jugadorNuevoId
           ? {
               ...jugador,
@@ -421,6 +427,7 @@ export default function ResultadoPartido() {
     setSearchResults([]);
     setSearchingDniForId(null);
   };
+
 
   const handleGuardarJugadores = async () => {
     try {
@@ -670,7 +677,7 @@ export default function ResultadoPartido() {
                 <button
                   onClick={() => setChargingMode(true)}
                   className="px-3 py-2 bg-green-600 text-white rounded-[6px] shadow-sm hover:bg-green-700 transition-colors"
-                  disabled={jugadoresEnAlta.length > 0}
+                  disabled={jugadoresEnAltaLocal.length > 0 || jugadoresEnAltaVisitante.length > 0}
                 >
                   Cargar Resultados
                 </button>
@@ -679,7 +686,7 @@ export default function ResultadoPartido() {
                 <button
                   onClick={() => setChargingMode(true)} 
                   className="px-4 py-2.5 bg-yellow-500 text-white font-medium rounded-[8px] shadow-sm hover:bg-yellow-600 transition-colors"
-                  disabled={jugadoresEnAlta.length > 0}
+                  disabled={jugadoresEnAltaLocal.length > 0 || jugadoresEnAltaVisitante.length > 0}
                 >
                   Editar Resultados
                 </button>
@@ -704,15 +711,17 @@ export default function ResultadoPartido() {
             </div>
 
           </div>
-                      <button
-                onClick={handleAddJugador}
-                disabled={jugadoresEnAlta.length > 0}
-                className="rounded-[6px] px-3 py-2 bg-black text-white hover:bg-gray-900 transition-colors shadow-sm flex text-sm items-center gap-1"
+          <div className="overflow-x-auto rounded-[8px] shadow mb-8">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-bold  bg-gray-200 px-4 py-2 rounded-t">{equipoLocal.nombre}</h2>
+              <button
+                onClick={handleAddJugadorLocal}
+                disabled={jugadoresEnAltaLocal.length > 0 || jugadoresEnAltaVisitante.length > 0}
+                className="rounded-[6px] px-3 py-2 bg-black text-white hover:bg-gray-900 transition-colors shadow-sm flex text-sm items-center gap-1 mr-4"
               >
                 <span className="text-lg">+</span> Agregar Jugador
               </button>
-          <div className="overflow-x-auto rounded-[8px] shadow mb-8">
-            <h2 className="text-lg font-bold  bg-gray-200 px-4 py-2 rounded-t">{equipoLocal.nombre}</h2>
+            </div>
             <table className="w-full bg-white">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
@@ -741,7 +750,7 @@ export default function ResultadoPartido() {
                 </tr>
               </thead>
               <tbody>
-                {jugadoresEnAlta.map((jugador) => (
+                {jugadoresEnAltaLocal.map((jugador) => (
                   <tr key={jugador.id}>
                     <td className="p-2 text-center">
                       <div className="relative">
@@ -749,7 +758,7 @@ export default function ResultadoPartido() {
                           type="text"
                           placeholder="DNI"
                           value={jugador.dni}
-                          onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'dni')}
+                          onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'dni', true)}
                           className="w-full text-center border border-gray-300 rounded-[6px] p-1"
                           autoComplete="off"
                         />
@@ -773,7 +782,7 @@ export default function ResultadoPartido() {
                         type="text"
                         placeholder="Nombre"
                         value={jugador.nombre}
-                        onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'nombre')}
+                        onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'nombre', true)}
                         className="w-full text-center border border-gray-300 rounded-[6px] p-1"
                       />
                     </td>
@@ -782,7 +791,7 @@ export default function ResultadoPartido() {
                         type="text"
                         placeholder="Apellido"
                         value={jugador.apellido}
-                        onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'apellido')}
+                        onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'apellido', true)}
                         className="w-full text-center border border-gray-300 rounded-[6px] p-1"
                       />
                     </td>
@@ -791,26 +800,27 @@ export default function ResultadoPartido() {
                         type="date"
                         placeholder="Fecha de Nacimiento"
                         value={jugador.fecha_nacimiento}
-                        onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'fecha_nacimiento')}
+                        onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'fecha_nacimiento', true)}
                         className="w-full text-center border border-gray-300 rounded-[6px] p-1"
                       />
                     </td>
-                    <td className="p-2 text-center">{/* Espacio vacío para mantener la estructura de la tabla */}</td>
-                    <td className="p-2 text-center">{/* Espacio vacío para mantener la estructura de la tabla */}</td>
-                    <td className="p-2 text-center">{/* Espacio vacío para mantener la estructura de la tabla */}</td>
-                    <td className="p-2 text-center">{/* Espacio vacío para mantener la estructura de la tabla */}</td>
-                    <td className="p-2 text-center">{/* Espacio vacío para mantener la estructura de la tabla */}</td>
+                    {/* ...otros campos vacíos para mantener la estructura... */}
+                    <td className="p-2 text-center"></td>
+                    <td className="p-2 text-center"></td>
+                    <td className="p-2 text-center"></td>
+                    <td className="p-2 text-center"></td>
+                    <td className="p-2 text-center"></td>
                     <td className="p-2 text-center">
                       <div className="flex justify-center space-x-2">
                         <button
-                          onClick={() => handleConfirmAlta(jugador.id)}
+                          onClick={() => handleConfirmAlta(jugador.id, true)}
                           className="bg-green-200 text-green-600 rounded-[6px] p-1 px-3 hover:bg-green-500 hover:text-white transition-colors"
                         >
                           ✓
                         </button>
                         <button
-                          onClick={() => handleCancelAlta(jugador.id)}
-                          className="bg-red-200 text-red-600 rounded-[6px] p-1 px-3 hover:bg-red-500 hover:text-white transition-colors"
+                          onClick={() => handleCancelAlta(jugador.id, true)}
+                          className="bg-red-200 text-red-600 rounded-[6px] p-1 px-3 hover:bg-red-500 hover:text-white transition-colores"
                         >
                           ✕
                         </button>
@@ -818,6 +828,7 @@ export default function ResultadoPartido() {
                     </td>
                   </tr>
                 ))}
+                {/* Jugadores existentes equipo LOCAL */}
                 {equipoLocal.jugadores.map((jugador) => (
                       <tr
                         key={jugador.id}
@@ -979,7 +990,16 @@ export default function ResultadoPartido() {
             </table>
           </div>
           <div className="overflow-x-auto rounded-[8px] shadow mb-8">
-            <h2 className="text-lg font-bold  bg-gray-200 px-4 py-2 rounded-t">{equipoVisitante.nombre}</h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-bold  bg-gray-200 px-4 py-2 rounded-t">{equipoVisitante.nombre}</h2>
+              <button
+                onClick={handleAddJugadorVisitante}
+                disabled={jugadoresEnAltaLocal.length > 0 || jugadoresEnAltaVisitante.length > 0}
+                className="rounded-[6px] px-3 py-2 bg-black text-white hover:bg-gray-900 transition-colores shadow-sm flex text-sm items-center gap-1 mr-4"
+              >
+                <span className="text-lg">+</span> Agregar Jugador
+              </button>
+            </div>
             <table className="w-full bg-white">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
@@ -1008,6 +1028,85 @@ export default function ResultadoPartido() {
                 </tr>
               </thead>
               <tbody>
+                {jugadoresEnAltaVisitante.map((jugador) => (
+                  <tr key={jugador.id}>
+                    <td className="p-2 text-center">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="DNI"
+                          value={jugador.dni}
+                          onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'dni', false)}
+                          className="w-full text-center border border-gray-300 rounded-[6px] p-1"
+                          autoComplete="off"
+                        />
+                        {searchingDniForId === jugador.id && searchResults.length > 0 && (
+                          <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto shadow-lg">
+                            {searchResults.map((result) => (
+                              <li
+                                key={result.id}
+                                className="p-2 text-sm hover:bg-gray-100 cursor-pointer"
+                                onClick={() => handleSelectPlayer(result, jugador.id)}
+                              >
+                                {result.dni} - {result.nombre} {result.apellido}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-2 text-center">
+                      <input
+                        type="text"
+                        placeholder="Nombre"
+                        value={jugador.nombre}
+                        onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'nombre', false)}
+                        className="w-full text-center border border-gray-300 rounded-[6px] p-1"
+                      />
+                    </td>
+                    <td className="p-2 text-center">
+                      <input
+                        type="text"
+                        placeholder="Apellido"
+                        value={jugador.apellido}
+                        onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'apellido', false)}
+                        className="w-full text-center border border-gray-300 rounded-[6px] p-1"
+                      />
+                    </td>
+                    <td className="p-2 text-center">
+                      <input
+                        type="date"
+                        placeholder="Fecha de Nacimiento"
+                        value={jugador.fecha_nacimiento}
+                        onChange={(e) => handleInputChangeNuevo(e, jugador.id, 'fecha_nacimiento', false)}
+                        className="w-full text-center border border-gray-300 rounded-[6px] p-1"
+                      />
+                    </td>
+                    {/* ...otros campos vacíos para mantener la estructura... */}
+                    <td className="p-2 text-center"></td>
+                    <td className="p-2 text-center"></td>
+                    <td className="p-2 text-center"></td>
+                    <td className="p-2 text-center"></td>
+                    <td className="p-2 text-center"></td>
+                    <td className="p-2 text-center">
+                      <div className="flex justify-center space-x-2">
+                        <button
+                          onClick={() => handleConfirmAlta(jugador.id, false)}
+                          className="bg-green-200 text-green-600 rounded-[6px] p-1 px-3 hover:bg-green-500 hover:text-white transition-colores"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => handleCancelAlta(jugador.id, false)}
+                          className="bg-red-200 text-red-600 rounded-[6px] p-1 px-3 hover:bg-red-500 hover:text-white transition-colores"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {/* Jugadores existentes equipo VISITANTE */}
                 {equipoVisitante.jugadores.map((jugador) => (
                       <tr
                         key={jugador.id}
@@ -1208,7 +1307,7 @@ export default function ResultadoPartido() {
           partidoId={partidoId}
           equipoLocalId={equipoLocal.id}
           equipoVisitanteId={equipoVisitante.id}
-          jugadores={jugadoresEnAlta}
+          jugadores={[...jugadoresEnAltaLocal, ...jugadoresEnAltaVisitante]}
           equipoLocal={equipoLocal}
           equipoVisitante={equipoVisitante}
           zonaId={zonaId}

@@ -327,10 +327,26 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2 flex-1">
-                    <div
-                      className="w-6 h-6 rounded-full"
-                      style={{ backgroundColor: equipos.find(e => e.id === partido.equipo_local_id)?.color || "#ccc" }}
-                    />
+                    {/* Escudo o círculo color equipo local */}
+                    {(() => {
+                      const equipoLocal = equipos.find(e => e.id === partido.equipo_local_id);
+                      if (equipoLocal?.escudo) {
+                        return (
+                          <img
+                            src={`${import.meta.env.VITE_API_URL?.replace(/\/$/, '')}/storage/${equipoLocal.escudo}`}
+                            alt="Escudo local"
+                            className="w-8 h-8 rounded-full object-cover border border-gray-200 bg-white"
+                            style={{ minWidth: 24, minHeight: 24 }}
+                          />
+                        );
+                      }
+                      return (
+                        <div
+                          className="w-8 h-8 rounded-full"
+                          style={{ backgroundColor: equipoLocal?.color || "#ccc" }}
+                        />
+                      );
+                    })()}
                     <span className="font-medium">
                       {equipos.find(e => e.id === partido.equipo_local_id)?.nombre || partido.equipos[0].nombre }
                     </span>
@@ -350,10 +366,26 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
                     <span className="font-medium">
                       {equipos.find(e => e.id === partido.equipo_visitante_id)?.nombre || partido.equipos[1].nombre}
                     </span>
-                    <div
-                      className="w-6 h-6 rounded-full"
-                      style={{ backgroundColor: equipos.find(e => e.id === partido.equipo_visitante_id)?.color || "#ccc" }}
-                    />
+                    {/* Escudo o círculo color equipo visitante */}
+                    {(() => {
+                      const equipoVisitante = equipos.find(e => e.id === partido.equipo_visitante_id);
+                      if (equipoVisitante?.escudo) {
+                        return (
+                          <img
+                            src={`${import.meta.env.VITE_API_URL?.replace(/\/$/, '')}/storage/${equipoVisitante.escudo}`}
+                            alt="Escudo visitante"
+                            className="w-6 h-6 rounded-full object-cover border border-gray-200 bg-white"
+                            style={{ minWidth: 24, minHeight: 24 }}
+                          />
+                        );
+                      }
+                      return (
+                        <div
+                          className="w-6 h-6 rounded-full"
+                          style={{ backgroundColor: equipoVisitante?.color || "#ccc" }}
+                        />
+                      );
+                    })()}
                   </div>
                 </div>
                 <div className="grid grid-cols-3 mt-2 text-sm text-gray-600">

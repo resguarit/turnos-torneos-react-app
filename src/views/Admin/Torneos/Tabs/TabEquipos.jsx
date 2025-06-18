@@ -94,7 +94,7 @@ export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handl
           </div>
         ) : (
           <div className="overflow-hidden rounded-[6px] border border-gray-200 bg-white shadow">
-            <div className="max-h-[400px] overflow-y-auto">
+            <div className="max-h-fit overflow-y-auto">
               <table className="w-full">
                 <tbody>
                   {zona.equipos && zona.equipos.map((equipo) => (

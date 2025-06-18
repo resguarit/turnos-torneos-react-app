@@ -15,6 +15,7 @@ const PestanaConfiguracion = () => {
     habilitar_mercado_pago: false,
     mercado_pago_access_token: '',
     mercado_pago_webhook_secret: '',
+    nombre_complejo: '',
     direccion_complejo: '',
     telefono_complejo: ''
   });
@@ -338,32 +339,48 @@ const PestanaConfiguracion = () => {
               </p>
             </div>
             
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Dirección del complejo
-              </label>
-              <input
-                type="text"
-                name="direccion_complejo"
-                value={config.direccion_complejo}
-                onChange={handleChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                required
-              />
-            </div>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Teléfono del complejo
-              </label>
-              <input
-                type="text"
-                name="telefono_complejo"
-                value={config.telefono_complejo}
-                onChange={handleChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                required
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre del complejo
+                </label>
+                <input
+                  type="text"
+                  name="nombre_complejo"
+                  value={config.nombre_complejo}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Dirección del complejo
+                </label>
+                <input
+                  type="text"
+                  name="direccion_complejo"
+                  value={config.direccion_complejo}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Teléfono del complejo
+                </label>
+                <input
+                  type="text"
+                  name="telefono_complejo"
+                  value={config.telefono_complejo}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
             </div>
           </div>
 

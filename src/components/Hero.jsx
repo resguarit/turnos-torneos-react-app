@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import rngBlack from "../assets/rngBlack.mp4";
 import video from "../assets/rngBlack.mp4";
 import { ArrowLeftCircle } from "lucide-react";
+import { useConfiguration } from '@/context/ConfigurationContext';
 
 function Hero() {
   const navigate = useNavigate();
   const [hasActiveReservation, setHasActiveReservation] = useState(false);
+  const { config, loading: isLoadingConfig } = useConfiguration();
 
   useEffect(() => {
     const checkActiveReservation = () => {
@@ -56,6 +58,13 @@ function Hero() {
     }
   }, []);
 
+  // Determinar el nombre del complejo a mostrar
+  const getNombreComplejo = () => {
+    if (isLoadingConfig) return '...';
+    if (!config) return 'RG Turnos';
+    return config.nombre_complejo || 'RG Turnos';
+  };
+
   return (
     <>
       <div className="relative h-screen w-full overflow-hidden">
@@ -83,7 +92,7 @@ function Hero() {
             className="font-inter tracking-wide font-bold text-3xl md:text-4xl lg:text-5xl text-white"
             style={{ textShadow: "1px 2px 2px rgba(0, 0, 0, 0.4)" }}
           >
-            VOS ELEGÍS DONDE JUGAR
+            Sistema de Reservas y Torneos de {getNombreComplejo()}
           </h1>
           <h2 className="font-inter tracking-wide font-medium text-sm md:text-lg lg:text-xl text-white">
             Descubrí las mejores canchas de fútbol y unite a la comunidad más grande de jugadores

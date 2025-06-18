@@ -9,7 +9,6 @@ import { useState, useEffect, useMemo } from 'react'
 import CrearPlayoffModal from '../../Modals/CrearPlayoffModal';
 import { format as formatDate } from 'date-fns';
 import CrearPlayoffGruposModal from '../../Modals/CrearPlayoffGruposModal'; // Asegúrate de tener este modal
-import { useTorneos } from '@/context/TorneosContext';
 
 export function TabFechas({ 
   zona, 
@@ -32,7 +31,6 @@ export function TabFechas({
   const [showPlayoffModal, setShowPlayoffModal] = useState(false);
   const [showPlayoffGruposModal, setShowPlayoffGruposModal] = useState(false);
   const [loadingPlayoffGrupos, setLoadingPlayoffGrupos] = useState(false);
-  const { torneos, setTorneos } = useTorneos();
 
   const puedeCrearPlayoff = zona?.formato === 'Liga + Playoff';
   const puedeCrearPlayoffGrupos = zona?.formato === 'Grupos';
@@ -88,8 +86,8 @@ export function TabFechas({
         
 
         {!fechasSorteadas && fechas.length === 0 && (
-          <div className="mt-6 justify-between flex w-full items-center">
-          <div className=" flex gap-2 items-center">
+          <div className="mt-6 flex flex-wrap w-full items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-2 items-center">
               {/* Datepicker */}
               <div className="relative" ref={calendarRef}>
                 <button
@@ -137,10 +135,10 @@ export function TabFechas({
                 {loading ? 'Sorteando...' : 'Sortear Fechas'} <Shuffle size={18} />
               </button>
           </div>
-          <div>
+          <div className="flex flex-wrap gap-2">
             {/* Botón para crear playoff en liga */}
             {puedeCrearPlayoff && (
-              <div className="flex items-center gap-4 ">
+              <div className="flex items-center">
                 <button
                   onClick={() => setShowPlayoffModal(true)}
                   className="bg-secundario text-white text-sm px-3 py-2 rounded-[6px] hover:bg-secundario/80"
@@ -153,7 +151,7 @@ export function TabFechas({
             )}
             {/* Botón para crear playoff de grupos */}
             {puedeCrearPlayoffGrupos && (
-              <div className="flex items-center gap-4 mt-2">
+              <div className="flex items-center">
                 <button
                   onClick={() => setShowPlayoffGruposModal(true)}
                   className="bg-black text-white text-sm px-3 py-2 rounded-[6px] hover:bg-green-700"
@@ -188,10 +186,6 @@ export function TabFechas({
               });
               toast.success("Playoff creado correctamente");
               setShowPlayoffModal(false);
-              
-              // Actualizar el contexto de torneos después de crear el playoff
-              const torneosResponse = await api.get('/torneos');
-              setTorneos(torneosResponse.data);
               
               if (onFechasDeleted) onFechasDeleted();
             } catch (err) {

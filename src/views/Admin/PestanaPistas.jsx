@@ -240,10 +240,9 @@ const PestanaPistas = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto mt-4">
+    <div className="max-w-7xl mx-auto mt-4 px-4 sm:px-0">
       <ToastContainer position="top-right" />
-      <div className="flex justify-end gap-4 mb-4">
-        <div className="flex justify-center items-center">
+      <div className="flex flex-col sm:flex-row justify-end gap-4 mb-4">
         <button
           onClick={() => {
             setAgregando(true);
@@ -259,14 +258,12 @@ const PestanaPistas = () => {
               activa: true,
             });
           }}
-          className="inline-flex items-center text-sm px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-[6px] shadow transition-colors duration-200 transform hover:scale-105"
+          className="inline-flex items-center justify-center text-sm px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-[6px] shadow transition-colors duration-200 transform hover:scale-105"
           disabled={isSaving}
         >
           <Plus className="h-4 w-4 mr-2" />
           Añadir Cancha
         </button>
-        </div>
-        <div className="flex justify-center items-center">
         <button
           onClick={() => {
             setAgregando(false);
@@ -278,13 +275,12 @@ const PestanaPistas = () => {
               duracion_turno: ''
             });
           }}
-          className="inline-flex items-center text-sm px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-[6px] shadow transition-colors duration-200 transform hover:scale-105"
+          className="inline-flex items-center justify-center text-sm px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-[6px] shadow transition-colors duration-200 transform hover:scale-105"
           disabled={isSaving}
         >
           <Plus className="h-4 w-4 mr-2" />
           Añadir Deporte
         </button>
-        </div>
       </div>
 
       {loading ? (
@@ -445,8 +441,8 @@ const PestanaPistas = () => {
             <ul className="divide-y divide-gray-100 w-full">
               {pistas.map((pista) => (
                 <li key={pista.id} className="hover:bg-gray-50 transition-colors duration-150 w-full">
-                  <div className="p-6 flex justify-between items-center space-x-8 sm:space-x-3">
-                    <div className="flex items-center space-x-8">
+                  <div className="p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:space-x-3">
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                       <div className="bg-blue-600 text-center rounded-[8px] p-2">
                         <span className="text-sm sm:text-base font-semibold text-white">
                           {`Cancha ${pista.nro} - ${pista.tipo_cancha}`}
@@ -466,7 +462,7 @@ const PestanaPistas = () => {
                       </span>
                     </div>
 
-                    <div className="flex items-center space-x-3 sm:space-x-3">
+                    <div className="flex items-center self-end sm:self-center gap-3">
                       <button 
                         onClick={() => handleEditClick(pista)} 
                         className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200" 
@@ -503,13 +499,13 @@ const PestanaPistas = () => {
             Deportes
           </div>
 
-          <div className="bg-white w-1/2 rounded-xl shadow-lg border border-gray-100 overflow-x-auto">
+          <div className="bg-white lg:w-1/2 rounded-xl shadow-lg border border-gray-100 overflow-x-auto">
             <div className="max-h-[40vh] overflow-y-auto">
             <ul className="divide-y divide-gray-100 w-full">
               {deportes.map((deporte) => (
                 <li key={deporte.id} className="hover:bg-gray-50 transition-colors duration-150 w-full">
-                  <div className="p-6 flex justify-between items-center space-x-8 sm:space-x-3">
-                    <div className="flex items-center space-x-8">
+                  <div className="p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:space-x-3">
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                       <div className="bg-green-600 text-center rounded-[8px] p-2">
                         <span className="text-sm sm:text-base font-semibold text-white">
                           {`${deporte.nombre} - ${deporte.jugadores_por_equipo}`}
@@ -520,7 +516,7 @@ const PestanaPistas = () => {
                       </span>
                     </div>
 
-                    <div className="flex items-center space-x-3 sm:space-x-3">
+                    <div className="flex items-center self-end sm:self-center gap-3">
                       <button 
                         onClick={() => handleEditDeporteClick(deporte)} 
                         className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200" 

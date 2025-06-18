@@ -107,7 +107,6 @@ export default function DetalleZona() {
           return;
         }
         console.error('Error fetching zone details:', error);
-        toast.error('Error al cargar los datos de la zona');
       } finally {
         setLoading(false);
       }
@@ -546,7 +545,7 @@ export default function DetalleZona() {
     }
   };
 
-  if (loading) {
+  if (!zona) {
     return (
       <div className="min-h-screen flex flex-col font-inter">
         <Header />
@@ -570,20 +569,6 @@ export default function DetalleZona() {
     setModalConfirmVisible(true);
   };
 
-  if (!zona) {
-    return (
-      <div className="min-h-screen flex flex-col font-inter">
-        <Header />
-        <main className="flex-1 p-6 bg-gray-100">
-          <div className="flex justify-center items-center h-full">
-            <BtnLoading />
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex flex-col font-inter">
     <Header />
@@ -591,13 +576,14 @@ export default function DetalleZona() {
       <div className="w-full flex mb-2">
         <BackButton ruta={`/zonas-admi/${zona.torneo_id}`} />
       </div>
-      <div className="w-full px-40">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl lg:text-2xl font-bold">{zona.torneo.nombre} - {zona.nombre} - {zona.año} <span className="text-sm text-gray-500 font-normal">({zona.formato})</span></h1>
+      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-20 xl:px-40">
+        <div className="mb-6">
+          <h1 className="text-xl md:text-2xl font-bold">{zona.torneo.nombre} - {zona.nombre} - {zona.año}</h1>
+          <p className="text-md text-gray-500">({zona.formato})</p>
         </div>
         
         {/* Tabs Navigation */}
-        <div className="flex border-b mb-6">
+        <div className="flex border-b mb-6 text-xs sm:text-sm lg:text-base">
           <button 
             className={`px-4 py-2 font-medium ${activeTab === 'equipos' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-gray-700'}`}
             onClick={() => handleTabChange('equipos')}
@@ -638,69 +624,77 @@ export default function DetalleZona() {
         
 
         {/* Tab Content */}
-        {activeTab === 'equipos' && (
-          <TabEquipos 
-            zona={zona} 
-            navigate={navigate} 
-            zonaId={zonaId} 
-            handleEliminarEquipo={handleEliminarEquipo}
-            handleReemplazarEquipo={handleReemplazarEquipo}
-            abortController={abortControllerRef.current}
-            handleNavigateToVerPagos={handleNavigateToVerPagos}
-          />
-        )}
-        
-        {activeTab === 'fechas' && (
-          <TabFechas 
-            zona={zona}
-            fechas={fechas}
-            fechaInicial={fechaInicial}
-            setFechaInicial={setFechaInicial}
-            calendarOpen={calendarOpen}
-            setCalendarOpen={setCalendarOpen}
-            calendarRef={calendarRef}
-            handleSortearFechas={handleSortearFechas}
-            loading={loading}
-            zonaId={zonaId}
-            equipos={zona.equipos}
-            fechasSorteadas={fechasSorteadas}
-            onFechasDeleted={recargarDatosZona}
-            abortController={abortControllerRef.current}
-          />
-        )}
-        
-        {activeTab === 'grupos' && zona.formato === 'Grupos' && (
-          <TabGrupos 
-            zona={zona}
-            grupos={grupos}
-            gruposCreados={gruposCreados}
-            numGrupos={numGrupos}
-            setNumGrupos={setNumGrupos}
-            handleActualizarGrupos={handleActualizarGrupos}
-            handleCrearGrupos={handleCrearGrupos}
-            setModalVisible={setModalVisible}
-            editMode={editMode}
-            handleEliminarEquipoDeGrupo={handleEliminarEquipoDeGrupo}
-            handleEliminarGrupos={handleEliminarGrupos}
-            handleAgregarEquipoAGrupo={handleAgregarEquipoAGrupo}
-            abortController={abortControllerRef.current}
-          />
-        )}
-        
-        {activeTab === 'arana' && zona.formato === 'Eliminatoria' && (
-          <TabArania 
-            equipos={zona.equipos} 
-            abortController={abortControllerRef.current}
-          />
-        )}
-        
-        {activeTab === 'resultados' && (
+        {loading ? (
+          <div className="mt-8 flex justify-center">
+            <BtnLoading />
+          </div>
+        ) : (
           <>
-          {(zona.formato === 'Liga' || zona.formato === 'Liga + Playoff') && <TabResultados zonaId={zonaId} abortController={abortControllerRef.current} />}
-          {zona.formato === 'Grupos' && (
-            <TabResultadosGrupos zonaId={zonaId} grupos={grupos} abortController={abortControllerRef.current} />
-          )}
-        </>
+            {activeTab === 'equipos' && (
+              <TabEquipos 
+                zona={zona} 
+                navigate={navigate} 
+                zonaId={zonaId} 
+                handleEliminarEquipo={handleEliminarEquipo}
+                handleReemplazarEquipo={handleReemplazarEquipo}
+                abortController={abortControllerRef.current}
+                handleNavigateToVerPagos={handleNavigateToVerPagos}
+              />
+            )}
+            
+            {activeTab === 'fechas' && (
+              <TabFechas 
+                zona={zona}
+                fechas={fechas}
+                fechaInicial={fechaInicial}
+                setFechaInicial={setFechaInicial}
+                calendarOpen={calendarOpen}
+                setCalendarOpen={setCalendarOpen}
+                calendarRef={calendarRef}
+                handleSortearFechas={handleSortearFechas}
+                loading={loading}
+                zonaId={zonaId}
+                equipos={zona.equipos}
+                fechasSorteadas={fechasSorteadas}
+                onFechasDeleted={recargarDatosZona}
+                abortController={abortControllerRef.current}
+              />
+            )}
+            
+            {activeTab === 'grupos' && zona.formato === 'Grupos' && (
+              <TabGrupos 
+                zona={zona}
+                grupos={grupos}
+                gruposCreados={gruposCreados}
+                numGrupos={numGrupos}
+                setNumGrupos={setNumGrupos}
+                handleActualizarGrupos={handleActualizarGrupos}
+                handleCrearGrupos={handleCrearGrupos}
+                setModalVisible={setModalVisible}
+                editMode={editMode}
+                handleEliminarEquipoDeGrupo={handleEliminarEquipoDeGrupo}
+                handleEliminarGrupos={handleEliminarGrupos}
+                handleAgregarEquipoAGrupo={handleAgregarEquipoAGrupo}
+                abortController={abortControllerRef.current}
+              />
+            )}
+            
+            {activeTab === 'arana' && zona.formato === 'Eliminatoria' && (
+              <TabArania 
+                equipos={zona.equipos} 
+                abortController={abortControllerRef.current}
+              />
+            )}
+            
+            {activeTab === 'resultados' && (
+              <>
+              {(zona.formato === 'Liga' || zona.formato === 'Liga + Playoff') && <TabResultados zonaId={zonaId} abortController={abortControllerRef.current} />}
+              {zona.formato === 'Grupos' && (
+                <TabResultadosGrupos zonaId={zonaId} grupos={grupos} abortController={abortControllerRef.current} />
+              )}
+            </>
+            )}
+          </>
         )}
       </div>
       <ToastContainer position="top-right" />

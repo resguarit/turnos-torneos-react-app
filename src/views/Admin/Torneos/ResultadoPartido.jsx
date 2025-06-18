@@ -5,7 +5,7 @@ import { Footer } from '@/components/Footer';
 import BackButton from '@/components/BackButton';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
-import { toast } from 'react-toastify'; 
+import { toast, ToastContainer } from 'react-toastify'; 
 import ResultadoModal from '../Modals/ResultadoModal';
 import { Info, Trash, ChevronLeft, TriangleAlert } from 'lucide-react';
 import { debounce } from 'lodash'; 
@@ -200,11 +200,11 @@ export default function ResultadoPartido() {
         toast.success('Todos los partidos de la fecha están finalizados. La fecha ha sido marcada como Finalizada.');
       }
 
+      toast.success('Cambios aplicados correctamente');
+
       setChargingMode(false);
       setOriginalEstadisticas(estadisticas);
       setChangesDetected(false);
-
-      toast.success('Cambios aplicados correctamente');
 
       // Incrementar el disparador para forzar re-ejecución del useEffect
       setRefreshKey(prevKey => prevKey + 1); 
@@ -568,6 +568,7 @@ export default function ResultadoPartido() {
 
   return (
     <div className="min-h-screen flex flex-col justify-start bg-gray-100 font-inter">
+      <ToastContainer position='top-right' />
       <Header />
       <main className="max-w-7xl lg:max-w-full p-6 grow">
         <div className="w-full flex mb-4">

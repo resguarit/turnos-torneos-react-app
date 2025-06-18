@@ -7,14 +7,12 @@ import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
 import { toast } from 'react-toastify'; // Importar react-toastify
 import 'react-toastify/dist/ReactToastify.css'; // Importar estilos de react-toastify
-import { useTorneos } from '@/context/TorneosContext';
 import ConfirmModal from '../Modals/ConfirmModal';
 import BackButton from '@/components/BackButton';
 
 export default function AltaZona() {
   const { id, torneoId } = useParams(); // Obtener el ID de la zona y el torneo desde la URL
   const navigate = useNavigate();
-  const { setTorneos } = useTorneos();
   const [loading, setLoading] = useState(true); // Estado de carga inicializado en true
   const [formData, setFormData] = useState({
     nombre: '',
@@ -72,8 +70,6 @@ export default function AltaZona() {
         await api.post('/zonas', formData);
         toast.success('Zona creada correctamente');
       }
-      const torneosResponse = await api.get('/torneos');
-      setTorneos(torneosResponse.data);
       navigate(`/zonas-admi/${formData.torneo_id}`);
     } catch (error) {
       console.error('Error saving zona:', error);

@@ -128,22 +128,6 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
     }
   };
 
-  // Función para eliminar equipo seleccionado
-  const handleEliminarEquipoSeleccionado = async (id) => {
-    try {
-      setLoading(true);
-      await api.delete(`/zonas/${zonaId}/equipos`, {
-        data: { equipo_ids: [id] }
-      });
-      setEquiposSeleccionados(prev => prev.filter(eid => eid !== id));
-      toast.success('Equipo eliminado de la zona correctamente.');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Error al eliminar el equipo de la zona');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col font-inter bg-gray-100">
       <Header />
@@ -250,9 +234,8 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
                         <li key={id} className="flex justify-between items-center bg-white p-2 rounded shadow-sm">
                           <span className="font-medium">{equipo?.nombre}</span>
                           <button
-                            onClick={() => handleEliminarEquipoSeleccionado(id)}
+                            onClick={() => handleSeleccionarEquipo(id)}
                             className="text-red-500 hover:text-red-700"
-                            disabled={loading}
                           >
                             Eliminar
                           </button>

@@ -19,6 +19,8 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
   const [loading, setLoading] = useState(false);
   const [nuevoEquipo, setNuevoEquipo] = useState('');
   const [equiposSeleccionados, setEquiposSeleccionados] = useState([]);
+  const [escudo, setEscudo] = useState(null);
+  const [preview, setPreview] = useState(null);
 
   const fetchEquipos = async () => {
     try {
@@ -58,6 +60,14 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
     });
   };
 
+  // Manejar cambio de imagen
+  const handleEscudoChange = (e) => {
+    const file = e.target.files[0];
+    setEscudo(file);
+    setPreview(file ? URL.createObjectURL(file) : null);
+  };
+
+  // Modifica la función para crear equipo para enviar la imagen
   const handleAgregarNuevoEquipo = async () => {
     if (!nuevoEquipo.trim()) {
       toast.error('El nombre del equipo no puede estar vacío.');
@@ -66,8 +76,12 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
 
     try {
       setLoading(true);
-      const response = await api.post('/equipos', {
-        nombre: nuevoEquipo
+      const formData = new FormData();
+      formData.append('nombre', nuevoEquipo);
+      if (escudo) formData.append('escudo', escudo);
+
+      const response = await api.post('/equipos', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       if (response.status === 201) {
@@ -75,6 +89,8 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
         setEquipos(prev => [...prev, equipoCreado]);
         setEquiposSeleccionados(prev => [...prev, equipoCreado.id]);
         setNuevoEquipo('');
+        setEscudo(null);
+        setPreview(null);
         toast.success('Equipo creado correctamente');
       }
     } catch (error) {
@@ -139,7 +155,7 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
                 </div>
 
                 {/* Input para nuevo equipo */}
-                <div className="flex gap-2 mt-4">
+                <div className="flex gap-2 mt-4 items-center">
                   <input
                     type="text"
                     value={nuevoEquipo}
@@ -148,6 +164,17 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
                     className="w-full p-2 border rounded-md"
                     disabled={loading}
                   />
+                  {/* Botón y campo para imagen */}
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <span className="bg-gray-200 px-2 py-1 rounded text-sm">Escudo</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleEscudoChange}
+                      className="hidden"
+                      disabled={loading}
+                    />
+                  </label>
                   <button
                     onClick={handleAgregarNuevoEquipo}
                     className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
@@ -156,6 +183,12 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
                     Crear
                   </button>
                 </div>
+                {/* Vista previa del escudo */}
+                {preview && (
+                  <div className="mt-2">
+                    <img src={preview} alt="Vista previa escudo" className="h-16 object-contain border rounded" />
+                  </div>
+                )}
 
                 {loading && <p className="text-center">Cargando equipos...</p>}
 

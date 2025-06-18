@@ -3,6 +3,7 @@ import { Settings, Save, CheckCircle, Info } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
 import api from '@/lib/axiosConfig';
 import { Popover } from '@headlessui/react';
+import BtnLoading from '@/components/BtnLoading';
 
 const PestanaConfiguracion = () => {
   const [config, setConfig] = useState({
@@ -219,9 +220,7 @@ const PestanaConfiguracion = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
+      <BtnLoading />
     );
   }
 

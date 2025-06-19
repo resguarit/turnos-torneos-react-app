@@ -196,6 +196,12 @@ export default function ArañaEliminacion({ equipos }) {
 
   const canGenerateNextRound = () => {
     if (!rounds.length) return false;
+    const initialTeams = (rounds[0]?.matches?.length || 0) * 2;
+    if (initialTeams === 0) return false;
+    const expectedRoundsWithoutThird = Math.log2(initialTeams);
+    if (rounds.length >= expectedRoundsWithoutThird) {
+      return false;
+    }
     const currentRound = rounds[rounds.length - 1];
     return currentRound.matches.every((_, index) =>
       selectedWinners.hasOwnProperty(`${rounds.length - 1}-${index}`)

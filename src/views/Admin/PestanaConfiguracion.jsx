@@ -203,7 +203,7 @@ const PestanaConfiguracion = () => {
       
       // Aplicar colores inmediatamente
       document.documentElement.style.setProperty('--color-primary', config.colores.primary);
-      document.documentElement.style.setProperty('--color-secondary', config.colores.secondary);
+      document.documentElement.style.setProperty('--color-secundario', config.colores.secondary);
       
       // Volvemos a cargar la configuración para obtener las nuevas credenciales enmascaradas
       fetchConfiguracion();

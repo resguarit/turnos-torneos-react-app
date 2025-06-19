@@ -217,8 +217,11 @@ export default function CargaPartido() {
                   const horario = partido.horario ? formatearRangoHorario(partido.horario.hora_inicio, partido.horario.hora_fin) : "No Definido";
                   const marcadorLocal = partido.marcador_local ?? "-";
                   const marcadorVisitante = partido.marcador_visitante ?? "-";
-                  // Penales: igual que en CarruselFechas.jsx
                   const penales = Array.isArray(partido.penales) && partido.penales.length > 0 ? partido.penales[0] : null;
+
+                  // Buscar equipos por ID para obtener escudo y color
+                  const equipoLocal = partido.equipos[0];
+                  const equipoVisitante = partido.equipos[1];
 
                   return (
                     <div
@@ -228,12 +231,22 @@ export default function CargaPartido() {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2 flex-1">
-                          <div
-                            className="w-6 h-6 rounded-full"
-                            style={{ backgroundColor: "#ccc" }}
-                          />
+                          {/* Escudo o círculo color equipo local */}
+                          {equipoLocal?.escudo ? (
+                            <img
+                              src={`${import.meta.env.VITE_API_URL?.replace(/\/$/, '')}/storage/${equipoLocal.escudo}`}
+                              alt="Escudo local"
+                              className="w-8 h-8 rounded-full object-cover border border-gray-200 bg-white"
+                              style={{ minWidth: 24, minHeight: 24 }}
+                            />
+                          ) : (
+                            <div
+                              className="w-8 h-8 rounded-full"
+                              style={{ backgroundColor: equipoLocal?.color || "#ccc" }}
+                            />
+                          )}
                           <span className="font-medium">
-                            {partido.equipos[0]?.nombre || "Equipo no definido"}
+                            {equipoLocal?.nombre || "Equipo no definido"}
                           </span>
                         </div>
 
@@ -256,12 +269,22 @@ export default function CargaPartido() {
 
                         <div className="flex items-center space-x-2 flex-1 justify-end">
                           <span className="font-medium">
-                            {partido.equipos[1]?.nombre || "Equipo no definido"}
+                            {equipoVisitante?.nombre || "Equipo no definido"}
                           </span>
-                          <div
-                            className="w-6 h-6 rounded-full"
-                            style={{ backgroundColor: "#ccc" }}
-                          />
+                          {/* Escudo o círculo color equipo visitante */}
+                          {equipoVisitante?.escudo ? (
+                            <img
+                              src={`${import.meta.env.VITE_API_URL?.replace(/\/$/, '')}/storage/${equipoVisitante.escudo}`}
+                              alt="Escudo visitante"
+                              className="w-6 h-6 rounded-full object-cover border border-gray-200 bg-white"
+                              style={{ minWidth: 24, minHeight: 24 }}
+                            />
+                          ) : (
+                            <div
+                              className="w-6 h-6 rounded-full"
+                              style={{ backgroundColor: equipoVisitante?.color || "#ccc" }}
+                            />
+                          )}
                         </div>
                       </div>
                       <div className="flex justify-between mt-2 text-sm text-gray-600">

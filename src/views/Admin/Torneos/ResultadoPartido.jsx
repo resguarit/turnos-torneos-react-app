@@ -577,8 +577,34 @@ export default function ResultadoPartido() {
         <h1 className=" font-bold mb-4 text-2xl">Resultado Partido</h1>
         <div className='w-full  flex gap-4'>
         <div className="bg-white w-full rounded-[8px] shadow-md p-4 mb-6">
-          <h2 className="text-xl font-bold text-center mb-3 text-black">
-            {partido.equipos[0].nombre} <span className="text-gray-500">vs</span> {partido.equipos[1].nombre}
+          <h2 className="text-xl font-bold text-center mb-3 text-black flex items-center justify-center gap-3">
+            {/* Escudo equipo local */}
+            {equipoLocal.escudo ? (
+              <img
+                src={`${import.meta.env.VITE_API_URL?.replace(/\/$/, '')}/storage/${equipoLocal.escudo}`}
+                alt={`Escudo de ${equipoLocal.nombre}`}
+                className="w-10 h-10 rounded-full object-cover border border-gray-200 bg-white"
+                style={{ minWidth: 40, minHeight: 40 }}
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 text-gray-400 font-bold text-lg" style={{ minWidth: 40, minHeight: 40 }}>
+              </div>
+            )}
+            <span>{partido.equipos[0].nombre}</span>
+            <span className="text-gray-500">vs</span>
+            <span>{partido.equipos[1].nombre}</span>
+            {/* Escudo equipo visitante */}
+            {equipoVisitante.escudo ? (
+              <img
+                src={`${import.meta.env.VITE_API_URL?.replace(/\/$/, '')}/storage/${equipoVisitante.escudo}`}
+                alt={`Escudo de ${equipoVisitante.nombre}`}
+                className="w-10 h-10 rounded-full object-cover border border-gray-200 bg-white"
+                style={{ minWidth: 40, minHeight: 40 }}
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 text-gray-400 font-bold text-lg" style={{ minWidth: 40, minHeight: 40 }}>
+              </div>
+            )}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
             <div className="bg-gray-50 p-3 rounded-[8px]">
@@ -740,11 +766,24 @@ export default function ResultadoPartido() {
           </div>
           <div className="overflow-x-auto rounded-[8px] shadow mb-8">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-bold  bg-gray-200 px-4 py-2 rounded-t">{equipoLocal.nombre}</h2>
+              <h2 className="text-lg font-bold gap-2 flex items-center capitalize bg-gray-200 px-4 py-2 rounded-t">
+                {equipoLocal.escudo ? (
+              <img
+                src={`${import.meta.env.VITE_API_URL?.replace(/\/$/, '')}/storage/${equipoLocal.escudo}`}
+                alt={`Escudo de ${equipoLocal.nombre}`}
+                className="w-10 h-10 rounded-full object-cover border border-gray-200 bg-white"
+                style={{ minWidth: 40, minHeight: 40 }}
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 text-gray-400 font-bold text-lg" style={{ minWidth: 40, minHeight: 40 }}>
+              </div>
+            )}
+            {equipoLocal.nombre}
+              </h2>
               <button
                 onClick={handleAddJugadorLocal}
                 disabled={jugadoresEnAltaLocal.length > 0 || jugadoresEnAltaVisitante.length > 0}
-                className="rounded-t-[6px] px-3 py-2 bg-black text-white hover:bg-gray-900 transition-colores shadow-sm flex text-sm items-center gap-1 "
+                className="rounded-t-[6px] p-3 bg-black text-white hover:bg-gray-900 transition-colores shadow-sm flex text-sm items-center gap-1 "
               >
                 <span className="text-lg">+</span> Agregar Jugador
               </button>
@@ -1020,11 +1059,25 @@ export default function ResultadoPartido() {
           </div>
           <div className="overflow-x-auto rounded-[8px] shadow mb-8">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-bold  bg-gray-200 px-4 py-2 rounded-t">{equipoVisitante.nombre}</h2>
+              <h2 className="text-lg font-bold gap-2 flex items-center capitalize bg-gray-200 px-4 py-2 rounded-t">
+                {equipoVisitante.escudo ? (
+              <img
+                src={`${import.meta.env.VITE_API_URL?.replace(/\/$/, '')}/storage/${equipoVisitante.escudo}`}
+                alt={`Escudo de ${equipoVisitante.nombre}`}
+                className="w-10 h-10 rounded-full object-cover border border-gray-200 bg-white"
+                style={{ minWidth: 40, minHeight: 40 }}
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 text-gray-400 font-bold text-lg" style={{ minWidth: 40, minHeight: 40 }}>
+                
+              </div>
+            )}
+                {equipoVisitante.nombre}
+                </h2>
               <button
                 onClick={handleAddJugadorVisitante}
                 disabled={jugadoresEnAltaLocal.length > 0 || jugadoresEnAltaVisitante.length > 0}
-                className="rounded-t-[6px] px-3 py-2 bg-black text-white hover:bg-gray-900 transition-colores shadow-sm flex text-sm items-center gap-1 "
+                className="rounded-t-[6px] p-3 bg-black text-white hover:bg-gray-900 transition-colores shadow-sm flex text-sm items-center gap-1 "
               >
                 <span className="text-lg">+</span> Agregar Jugador
               </button>

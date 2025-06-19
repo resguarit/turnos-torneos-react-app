@@ -58,9 +58,13 @@ const PestanaConfiguracion = () => {
     try {
       setLoading(true);
       const response = await api.get('/configuracion-usuario');
-      const configData = { ...response.data };
-      setLogoPreview(configData.logo_complejo_url || null); // Mostrar logo actual si existe
       
+      const configData = {
+        ...response.data
+      };
+      
+      setLogoPreview(configData.logo_complejo_url || null);
+
       // Guardamos las credenciales enmascaradas para mostrarlas
       setMaskedCredentials({
         access_token: response.data.mercado_pago_access_token || '',
@@ -182,11 +186,12 @@ const PestanaConfiguracion = () => {
     e.preventDefault();
     setSaving(true);
     setErrorMessage('');
+    
     try {
       const dataToSend = new FormData();
+      
       dataToSend.append('colores[primary]', config.colores.primary);
       dataToSend.append('colores[secondary]', config.colores.secondary);
-      // Fuerza a booleano real
       dataToSend.append('habilitar_turnos', config.habilitar_turnos ? '1' : '0');
       dataToSend.append('habilitar_mercado_pago', config.habilitar_mercado_pago ? '1' : '0');
       dataToSend.append('nombre_complejo', config.nombre_complejo);
@@ -205,16 +210,21 @@ const PestanaConfiguracion = () => {
           dataToSend.append('mercado_pago_webhook_secret', config.mercado_pago_webhook_secret);
         }
       }
-
+      
       await api.post('/configuracion-update', dataToSend, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
       setSuccessMessage('Configuración actualizada correctamente');
+      
       document.documentElement.style.setProperty('--color-primary', config.colores.primary);
-      document.documentElement.style.setProperty('--color-secondary', config.colores.secondary);
+      document.documentElement.style.setProperty('--color-secundario', config.colores.secondary);
+      
       fetchConfiguracion();
-      setTimeout(() => setSuccessMessage(''), 3000);
+      
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 3000);
     } catch (error) {
       console.error('Error al guardar la configuración:', error);
       setErrorMessage('Error al guardar la configuración. Intente nuevamente.');
@@ -386,48 +396,48 @@ const PestanaConfiguracion = () => {
                 />
               </div>
             </div>
-             <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Logo del complejo
-          </label>
-          <div className="flex items-center gap-4">
-            {logoPreview ? (
-              <img
-                src={logoPreview}
-                alt="Logo del complejo"
-                className="h-16 w-16 object-contain border rounded bg-white"
-              />
-            ) : (
-              <span className="text-gray-400 text-xs">Sin logo</span>
-            )}
-            <label className="bg-gray-200 px-3 py-2 rounded text-sm cursor-pointer hover:bg-gray-300">
-              {logoPreview ? "Cambiar logo" : "Cargar logo"}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleLogoChange}
-                disabled={saving}
-              />
-            </label>
-            {logoPreview && (
-              <button
-                type="button"
-                className="text-xs text-red-500 ml-2"
-                onClick={() => {
-                  setLogoPreview(null);
-                  setLogoFile(null);
-                }}
-                disabled={saving}
-              >
-                Quitar
-              </button>
-            )}
-          </div>
-          <p className="text-xs text-gray-500 mt-1">
-            Formato recomendado: PNG/JPG. Máx 2MB.
-          </p>
-        </div>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Logo del complejo
+              </label>
+              <div className="flex items-center gap-4">
+                {logoPreview ? (
+                  <img
+                    src={logoPreview}
+                    alt="Logo del complejo"
+                    className="h-16 w-16 object-contain border rounded bg-white"
+                  />
+                ) : (
+                  <span className="text-gray-400 text-xs">Sin logo</span>
+                )}
+                <label className="bg-gray-200 px-3 py-2 rounded text-sm cursor-pointer hover:bg-gray-300">
+                  {logoPreview ? "Cambiar logo" : "Cargar logo"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleLogoChange}
+                    disabled={saving}
+                  />
+                </label>
+                {logoPreview && (
+                  <button
+                    type="button"
+                    className="text-xs text-red-500 ml-2"
+                    onClick={() => {
+                      setLogoPreview(null);
+                      setLogoFile(null);
+                    }}
+                    disabled={saving}
+                  >
+                    Quitar
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Formato recomendado: PNG/JPG. Máx 2MB.
+              </p>
+            </div>
           </div>
 
           {/* Sección de Mercado Pago */}
@@ -454,7 +464,7 @@ const PestanaConfiguracion = () => {
             </div>
             
             <div className="mb-4">
-              <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                 <span>Access Token de Mercado Pago</span>
                 <Info className="w-4 h-4 ml-1 text-gray-400" title="Credencial privada necesaria para conectar con Mercado Pago" />
               </label>
@@ -478,7 +488,7 @@ const PestanaConfiguracion = () => {
             </div>
             
             <div className="mb-4">
-              <label className="text-sm font-medium text-gray-700 mb-1 flex items-center">
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                 <span>Webhook Secret de Mercado Pago</span>
                 <Info className="w-4 h-4 ml-1 text-gray-400" title="Clave secreta para validar notificaciones desde Mercado Pago" />
               </label>
@@ -502,8 +512,6 @@ const PestanaConfiguracion = () => {
             </div>
           </div>
         </div>
-
-       
 
         <div className="mt-6 flex justify-end">
           <button

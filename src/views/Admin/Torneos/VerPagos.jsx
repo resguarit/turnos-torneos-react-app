@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import api from "@/lib/axiosConfig";
 import { useLocation } from "react-router-dom";
 import BtnLoading from "@/components/BtnLoading";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function VerPagos() {
   const navigate = useNavigate();
@@ -81,40 +82,108 @@ export default function VerPagos() {
   const handleRegistrarPago = async () => {
     // Ensure a payment method is selected
     if (!metodoPagoSeleccionado) {
-      console.error("Por favor, selecciona un método de pago."); // Or show a toast
+      toast.error("Por favor, selecciona un método de pago.");
       return;
     }
-     // Ensure fecha is selected if type is fecha
-     if (tipoSeleccionado === "fecha" && !fechaSeleccionada) {
-        console.error("Por favor, selecciona una fecha."); // Or show a toast
-        return;
-     }
+    // Ensure fecha is selected if type is fecha
+    if (tipoSeleccionado === "fecha" && !fechaSeleccionada) {
+      toast.error("Por favor, selecciona una fecha.");
+      return;
+    }
 
-    setLoading(true); // Use a separate loading state if preferred (e.g., actionLoading)
+    setLoading(true);
     try {
+      let response;
+
       if (tipoSeleccionado === "inscripcion") {
-        await api.post(`/pago/inscripcion/${equipoId}/${torneoId}/${metodoPagoSeleccionado}`);
-        setInscripcionPagada(true);
+        response = await api.post(`/pago/inscripcion/${equipoId}/${torneoId}/${metodoPagoSeleccionado}`);
       } else if (tipoSeleccionado === "fecha") {
-        await api.post(`/pago/fecha/${fechaSeleccionada}/${metodoPagoSeleccionado}`);
+        response = await api.post(`/pago/fecha/${fechaSeleccionada}/${metodoPagoSeleccionado}`);
+      }
+
+      // El backend devuelve HTTP 200 pero dentro del payload puede venir status 400 (string o number)
+      console.log("Respuesta de pago:", response);
+      if (response?.data && response.data.status === 400) {
+        const errorMsg = response?.data?.error || response?.data?.message || "Error al registrar el pago";
+        setTimeout(() => {
+          toast.error(errorMsg, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        }, 100);
+        // Cerrar modal y resetear selecciones
+        setModalOpen(false);
+        setMetodoPagoSeleccionado("");
+        setFechaSeleccionada("");
+        setTipoSeleccionado("inscripcion");
+        setLoading(false);
+        return; // No continuamos con la lógica de éxito
+      }
+
+      // --- Lógica de éxito ---
+      if (tipoSeleccionado === "inscripcion") {
+        setInscripcionPagada(true);
+        // Podríamos refrescar la transacción si el back la retorna en response.data
+      } else if (tipoSeleccionado === "fecha") {
         setEstadoPagosPorFecha((prev) =>
           prev.map((pago) =>
             pago.fecha_id === parseInt(fechaSeleccionada)
-              ? { ...pago, transaccion: { id: "new", monto: valorFecha } }
+              ? { ...pago, transaccion: { id: "new", monto: valorFecha, created_at: new Date().toISOString() } }
               : pago
           )
         );
       }
 
+      setTimeout(() => {
+        toast.success("Pago registrado correctamente", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }, 100);
       setModalOpen(false);
-      setMetodoPagoSeleccionado(""); // Reset selected method
-      setFechaSeleccionada(""); // Reset selected date
-      setTipoSeleccionado("inscripcion"); // Reset type
-      // Optionally refetch data: fetchData();
+      setMetodoPagoSeleccionado("");
+      setFechaSeleccionada("");
+      setTipoSeleccionado("inscripcion");
     } catch (error) {
       console.error("Error registering payment:", error);
+      
+      // Verificar si el error contiene información del backend
+      if (error.response?.data?.status === 400) {
+        const errorMsg = error.response.data.error || error.response.data.message || "Error al registrar el pago";
+        setTimeout(() => {
+          toast.error(errorMsg, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        }, 100);
+      } else {
+        setTimeout(() => {
+          toast.error("Error al registrar el pago", {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        }, 100);
+      }
+      
+      // Mantener el modal abierto para que el usuario pueda corregir
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);
     }
   };
 
@@ -169,6 +238,7 @@ export default function VerPagos() {
 
   return (
     <div className="min-h-screen flex flex-col font-inter">
+      <ToastContainer position="top-right" />
       <Header />
       <main className="flex-1 grow p-6 bg-gray-100">
         {/* ... Botón Atrás y Título ... */}

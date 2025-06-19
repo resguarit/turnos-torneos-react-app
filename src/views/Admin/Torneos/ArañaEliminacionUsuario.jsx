@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import api from '@/lib/axiosConfig';
 import { ChevronRight, Trophy, X } from "lucide-react";
@@ -14,6 +14,15 @@ export default function ArañaEliminacionUsuario({ equipos }) {
     width: window.innerWidth,
     height: window.innerHeight
   });
+
+  // Memo para detectar si existe partido por el tercer puesto
+  const hasThirdPlace = useMemo(() => {
+    if (rounds.length === 0) return false;
+    const initialTeams = (rounds[0]?.matches?.length || 0) * 2;
+    if (initialTeams === 0) return false;
+    const expectedRoundsWithoutThird = Math.log2(initialTeams);
+    return rounds.length === expectedRoundsWithoutThird + 1;
+  }, [rounds]);
 
   useEffect(() => {
     const detectSize = () => {
@@ -47,7 +56,7 @@ export default function ArañaEliminacionUsuario({ equipos }) {
         }));
         setRounds(roundsData);
 
-        // Verificar si hay un campeón (final jugada con ganador)
+        // Verificar si hay un campeón (final jugada con ganador) - la final es siempre la última fecha
         const finalRound = roundsData[roundsData.length - 1];
         if (finalRound && finalRound.matches.length === 1) {
           const finalMatch = finalRound.matches[0];
@@ -139,52 +148,75 @@ export default function ArañaEliminacionUsuario({ equipos }) {
         </div>
       )}
 
-      <div className="p-4 bg-white rounded-lg shadow-md">
+      <div className="p-4 bg-white rounded-lg shadow-md w-full">
         <h3 className="text-lg font-bold mb-4 text-center">Cuadro Eliminatorio</h3>
         
         <div className="overflow-x-auto overflow-y-hidden">
-          <div className="flex justify-start gap-6 p-2 min-w-max">
-            {rounds.map((round, roundIndex) => (
-              <div key={round.id} className="flex flex-col gap-3 justify-center flex-shrink-0">
-                <div className="text-center font-semibold text-sm text-gray-700 mb-2 min-w-[160px]">
-                  {round.nombre || `Ronda ${roundIndex + 1}`}
-                </div>            
-                <div className="flex flex-col gap-4">
-                  {round.matches.map((match, matchIndex) => (
-                    <div key={match.id} className="relative">
-                      <div className="flex flex-col gap-1 border border-gray-300 p-2 rounded-md min-w-[160px] bg-gray-50">
-                        {match.teams.map(teamId => (
-                          <div 
-                            key={teamId} 
-                            className={`p-2 rounded text-sm transition-colors ${
-                              match.winner === teamId 
-                                ? 'bg-green-100 border border-green-300 font-semibold text-green-800' 
-                                : match.winner && match.winner !== teamId
-                                ? 'bg-red-50 text-gray-500 line-through'
-                                : 'bg-white border border-gray-200'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="truncate">{getTeamName(teamId)}</span>
-                              {match.winner === teamId && (
-                                <ChevronRight className="w-4 h-4 text-green-600 flex-shrink-0 ml-1" />
-                              )}
+          <div className="flex justify-start gap-8 md:gap-10 p-2 min-w-max">
+            {rounds.map((round, roundIndex) => {
+              // Si hay tercer puesto y esta es la última ronda, se renderiza en la columna anterior
+              if (hasThirdPlace && roundIndex === rounds.length - 1) return null;
+
+              const isCombined = hasThirdPlace && roundIndex === rounds.length - 2;
+              const innerRounds = isCombined
+                ? [
+                    { round, idx: roundIndex },
+                    { round: rounds[roundIndex + 1], idx: roundIndex + 1 },
+                  ]
+                : [{ round, idx: roundIndex }];
+
+              const columnKey = isCombined
+                ? `${round.id}-${rounds[roundIndex + 1].id}`
+                : round.id;
+
+              return (
+                <div key={columnKey} className="flex flex-col gap-4 justify-center flex-shrink-0">
+                  {innerRounds.map(({ round: innerRound, idx: innerIdx }) => (
+                    <React.Fragment key={innerRound.id}>
+                      <div className="text-center font-semibold text-xs md:text-sm text-gray-700 mb-2 min-w-[140px] md:min-w-[200px]">
+                        {innerRound.nombre || `Ronda ${innerIdx + 1}`}
+                      </div>
+                      <div className="flex flex-col gap-4">
+                        {innerRound.matches.map((match, matchIndex) => (
+                          <div key={match.id} className="relative">
+                            <div className="flex flex-col gap-1 border border-gray-300 p-1 md:p-2 rounded-md min-w-[140px] md:min-w-[200px] bg-gray-50">
+                              {match.teams.map((teamId) => (
+                                <div
+                                  key={teamId}
+                                  className={`p-1 md:p-2 rounded text-xs md:text-sm transition-colors ${
+                                    match.winner === teamId
+                                      ? 'bg-green-100 border border-green-300 font-semibold text-green-800'
+                                      : match.winner && match.winner !== teamId
+                                      ? 'bg-red-50 text-gray-500 line-through'
+                                      : 'bg-white border border-gray-200'
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <span className="truncate max-w-[95px] md:max-w-none">
+                                      {getTeamName(teamId)}
+                                    </span>
+                                    {match.winner === teamId && (
+                                      <ChevronRight className="w-3 h-3 md:w-4 md:h-4 text-green-600 flex-shrink-0 ml-1" />
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
+
+                            {/* Línea conectora hacia la siguiente ronda */}
+                            {innerIdx < rounds.length - 1 && (
+                              <div className="absolute right-[-20px] md:right-[-25px] top-1/2 transform -translate-y-1/2">
+                                <div className="h-[1px] w-5 md:w-6 bg-gray-400"></div>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
-                      
-                      {/* Línea conectora hacia la siguiente ronda */}
-                      {roundIndex < rounds.length - 1 && (
-                        <div className="absolute right-[-25px] top-1/2 transform -translate-y-1/2">
-                          <div className="h-[1px] w-6 bg-gray-400"></div>
-                        </div>
-                      )}
-                    </div>
+                    </React.Fragment>
                   ))}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
         

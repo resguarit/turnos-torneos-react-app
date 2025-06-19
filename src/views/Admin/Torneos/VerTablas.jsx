@@ -204,7 +204,7 @@ export default function VerTablas() {
 
           
           {zonaInfo.formato === 'Eliminatoria' && (
-            <div className="w-full max-w-6xl">
+            <div className="w-full max-w-7xl">
               <ArañaEliminacionUsuario equipos={zonaInfo.equipos} />
             </div>
           )}

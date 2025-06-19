@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import api from '@/lib/axiosConfig';
 import { ChevronRight } from "lucide-react";
 import ConfirmDeleteModal from "../Modals/ConfirmDeleteModal";
+import React from "react";
 
 export default function ArañaEliminacion({ equipos }) {
   const { zonaId } = useParams();
@@ -15,6 +16,16 @@ export default function ArañaEliminacion({ equipos }) {
   const [showThirdPlaceModal, setShowThirdPlaceModal] = useState(false);
   const [pendingRoundData, setPendingRoundData] = useState(null);
   const [pendingLosers, setPendingLosers] = useState([]);
+
+  // Determinar si existe partido por el tercer puesto
+  const hasThirdPlace = useMemo(() => {
+    if (rounds.length === 0) return false;
+    const initialTeams = (rounds[0]?.matches?.length || 0) * 2;
+    if (initialTeams === 0) return false;
+    const expectedRoundsWithoutThird = Math.log2(initialTeams);
+    // Si rounds.length excede en 1 al número mínimo esperado, asumimos tercer puesto
+    return rounds.length === expectedRoundsWithoutThird + 1;
+  }, [rounds]);
 
   // Cargar ganadores históricos desde el backend
   useEffect(() => {
@@ -45,9 +56,13 @@ export default function ArañaEliminacion({ equipos }) {
           });
         });
 
+        // Detectar ganadores ya definidos en la ronda actual para autoseleccionarlos
+        const currentRoundIndex = roundsData.length - 1;
+        const autoSelected = newHistoricWinners[currentRoundIndex] || {};
+
         setRounds(roundsData);
         setHistoricWinners(newHistoricWinners);
-        setSelectedWinners({});
+        setSelectedWinners(autoSelected);
       } catch (error) {
         console.error('Error fetching fechas:', error);
       }
@@ -189,8 +204,12 @@ export default function ArañaEliminacion({ equipos }) {
 
   const isFinalRound = () => {
     if (!rounds.length) return false;
-    const lastRound = rounds[rounds.length - 1];
-    return lastRound.matches.length === 1 && lastRound.matches[0].teams.length === 2;
+    const finalRound = rounds[rounds.length - 1];
+    return (
+      finalRound &&
+      finalRound.matches.length === 1 &&
+      finalRound.matches[0].teams.length === 2
+    );
   };
 
   return (
@@ -199,80 +218,114 @@ export default function ArañaEliminacion({ equipos }) {
       <p className="text-xs mb-4 text-green-700 bg-green-200 p-1 border-l-2 border-green-500">
         Para avanzar a la siguiente ronda, debes seleccionar un ganador para cada partido de la ronda actual. Una vez seleccionados todos los ganadores, se generará automáticamente la nueva fecha con los nuevos cruces.
       </p>
-      <div className="flex overflow-x-auto justify-center gap-8 p-4 relative">
-        {rounds.map((round, roundIndex) => (
-          <div key={round.id} className="flex flex-col gap-4 justify-center">
-            <div className="text-center font-semibold ">{round.nombre || 'No definido'}</div>
-            <div className="flex flex-col gap-6">
-              {round.matches.map((match, matchIndex) => {
-                // Usar historicWinners para todas las columnas menos la última, y selectedWinners solo para la última
-                let winnerId = null;
-                if (roundIndex === rounds.length - 1) {
-                  winnerId = selectedWinners[`${roundIndex}-${matchIndex}`] ?? historicWinners[roundIndex]?.[`${roundIndex}-${matchIndex}`];
-                } else {
-                  winnerId = historicWinners[roundIndex]?.[`${roundIndex}-${matchIndex}`];
-                }
+      <div className="flex overflow-x-auto justify-start gap-8 md:gap-10 p-4 relative">
+        {rounds.map((round, roundIndex) => {
+          // Si hay tercer puesto y esta es la última ronda, se renderea junto con la anterior
+          if (hasThirdPlace && roundIndex === rounds.length - 1) {
+            return null; // Se renderiza en la columna anterior
+          }
 
-                return (
-                  <div key={match.id} className="relative">
-                    <div className="flex flex-col gap-2 border p-2 rounded-[6px] min-w-[200px] bg-gray-50">
-                      {match.teams.map(teamId => {
-                        let className =
-                          "p-2 rounded text-sm cursor-pointer transition-colors ";
-                        if (winnerId) {
-                          if (winnerId === teamId) {
-                            className += "bg-green-100 border border-green-300 font-semibold text-green-800";
-                          } else {
-                            className += "bg-red-50 text-gray-500 line-through border border-gray-200";
-                          }
-                        } else {
-                          className += isFinalRound()
-                            ? "bg-gray-300 cursor-not-allowed"
-                            : "bg-white border border-gray-200 hover:bg-gray-200";
-                        }
-                        return (
-                          <div
-                            key={teamId}
-                            className={className}
-                            onClick={() =>
-                              roundIndex === rounds.length - 1 &&
-                              !isFinalRound() &&
-                              handleWinnerSelect(roundIndex, matchIndex, teamId)
-                            }
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="truncate">{getTeamName(teamId)}</span>
-                              {winnerId === teamId && (
-                                <ChevronRight className="inline-block ml-2 text-green-500" />
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    {roundIndex < rounds.length - 1 && (
-                      <div className="absolute right-[-35px] top-1/2 transform -translate-y-1/2">
-                        <div className="h-[1px] w-8 bg-gray-300"></div>
-                      </div>
-                    )}
+          const isCombinedColumn = hasThirdPlace && roundIndex === rounds.length - 2;
+          const innerRounds = isCombinedColumn
+            ? [
+                { round, idx: roundIndex },
+                { round: rounds[roundIndex + 1], idx: roundIndex + 1 },
+              ]
+            : [{ round, idx: roundIndex }];
+
+          const columnKey = isCombinedColumn
+            ? `${round.id}-${rounds[roundIndex + 1].id}`
+            : round.id;
+
+          const isLastColumn =
+            (!hasThirdPlace && roundIndex === rounds.length - 1) ||
+            (hasThirdPlace && roundIndex === rounds.length - 2);
+
+          return (
+            <div key={columnKey} className="flex flex-col gap-4 justify-center">
+              {innerRounds.map(({ round: innerRound, idx: innerIdx }) => (
+                <React.Fragment key={innerRound.id}>
+                  <div key={`${innerRound.id}-title`} className="text-center font-semibold ">
+                    {innerRound.nombre || 'No definido'}
                   </div>
-                );
-              })}
+                  <div key={`${innerRound.id}-matches`} className="flex flex-col gap-6">
+                    {innerRound.matches.map((match, matchIndex) => {
+                      // Usar historicWinners para todas las columnas menos la última, y selectedWinners solo para la última
+                      let winnerId = null;
+                      if (innerIdx === rounds.length - 1) {
+                        winnerId =
+                          selectedWinners[`${innerIdx}-${matchIndex}`] ??
+                          historicWinners[innerIdx]?.[`${innerIdx}-${matchIndex}`];
+                      } else {
+                        winnerId = historicWinners[innerIdx]?.[`${innerIdx}-${matchIndex}`];
+                      }
+
+                      return (
+                        <div key={match.id} className="relative">
+                          <div className="flex flex-col gap-1 md:gap-2 border p-1 md:p-2 rounded-[6px] min-w-[140px] md:min-w-[200px] bg-gray-50">
+                            {match.teams.map((teamId) => {
+                              let className =
+                                "p-1 md:p-2 rounded text-xs md:text-sm cursor-pointer transition-colors ";
+                              if (winnerId) {
+                                if (winnerId === teamId) {
+                                  className +=
+                                    "bg-green-100 border border-green-300 font-semibold text-green-800";
+                                } else {
+                                  className +=
+                                    "bg-red-50 text-gray-500 line-through border border-gray-200";
+                                }
+                              } else {
+                                className += isFinalRound()
+                                  ? "bg-gray-300 cursor-not-allowed"
+                                  : "bg-white border border-gray-200 hover:bg-gray-200";
+                              }
+                              return (
+                                <div
+                                  key={teamId}
+                                  className={className}
+                                  onClick={() =>
+                                    innerIdx === rounds.length - 1 &&
+                                    !isFinalRound() &&
+                                    handleWinnerSelect(innerIdx, matchIndex, teamId)
+                                  }
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <span className="truncate max-w-[95px] md:max-w-none">{getTeamName(teamId)}</span>
+                                    {winnerId === teamId && (
+                                      <ChevronRight className="inline-block ml-1 md:ml-2 text-green-500 w-3 h-3 md:w-4 md:h-4" />
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          {innerIdx < rounds.length - 1 && (
+                            <div className="absolute right-[-20px] md:right-[-35px] top-1/2 transform -translate-y-1/2">
+                              <div className="h-[1px] w-5 md:w-8 bg-gray-300"></div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </React.Fragment>
+              ))}
+
+              {/* Botón eliminar sólo debajo de la última columna visual */}
+              {isLastColumn && (
+                <div className="flex justify-center mt-4">
+                  <button
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-[6px] text-sm"
+                    onClick={() => setShowDeleteModal(true)}
+                    disabled={loadingDelete}
+                  >
+                    {loadingDelete ? "Eliminando..." : "Eliminar Fecha"}
+                  </button>
+                </div>
+              )}
             </div>
-            {/* Botón eliminar solo debajo de la última columna */}
-            {roundIndex === rounds.length - 1 && (
-              <div className="flex justify-center mt-4">
-                <button
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-[6px] text-sm"
-                  onClick={() => setShowDeleteModal(true)}
-                  disabled={loadingDelete}
-                >
-                  {loadingDelete ? "Eliminando..." : "Eliminar Fecha"}
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
         {/* Botón generar siguiente ronda a la derecha de la última columna */}
         {rounds.length > 0 && canGenerateNextRound() && (
           <div className="flex flex-col justify-center items-center ml-8">

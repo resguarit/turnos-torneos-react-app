@@ -122,7 +122,6 @@ export default function CargarJugadores() {
                           className="border bg-gray-100 rounded p-1 w-full"
                           value={jugador.telefono}
                           onChange={e => handleChange(idx, "telefono", e.target.value)}
-                          required
                         />
                       </td>
                       <td>

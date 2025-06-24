@@ -195,7 +195,7 @@ const NuevoPanelAdmin = () => {
         {/* Botón de menú móvil */}
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white shadow-lg"
+          className="lg:hidden fixed top-20 left-4 z-30 p-2 rounded-lg bg-white shadow-lg"
         >
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>

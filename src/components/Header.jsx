@@ -23,7 +23,6 @@ export function Header() {
   const [userRole, setUserRole] = useState(null);
   const [hasActiveReservation, setHasActiveReservation] = useState(false)
   const { config } = useConfiguration();
-  console.log(config)
 
   const isReservationPage = location.pathname === "/contador-bloqueo" || location.pathname === "/bloqueo-reserva" || location.pathname === "/confirmar-turno" || location.pathname === "/confirmar-login"
 
@@ -229,7 +228,7 @@ export function Header() {
             ) : (
               <Link to="/login" className="flex flex-row gap-2 relative group">
                 <span>Iniciar Sesión</span> <CircleUserRound className="h-7 w-7" />
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-secundario transition-all duration-300 group-hover:w-full"></span>
               </Link>
             )}
           </div>

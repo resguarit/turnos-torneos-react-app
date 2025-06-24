@@ -131,7 +131,7 @@ export default function Zonas() {
           <BackButton ruta={'/torneos-admi'} />
         </div>
         <div className="max-w-7xl lg:max-w-full mx-auto">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h1 className="text-2xl lg:text-2xl font-bold">
               Zonas del Torneo <span className='text-secundario'>{torneo ? torneo.nombre : ''}</span>
             </h1>
@@ -139,8 +139,8 @@ export default function Zonas() {
               + Nueva Zona
             </button>
           </div>
-          <div className="flex mb-6 justify-between items-center">
-            <div className="flex gap-2 items-center mb-4">
+          <div className="flex flex-col sm:flex-row justify-between mb-6 items-start sm:items-center gap-4">
+            <div className="flex flex-wrap gap-2 items-center w-full sm:w-auto">
               <select
                 value={searchCriterion}
                 onChange={e => setSearchCriterion(e.target.value)}
@@ -158,7 +158,7 @@ export default function Zonas() {
                 }
                 value={searchValue}
                 onChange={e => setSearchValue(e.target.value)}
-                className="border border-gray-300 rounded-[6px] py-1 px-2 text-sm"
+                className="border border-gray-300 rounded-[6px] py-1 px-2 text-sm flex-grow sm:flex-grow-0"
               />
               {searchValue && (
                 <button
@@ -169,14 +169,14 @@ export default function Zonas() {
                 </button>
               )}
             </div>
-            <label className="flex items-center gap-2 ml-4">
+            <label className="flex items-center gap-2 w-full sm:w-auto">
               <input
                 type="checkbox"
                 checked={mostrarTodos}
                 onChange={e => setMostrarTodos(e.target.checked)}
                 className="accent-naranja"
               />
-              <span className="text-sm text-gray-700">Mostrar todas las zonas</span>
+              <span className="text-sm text-gray-700 whitespace-nowrap">Mostrar todas las zonas</span>
             </label>
           </div>
           {zonasFiltradas.length === 0 ? (
@@ -202,7 +202,7 @@ export default function Zonas() {
                       <p className="w-full flex gap-2 items-center "><Users size={18}/> Equipos: {zona.equipos.length}</p>
                       <p className="w-full flex gap-2 items-center "><CalendarDays size={18} />Siguiente Fecha: {zona.siguienteFecha}</p>
                     </div>
-                    <div className="flex mt-4 gap-3 text-sm justify-center">
+                    <div className="flex flex-wrap mt-4 gap-3 text-sm justify-center">
                       <button onClick={() => navigate(`/detalle-zona/${zona.id}?tab=equipos`)} className="flex-1 border text-center border-gray-300 p-1 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Ver Detalles</button>
                       <button
                         onClick={() => navigate(`/editar-zona/${zona.id}`)}

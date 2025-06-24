@@ -146,16 +146,16 @@ export default function AltaTorneo() {
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
-      <main className="flex-col grow p-6 bg-gray-100 flex items-center ">
+      <main className="flex-col grow p-4 sm:p-6 bg-gray-100 flex items-center">
         <div className="w-full flex mb-2">
           <BackButton ruta={'/torneos-admi'} />
         </div>
-        <div className="bg-white text-black p-4 rounded-xl shadow-lg w-1/2">
-          <h2 className="text-2xl font-semibold mb-1">{id ? 'Editar Torneo' : 'Crear Nuevo Torneo'}</h2>
+        <div className="bg-white text-black p-4 rounded-xl shadow-lg w-full sm:w-4/5 md:w-3/4 lg:w-2/3 xl:w-1/2">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-1">{id ? 'Editar Torneo' : 'Crear Nuevo Torneo'}</h2>
           <p className="mb-4 text-sm text-gray-500">Complete los datos para {id ? 'editar el' : 'crear un nuevo'} torneo</p>
           <form className="flex flex-col space-y-3" onSubmit={handleSubmit}>
             <div>
-              <label className="font-medium ">Nombre del Torneo:</label>
+              <label className="font-medium text-base sm:text-lg">Nombre del Torneo:</label>
               <input
                 className="border-gray-300 border w-full p-1 rounded-[6px]"
                 name="nombre"
@@ -165,7 +165,7 @@ export default function AltaTorneo() {
               />
             </div>
             <div>
-              <label className="font-medium ">Año:</label>
+              <label className="font-medium text-base sm:text-lg">Año:</label>
               <select
                 className="border-gray-300 border w-full p-1 py-[5px] rounded-[6px]"
                 name="año"
@@ -181,7 +181,7 @@ export default function AltaTorneo() {
               </select>
             </div>
             <div>
-              <label className="font-medium ">Deporte:</label>
+              <label className="font-medium text-base sm:text-lg">Deporte:</label>
               <select
                 className="border-gray-300 border w-full p-1 py-[5px] rounded-[6px]"
                 name="deporte_id"
@@ -207,7 +207,7 @@ export default function AltaTorneo() {
               </select>
             </div>
             <div>
-              <label className="font-medium">Precio Inscripción:</label>
+              <label className="font-medium text-base sm:text-lg">Precio Inscripción:</label>
               <input
                 type="number"
                 className="border-gray-300 border w-full p-1 rounded-[6px]"
@@ -219,7 +219,7 @@ export default function AltaTorneo() {
               />
             </div>
             <div>
-              <label className="font-medium">Precio por Fecha:</label>
+              <label className="font-medium text-base sm:text-lg">Precio por Fecha:</label>
               <input
                 type="number"
                 className="border-gray-300 border w-full p-1 rounded-[6px]"
@@ -230,7 +230,7 @@ export default function AltaTorneo() {
                 min={0}
               />
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-2">
               <button
                 type="submit"
                 disabled={loading}
@@ -257,8 +257,8 @@ export default function AltaTorneo() {
 
       {/* Modal para crear un nuevo deporte */}
       {modalVisible && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-[8px] shadow-lg w-[400px]">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-50">
+          <div className="bg-white p-4 sm:p-6 rounded-[8px] shadow-lg w-full max-w-[400px]">
             <h2 className="text-xl font-bold mb-4">Crear Nuevo Deporte</h2>
             <div className="mb-4">
               <label className="block font-medium mb-1">Nombre del Deporte:</label>

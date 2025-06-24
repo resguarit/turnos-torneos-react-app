@@ -115,18 +115,18 @@ export default function AltaZona() {
   return (
     <div className="min-h-screen flex flex-col font-inter">
       <Header />
-      <main className="flex-col grow p-6 bg-gray-100 flex items-center ">
+      <main className="flex-col grow p-4 sm:p-6 bg-gray-100 flex items-center">
         <div className="w-full flex mb-2">
           <BackButton ruta={`/zonas-admi/${formData.torneo_id}`} />
         </div>
-        <div className="bg-white text-black p-4 rounded-xl shadow-lg w-1/2">
-          <h2 className="text-2xl  font-semibold mb-1">{id ? 'Editar Zona' : 'Crear Nueva Zona'}</h2>
+        <div className="bg-white text-black p-4 rounded-xl shadow-lg w-full sm:w-4/5 md:w-3/4 lg:w-2/3 xl:w-1/2">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-1">{id ? 'Editar Zona' : 'Crear Nueva Zona'}</h2>
           <p className="mb-4 text-sm text-gray-500">Complete los datos para {id ? 'editar la' : 'crear una nueva'} zona</p>
           <form className="flex flex-col space-y-3" onSubmit={handleSubmit}>
             <div>
-              <label className="font-medium  text-lg">Nombre de la Zona:</label>
+              <label className="font-medium text-base sm:text-lg">Nombre de la Zona:</label>
               <input
-                className="border-gray-300 border w-full px-2 rounded-xl"
+                className="border-gray-300 border w-full px-2 py-1 rounded-xl"
                 name="nombre"
                 value={formData.nombre}
                 onChange={handleChange}
@@ -134,7 +134,7 @@ export default function AltaZona() {
               />
             </div>
             <div>
-              <label className="font-medium  text-lg">Formato:</label>
+              <label className="font-medium text-base sm:text-lg">Formato:</label>
               <select
                 className="border-gray-300 border w-full p-1 rounded-xl"
                 name="formato"
@@ -150,7 +150,7 @@ export default function AltaZona() {
               </select>
             </div>
             <div>
-              <label className="font-medium  text-lg">Año:</label>
+              <label className="font-medium text-base sm:text-lg">Año:</label>
               <select
                 className="border-gray-300 border w-full p-1 rounded-xl"
                 name="año"
@@ -165,7 +165,7 @@ export default function AltaZona() {
                 ))}
               </select>
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-2">
               <button
                 type="submit"
                 disabled={loading}

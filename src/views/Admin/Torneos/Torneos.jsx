@@ -121,14 +121,15 @@ export default function Torneos() {
       <Header />
       <main className="flex-1 p-6 bg-gray-100">
         <div className="max-w-7xl lg:max-w-full mx-auto">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <h1 className="text-2xl font-bold">Torneos</h1>
             <button variant="default" className="bg-secundario hover:bg-secundario/80 p-2 text-sm font-inter rounded-[6px] text-white" onClick={handleNuevoTorneo}>
               + Nuevo Torneo
             </button>
           </div>
-          <div className="flex justify-between mb-6 items-center">
-            <div className="flex gap-2 items-center">
+          
+          <div className="flex flex-col sm:flex-row justify-between mb-6 items-start sm:items-center gap-4">
+            <div className="flex flex-wrap gap-2 items-center w-full sm:w-auto">
               <select
                 value={searchCriterion}
                 onChange={e => setSearchCriterion(e.target.value)}
@@ -146,7 +147,7 @@ export default function Torneos() {
                 }
                 value={searchValue}
                 onChange={e => setSearchValue(e.target.value)}
-                className="border border-gray-300 rounded-[6px] py-1 px-2 text-sm"
+                className="border border-gray-300 rounded-[6px] py-1 px-2 text-sm flex-grow sm:flex-grow-0"
               />
               {searchValue && (
                 <button
@@ -157,16 +158,17 @@ export default function Torneos() {
                 </button>
               )}
             </div>
-            <label className="flex items-center gap-2 ml-4">
+            <label className="flex items-center gap-2 w-full sm:w-auto">
               <input
                 type="checkbox"
                 checked={mostrarTodos}
                 onChange={e => setMostrarTodos(e.target.checked)}
                 className="accent-naranja"
               />
-              <span className="text-sm text-gray-700">Mostrar todos los torneos</span>
+              <span className="text-sm text-gray-700 whitespace-nowrap">Mostrar todos los torneos</span>
             </label>
           </div>
+          
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {torneosFiltrados.length === 0 ? (
               <div className="col-span-full text-center text-gray-500 py-8">
@@ -184,7 +186,7 @@ export default function Torneos() {
                   </CardHeader>
                   <CardContent className="p-4 ">
                     <p className="w-full flex gap-2 items-center "><List size={24} className="text-gray-600" /> {zonasCount[torneo.id] || 0} zonas</p>
-                    <div className="flex mt-4 gap-3 text-sm justify-center">
+                    <div className="flex flex-wrap mt-4 gap-3 text-sm justify-center">
                       <button onClick={() => handleVerZonas(torneo.id)} className="flex-1 border text-center border-gray-300 p-1 hover:bg-naranja hover:text-white" style={{ borderRadius: '8px' }}>Ver Zonas</button>
                       <button
                         onClick={() => navigate(`/editar-torneo/${torneo.id}`)}

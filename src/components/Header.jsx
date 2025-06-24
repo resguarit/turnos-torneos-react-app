@@ -9,7 +9,7 @@ import ConfirmModal from "@/views/Admin/Modals/ConfirmDeleteModal"
 import { Pencil } from "lucide-react"
 import { decryptRole } from "@/lib/getRole"
 import TorneosDropdown from "./TorneosDropdown"
-import api from "@/lib/axiosConfig";
+import { useConfiguration } from "@/context/ConfigurationContext"
 
 
 export function Header() {
@@ -22,7 +22,8 @@ export function Header() {
   const [showModal, setShowModal] = useState(false)
   const [userRole, setUserRole] = useState(null);
   const [hasActiveReservation, setHasActiveReservation] = useState(false)
-  const [logoComplejo, setLogoComplejo] = useState(null);
+  const { config } = useConfiguration();
+  console.log(config)
 
   const isReservationPage = location.pathname === "/contador-bloqueo" || location.pathname === "/bloqueo-reserva" || location.pathname === "/confirmar-turno" || location.pathname === "/confirmar-login"
 
@@ -86,18 +87,7 @@ export function Header() {
     setUserRole(userRoleEncrypted ? decryptRole(userRoleEncrypted) : null);
   }, []);
 
-  useEffect(() => {
-    // Traer logo del complejo desde la configuración
-    async function fetchLogo() {
-      try {
-        const response = await api.get('/configuracion-usuario');
-        setLogoComplejo(response.data.logo_complejo_url || null);
-      } catch (e) {
-        setLogoComplejo(null);
-      }
-    }
-    fetchLogo();
-  }, []);
+  
 
   const handleModal = () => {
     setShowModal(true)
@@ -129,9 +119,9 @@ export function Header() {
     <header className="bg-naranja max-w-full text-white px-6 py-2">
       <nav className="mx-auto flex items-center justify-between">
         <Link to="/">
-          {logoComplejo ? (
-            <img src={logoComplejo} alt="Logo complejo" className="h-10 lg:h-12 xl:h-14" />
-          ) : null}
+          {config?.logo_complejo_url ? (
+            <img src={config.logo_complejo_url} alt="Logo complejo" className="h-10 lg:h-12 xl:h-14" />
+          ) : <img src={Resguarit} alt="Logo complejo" className="h-10 lg:h-12 xl:h-14" />}
         </Link>
 
         {/* Botón de reserva activa para desktop y tablet */}
@@ -155,7 +145,7 @@ export function Header() {
               className="relative group"
             >
               <span>{userRole === "admin" || userRole === "moderador" ? "Panel Admin" : "Inicio"}</span>
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-secundario transition-all duration-300 group-hover:w-full"></span>
             </Link>
             {(userRole === "admin" || userRole === "moderador") && (
               <button 
@@ -163,13 +153,13 @@ export function Header() {
               ref={torneosBtnRef}
               className="relative group">
                 <span>Torneos</span>
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-secundario transition-all duration-300 group-hover:w-full"></span>
             </button>
             )}
             {(userRole !== "admin" && userRole !== "moderador") && (
             <Link to="/torneos-user" className=" relative group">
               <span>Torneos</span>
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-secundario transition-all duration-300 group-hover:w-full"></span>
             </Link>
             )}
             {/* Reemplazar "Reservar" por "Continuar Reserva" cuando hay una reserva activa */}
@@ -180,7 +170,7 @@ export function Header() {
             ) : (
               <Link to="/select-deporte" className="relative group">
                 <span>Reservar</span>
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-secundario transition-all duration-300 group-hover:w-full"></span>
               </Link>
             )}
             {/* <Link to="/reglamento" className="hover:opacity-80">
@@ -198,7 +188,7 @@ export function Header() {
                 <button onClick={toggleMenu} className="flex items-center gap-2 relative group">
                   <span>{username}</span>
                   <CircleUserRound className="h-5 w-5" />
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-secundario transition-all duration-300 group-hover:w-full"></span>
                 </button>
                 {isOpen && (
                   <div className="absolute font-inter text-base -left-20 right-0 mt-2 w-44 bg-black text-white shadow-lg z-50">

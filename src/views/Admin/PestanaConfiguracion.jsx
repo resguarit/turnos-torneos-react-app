@@ -3,6 +3,7 @@ import { Settings, Save, CheckCircle, Info } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
 import api from '@/lib/axiosConfig';
 import { Popover } from '@headlessui/react';
+import BtnLoading from '@/components/BtnLoading';
 
 const PestanaConfiguracion = () => {
   const [config, setConfig] = useState({
@@ -14,6 +15,7 @@ const PestanaConfiguracion = () => {
     habilitar_mercado_pago: false,
     mercado_pago_access_token: '',
     mercado_pago_webhook_secret: '',
+    nombre_complejo: '',
     direccion_complejo: '',
     telefono_complejo: ''
   });
@@ -45,6 +47,9 @@ const PestanaConfiguracion = () => {
     fontSize: '14px'
   };
 
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [logoFile, setLogoFile] = useState(null);
+
   useEffect(() => {
     fetchConfiguracion();
   }, []);
@@ -58,6 +63,8 @@ const PestanaConfiguracion = () => {
         ...response.data
       };
       
+      setLogoPreview(configData.logo_complejo_url || null);
+
       // Guardamos las credenciales enmascaradas para mostrarlas
       setMaskedCredentials({
         access_token: response.data.mercado_pago_access_token || '',
@@ -169,41 +176,50 @@ const PestanaConfiguracion = () => {
     }));
   };
 
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    setLogoFile(file);
+    setLogoPreview(file ? URL.createObjectURL(file) : null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     setErrorMessage('');
     
     try {
-      // Preparar datos para enviar al backend
-      const dataToSend = {
-        ...config
-      };
+      const dataToSend = new FormData();
       
-      // Solo incluir credenciales en la petición si fueron modificadas y MP está habilitado
-      if (!config.habilitar_mercado_pago) {
-        // Si MP está deshabilitado, no enviamos las credenciales
-        delete dataToSend.mercado_pago_access_token;
-        delete dataToSend.mercado_pago_webhook_secret;
-      } else {
-        // Si MP está habilitado, solo enviamos las credenciales que fueron modificadas
-        if (!accessTokenModified) {
-          delete dataToSend.mercado_pago_access_token;
+      dataToSend.append('colores[primary]', config.colores.primary);
+      dataToSend.append('colores[secondary]', config.colores.secondary);
+      dataToSend.append('habilitar_turnos', config.habilitar_turnos ? '1' : '0');
+      dataToSend.append('habilitar_mercado_pago', config.habilitar_mercado_pago ? '1' : '0');
+      dataToSend.append('nombre_complejo', config.nombre_complejo);
+      dataToSend.append('direccion_complejo', config.direccion_complejo);
+      dataToSend.append('telefono_complejo', config.telefono_complejo);
+
+      if (logoFile) {
+        dataToSend.append('logo_complejo', logoFile);
+      }
+
+      if (config.habilitar_mercado_pago) {
+        if (accessTokenModified) {
+          dataToSend.append('mercado_pago_access_token', config.mercado_pago_access_token);
         }
-        
-        if (!webhookSecretModified) {
-          delete dataToSend.mercado_pago_webhook_secret;
+        if (webhookSecretModified) {
+          dataToSend.append('mercado_pago_webhook_secret', config.mercado_pago_webhook_secret);
         }
       }
       
-      const response = await api.post('/configuracion-update', dataToSend);
+      await api.post('/configuracion-update', dataToSend, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
       setSuccessMessage('Configuración actualizada correctamente');
       
-      // Aplicar colores inmediatamente
       document.documentElement.style.setProperty('--color-primary', config.colores.primary);
-      document.documentElement.style.setProperty('--color-secondary', config.colores.secondary);
+      document.documentElement.style.setProperty('--color-secundario', config.colores.secondary);
       
-      // Volvemos a cargar la configuración para obtener las nuevas credenciales enmascaradas
       fetchConfiguracion();
       
       setTimeout(() => {
@@ -219,9 +235,7 @@ const PestanaConfiguracion = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
+      <BtnLoading />
     );
   }
 
@@ -339,32 +353,90 @@ const PestanaConfiguracion = () => {
               </p>
             </div>
             
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Dirección del complejo
-              </label>
-              <input
-                type="text"
-                name="direccion_complejo"
-                value={config.direccion_complejo}
-                onChange={handleChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                required
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre del complejo
+                </label>
+                <input
+                  type="text"
+                  name="nombre_complejo"
+                  value={config.nombre_complejo}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Dirección del complejo
+                </label>
+                <input
+                  type="text"
+                  name="direccion_complejo"
+                  value={config.direccion_complejo}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Teléfono del complejo
+                </label>
+                <input
+                  type="text"
+                  name="telefono_complejo"
+                  value={config.telefono_complejo}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
             </div>
-            
-            <div className="mb-4">
+            <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Teléfono del complejo
+                Logo del complejo
               </label>
-              <input
-                type="text"
-                name="telefono_complejo"
-                value={config.telefono_complejo}
-                onChange={handleChange}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                required
-              />
+              <div className="flex items-center gap-4">
+                {logoPreview ? (
+                  <img
+                    src={logoPreview}
+                    alt="Logo del complejo"
+                    className="h-16 w-16 object-contain border rounded bg-white"
+                  />
+                ) : (
+                  <span className="text-gray-400 text-xs">Sin logo</span>
+                )}
+                <label className="bg-gray-200 px-3 py-2 rounded text-sm cursor-pointer hover:bg-gray-300">
+                  {logoPreview ? "Cambiar logo" : "Cargar logo"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleLogoChange}
+                    disabled={saving}
+                  />
+                </label>
+                {logoPreview && (
+                  <button
+                    type="button"
+                    className="text-xs text-red-500 ml-2"
+                    onClick={() => {
+                      setLogoPreview(null);
+                      setLogoFile(null);
+                    }}
+                    disabled={saving}
+                  >
+                    Quitar
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Formato recomendado: PNG/JPG. Máx 2MB.
+              </p>
             </div>
           </div>
 
@@ -465,4 +537,4 @@ const PestanaConfiguracion = () => {
   );
 };
 
-export default PestanaConfiguracion; 
+export default PestanaConfiguracion;

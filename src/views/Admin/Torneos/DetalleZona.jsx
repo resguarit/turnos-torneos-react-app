@@ -269,11 +269,11 @@ export default function DetalleZona() {
     setEquipoToDelete(equipoId);
     if (fechasSorteadas) {
       setModalDeleteEquipoVisible(true);
-      fetchZona(); 
+      recargarDatosZona(); 
     } else {
       confirmarEliminarEquipo(equipoId);
     }
-    fetchZona(); 
+    recargarDatosZona(); 
   };
 
   const handleNavigateToVerPagos = (equipoId) => {
@@ -332,7 +332,7 @@ export default function DetalleZona() {
         // Actualizar el estado local
         setZona({
           ...zona,
-          equipos: zona.equipos.filter((equipo) => Number(e.id) !== equipoToDeleteId),
+          equipos: zona.equipos.filter((equipo) => Number(equipo.id) !== equipoToDeleteId),
         });
         
         // Actualizar también el estado de grupos para reflejar los cambios

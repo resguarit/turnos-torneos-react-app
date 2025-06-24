@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { UserCog, LogOut, Pencil, CircleUserRound, ArrowLeftCircle } from "lucide-react"
 import ModalConfirmation from "./ModalConfirmation"
+import ConfirmDeleteModal from "@/views/Admin/Modals/ConfirmDeleteModal";
 import { decryptRole } from "@/lib/getRole"
 
 const MenuMovil = ({ setMenuOpen }) => {
@@ -200,7 +201,7 @@ const MenuMovil = ({ setMenuOpen }) => {
               //{ label: "Reglamento", path: "/reglamento" },
               //{ label: "Premios", path: "/premios" },
               ...(userRole === "admin" || userRole === "moderador" 
-                ? [{ label: userRole === "admin" ? "Administrador" : "Moderador", path: "/panel-admin" }] 
+                ? [{ label: userRole === "admin" ? "Panel Admin" : "Moderador", path: "/panel-admin" }] 
                 : []),
             ].map((item) => (
               <div
@@ -315,12 +316,18 @@ const MenuMovil = ({ setMenuOpen }) => {
       )}
 
       {showModal && (
-        <ModalConfirmation
+        <ConfirmDeleteModal
+          isOpen={showModal}
+          onClose={closeConfirmModal}
           onConfirm={handleConfirmSubmit}
-          onCancel={closeConfirmModal}
-          title="¿Desea cerrar la sesión?"
-          botonText1={"Cancelar"}
-          botonText2={"Cerrar Sesión"}
+          loading={false}
+          accionTitulo="Cierre de sesión"
+          accion="cerrar sesión"
+          pronombre=""
+          entidad=""
+          accionando="Cerrando sesión"
+          nombreElemento={undefined}
+          advertencia={undefined}
         />
       )}
     </>

@@ -6,6 +6,7 @@ import BackButton from '@/components/BackButton';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { normalize } from '@/utils/normalize'; 
+import { Upload } from 'lucide-react';
 
 export default function CargarEquipo({ onEquipoSeleccionado }) {
   const { zonaId } = useParams();
@@ -139,7 +140,7 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
         
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-3xl">
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-white p-6 rounded-[8px] shadow-md">
               {/* Búsqueda y creación de equipos */}
               <div className="mb-6">
                 <h2 className="text-lg font-semibold mb-2">Buscar o crear equipos</h2>
@@ -149,7 +150,7 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Escribe el nombre del equipo"
-                    className="w-full p-2 border rounded-md"
+                    className="w-full px-2 py-1 border rounded-[6px]"
                     disabled={loading}
                   />
                 </div>
@@ -161,12 +162,12 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
                     value={nuevoEquipo}
                     onChange={(e) => setNuevoEquipo(e.target.value)}
                     placeholder="Nombre del nuevo equipo"
-                    className="w-full p-2 border rounded-md"
+                    className="w-full px-2 py-1 border rounded-[6px]"
                     disabled={loading}
                   />
                   {/* Botón y campo para imagen */}
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <span className="bg-gray-200 px-2 py-1 rounded text-sm">Escudo</span>
+                    <span className="bg-gray-200 flex whitespace-nowrap gap-2 px-3 py-2 rounded text-sm items-center"><Upload size={16}/>Cargar escudo</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -177,7 +178,7 @@ export default function CargarEquipo({ onEquipoSeleccionado }) {
                   </label>
                   <button
                     onClick={handleAgregarNuevoEquipo}
-                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                    className="bg-green-500 text-white px-3 text-sm py-2 rounded hover:bg-green-600"
                     disabled={loading || !nuevoEquipo.trim()}
                   >
                     Crear

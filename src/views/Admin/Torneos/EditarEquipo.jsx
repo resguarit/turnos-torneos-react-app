@@ -1,6 +1,6 @@
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/lib/axiosConfig';
 import BtnLoading from '@/components/BtnLoading';
@@ -16,6 +16,8 @@ export default function EditarEquipo() {
   const [saving, setSaving] = useState(false);
   const [equipo, setEquipo] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [escudo, setEscudo] = useState(null);
+  const [preview, setPreview] = useState(null);
 
   useEffect(() => {
     const fetchEquipo = async () => {
@@ -35,25 +37,34 @@ export default function EditarEquipo() {
     fetchEquipo();
   }, [equipoId]);
 
+  const handleEscudoChange = (e) => {
+    const file = e.target.files[0];
+    setEscudo(file);
+    setPreview(file ? URL.createObjectURL(file) : null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!nombreEquipo.trim()) {
       toast.error('El nombre del equipo no puede estar vacío');
       return;
     }
-    
+
     try {
       setSaving(true);
 
       const zonaId = equipo.zonas?.[0]?.id;
-      const response = await api.put(`/equipos/${equipoId}`, {
-        nombre: nombreEquipo,
+      const formData = new FormData();
+      formData.append('nombre', nombreEquipo);
+      if (escudo) formData.append('escudo', escudo);
+
+      const response = await api.post(`/equipos/${equipoId}?_method=PUT`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      
+
       if (response.status === 200) {
         toast.success('Equipo actualizado correctamente');
-        // Navegar de vuelta a la página de la zona
         navigate(`/detalle-zona/${zonaId}?tab=equipos`);
       }
     } catch (error) {
@@ -115,6 +126,32 @@ export default function EditarEquipo() {
                   placeholder="Nombre del equipo"
                   required
                 />
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Escudo del equipo
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleEscudoChange}
+                  className="block mt-1"
+                  disabled={saving}
+                />
+                <div className="mt-2 flex items-center gap-4">
+                  {preview ? (
+                    <img src={preview} alt="Nuevo escudo" className="h-16 object-contain border rounded" />
+                  ) : equipo?.escudo ? (
+                    <img
+                      src={`${import.meta.env.VITE_API_URL?.replace(/\/$/, '')}/storage/${equipo.escudo}`}
+                      alt="Escudo actual"
+                      className="h-16 object-contain border rounded"
+                    />
+                  ) : (
+                    <span className="text-gray-400">Sin escudo</span>
+                  )}
+                </div>
               </div>
               
               <div className="flex justify-end">

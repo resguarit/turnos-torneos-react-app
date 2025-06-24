@@ -94,7 +94,7 @@ export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handl
           </div>
         ) : (
           <div className="overflow-hidden rounded-[6px] border border-gray-200 bg-white shadow">
-            <div className="max-h-[400px] overflow-y-auto">
+            <div className="max-h-fit overflow-y-auto">
               <table className="w-full">
                 <tbody>
                   {zona.equipos && zona.equipos.map((equipo) => (
@@ -103,26 +103,15 @@ export function TabEquipos({ zona, navigate, zonaId, handleEliminarEquipo, handl
                       className="border-b items-center rounded-[6px] border-gray-200 last:border-0 hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-3 py-2 flex items-center gap-3">
-                        {/* Escudo del equipo con manejo de carga */}
+                        {/* Escudo del equipo directo, sin skeleton ni loading */}
                         <div className="relative">
                           {equipo.escudo ? (
-                            <>
-                              {(imageLoading[equipo.id] === undefined || imageLoading[equipo.id]) && (
-                                <Skeleton className="w-14 h-14 rounded-full" />
-                              )}
-                              <img
-                                src={`${import.meta.env.VITE_API_URL?.replace(/\/$/, '')}/storage/${equipo.escudo}`}
-                                alt={`Escudo de ${equipo.nombre}`}
-                                className={`w-14 h-14 rounded-full object-cover border border-gray-200 bg-white ${
-                                  (imageLoading[equipo.id] === undefined || imageLoading[equipo.id])
-                                    ? 'hidden'
-                                    : 'block'
-                                }`}
-                                style={{ minWidth: 32, minHeight: 32 }}
-                                onLoad={() => handleImageLoad(equipo.id)}
-                                onError={() => handleImageError(equipo.id)}
-                              />
-                            </>
+                            <img
+                              src={`${import.meta.env.VITE_API_URL?.replace(/\/$/, '')}/storage/${equipo.escudo}`}
+                              alt={`Escudo de ${equipo.nombre}`}
+                              className="w-14 h-14 rounded-full object-cover border border-gray-200 bg-white"
+                              style={{ minWidth: 32, minHeight: 32 }}
+                            />
                           ) : (
                             <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 text-gray-400 font-bold text-lg" style={{ minWidth: 32, minHeight: 32 }}>
                               <Users className="w-5 h-5" />

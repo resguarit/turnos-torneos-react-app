@@ -9,6 +9,7 @@ import ConfirmModal from "@/views/Admin/Modals/ConfirmDeleteModal"
 import { Pencil } from "lucide-react"
 import { decryptRole } from "@/lib/getRole"
 import TorneosDropdown from "./TorneosDropdown"
+import api from "@/lib/axiosConfig";
 
 
 export function Header() {
@@ -21,6 +22,8 @@ export function Header() {
   const [showModal, setShowModal] = useState(false)
   const [userRole, setUserRole] = useState(null);
   const [hasActiveReservation, setHasActiveReservation] = useState(false)
+  const [logoComplejo, setLogoComplejo] = useState(null);
+
   const isReservationPage = location.pathname === "/contador-bloqueo" || location.pathname === "/bloqueo-reserva" || location.pathname === "/confirmar-turno" || location.pathname === "/confirmar-login"
 
   const toggleMenu = () => {
@@ -83,6 +86,19 @@ export function Header() {
     setUserRole(userRoleEncrypted ? decryptRole(userRoleEncrypted) : null);
   }, []);
 
+  useEffect(() => {
+    // Traer logo del complejo desde la configuración
+    async function fetchLogo() {
+      try {
+        const response = await api.get('/configuracion-usuario');
+        setLogoComplejo(response.data.logo_complejo_url || null);
+      } catch (e) {
+        setLogoComplejo(null);
+      }
+    }
+    fetchLogo();
+  }, []);
+
   const handleModal = () => {
     setShowModal(true)
   }
@@ -113,7 +129,9 @@ export function Header() {
     <header className="bg-naranja max-w-full text-white px-6 py-2">
       <nav className="mx-auto flex items-center justify-between">
         <Link to="/">
-          <img src={Resguarit || "/placeholder.svg"} alt="Logo" className="h-10 lg:h-12 xl:h-14" />
+          {logoComplejo ? (
+            <img src={logoComplejo} alt="Logo complejo" className="h-10 lg:h-12 xl:h-14" />
+          ) : null}
         </Link>
 
         {/* Botón de reserva activa para desktop y tablet */}

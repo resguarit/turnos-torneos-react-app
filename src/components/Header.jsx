@@ -119,8 +119,8 @@ export function Header() {
       <nav className="mx-auto flex items-center justify-between">
         <Link to="/">
           {config?.logo_complejo_url ? (
-            <img src={config.logo_complejo_url} alt="Logo complejo" className="h-10 lg:h-12 xl:h-14" />
-          ) : <img src={Resguarit} alt="Logo complejo" className="h-10 lg:h-12 xl:h-14" />}
+            <img src={config.logo_complejo_url} alt="Logo complejo" className="h-6 sm:h-10 lg:h-12 xl:h-14" />
+          ) : <img src={Resguarit} alt="Logo complejo" className="h-8 sm:h-10 lg:h-12 xl:h-14" />}
         </Link>
 
         {/* Botón de reserva activa para desktop y tablet */}

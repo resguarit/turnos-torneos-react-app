@@ -464,7 +464,7 @@ const PestanaConfiguracion = () => {
             </div>
             
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+              <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
                 <span>Access Token de Mercado Pago</span>
                 <Info className="w-4 h-4 ml-1 text-gray-400" title="Credencial privada necesaria para conectar con Mercado Pago" />
               </label>
@@ -488,7 +488,7 @@ const PestanaConfiguracion = () => {
             </div>
             
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+              <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
                 <span>Webhook Secret de Mercado Pago</span>
                 <Info className="w-4 h-4 ml-1 text-gray-400" title="Clave secreta para validar notificaciones desde Mercado Pago" />
               </label>

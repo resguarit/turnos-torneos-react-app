@@ -335,14 +335,14 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
                           <img
                             src={`${import.meta.env.VITE_API_URL?.replace(/\/$/, '')}/storage/${equipoLocal.escudo}`}
                             alt="Escudo local"
-                            className="w-8 h-8 rounded-full object-cover border border-gray-200 bg-white"
+                            className="w-10 h-10 rounded-full object-cover border border-gray-200 bg-white"
                             style={{ minWidth: 24, minHeight: 24 }}
                           />
                         );
                       }
                       return (
                         <div
-                          className="w-8 h-8 rounded-full"
+                          className="w-10 h-10 rounded-full"
                           style={{ backgroundColor: equipoLocal?.color || "#ccc" }}
                         />
                       );
@@ -376,14 +376,14 @@ export default function FechaCarousel({ zonaId, equipos, onFechasDeleted, abortC
                           <img
                             src={`${import.meta.env.VITE_API_URL?.replace(/\/$/, '')}/storage/${equipoVisitante.escudo}`}
                             alt="Escudo visitante"
-                            className="w-6 h-6 rounded-full object-cover border border-gray-200 bg-white"
+                            className="w-10 h-10 rounded-full object-cover border border-gray-200 bg-white"
                             style={{ minWidth: 24, minHeight: 24 }}
                           />
                         );
                       }
                       return (
                         <div
-                          className="w-6 h-6 rounded-full"
+                          className="w-10 h-10 rounded-full"
                           style={{ backgroundColor: equipoVisitante?.color || "#ccc" }}
                         />
                       );

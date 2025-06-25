@@ -34,53 +34,52 @@ const SearchComponent = ({
   return (
     <div className="mb-6 space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <Label htmlFor="searchDni">DNI del Operador</Label>
-          <Input
+        <div className=''>
+          <label htmlFor="searchDni">DNI del Operador</label>
+          <input
             id="searchDni"
             type="text" 
             value={localSearchDni}
             onChange={(e) => setLocalSearchDni(e.target.value)}
             placeholder="Buscar por DNI"
-            className="mt-1"
+            className="mt-1 px-2 py-1 border border-gray-300 rounded-[6px]"
           />
         </div>
-        <div>
-          <Label htmlFor="fechaDesde">Fecha Desde</Label>
-          <Input
+        <div className='flex-col'>
+          <label className='w-full' htmlFor="fechaDesde">Fecha Desde</label>
+          <input
             id="fechaDesde"
             type="date"
             value={searchFechaDesde}
             onChange={(e) => setSearchFechaDesde(e.target.value)}
-            className="mt-1"
+            className="mt-1 w-full px-2 py-1 border border-gray-300 rounded-[6px]"
           />
         </div>
-        <div>
-          <Label htmlFor="fechaHasta">Fecha Hasta</Label>
-          <Input
+        <div> 
+          <label className='w-full' htmlFor="fechaHasta">Fecha Hasta</label>
+          <input
             id="fechaHasta"
             type="date"
             value={searchFechaHasta}
             onChange={(e) => setSearchFechaHasta(e.target.value)}
-            className="mt-1"
+            className="mt-1 w-full px-2 py-1 border border-gray-300 rounded-[6px]"
           />
         </div>
       </div>
       <div className="flex justify-end gap-2">
-        <Button
+        <button
           onClick={handleLocalClearSearch}
-          variant="outline"
-          className="bg-white hover:bg-gray-50"
+          className="px-3 py-2 text-sm  bg-gray-200 rounded-[6px] hover:bg-gray-300"
         >
           Limpiar
-        </Button>
-        <Button
+        </button>
+        <button
           onClick={handleLocalSearch}
-          className="bg-gray-600 hover:bg-gray-700 text-white"
+          className="px-3 py-2 text-sm rounded-[6px] flex items-center bg-gray-600 hover:bg-gray-700 text-white"
         >
           <Search className="h-4 w-4 mr-2" />
           Buscar
-        </Button>
+        </button>
       </div>
     </div>
   );

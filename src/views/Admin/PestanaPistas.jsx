@@ -7,6 +7,8 @@ import ModalConfirmation from '@/components/ModalConfirmation';
 import BtnLoading from '@/components/BtnLoading';
 import { IterationCw } from 'lucide-react';
 import { useDeportes } from '@/context/DeportesContext'; // Usa el contexto
+import ConfirmDeleteModal from '@/views/Admin/Modals/ConfirmDeleteModal';
+import ConfirmModal from '@/views/Admin/Modals/ConfirmModal'; // Asegúrate de que esta ruta sea correcta
 
 const PestanaPistas = () => {
   const [pistas, setPistas] = useState([]);
@@ -94,10 +96,38 @@ const PestanaPistas = () => {
     e.preventDefault();
     setIsSaving(true);
     try {
-      const response = await api.patch(`/canchas/${editando.id}`, newPista);
+      // Solo enviar los campos que cambiaron
+      const updatedFields = {};
+      Object.keys(newPista).forEach((key) => {
+        if (editando[key] !== newPista[key]) {
+          updatedFields[key] = newPista[key];
+        }
+      });
+
+      // Si se cambió el deporte, actualiza tipo_cancha
+      if (
+        updatedFields.deporte_id &&
+        deportes.length > 0
+      ) {
+        const deporte = deportes.find(d => d.id === parseInt(updatedFields.deporte_id));
+        if (deporte) {
+          // Ejemplo: futbol 7 => F7, futbol 5 => F5, padel 2 => P2
+          const inicial = deporte.nombre.trim().charAt(0).toUpperCase();
+          const tipoCancha = `${inicial}${deporte.jugadores_por_equipo}`;
+          updatedFields.tipo_cancha = tipoCancha;
+        }
+      }
+
+      if (Object.keys(updatedFields).length === 0) {
+        setIsSaving(false);
+        setEditando(null);
+        setAgregando(false);
+        return;
+      }
+      const response = await api.patch(`/canchas/${editando.id}`, updatedFields);
       if (response.status === 200) {
         const updatedPistas = pistas.map((pista) =>
-          pista.id === editando.id ? { ...pista, ...newPista } : pista
+          pista.id === editando.id ? { ...pista, ...updatedFields } : pista
         );
         setPistas(updatedPistas);
         setNewPista({
@@ -533,24 +563,31 @@ const PestanaPistas = () => {
           </div> 
 
           {pistaToDelete && (
-            <ModalConfirmation
+            <ConfirmDeleteModal
+              isOpen={!!pistaToDelete}
+              onClose={() => setPistaToDelete(null)}
               onConfirm={handleDeletePista}
-              onCancel={() => setPistaToDelete(null)}
-              title="Eliminar Cancha"
-              subtitle={`¿Estás seguro de que deseas eliminar la cancha ${pistaToDelete.nro}?`}
-              botonText1="Cancelar"
-              botonText2="Eliminar"
+              loading={isSaving}
+              accionTitulo="Eliminación"
+              accion="eliminar"
+              pronombre="la"
+              entidad="cancha"
+              accionando="Eliminando"
+              nombreElemento={pistaToDelete.nro ? `Cancha ${pistaToDelete.nro} - ${pistaToDelete.tipo_cancha}` : undefined}
             />
           )}
 
           {pistaToRestore && (
-            <ModalConfirmation
+            <ConfirmModal
+              isOpen={!!pistaToRestore}
+              onClose={() => setPistaToRestore(null)}
               onConfirm={handleRestorePista}
-              onCancel={() => setPistaToRestore(null)}
-              title="Restaurar Cancha"
-              subtitle={`¿Estás seguro de que deseas restaurar la cancha ${pistaToRestore.nro}?`}
-              botonText1="Cancelar"
-              botonText2="Restaurar"
+              loading={isSaving}
+              accionTitulo="Restauración"
+              accion="restaurar"
+              pronombre="la"
+              entidad="cancha"
+              accionando="Restaurando"
             />
           )}
           

@@ -750,7 +750,7 @@ const PestanaHorario = () => {
                 className="px-3 py-2 bg-blue-600 text-white rounded-[6px] hover:bg-blue-700"
                 disabled={loadingAllDays}
               >
-                {loadingAllDays ? <BtnLoading /> : "Aplicar a todos"}
+                {loadingAllDays ? "Aplicando a todos..." : "Aplicar a todos"}
               </button>
             </div>
           </div>

@@ -417,8 +417,8 @@ const PestanaCaja = () => {
                             </CardHeader>
                             <CardContent className="space-y-4">
                               <div>
-                                <Label htmlFor="amount" className="text-gray-700">Monto</Label>
-                                <Input
+                                <label htmlFor="amount" className="font-medium text-sm text-gray-700">Monto</label>
+                                <input
                                   id="amount"
                                   type="number"
                                   min="0.01"
@@ -426,17 +426,17 @@ const PestanaCaja = () => {
                                   value={amount}
                                   onChange={(e) => setAmount(e.target.value)}
                                   placeholder="0.00"
-                                  className="rounded-md border-gray-300 mt-1"
+                                  className="w-full px-2 py-1 border border-gray-300 rounded-[6px] mt-1"
                                 />
                               </div>
                               <div>
-                                <Label htmlFor="description" className="text-gray-700">Descripción</Label>
-                                <Input
+                                <label htmlFor="description" className="font-medium text-sm text-gray-700">Descripción</label>
+                                <input
                                   id="description"
                                   value={description}
                                   onChange={(e) => setDescription(e.target.value)}
                                   placeholder="Concepto del pago"
-                                  className="rounded-md border-gray-300 mt-1"
+                                  className="w-full px-2 py-1 border border-gray-300 rounded-[6px]"
                                 />
                               </div>
                               <div>
@@ -491,8 +491,8 @@ const PestanaCaja = () => {
                             </CardHeader>
                             <CardContent className="space-y-4">
                               <div>
-                                <Label htmlFor="withdrawalAmount" className="text-gray-700">Monto</Label>
-                                <Input
+                                <label htmlFor="withdrawalAmount" className="font-medium text-sm text-gray-700">Monto</label>
+                                <input
                                   id="withdrawalAmount"
                                   type="number"
                                   min="0.01"
@@ -500,17 +500,17 @@ const PestanaCaja = () => {
                                   value={amount}
                                   onChange={(e) => setAmount(e.target.value)}
                                   placeholder="0.00"
-                                  className="rounded-md border-gray-300 mt-1"
+                                  className="w-full px-2 py-1 border border-gray-300 rounded-[6px] mt-1"
                                 />
                               </div>
                               <div>
-                                <Label htmlFor="withdrawalDescription" className="text-gray-700">Descripción</Label>
-                                <Input
+                                <label htmlFor="withdrawalDescription" className="font-medium text-sm text-gray-700">Descripción</label>
+                                <input
                                   id="withdrawalDescription"
                                   value={description}
                                   onChange={(e) => setDescription(e.target.value)}
                                   placeholder="Motivo del retiro"
-                                  className="rounded-md border-gray-300 mt-1"
+                                  className="w-full px-2 py-1 border border-gray-300 rounded-[6px] mt-1"
                                 />
                               </div>
                               <div>
@@ -551,7 +551,7 @@ const PestanaCaja = () => {
                             </CardHeader>
                             <CardContent className="space-y-4">
                               <div>
-                                <Label htmlFor="tipoGasto" className="text-gray-700">Tipo de Gasto</Label>
+                                <label htmlFor="tipoGasto" className="font-medium text-sm text-gray-700">Tipo de Gasto</label>
                                 <div className="mt-1">
                                   <TipoGastoSelector 
                                     value={tipoGastoId} 
@@ -560,8 +560,8 @@ const PestanaCaja = () => {
                                 </div>
                               </div>
                               <div>
-                                <Label htmlFor="expenseAmount" className="text-gray-700">Monto</Label>
-                                <Input
+                                <label htmlFor="expenseAmount" className="font-medium text-sm text-gray-700">Monto</label>
+                                <input
                                   id="expenseAmount"
                                   type="number"
                                   min="0.01"
@@ -569,17 +569,17 @@ const PestanaCaja = () => {
                                   value={amount}
                                   onChange={(e) => setAmount(e.target.value)}
                                   placeholder="0.00"
-                                  className="rounded-md border-gray-300 mt-1"
+                                  className="w-full px-2 py-1 border border-gray-300 rounded-[6px] mt-1"
                                 />
                               </div>
                               <div>
-                                <Label htmlFor="expenseDescription" className="text-gray-700">Descripción</Label>
-                                <Input
+                                <label htmlFor="expenseDescription" className="font-medium text-sm text-gray-700">Descripción</label>
+                                <input
                                   id="expenseDescription"
                                   value={description}
                                   onChange={(e) => setDescription(e.target.value)}
                                   placeholder="Detalle del gasto"
-                                  className="rounded-md border-gray-300 mt-1"
+                                  className="w-full px-2 py-1 border border-gray-300 rounded-[6px] mt-1"
                                 />
                               </div>
                             </CardContent>

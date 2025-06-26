@@ -8,6 +8,7 @@ const subdomain = parts.length >= 2 ? parts[0] : null;
 console.log(subdomain);
 
 const api = axios.create({
+  // endpoints de desarrollo
   //baseURL: 'http://localhost:8000/api',
   //baseURL: 'https://api.rgturnos.com.ar/api',
   baseURL: 'https://api.complejorockandgol.com.ar/api',

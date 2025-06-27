@@ -126,13 +126,31 @@ export default function VerFixture() {
             {currentFecha.partidos && currentFecha.partidos.length > 0 ? (
               currentFecha.partidos.map((partido, index) => {
                 const horario = horarios[partido.horario_id] || {};
-                // Penales: igual que en CarruselFechas.jsx
                 const penales = Array.isArray(partido.penales) && partido.penales.length > 0 ? partido.penales[0] : null;
+
+                // Buscar escudos y colores de equipos local y visitante
+                const equipoLocal = partido.equipos && partido.equipos[0] ? partido.equipos[0] : null;
+                const equipoVisitante = partido.equipos && partido.equipos[1] ? partido.equipos[1] : null;
+
                 return (
                   <div key={index} className="p-3 bg-gray-200 rounded-lg my-1">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2 flex-1">
-                        <span className="font-medium">{partido.equipos[0]?.nombre || 'Equipo Local'}</span>
+                        {/* Escudo o círculo color equipo local */}
+                        {equipoLocal?.escudo ? (
+                          <img
+                            src={`${import.meta.env.VITE_API_URL?.replace(/\/$/, '')}/storage/${equipoLocal.escudo}`}
+                            alt="Escudo local"
+                            className="w-10 h-10 rounded-full object-cover border border-gray-200 bg-white"
+                            style={{ minWidth: 24, minHeight: 24 }}
+                          />
+                        ) : (
+                          <div
+                            className="w-10 h-10 rounded-full"
+                            style={{ backgroundColor: equipoLocal?.color || "#ccc" }}
+                          />
+                        )}
+                        <span className="font-medium">{equipoLocal?.nombre || 'Equipo Local'}</span>
                       </div>
                       {partido.estado === 'Finalizado' ? (
                         <span className="mx-2 font-bold flex flex-col items-center">
@@ -151,7 +169,21 @@ export default function VerFixture() {
                         <span className="mx-2 font-bold">-</span>
                       )}
                       <div className="flex items-center space-x-2 flex-1 justify-end">
-                        <span className="font-medium">{partido.equipos[1]?.nombre || 'Equipo Visitante'}</span>
+                        <span className="font-medium">{equipoVisitante?.nombre || 'Equipo Visitante'}</span>
+                        {/* Escudo o círculo color equipo visitante */}
+                        {equipoVisitante?.escudo ? (
+                          <img
+                            src={`${import.meta.env.VITE_API_URL?.replace(/\/$/, '')}/storage/${equipoVisitante.escudo}`}
+                            alt="Escudo visitante"
+                            className="w-10 h-10 rounded-full object-cover border border-gray-200 bg-white"
+                            style={{ minWidth: 24, minHeight: 24 }}
+                          />
+                        ) : (
+                          <div
+                            className="w-10 h-10 rounded-full"
+                            style={{ backgroundColor: equipoVisitante?.color || "#ccc" }}
+                          />
+                        )}
                       </div>
                     </div>
                     <div className="flex justify-between mt-2 text-sm text-gray-600">

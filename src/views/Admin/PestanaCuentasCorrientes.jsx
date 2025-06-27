@@ -316,7 +316,7 @@ const PestanaCuentasCorrientes = () => {
 
   // Modificar el FiltersPanel para asegurar que se resetea la página
   const FiltersPanel = () => (
-    <div className="bg-white p-4 rounded-lg shadow-lg mb-4">
+    <div className="bg-white p-4 rounded-[8px] shadow-lg mb-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio</label>
@@ -324,7 +324,7 @@ const PestanaCuentasCorrientes = () => {
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="w-full border border-gray-300 rounded-md p-2"
+            className="w-full border border-gray-300 rounded-[6px] px-2 py-1"
           />
         </div>
         <div>
@@ -333,7 +333,7 @@ const PestanaCuentasCorrientes = () => {
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="w-full border border-gray-300 rounded-md p-2"
+            className="w-full border border-gray-300 rounded-[6px] px-2 py-1"
           />
         </div>
         <div>
@@ -341,7 +341,7 @@ const PestanaCuentasCorrientes = () => {
           <select
             value={metodoPago}
             onChange={(e) => setMetodoPago(e.target.value)}
-            className="w-full border border-gray-300 rounded-md p-2"
+            className="w-full border border-gray-300 rounded-[6px] px-2 py-1"
           >
             <option value="">Todos</option>
             <option value="efectivo">Efectivo</option>
@@ -354,7 +354,7 @@ const PestanaCuentasCorrientes = () => {
           <select
             value={tipoTransaccion}
             onChange={(e) => setTipoTransaccion(e.target.value)}
-            className="w-full border border-gray-300 rounded-md p-2"
+            className="w-full border border-gray-300 rounded-[6px] px-2 py-1"
           >
             <option value="">Todos</option>
             <option value="ingreso">Ingreso</option>
@@ -369,7 +369,7 @@ const PestanaCuentasCorrientes = () => {
       <div className="mt-4 flex justify-end space-x-2">
         <button
           onClick={clearFilters}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-[6px] hover:bg-gray-50"
         >
           Limpiar Filtros
         </button>
@@ -379,7 +379,7 @@ const PestanaCuentasCorrientes = () => {
             fetchTransacciones();
             setShowFilters(false);
           }}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
+          className="px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-[6px] hover:bg-blue-700"
         >
           Aplicar Filtros
         </button>
@@ -410,7 +410,7 @@ const PestanaCuentasCorrientes = () => {
           {activeTab === 'transacciones' && (
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center justify-center h-8 px-3 sm:px-4 text-white bg-blue-600 border border-blue-600 rounded-[10px] shadow hover:bg-white hover:text-blue-600"
+              className="flex items-center justify-center px-3 py-1 text-sm text-white bg-blue-600 border border-blue-600 rounded-[6px] shadow hover:bg-white hover:text-blue-600"
             >
               <span>Filtros</span>
             </button>
@@ -418,7 +418,7 @@ const PestanaCuentasCorrientes = () => {
 
           <button
             onClick={() => handleSearch(localSearchTerm)}
-            className="flex items-center justify-center px-3 py-2 text-sm text-white bg-green-600 border border-green-600 rounded-[6px] shadow hover:bg-white hover:text-green-600"
+            className="flex items-center justify-center px-3 py-1 text-sm text-white bg-green-600 border border-green-600 rounded-[6px] shadow hover:bg-white hover:text-green-600"
           >
             <Search className="w-5 h-5 sm:hidden" />
             <span className="hidden sm:block">Buscar</span>
@@ -426,7 +426,7 @@ const PestanaCuentasCorrientes = () => {
 
           <button
             onClick={handleClearSearch}
-            className="flex items-center justify-center px-3 py-2 text-sm text-white bg-red-600 border border-red-600 rounded-[6px] shadow hover:bg-white hover:text-red-600"
+            className="flex items-center justify-center px-3 py-1 text-sm text-white bg-red-600 border border-red-600 rounded-[6px] shadow hover:bg-white hover:text-red-600"
           >
             <Eraser className="w-5 h-5 sm:hidden"/>
             <span className="hidden sm:block">Limpiar</span>
@@ -478,7 +478,7 @@ const PestanaCuentasCorrientes = () => {
         <div className="mb-4 flex justify-end">
           <button
             onClick={() => handleOpenTransaccionModal()}
-            className="flex items-center px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
+            className="flex items-center px-3 py-2 text-white bg-blue-600 rounded-[4px] hover:bg-blue-700"
           >
             <PlusCircle className="mr-2 h-5 w-5" />
             Nueva Transacción

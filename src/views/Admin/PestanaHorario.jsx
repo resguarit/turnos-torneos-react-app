@@ -30,6 +30,10 @@ const PestanaHorario = () => {
   const { deportes, setDeportes } = useDeportes(); // Usa el contexto
   const [selectedDeporteId, setSelectedDeporteId] = useState('');
   const [loadingHorarios, setLoadingHorarios] = useState(false);
+  const [showAllDaysModal, setShowAllDaysModal] = useState(false);
+  const [allDaysStart, setAllDaysStart] = useState("09:00");
+  const [allDaysEnd, setAllDaysEnd] = useState("18:00");
+  const [loadingAllDays, setLoadingAllDays] = useState(false);
 
   const daysOfWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
   const timeOptions = [
@@ -328,6 +332,26 @@ const PestanaHorario = () => {
     }
   };
 
+  // Función para aplicar el mismo horario a todos los días
+  const handleSetAllDays = async () => {
+    setLoadingAllDays(true);
+    try {
+      await api.post("/config/horario-semana-completa", {
+        hora_apertura: allDaysStart,
+        hora_cierre: allDaysEnd,
+        deporte_id: selectedDeporteId,
+      });
+      setShowAllDaysModal(false);
+      setSuccessMessage("Horario aplicado a todos los días correctamente");
+      await fetchActiveScheduleExtremes(selectedDeporteId);
+      await fetchDisabledRanges(selectedDeporteId);
+    } catch (error) {
+      setErrorMessage(error.response?.data?.message || "Error al configurar horario para todos los días");
+    } finally {
+      setLoadingAllDays(false);
+    }
+  };
+
   return (
     <div>
       <ToastContainer position="top-right" />
@@ -350,6 +374,13 @@ const PestanaHorario = () => {
           )}
         </div>
         <div className="flex justify-center items-center">
+          <button
+            onClick={() => setShowAllDaysModal(true)}
+            className="px-3 text-sm py-2 bg-green-500 hover:bg-green-600 text-white rounded-[6px] transition-colors mr-2"
+            disabled={loading || loadingHorarios || !selectedDeporteId}
+          >
+            Configurar todos los días igual
+          </button>
           <div className="">
             {showError ? (
               <div className="bg-red-50 border-l-4 border-red-500 p-4 flex flex-col">
@@ -676,6 +707,56 @@ const PestanaHorario = () => {
           </div>
         </div>
       )}
+
+      {/* Modal para configurar todos los días igual */}
+      {showAllDaysModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-20 bg-black bg-opacity-50">
+          <div className="bg-white rounded-[8px] p-6 w-80">
+            <h2 className="text-lg font-semibold mb-4">Configurar todos los días igual</h2>
+            <div className="mb-4">
+              <label className="block mb-1">Hora de apertura:</label>
+              <select
+                className="border rounded-[6px] px-2 py-1 w-full"
+                value={allDaysStart}
+                onChange={e => setAllDaysStart(e.target.value)}
+              >
+                {timeOptions.map((time) => (
+                  <option key={time} value={time}>{time}</option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1">Hora de cierre:</label>
+              <select
+                className="border rounded-[6px] px-2 py-1 w-full"
+                value={allDaysEnd}
+                onChange={e => setAllDaysEnd(e.target.value)}
+              >
+                {timeOptions.map((time) => (
+                  <option key={time} value={time}>{time}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowAllDaysModal(false)}
+                className="px-3 py-2 bg-gray-200 text-gray-800 rounded-[6px] hover:bg-gray-300"
+                disabled={loadingAllDays}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSetAllDays}
+                className="px-3 py-2 bg-blue-600 text-white rounded-[6px] hover:bg-blue-700"
+                disabled={loadingAllDays}
+              >
+                {loadingAllDays ? "Aplicando a todos..." : "Aplicar a todos"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

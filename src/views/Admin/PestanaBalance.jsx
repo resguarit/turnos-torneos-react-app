@@ -92,50 +92,48 @@ const PestanaBalance = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <Label htmlFor="fechaDesde" className="text-gray-700">Fecha desde</Label>
+              <label htmlFor="fechaDesde" className="font-medium text-sm text-gray-700">Fecha desde</label>
               <div className="relative mt-1">
-                <Calendar className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-                <Input
+                <input
                   id="fechaDesde"
                   type="date"
                   value={fechaDesde}
                   onChange={handleFechaDesdeChange}
-                  className="pl-10 rounded-md border-gray-300"
+                  className="w-full px-2 py-1 border border-gray-300 rounded-[6px]"
                 />
               </div>
             </div>
             <div>
-              <Label htmlFor="fechaHasta" className="text-gray-700">Fecha hasta</Label>
+              <label htmlFor="fechaHasta" className="font-medium text-sm text-gray-700">Fecha hasta</label>
               <div className="relative mt-1">
-                <Calendar className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-                <Input
+                <input
                   id="fechaHasta"
                   type="date"
                   value={fechaHasta}
                   onChange={handleFechaHastaChange}
-                  className="pl-10 rounded-md border-gray-300"
+                  className="w-full px-2 py-1 border border-gray-300 rounded-[6px]"
                 />
               </div>
             </div>
           </div>
 
           <div className="flex flex-col md:flex-row gap-2">
-            <Button
+            <button
               onClick={fetchBalance}
               disabled={loading || !fechaDesde || !fechaHasta}
-              className="bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors"
+              className="bg-gray-600 hover:bg-gray-700 text-white flex items-center rounded-[6px] px-3 py-2 transition-colors"
             >
               <Search className="h-4 w-4 mr-2" />
               {loading ? 'Consultando...' : 'Consultar Balance'}
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={limpiarFiltros}
               variant="outline"
-              className="border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
+              className="border-gray-300 text-gray-700 flex items-center rounded-[6px] px-3 py-2 hover:bg-gray-100 transition-colors"
             >
               <RefreshCcw className="h-4 w-4 mr-2" />
               Limpiar filtros
-            </Button>
+            </button>
           </div>
         </CardContent>
       </Card>

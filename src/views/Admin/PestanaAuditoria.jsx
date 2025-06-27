@@ -199,9 +199,14 @@ const PestanaAuditoria = () => {
     total: 0
   });
   const [dialogOpen, setDialogOpen] = useState(null);
+  const [tiposAccion, setTiposAccion] = useState([]);
 
   useEffect(() => {
     fetchAuditorias();
+    // Traer tipos de acción únicos para el filtro
+    api.get('/auditoria/tipos-accion').then(res => {
+      setTiposAccion(res.data || []);
+    });
   }, []);
 
   const handlePageChange = (page) => {
@@ -263,17 +268,18 @@ const PestanaAuditoria = () => {
 
   const getBadgeVariant = (accion) => {
     switch (accion) {
-      case 'login':
-        return 'default';
       case 'crear':
         return 'success';
-      case 'actualizar':
+      case 'configurar':
+        return 'secondary';
+      case 'eliminar':
+        return 'destructive';
+      case 'deshabilitar':
+        return 'warning';
+      case 'habilitar':
+        return 'success';
       case 'modificar':
         return 'warning';
-      case 'cancelar':
-        return 'destructive';
-      case 'turno':
-        return 'secondary';
       default:
         return 'outline';
     }
@@ -294,7 +300,7 @@ const PestanaAuditoria = () => {
       
       <h1 className="text-2xl font-bold mb-6">Auditorías del Sistema</h1>
       
-      <div className="bg-white p-4 rounded-lg shadow mb-6">
+      <div className="bg-white p-4 rounded-[8px] shadow mb-6">
         <h2 className="text-lg font-semibold mb-4">Filtros</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
@@ -302,13 +308,14 @@ const PestanaAuditoria = () => {
             <select
               value={filtroTipo}
               onChange={(e) => setFiltroTipo(e.target.value)}
-              className="w-full p-2 border rounded-md"
+              className="w-full border border-gray-300 rounded-[6px] px-2 py-1 "
             >
               <option value="">Todos</option>
-              <option value="login">Login</option>
-              <option value="crear">Crear</option>
-              <option value="actualizar">Actualizar</option>
-              <option value="cancelar">Cancelar</option>
+              {tiposAccion.map(tipo => (
+                <option key={tipo} value={tipo}>
+                  {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+                </option>
+              ))}
             </select>
           </div>
           
@@ -319,7 +326,7 @@ const PestanaAuditoria = () => {
               value={filtroUsuario}
               onChange={(e) => setFiltroUsuario(e.target.value)}
               placeholder="Nombre o ID"
-              className="w-full p-2 border rounded-md"
+              className="w-full border border-gray-300 rounded-[6px] px-2 py-1 "
             />
           </div>
           
@@ -329,7 +336,7 @@ const PestanaAuditoria = () => {
               type="date"
               value={fechaInicio}
               onChange={(e) => setFechaInicio(e.target.value)}
-              className="w-full p-2 border rounded-md"
+              className="w-full border border-gray-300 rounded-[6px] px-2 py-1 "
             />
           </div>
           
@@ -339,21 +346,21 @@ const PestanaAuditoria = () => {
               type="date"
               value={fechaFin}
               onChange={(e) => setFechaFin(e.target.value)}
-              className="w-full p-2 border rounded-md"
+              className="w-full border border-gray-300 rounded-[6px] px-2 py-1 "
             />
           </div>
         </div>
         
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-4 flex w-full justify-end gap-2">
           <button
             onClick={handleFiltrar}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="px-3 py-2 text-sm bg-blue-500 text-white rounded-[6px] hover:bg-blue-600"
           >
             Aplicar Filtros
           </button>
           <button
             onClick={handleLimpiarFiltros}
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+            className="px-3 py-2 text-sm bg-gray-300 text-gray-700 rounded-[6px] hover:bg-gray-400"
           >
             Limpiar Filtros
           </button>

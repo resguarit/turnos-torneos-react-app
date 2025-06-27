@@ -88,7 +88,7 @@ const TipoGastoSelector = ({ value, onChange }) => {
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between bg-white border border-gray-300 text-gray-700 h-10"
+            className="w-full justify-between text-sm  px-2 bg-white rounded-[6px] border border-gray-300 text-gray-700 h-10"
           >
             {value
               ? tiposGasto.find((tipo) => tipo.id === value)?.nombre || "Seleccionar tipo de gasto"
@@ -127,7 +127,10 @@ const TipoGastoSelector = ({ value, onChange }) => {
               <Button
                 variant="ghost"
                 className="w-full justify-start text-sm bg-gray-50 hover:bg-gray-100"
-                onClick={() => setShowAddDialog(true)}
+                onClick={() => {
+                  setShowAddDialog(true);
+                  setOpen(false); // Cierra el select al abrir el modal
+                }}
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Agregar nuevo tipo de gasto
@@ -137,49 +140,57 @@ const TipoGastoSelector = ({ value, onChange }) => {
         </PopoverContent>
       </Popover>
 
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="sm:max-w-[425px] bg-white">
-          <DialogHeader>
-            <DialogTitle>Agregar Tipo de Gasto</DialogTitle>
-            <DialogDescription>
-              Ingrese el nombre del nuevo tipo de gasto
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="nombre">Nombre</Label>
-              <Input
-                id="nombre"
-                value={newTipoGasto}
-                onChange={(e) => setNewTipoGasto(e.target.value)}
-                placeholder="Ej: Alquiler, Servicios, Materiales"
-                className="border border-gray-300"
-              />
+      {showAddDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-[8px] shadow-lg w-full max-w-md p-6 relative">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold">Agregar Tipo de Gasto</h2>
+              <p className="text-sm text-gray-500">Ingrese el nombre del nuevo tipo de gasto</p>
             </div>
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
+            <div className="grid gap-4 py-2">
+              <div className="grid gap-2">
+                <label htmlFor="nombre" className='font-medium text-gray-700'>Nombre</label>
+                <input
+                  id="nombre"
+                  value={newTipoGasto}
+                  onChange={(e) => setNewTipoGasto(e.target.value)}
+                  placeholder="Ej: Alquiler, Servicios, Materiales"
+                  className="border border-gray-300 rounded-[6px] w-full px-2 py-1"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                type="button"
+                variant="outline"
+                onClick={() => setShowAddDialog(false)}
+                disabled={loading}
+                className="px-3 py-2 bg-gray-200 rounded-[6px] hover:bg-gray-300 text-gray-800"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleAddTipoGasto}
+                disabled={loading}
+                className="px-3 py-2 rounded-[6px] bg-gray-600 hover:bg-gray-700 text-white"
+              >
+                {loading ? 'Agregando...' : 'Agregar'}
+              </button>
+            </div>
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-xl"
               onClick={() => setShowAddDialog(false)}
               disabled={loading}
-              className="border border-gray-300"
+              aria-label="Cerrar"
             >
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              onClick={handleAddTipoGasto}
-              disabled={loading}
-              className="bg-gray-600 hover:bg-gray-700 text-white"
-            >
-              {loading ? 'Agregando...' : 'Agregar'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default TipoGastoSelector; 
+export default TipoGastoSelector;

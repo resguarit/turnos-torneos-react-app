@@ -3,19 +3,19 @@ import { useEffect, useState } from "react";
 import api from '@/lib/axiosConfig';
 import BtnLoading from "./BtnLoading";
 import { Loader2 } from "lucide-react";
-
-const PUBLIC_KEY = 'APP_USR-ea10856b-f68f-4e56-a05b-a2621a1f2ff1';
+import { useConfiguration } from '@/context/ConfigurationContext';
 
 const MercadoPagoWallet = ({ turnoId, onReady }) => {
+    const { config, loading: loadingConfig } = useConfiguration();
     const [preferenceId, setPreferenceId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-
     useEffect(() => {
+        if (loadingConfig || !config?.mercado_pago_public_key) return;
         // Solo inicializar MercadoPago una vez
         if (!window.mercadoPagoInitialized) {
-            initMercadoPago(PUBLIC_KEY, { locale: 'es-AR' });
+            initMercadoPago(config.mercado_pago_public_key, { locale: 'es-AR' });
             window.mercadoPagoInitialized = true;
         }
 
@@ -45,6 +45,10 @@ const MercadoPagoWallet = ({ turnoId, onReady }) => {
 
         return () => { isMounted = false; };
     }, [turnoId]);
+
+    if (loadingConfig || !config?.mercado_pago_public_key) {
+        return <BtnLoading />;
+    }
 
     return (
         <div>

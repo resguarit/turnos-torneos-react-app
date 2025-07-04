@@ -453,6 +453,12 @@ function VerTurnos() {
                 >
                   Bloquear Turnos
                 </button>
+                <button
+                  onClick={() => navigate('/descuentos')}
+                  className="p-2 text-sm rounded-[6px] bg-secundario hover:bg-secundario/90 text-white"
+                >
+                  Crear Descuento
+                </button>
               </div>
               <div className='flex w-full gap-4 flex-col sm:flex-row items-center sm:items-start relative'>
                 <UnifiedDateSelector onDateSelect={handleUnifiedDateSelect} reset={dateReset} />

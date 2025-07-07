@@ -14,6 +14,7 @@ import PestanaCuentasCorrientes from './PestanaCuentasCorrientes';
 import PestanaCaja from './PestanaCaja';
 import PestanaBalance from './PestanaBalance';
 import PestanaConfiguracion from './PestanaConfiguracion';
+import PestanaClases from './PestanaClases'; // Asegúrate de tener este componente
 import { decryptRole } from '@/lib/getRole';
 
 const NuevoPanelAdmin = () => {
@@ -73,6 +74,8 @@ const NuevoPanelAdmin = () => {
         return isAdmin ? <PestanaBalance /> : null;
       case 'configuracion':
         return <PestanaConfiguracion />;
+      case 'clases':
+        return <PestanaClases />;
       default:
         return null;
     }
@@ -184,6 +187,15 @@ const NuevoPanelAdmin = () => {
       >
         <Settings className="w-5 h-5" />
         <span>Configuración</span>
+      </button>
+      <button
+        onClick={() => handleTabChange("clases")}
+        className={`px-4 py-3 rounded-lg text-left flex items-center ${
+          activeTab === "clases" ? "bg-naranja text-white" : "hover:bg-gray-100"
+        }`}
+      >
+        <Pitch className="mr-3" size={20} />
+        Clases
       </button>
     </div>
   );

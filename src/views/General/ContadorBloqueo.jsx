@@ -196,8 +196,6 @@ export default function ContadorBloqueo() {
         fecha_turno: reservaData.fecha,
         horario_id: reservaData.horario_id,
         cancha_id: reservaData.cancha_id,
-        monto_total: reservaData.monto_total,
-        monto_seña: reservaData.monto_seña,
         estado: 'Pendiente'
       });
 

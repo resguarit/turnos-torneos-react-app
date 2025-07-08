@@ -434,24 +434,30 @@ function VerTurnos() {
         <main className="flex-1  bg-gray-100">
           <div className="mb-8">
             <div className="space-y-4">
-              <div className="flex gap-6 items-center">
+              <div className="flex flex-wrap gap-3 md:gap-4 items-center justify-center sm:justify-start">
                 <button
                   onClick={() => navigate('/nuevo-turno-admi')}
-                  className="p-2 text-sm rounded-[6px] bg-secundario hover:bg-secundario/90 text-white"
+                  className="p-2 text-xs sm:text-sm rounded-[6px] bg-secundario hover:bg-secundario/90 text-white w-[calc(50%-0.5rem)] sm:w-auto"
                 >
                   Crear Turno 
                 </button>
                 <button
                   onClick={() => navigate('/crear-evento')}
-                  className="p-2 text-sm rounded-[6px] bg-secundario hover:bg-secundario/90 text-white"
+                  className="p-2 text-xs sm:text-sm rounded-[6px] bg-secundario hover:bg-secundario/90 text-white w-[calc(50%-0.5rem)] sm:w-auto"
                 >
                   Crear Evento 
                 </button>
                 <button
                   onClick={() => navigate('/bloquear-turnos')}
-                  className="p-2 text-sm rounded-[6px] bg-secundario hover:bg-secundario/90 text-white"
+                  className="p-2 text-xs sm:text-sm rounded-[6px] bg-secundario hover:bg-secundario/90 text-white w-[calc(50%-0.5rem)] sm:w-auto"
                 >
                   Bloquear Turnos
+                </button>
+                <button
+                  onClick={() => navigate('/descuentos')}
+                  className="p-2 text-xs sm:text-sm rounded-[6px] bg-secundario hover:bg-secundario/90 text-white w-[calc(50%-0.5rem)] sm:w-auto"
+                >
+                  Crear Descuento
                 </button>
               </div>
               <div className='flex w-full gap-4 flex-col sm:flex-row items-center sm:items-start relative'>

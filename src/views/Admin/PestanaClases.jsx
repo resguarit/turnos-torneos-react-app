@@ -724,6 +724,24 @@ const PestanaClases = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
+                Descripción
+              </label>
+              <input
+                type="text"
+                name="descripcion"
+                value={formClase.descripcion}
+                onChange={handleFormChange}
+                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm"
+                maxLength={255}
+              />
+              {validationErrors.descripcion && (
+                <p className="text-red-500 text-sm mt-1">
+                  {validationErrors.descripcion[0]}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
                 Profesor
               </label>
               <select
@@ -787,6 +805,32 @@ const PestanaClases = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
+                Cancha
+              </label>
+              <select
+                name="cancha_id"
+                value={formClase.cancha_id}
+                onChange={handleFormChange}
+                className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
+                  validationErrors.cancha_id ? "border-red-500 text-red-500" : ""
+                }`}
+                required
+              >
+                <option value="">Seleccionar cancha</option>
+                {canchas.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nro ? `Cancha ${c.nro}` : c.nombre}
+                  </option>
+                ))}
+              </select>
+              {validationErrors.cancha_id && (
+                <p className="text-red-500 text-sm mt-1">
+                  {validationErrors.cancha_id[0]}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
                 Hora de Inicio
               </label>
               <select
@@ -831,32 +875,7 @@ const PestanaClases = () => {
                 </p>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Cancha
-              </label>
-              <select
-                name="cancha_id"
-                value={formClase.cancha_id}
-                onChange={handleFormChange}
-                className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
-                  validationErrors.cancha_id ? "border-red-500 text-red-500" : ""
-                }`}
-                required
-              >
-                <option value="">Seleccionar cancha</option>
-                {canchas.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nro ? `Cancha ${c.nro}` : c.nombre}
-                  </option>
-                ))}
-              </select>
-              {validationErrors.cancha_id && (
-                <p className="text-red-500 text-sm mt-1">
-                  {validationErrors.cancha_id[0]}
-                </p>
-              )}
-            </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Cupo máximo

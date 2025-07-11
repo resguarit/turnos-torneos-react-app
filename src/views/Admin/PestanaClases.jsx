@@ -605,8 +605,11 @@ const PestanaClases = () => {
   // Helper para obtener el día de la semana en formato backend
   const getDiaSemanaBackend = (fecha) => {
     if (!fecha) return '';
+    // Asegura formato yyyy-mm-dd
+    const [year, month, day] = fecha.split('-').map(Number);
+    // Mes en JS es 0-indexado
+    const d = new Date(year, month - 1, day);
     const dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
-    const d = new Date(fecha);
     return dias[d.getDay()];
   };
 

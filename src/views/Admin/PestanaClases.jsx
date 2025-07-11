@@ -263,9 +263,54 @@ const PestanaClases = () => {
     setIsSaving(true);
     setValidationErrors({});
     try {
+      // Obtener el día de la semana en minúsculas
+      const dia = getDiaSemanaBackend(formClase.fecha);
+
+      // Buscar horarios activos en el rango seleccionado
+      const diaBackend = dia.charAt(0).toUpperCase() + dia.slice(1);
+      const horariosDelDia = horariosPorDia[diaBackend] || [];
+      const horaInicioStr = horaInicio.slice(0,5); // "18:00:00" -> "18:00"
+      const horaFinStr = horaFin.slice(0,5);
+
+      const horariosEnRango = horariosDelDia.filter(h =>
+        h.hora_inicio >= `${horaInicioStr}:00` && h.hora_fin <= `${horaFinStr}:00`
+      );
+
+      let horario_id = null;
+      let horario_ids = null;
+      let duracion = horariosEnRango.length;
+
+      if (duracion === 1) {
+        horario_id = horariosEnRango[0].id;
+        horario_ids = null;
+      } else if (duracion > 1) {
+        horario_id = null;
+        horario_ids = horariosEnRango.map(h => h.id);
+      }
+
+      // Construir el objeto a enviar
+      const dataToSend = {
+        nombre: formClase.nombre,
+        descripcion: formClase.descripcion,
+        fecha_inicio: formClase.fecha,
+        fecha_fin: formClase.fecha,
+        profesor_id: parseInt(formClase.profesor_id),
+        cancha_id: parseInt(formClase.cancha_id),
+        cupo_maximo: parseInt(formClase.cupo_maximo),
+        precio_mensual: parseFloat(formClase.precio_mensual),
+        activa: formClase.activa,
+        tipo: "unica",
+        deporte_id: parseInt(deporteId),
+        dia,
+        hora_inicio: horaInicioStr,
+        hora_fin: horaFinStr,
+        duracion,
+        horario_id,
+        horario_ids,
+      };
+
       if (editando) {
-        // PUT para editar
-        const response = await api.put(`/clases/${editando.id}`, formClase);
+        const response = await api.put(`/clases/${editando.id}`, dataToSend);
         setClases(
           clases.map((c) =>
             c.id === editando.id ? response.data.clase : c
@@ -273,8 +318,7 @@ const PestanaClases = () => {
         );
         toast.success("Clase editada correctamente");
       } else {
-        // POST para crear
-        const response = await api.post("/clases", formClase);
+        const response = await api.post("/clases", dataToSend);
         setClases([response.data.clase, ...clases]);
         toast.success("Clase creada correctamente");
       }
@@ -284,7 +328,7 @@ const PestanaClases = () => {
       if (error.response?.data?.errors) {
         setValidationErrors(error.response.data.errors);
       } else {
-        toast.error("Error al guardar la clase");
+        toast.error(error.response?.data?.message || "Error al guardar la clase");
       }
     } finally {
       setIsSaving(false);
@@ -558,6 +602,51 @@ const PestanaClases = () => {
       .join(', ');
   };
 
+  // Helper para obtener el día de la semana en formato backend
+  const getDiaSemanaBackend = (fecha) => {
+    if (!fecha) return '';
+    const dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+    const d = new Date(fecha);
+    return dias[d.getDay()];
+  };
+
+  // useEffect para cargar horarios activos del día cuando cambia fecha o deporte
+  useEffect(() => {
+    const cargarHorariosUnicos = async () => {
+      if (formClase.fecha && deporteId) {
+        const dia = getDiaSemanaBackend(formClase.fecha);
+        const diaBackend = dia.charAt(0).toUpperCase() + dia.slice(1);
+        try {
+          const res = await api.post('/horarios/activos-por-dias', {
+            deporte_id: deporteId,
+            dias: [diaBackend]
+          });
+          setHorariosPorDia(res.data.horarios_por_dia || {});
+        } catch (error) {
+          setHorariosPorDia({});
+        }
+      } else {
+        setHorariosPorDia({});
+      }
+    };
+    cargarHorariosUnicos();
+  }, [formClase.fecha, deporteId]);
+
+  // Opciones para hora inicio y fin en clase única
+  const getOpcionesHoraInicioUnica = () => {
+    const dia = getDiaSemanaBackend(formClase.fecha);
+    const diaBackend = dia.charAt(0).toUpperCase() + dia.slice(1);
+    const horariosDelDia = horariosPorDia[diaBackend] || [];
+    return [...new Set(horariosDelDia.map(h => h.hora_inicio))].sort();
+  };
+
+  const getOpcionesHoraFinUnica = () => {
+    const dia = getDiaSemanaBackend(formClase.fecha);
+    const diaBackend = dia.charAt(0).toUpperCase() + dia.slice(1);
+    const horariosDelDia = horariosPorDia[diaBackend] || [];
+    return [...new Set(horariosDelDia.filter(h => h.hora_fin >= horaInicio).map(h => h.hora_fin))].sort();
+  };
+
   return (
     <div className="max-w-7xl mx-auto mt-4">
       <ToastContainer position="top-right" />
@@ -705,10 +794,10 @@ const PestanaClases = () => {
                 }}
                 className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm"
                 required
-                disabled={!deporteId}
+                disabled={!deporteId || !formClase.fecha}
               >
                 <option value="">Seleccionar hora inicio</option>
-                {getOpcionesHoraInicio().map((hora) => (
+                {getOpcionesHoraInicioUnica().map((hora) => (
                   <option key={hora} value={hora}>
                     {hora?.slice(0, 5)}
                   </option>
@@ -727,7 +816,7 @@ const PestanaClases = () => {
                 disabled={!horaInicio}
               >
                 <option value="">Seleccionar hora fin</option>
-                {getOpcionesHoraFin().map((hora) => (
+                {getOpcionesHoraFinUnica().map((hora) => (
                   <option key={hora} value={hora}>
                     {hora?.slice(0, 5)}
                   </option>

@@ -529,16 +529,12 @@ const PestanaClases = () => {
       'sábado': 'Sábado',
       'domingo': 'Domingo'
     };
-    
     const diaBackend = diasMap[dia];
     const horariosDelDia = horariosPorDia[diaBackend] || [];
-    
-    // Solo verificar que exista al menos un horario que coincida con el rango seleccionado
-    const horariosEnRango = horariosDelDia.filter(h => 
-      h.hora_inicio === `${horaInicio}:00` && h.hora_fin === `${horaFin}:00`
+    // Solo valida que haya al menos un horario activo en el rango seleccionado
+    return horariosDelDia.some(h =>
+      h.hora_inicio >= `${horaInicio}:00` && h.hora_fin <= `${horaFin}:00`
     );
-    
-    return horariosEnRango.length > 0;
   };
 
   // Función para obtener horarios disponibles para mostrar al usuario
@@ -1133,8 +1129,8 @@ const PestanaClases = () => {
                     formClasesFijas.dias_semana.length === 0 ||
                     !formClasesFijas.dias_semana.every(dia => {
                       const horarios = horariosSeleccionados[dia];
-                      return horarios?.hora_inicio && horarios?.hora_fin &&
-                             validarRangoCompleto(dia, horarios.hora_inicio.slice(0,5), horarios.hora_fin.slice(0,5));
+                      return horarios?.hora_inicio && horarios?.hora_fin;
+                      // Elimina la llamada a validarRangoCompleto aquí si quieres permitir cualquier rango
                     })
                   }
                 >

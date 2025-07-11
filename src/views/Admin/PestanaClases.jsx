@@ -14,7 +14,6 @@ const PestanaClases = () => {
   const [profesores, setProfesores] = useState([]);
   const [canchas, setCanchas] = useState([]);
   const [horarios, setHorarios] = useState([]);
-  const [horariosFiltrados, setHorariosFiltrados] = useState([]); // <-- Agrega esta línea
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -24,7 +23,18 @@ const PestanaClases = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [claseToDelete, setClaseToDelete] = useState(null);
   const [deporteId, setDeporteId] = useState('');
-  const [canchasDisponibles, setCanchasDisponibles] = useState([]); // <--- AGREGA ESTA LÍNEA
+
+  // Estados para horarios extremos y selectores
+  const [horariosExtremos, setHorariosExtremos] = useState([]);
+  const [horaInicio, setHoraInicio] = useState('');
+  const [horaFin, setHoraFin] = useState('');
+
+  // Agregar estos estados que faltan para clases fijas
+  const [deporteIdFijas, setDeporteIdFijas] = useState('');
+  const [horariosExtremosFijas, setHorariosExtremosFijas] = useState([]);
+  // Nuevos estados para horarios por día
+  const [horariosPorDia, setHorariosPorDia] = useState({});
+  const [horariosSeleccionados, setHorariosSeleccionados] = useState({});
 
   // Formulario de clase
   const [formClase, setFormClase] = useState({
@@ -39,22 +49,23 @@ const PestanaClases = () => {
     activa: true,
   });
 
-  // Nuevo estado para mostrar el modal de clases fijas
+  // Estado para mostrar el modal de clases fijas
   const [showClasesFijas, setShowClasesFijas] = useState(false);
 
-  // Nuevo estado para el formulario de clases fijas
+  // Estado para el formulario de clases fijas
   const [formClasesFijas, setFormClasesFijas] = useState({
     nombre: "",
     descripcion: "",
     profesor_id: "",
     cancha_id: "",
-    horario_id: "",
     cupo_maximo: "",
     precio_mensual: "",
     activa: true,
     fecha_inicio: "",
     duracion_meses: 1,
     dias_semana: [],
+    deporte_id: "",
+    // Remover hora_inicio y hora_fin globales, ahora serán por día
   });
 
   // Días de la semana para el selector
@@ -74,6 +85,69 @@ const PestanaClases = () => {
     fetchCanchas();
     fetchHorarios();
   }, []);
+
+  // useEffect para cargar horarios extremos cuando cambie el deporte
+  useEffect(() => {
+    const fetchHorariosExtremos = async () => {
+      if (deporteId) {
+        try {
+          const response = await api.get('/horarios-extremos-activos', {
+            params: { deporte_id: deporteId }
+          });
+          setHorariosExtremos(response.data.horarios_extremos || []);
+          // Reset selectores
+          setHoraInicio('');
+          setHoraFin('');
+          setFormClase(prev => ({ ...prev, horario_id: '' }));
+        } catch (error) {
+          console.error('Error al cargar horarios extremos:', error);
+          setHorariosExtremos([]);
+        }
+      } else {
+        setHorariosExtremos([]);
+        setHoraInicio('');
+        setHoraFin('');
+      }
+    };
+
+    fetchHorariosExtremos();
+  }, [deporteId]);
+
+  // useEffect para cargar horarios extremos para clases fijas
+  useEffect(() => {
+    const fetchHorariosExtremosFijas = async () => {
+      if (deporteIdFijas) {
+        try {
+          const response = await api.get('/horarios-extremos-activos', {
+            params: { deporte_id: deporteIdFijas }
+          });
+          console.log('reponse:', response.data);
+          setHorariosExtremosFijas(response.data.horarios_extremos || []);
+          // Reset selectores
+          console.log('Horarios extremos para clases fijas:', response.data.horarios_extremos);
+          setFormClasesFijas(prev => ({ 
+            ...prev, 
+            hora_inicio: '', 
+            hora_fin: '', 
+            deporte_id: deporteIdFijas 
+          }));
+        } catch (error) {
+          console.error('Error al cargar horarios extremos para clases fijas:', error);
+          setHorariosExtremosFijas([]);
+        }
+      } else {
+        setHorariosExtremosFijas([]);
+        setFormClasesFijas(prev => ({ 
+          ...prev, 
+          hora_inicio: '', 
+          hora_fin: '', 
+          deporte_id: '' 
+        }));
+      }
+    };
+
+    fetchHorariosExtremosFijas();
+  }, [deporteIdFijas]);
 
   const fetchClases = async () => {
     setLoading(true);
@@ -134,6 +208,9 @@ const PestanaClases = () => {
       activa: true,
     });
     setValidationErrors({});
+    setDeporteId('');
+    setHoraInicio('');
+    setHoraFin('');
   };
 
   const handleEditClase = (clase) => {
@@ -214,63 +291,27 @@ const PestanaClases = () => {
     }
   };
 
-  // Nuevo: obtener el día de la semana de la fecha seleccionada
-  const getDiaSemana = (fecha) => {
-    if (!fecha) return null;
-    const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    const d = new Date(fecha);
-    return dias[d.getDay()];
-  };
-
-  // Traer horarios disponibles al seleccionar fecha y deporte
-  useEffect(() => {
-    setFormClase(f => ({ ...f, horario_id: '', cancha_id: '' }));
-    setHorarios([]);
-    setHorariosFiltrados([]);
-    setCanchasDisponibles([]);
-    if (formClase.fecha && deporteId) {
-      api.get('/disponibilidad/fecha', {
-        params: { fecha: formClase.fecha, deporte_id: deporteId }
-      }).then(res => {
-        // Únicos por rango y solo disponibles
-        const seen = new Set();
-        const unicos = [];
-        (res.data.horarios || []).forEach(h => {
-          const key = `${h.hora_inicio}-${h.hora_fin}-${h.deporte_id}`;
-          if (!seen.has(key) && h.disponible) {
-            seen.add(key);
-            unicos.push(h);
-          }
-        });
-        setHorarios(unicos);
-        setHorariosFiltrados(unicos);
-      }).catch(() => toast.error('Error al traer horarios'));
-    }
-  }, [formClase.fecha, deporteId]);
-
-  // Traer canchas disponibles cuando hay horario seleccionado
-  useEffect(() => {
-    setFormClase(f => ({ ...f, cancha_id: '' }));
-    setCanchasDisponibles([]);
-    if (formClase.fecha && formClase.horario_id && deporteId) {
-      api.get('/disponibilidad/cancha', {
-        params: { fecha: formClase.fecha, horario_id: formClase.horario_id, deporte_id: deporteId }
-      }).then(res => {
-        setCanchasDisponibles((res.data.canchas || []).filter(c => c.disponible));
-      }).catch(() => setCanchasDisponibles([]));
-    }
-  }, [formClase.fecha, formClase.horario_id, deporteId]);
-
   // Handler para el formulario de clases fijas
   const handleClasesFijasChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (name === "dias_semana") {
+      const nuevosDias = checked
+        ? [...formClasesFijas.dias_semana, value]
+        : formClasesFijas.dias_semana.filter((d) => d !== value);
+      
       setFormClasesFijas((prev) => ({
         ...prev,
-        dias_semana: checked
-          ? [...prev.dias_semana, value]
-          : prev.dias_semana.filter((d) => d !== value),
+        dias_semana: nuevosDias,
       }));
+      
+      // Limpiar horarios de días no seleccionados
+      if (!checked) {
+        setHorariosSeleccionados(prev => {
+          const newHorarios = { ...prev };
+          delete newHorarios[value];
+          return newHorarios;
+        });
+      }
     } else if (type === "checkbox") {
       setFormClasesFijas((prev) => ({
         ...prev,
@@ -288,20 +329,237 @@ const PestanaClases = () => {
   const handleSubmitClasesFijas = async (e) => {
     e.preventDefault();
     setIsSaving(true);
+    setValidationErrors({});
+    
     try {
-      const res = await api.post("/clases/crear-fijas", formClasesFijas);
+      // Función para formatear hora a H:i (ya está correcta)
+      const formatearHora = (hora) => {
+        if (!hora) return '';
+        return hora.slice(0, 5); // "14:30:00" -> "14:30"
+      };
+
+      // Convertir horariosSeleccionados al formato que espera el backend
+      const diasHorarios = formClasesFijas.dias_semana.map(dia => ({
+        dia: dia, // mantener en minúsculas como espera el backend
+        hora_inicio: formatearHora(horariosSeleccionados[dia]?.hora_inicio),
+        hora_fin: formatearHora(horariosSeleccionados[dia]?.hora_fin)
+      })).filter(item => item.hora_inicio && item.hora_fin);
+
+      // Preparar datos para enviar - formato correcto según tu backend
+      const dataToSend = {
+        nombre: formClasesFijas.nombre,
+        descripcion: formClasesFijas.descripcion,
+        profesor_id: parseInt(formClasesFijas.profesor_id),
+        cancha_id: parseInt(formClasesFijas.cancha_id),
+        cupo_maximo: parseInt(formClasesFijas.cupo_maximo),
+        precio_mensual: parseFloat(formClasesFijas.precio_mensual),
+        activa: formClasesFijas.activa,
+        fecha_inicio: formClasesFijas.fecha_inicio,
+        duracion_meses: parseInt(formClasesFijas.duracion_meses),
+        deporte_id: parseInt(deporteIdFijas),
+        dias_horarios: diasHorarios,
+      };
+
+      console.log('Datos a enviar:', dataToSend);
+
+      const res = await api.post("/clases/crear-fijas", dataToSend);
       toast.success("Clases fijas creadas correctamente");
       setShowClasesFijas(false);
+      setDeporteIdFijas('');
+      setHorariosPorDia({});
+      setHorariosSeleccionados({});
+      setFormClasesFijas({
+        nombre: "",
+        descripcion: "",
+        profesor_id: "",
+        cancha_id: "",
+        cupo_maximo: "",
+        precio_mensual: "",
+        activa: true,
+        fecha_inicio: "",
+        duracion_meses: 1,
+        dias_semana: [],
+        deporte_id: "",
+      });
       fetchClases();
     } catch (error) {
+      console.error('Error completo:', error.response?.data);
       if (error.response?.data?.errors) {
+        setValidationErrors(error.response.data.errors);
         toast.error("Error en la validación");
+      } else if (error.response?.data?.errores) {
+        // Manejar errores específicos de horarios
+        const erroresTexto = error.response.data.errores.join('\n');
+        toast.error(`Errores en horarios:\n${erroresTexto}`);
       } else {
-        toast.error("Error al crear clases fijas");
+        toast.error(error.response?.data?.message || "Error al crear clases fijas");
       }
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // useEffect para cargar horarios por días seleccionados
+  useEffect(() => {
+    const fetchHorariosPorDias = async () => {
+      if (deporteIdFijas && formClasesFijas.dias_semana.length > 0) {
+        try {
+          // Convertir días a formato que espera el backend
+          const diasBackend = formClasesFijas.dias_semana.map(dia => {
+            const diasMap = {
+              'lunes': 'Lunes',
+              'martes': 'Martes', 
+              'miércoles': 'Miércoles',
+              'jueves': 'Jueves',
+              'viernes': 'Viernes',
+              'sábado': 'Sábado',
+              'domingo': 'Domingo'
+            };
+            return diasMap[dia];
+          });
+
+          const response = await api.post('/horarios/activos-por-dias', {
+            deporte_id: deporteIdFijas,
+            dias: diasBackend
+          });
+
+          setHorariosPorDia(response.data.horarios_por_dia || {});
+          
+          // Reset horarios seleccionados cuando cambian los días
+          setHorariosSeleccionados({});
+        } catch (error) {
+          console.error('Error al cargar horarios por días:', error);
+          setHorariosPorDia({});
+          setHorariosSeleccionados({});
+        }
+      } else {
+        setHorariosPorDia({});
+        setHorariosSeleccionados({});
+      }
+    };
+
+    fetchHorariosPorDias();
+  }, [deporteIdFijas, formClasesFijas.dias_semana]);
+
+  // Función para manejar cambio de horarios por día
+  const handleHorarioChange = (dia, tipo, valor) => {
+    setHorariosSeleccionados(prev => ({
+      ...prev,
+      [dia]: {
+        ...prev[dia],
+        [tipo]: valor,
+        // Reset hora_fin si cambia hora_inicio
+        ...(tipo === 'hora_inicio' ? { hora_fin: '' } : {})
+      }
+    }));
+  };
+
+  // Función para obtener opciones de hora inicio por día
+  const getOpcionesHoraInicioPorDia = (dia) => {
+    const diasMap = {
+      'lunes': 'Lunes',
+      'martes': 'Martes', 
+      'miércoles': 'Miércoles',
+      'jueves': 'Jueves',
+      'viernes': 'Viernes',
+      'sábado': 'Sábado',
+      'domingo': 'Domingo'
+    };
+    
+    const diaBackend = diasMap[dia];
+    const horariosDelDia = horariosPorDia[diaBackend] || [];
+    
+    const horasInicio = horariosDelDia
+      .filter(h => h.hora_inicio)
+      .map(h => h.hora_inicio);
+    
+    return [...new Set(horasInicio)].sort();
+  };
+
+  // Función para obtener opciones de hora fin por día
+  const getOpcionesHoraFinPorDia = (dia) => {
+    const horaInicioSeleccionada = horariosSeleccionados[dia]?.hora_inicio;
+    if (!horaInicioSeleccionada) return [];
+    
+    const diasMap = {
+      'lunes': 'Lunes',
+      'martes': 'Martes', 
+      'miércoles': 'Miércoles',
+      'jueves': 'Jueves',
+      'viernes': 'Viernes',
+      'sábado': 'Sábado',
+      'domingo': 'Domingo'
+    };
+    
+    const diaBackend = diasMap[dia];
+    const horariosDelDia = horariosPorDia[diaBackend] || [];
+    
+    const horasFin = horariosDelDia
+      .filter(h => h.hora_fin && h.hora_fin >= horaInicioSeleccionada)
+      .map(h => h.hora_fin);
+    
+    return [...new Set(horasFin)].sort();
+  };
+
+  // Funciones helper para clases individuales (que faltan)
+  const getOpcionesHoraInicio = () => {
+    const horasInicio = horariosExtremos
+      .filter(h => !h.inactivo && h.hora_inicio)
+      .map(h => h.hora_inicio);
+    return [...new Set(horasInicio)].sort();
+  };
+
+  const getOpcionesHoraFin = () => {
+    if (!horaInicio) return [];
+    
+    const horasFin = horariosExtremos
+      .filter(h => !h.inactivo && h.hora_fin && h.hora_fin >= horaInicio)
+      .map(h => h.hora_fin);
+    return [...new Set(horasFin)].sort();
+  };
+
+  // Función de validación - solo verificar que existan horarios en el rango
+  const validarRangoCompleto = (dia, horaInicio, horaFin) => {
+    const diasMap = {
+      'lunes': 'Lunes',
+      'martes': 'Martes', 
+      'miércoles': 'Miércoles',
+      'jueves': 'Jueves',
+      'viernes': 'Viernes',
+      'sábado': 'Sábado',
+      'domingo': 'Domingo'
+    };
+    
+    const diaBackend = diasMap[dia];
+    const horariosDelDia = horariosPorDia[diaBackend] || [];
+    
+    // Solo verificar que exista al menos un horario que coincida con el rango seleccionado
+    const horariosEnRango = horariosDelDia.filter(h => 
+      h.hora_inicio === `${horaInicio}:00` && h.hora_fin === `${horaFin}:00`
+    );
+    
+    return horariosEnRango.length > 0;
+  };
+
+  // Función para obtener horarios disponibles para mostrar al usuario
+  const getHorariosDisponiblesPorDia = (dia) => {
+    const diasMap = {
+      'lunes': 'Lunes',
+      'martes': 'Martes', 
+      'miércoles': 'Miércoles',
+      'jueves': 'Jueves',
+      'viernes': 'Viernes',
+      'sábado': 'Sábado',
+      'domingo': 'Domingo'
+    };
+    
+    const diaBackend = diasMap[dia];
+    const horariosDelDia = horariosPorDia[diaBackend] || [];
+    
+    return horariosDelDia
+      .sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio))
+      .map(h => `${h.hora_inicio.slice(0,5)} - ${h.hora_fin.slice(0,5)}`)
+      .join(', ');
   };
 
   return (
@@ -441,28 +699,47 @@ const PestanaClases = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Horario
+                Hora de Inicio
               </label>
               <select
-                name="horario_id"
-                value={formClase.horario_id}
-                onChange={handleFormChange}
-                className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
-                  validationErrors.horario_id ? "border-red-500 text-red-500" : ""
-                }`}
+                value={horaInicio}
+                onChange={(e) => {
+                  setHoraInicio(e.target.value);
+                  setHoraFin(''); // Reset hora fin cuando cambia inicio
+                }}
+                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm"
                 required
-                disabled={!formClase.fecha}
+                disabled={!deporteId}
               >
-                <option value="">Seleccionar horario</option>
-                {horariosFiltrados.map((h) => (
-                  <option key={h.id} value={h.id}>
-                    {h.hora_inicio} - {h.hora_fin} 
+                <option value="">Seleccionar hora inicio</option>
+                {getOpcionesHoraInicio().map((hora) => (
+                  <option key={hora} value={hora}>
+                    {hora?.slice(0, 5)}
                   </option>
                 ))}
               </select>
-              {validationErrors.horario_id && (
-                <p className="text-red-500 text-sm mt-1">
-                  {validationErrors.horario_id[0]}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Hora de Fin
+              </label>
+              <select
+                value={horaFin}
+                onChange={(e) => setHoraFin(e.target.value)}
+                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm"
+                required
+                disabled={!horaInicio}
+              >
+                <option value="">Seleccionar hora fin</option>
+                {getOpcionesHoraFin().map((hora) => (
+                  <option key={hora} value={hora}>
+                    {hora?.slice(0, 5)}
+                  </option>
+                ))}
+              </select>
+              {horaInicio && horaFin && (
+                <p className="text-sm text-gray-500 mt-1">
+                  Duración: {((new Date(`1970-01-01T${horaFin}`) - new Date(`1970-01-01T${horaInicio}`)) / (1000 * 60 * 60))} hora(s)
                 </p>
               )}
             </div>
@@ -478,10 +755,9 @@ const PestanaClases = () => {
                   validationErrors.cancha_id ? "border-red-500 text-red-500" : ""
                 }`}
                 required
-                disabled={!formClase.horario_id}
               >
                 <option value="">Seleccionar cancha</option>
-                {canchasDisponibles.map((c) => (
+                {canchas.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.nro ? `Cancha ${c.nro}` : c.nombre}
                   </option>
@@ -619,23 +895,26 @@ const PestanaClases = () => {
                   ))}
                 </select>
               </div>
+              
               <div>
-                <label className="block text-sm font-medium text-gray-700">Horario</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Deporte
+                </label>
                 <select
-                  name="horario_id"
-                  value={formClasesFijas.horario_id}
-                  onChange={handleClasesFijasChange}
+                  name="deporte_id"
+                  value={deporteIdFijas}
+                  onChange={e => setDeporteIdFijas(e.target.value)}
                   className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded"
                   required
                 >
-                  <option value="">Seleccionar horario</option>
-                  {horariosFiltrados.map((h) => (
-                    <option key={h.id} value={h.id}>
-                      {h.hora_inicio} - {h.hora_fin}
-                    </option>
+                  <option value="">Seleccionar deporte</option>
+                  {deportes.map(d => (
+                    <option key={d.id} value={d.id}>{d.nombre} {d.jugadores_por_equipo}</option>
                   ))}
                 </select>
               </div>
+              
+              {/* Agregar el campo cancha_id después del campo deporte */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">Cancha</label>
                 <select
@@ -646,36 +925,35 @@ const PestanaClases = () => {
                   required
                 >
                   <option value="">Seleccionar cancha</option>
-                  {canchasDisponibles.map((c) => (
+                  {canchas.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.nro ? `Cancha ${c.nro}` : c.nombre}
                     </option>
                   ))}
                 </select>
               </div>
-              <div className="flex gap-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Cupo máximo</label>
-                  <input
-                    type="number"
-                    name="cupo_maximo"
-                    value={formClasesFijas.cupo_maximo}
-                    onChange={handleClasesFijasChange}
-                    className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Precio mensual</label>
-                  <input
-                    type="number"
-                    name="precio_mensual"
-                    value={formClasesFijas.precio_mensual}
-                    onChange={handleClasesFijasChange}
-                    className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded"
-                    required
-                  />
-                </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Cupo máximo</label>
+                <input
+                  type="number"
+                  name="cupo_maximo"
+                  value={formClasesFijas.cupo_maximo}
+                  onChange={handleClasesFijasChange}
+                  className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Precio mensual</label>
+                <input
+                  type="number"
+                  name="precio_mensual"
+                  value={formClasesFijas.precio_mensual}
+                  onChange={handleClasesFijasChange}
+                  className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded"
+                  required
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Fecha de inicio</label>
@@ -700,6 +978,7 @@ const PestanaClases = () => {
                   required
                 />
               </div>
+              
               <div>
                 <label className="block text-sm font-medium text-gray-700">Días de la semana</label>
                 <div className="flex flex-wrap gap-2 mt-1">
@@ -717,6 +996,113 @@ const PestanaClases = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Mostrar selectores de horarios para cada día seleccionado */}
+              {formClasesFijas.dias_semana.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    Horarios por día 
+                    <span className="text-red-500 text-xs ml-1">
+                      (Selecciona horarios para todos los días)
+                    </span>
+                  </h3>
+                  {formClasesFijas.dias_semana.map((dia) => {
+                    const tieneHorarios = horariosSeleccionados[dia]?.hora_inicio && horariosSeleccionados[dia]?.hora_fin;
+                    const rangoValido = tieneHorarios ? validarRangoCompleto(
+                      dia, 
+                      horariosSeleccionados[dia].hora_inicio.slice(0,5), 
+                      horariosSeleccionados[dia].hora_fin.slice(0,5)
+                    ) : true;
+                    const horariosDisponibles = getHorariosDisponiblesPorDia(dia);
+                    
+                    return (
+                      <div key={dia} className={`border rounded-lg p-3 ${
+                        tieneHorarios 
+                          ? (rangoValido ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200')
+                          : 'bg-gray-50'
+                      }`}>
+                        <h4 className="text-sm font-medium text-gray-800 mb-2 capitalize flex items-center">
+                          {diasSemana.find(d => d.value === dia)?.label}
+                          {tieneHorarios && (
+                            rangoValido ? (
+                              <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
+                                ✓ Válido
+                              </span>
+                            ) : (
+                              <span className="ml-2 text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">
+                                ⚠ No disponible
+                              </span>
+                            )
+                          )}
+                        </h4>
+                        
+                        {/* Mostrar horarios disponibles */}
+                        {horariosDisponibles && (
+                          <div className="mb-2 p-2 bg-blue-50 rounded text-xs">
+                            <span className="font-medium text-blue-700">Horarios disponibles:</span>
+                            <div className="text-blue-600 ml-1 mt-1">{horariosDisponibles}</div>
+                          </div>
+                        )}
+                        
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600">Hora Inicio</label>
+                            <select
+                              value={horariosSeleccionados[dia]?.hora_inicio || ''}
+                              onChange={(e) => handleHorarioChange(dia, 'hora_inicio', e.target.value)}
+                              className="mt-1 block w-full px-2 py-1 text-sm border border-gray-300 rounded"
+                              required
+                              disabled={!deporteIdFijas}
+                            >
+                              <option value="">Seleccionar</option>
+                              {getOpcionesHoraInicioPorDia(dia).map((hora) => (
+                                <option key={hora} value={hora}>
+                                  {hora?.slice(0, 5)}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600">Hora Fin</label>
+                            <select
+                              value={horariosSeleccionados[dia]?.hora_fin || ''}
+                              onChange={(e) => handleHorarioChange(dia, 'hora_fin', e.target.value)}
+                              className="mt-1 block w-full px-2 py-1 text-sm border border-gray-300 rounded"
+                              required
+                              disabled={!horariosSeleccionados[dia]?.hora_inicio}
+                            >
+                              <option value="">Seleccionar</option>
+                              {getOpcionesHoraFinPorDia(dia).map((hora) => (
+                                <option key={hora} value={hora}>
+                                  {hora?.slice(0, 5)}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                        
+                        {/* Mostrar información de duración */}
+                        {horariosSeleccionados[dia]?.hora_inicio && horariosSeleccionados[dia]?.hora_fin && (
+                          <div className="mt-2 space-y-1">
+                            <p className="text-xs text-gray-500">
+                              Duración: {((new Date(`1970-01-01T${horariosSeleccionados[dia].hora_fin}`) - 
+                                          new Date(`1970-01-01T${horariosSeleccionados[dia].hora_inicio}`)) / 
+                                         (1000 * 60 * 60))} hora(s)
+                            </p>
+                            {!rangoValido && (
+                              <p className="text-xs text-red-600 bg-red-100 p-1 rounded">
+                                ⚠ Este horario no está disponible para {dia}. 
+                                Selecciona un horario de los disponibles arriba.
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               <div className="flex items-center mt-2">
                 <input
                   type="checkbox"
@@ -740,8 +1126,17 @@ const PestanaClases = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                  disabled={isSaving}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:bg-gray-400"
+                  disabled={isSaving || 
+                    !deporteIdFijas || 
+                    !formClasesFijas.cancha_id ||
+                    formClasesFijas.dias_semana.length === 0 ||
+                    !formClasesFijas.dias_semana.every(dia => {
+                      const horarios = horariosSeleccionados[dia];
+                      return horarios?.hora_inicio && horarios?.hora_fin &&
+                             validarRangoCompleto(dia, horarios.hora_inicio.slice(0,5), horarios.hora_fin.slice(0,5));
+                    })
+                  }
                 >
                   {isSaving ? "Creando..." : "Crear Clases Fijas"}
                 </button>
@@ -821,7 +1216,6 @@ const PestanaClases = () => {
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-gray-400" />
                       <span className="flex-col flex">
-                        {console.log(clase)}
                         <span className=" text-gray-500">Horario:</span>{" "}
                         <span className="font-medium">
                           {clase.horario?.hora_inicio} - {clase.horario?.hora_fin}

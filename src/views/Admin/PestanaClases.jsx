@@ -1274,8 +1274,16 @@ const PestanaClases = () => {
           {clases.length === 0 ? (
             <div className="text-center text-gray-500 py-8">No hay clases registradas.</div>
           ) : (
-            <ul className="space-y-6">
-              {clases.map((clase) => (
+          <ul className="space-y-6">
+            {clases.map((clase) => {
+              // Obtener el primer y último horario del array
+              const horariosOrdenados = [...(clase.horarios || [])].sort((a, b) =>
+                a.hora_inicio.localeCompare(b.hora_inicio)
+              );
+              const primerHorario = horariosOrdenados[0];
+              const ultimoHorario = horariosOrdenados[horariosOrdenados.length - 1];
+
+              return (
                 <li
                   key={clase.id}
                   className="bg-white rounded-xl shadow border border-gray-200 p-6 flex flex-col gap-2"
@@ -1336,7 +1344,9 @@ const PestanaClases = () => {
                       <span className="flex-col flex">
                         <span className=" text-gray-500">Horario:</span>{" "}
                         <span className="font-medium">
-                          {clase.horario?.hora_inicio} - {clase.horario?.hora_fin}
+                          {primerHorario && ultimoHorario
+                          ? `${primerHorario.hora_inicio.slice(0,5)} - ${ultimoHorario.hora_fin.slice(0,5)}`
+                          : "-"}
                         </span>
                       </span>
                     </div>
@@ -1375,7 +1385,8 @@ const PestanaClases = () => {
                   </div>
                   
                 </li>
-              ))}
+                );
+              })}
             </ul>
           )}
         </div>

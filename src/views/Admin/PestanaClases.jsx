@@ -13,7 +13,6 @@ const PestanaClases = () => {
   const [clases, setClases] = useState([]);
   const [profesores, setProfesores] = useState([]);
   const [canchas, setCanchas] = useState([]);
-  const [horarios, setHorarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -25,7 +24,6 @@ const PestanaClases = () => {
   const [deporteId, setDeporteId] = useState('');
 
   // Estados para horarios extremos y selectores
-  const [horariosExtremos, setHorariosExtremos] = useState([]);
   const [horaInicio, setHoraInicio] = useState('');
   const [horaFin, setHoraFin] = useState('');
 
@@ -566,22 +564,6 @@ const PestanaClases = () => {
     return [...new Set(horasFin)].sort();
   };
 
-  // Funciones helper para clases individuales (que faltan)
-  const getOpcionesHoraInicio = () => {
-    const horasInicio = horariosExtremos
-      .filter(h => !h.inactivo && h.hora_inicio)
-      .map(h => h.hora_inicio);
-    return [...new Set(horasInicio)].sort();
-  };
-
-  const getOpcionesHoraFin = () => {
-    if (!horaInicio) return [];
-    
-    const horasFin = horariosExtremos
-      .filter(h => !h.inactivo && h.hora_fin && h.hora_fin >= horaInicio)
-      .map(h => h.hora_fin);
-    return [...new Set(horasFin)].sort();
-  };
 
   // Función de validación - solo verificar que existan horarios en el rango
   const validarRangoCompleto = (dia, horaInicio, horaFin) => {

@@ -7,6 +7,11 @@ import "react-toastify/dist/ReactToastify.css";
 import { useDeportes } from '@/context/DeportesContext';
 import { parseISO, format } from "date-fns";
 import { es } from "date-fns/locale";
+import FormClaseUnica from "../../components/PanelAdmin/Clases/FormClaseUnica";
+import FormClasesFijas from "../../components/PanelAdmin/Clases/FormClasesFijas";
+import TarjetaClase from "../../components/PanelAdmin/Clases/TarjetaClase";
+import TarjetaGrupoClasesFijas from "../../components/PanelAdmin/Clases/TarjetaGrupoClasesFijas";
+
 
 const PestanaClases = () => {
   const { deportes } = useDeportes();
@@ -22,6 +27,7 @@ const PestanaClases = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [claseToDelete, setClaseToDelete] = useState(null);
   const [deporteId, setDeporteId] = useState('');
+  const [horariosExtremos, setHorariosExtremos] = useState([]);
 
   // Estados para horarios extremos y selectores
   const [horaInicio, setHoraInicio] = useState('');
@@ -762,550 +768,58 @@ const PestanaClases = () => {
 
       {/* Formulario */}
       {showForm && (
-        <form
-          onSubmit={handleSubmit}
-          className="mb-6 bg-white p-4 rounded-xl shadow"
-        >
-          <h2 className="text-xl font-semibold mb-1">
-            {editando ? "Editar Clase" : "Crear Nueva Clase"}
-          </h2>
-          <p className="text-sm text-gray-600 mb-4">
-            {editando
-              ? "Modifica los datos de la clase seleccionada."
-              : "Completa todos los campos para crear una nueva clase."}
-          </p>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Nombre
-              </label>
-              <input
-                type="text"
-                name="nombre"
-                value={formClase.nombre}
-                onChange={handleFormChange}
-                className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
-                  validationErrors.nombre ? "border-red-500 text-red-500" : ""
-                }`}
-                required
-              />
-              {validationErrors.nombre && (
-                <p className="text-red-500 text-sm mt-1">
-                  {validationErrors.nombre[0]}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Descripción
-              </label>
-              <input
-                type="text"
-                name="descripcion"
-                value={formClase.descripcion}
-                onChange={handleFormChange}
-                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm"
-                maxLength={255}
-              />
-              {validationErrors.descripcion && (
-                <p className="text-red-500 text-sm mt-1">
-                  {validationErrors.descripcion[0]}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Profesor
-              </label>
-              <select
-                name="profesor_id"
-                value={formClase.profesor_id}
-                onChange={handleFormChange}
-                className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
-                  validationErrors.profesor_id ? "border-red-500 text-red-500" : ""
-                }`}
-                required
-              >
-                <option value="">Seleccionar profesor</option>
-                {profesores.map((prof) => (
-                  <option key={prof.id} value={prof.id}>
-                    {prof.nombre} {prof.apellido}
-                  </option>
-                ))}
-              </select>
-              {validationErrors.profesor_id && (
-                <p className="text-red-500 text-sm mt-1">
-                  {validationErrors.profesor_id[0]}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Fecha de inicio
-              </label>
-              <input
-                type="date"
-                name="fecha"
-                value={formClase.fecha}
-                onChange={handleFormChange}
-                className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
-                  validationErrors.fecha ? "border-red-500 text-red-500" : ""
-                }`}
-                required
-              />
-              {validationErrors.fecha && (
-                <p className="text-red-500 text-sm mt-1">
-                  {validationErrors.fecha[0]}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Deporte
-              </label>
-              <select
-                name="deporte_id"
-                value={deporteId}
-                onChange={e => setDeporteId(e.target.value)}
-                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm"
-                required
-              >
-                <option value="">Seleccionar deporte</option>
-                {deportes.map(d => (
-                  <option key={d.id} value={d.id}>{d.nombre} {d.jugadores_por_equipo}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Cancha
-              </label>
-              <select
-                name="cancha_id"
-                value={formClase.cancha_id}
-                onChange={handleFormChange}
-                className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
-                  validationErrors.cancha_id ? "border-red-500 text-red-500" : ""
-                }`}
-                required
-                disabled={!deporteId} // Deshabilitado si no hay deporte seleccionado
-              >
-                <option value="">Seleccionar cancha</option>
-                {canchasFiltradas.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nro ? `Cancha ${c.nro}` : c.nombre}
-                  </option>
-                ))}
-              </select>
-              {validationErrors.cancha_id && (
-                <p className="text-red-500 text-sm mt-1">
-                  {validationErrors.cancha_id[0]}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Hora de Inicio
-              </label>
-              <select
-                value={horaInicio}
-                onChange={(e) => {
-                  setHoraInicio(e.target.value);
-                  setHoraFin(''); // Reset hora fin cuando cambia inicio
-                }}
-                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm"
-                required
-                disabled={!deporteId || !formClase.fecha}
-              >
-                <option value="">Seleccionar hora inicio</option>
-                {getOpcionesHoraInicioUnica().map((hora) => (
-                  <option key={hora} value={hora}>
-                    {hora?.slice(0, 5)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Hora de Fin
-              </label>
-              <select
-                value={horaFin}
-                onChange={(e) => setHoraFin(e.target.value)}
-                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm"
-                required
-                disabled={!horaInicio}
-              >
-                <option value="">Seleccionar hora fin</option>
-                {getOpcionesHoraFinUnica().map((hora) => (
-                  <option key={hora} value={hora}>
-                    {hora?.slice(0, 5)}
-                  </option>
-                ))}
-              </select>
-              {horaInicio && horaFin && (
-                <p className="text-sm text-gray-500 mt-1">
-                  Duración: {((new Date(`1970-01-01T${horaFin}`) - new Date(`1970-01-01T${horaInicio}`)) / (1000 * 60 * 60))} hora(s)
-                </p>
-              )}
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Cupo máximo
-              </label>
-              <input
-                type="number"
-                name="cupo_maximo"
-                value={formClase.cupo_maximo}
-                onChange={handleFormChange}
-                className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
-                  validationErrors.cupo_maximo ? "border-red-500 text-red-500" : ""
-                }`}
-                required
-              />
-              {validationErrors.cupo_maximo && (
-                <p className="text-red-500 text-sm mt-1">
-                  {validationErrors.cupo_maximo[0]}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Precio mensual
-              </label>
-              <input
-                type="number"
-                name="precio_mensual"
-                value={formClase.precio_mensual}
-                onChange={handleFormChange}
-                className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
-                  validationErrors.precio_mensual ? "border-red-500 text-red-500" : ""
-                }`}
-                required
-              />
-              {validationErrors.precio_mensual && (
-                <p className="text-red-500 text-sm mt-1">
-                  {validationErrors.precio_mensual[0]}
-                </p>
-              )}
-            </div>
-            <div className="flex items-center mt-2">
-              <input
-                type="checkbox"
-                name="activa"
-                checked={formClase.activa}
-                onChange={handleFormChange}
-                className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-              />
-              <label className="ml-2 block text-sm font-medium text-gray-700">
-                Activa
-              </label>
-            </div>
-          </div>
-          <div className="mt-4 flex justify-end">
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="mr-4 inline-flex items-center px-3 py-2 border border-gray-300 rounded-[6px] shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-              disabled={isSaving}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="inline-flex items-center px-3 py-2 border border-transparent rounded-[6px] shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
-              disabled={isSaving}
-            >
-              {isSaving ? "Guardando..." : editando ? "Guardar Cambios" : "Guardar"}
-            </button>
-          </div>
-        </form>
+        <FormClaseUnica
+          formClase={formClase}
+          setFormClase={setFormClase}
+          handleFormChange={handleFormChange}
+          handleSubmit={handleSubmit}
+          validationErrors={validationErrors}
+          isSaving={isSaving}
+          profesores={profesores}
+          canchasFiltradas={canchasFiltradas}
+          deportes={deportes}
+          deporteId={deporteId}
+          setDeporteId={setDeporteId}
+          horaInicio={horaInicio}
+          setHoraInicio={setHoraInicio}
+          horaFin={horaFin}
+          setHoraFin={setHoraFin}
+          getOpcionesHoraInicioUnica={getOpcionesHoraInicioUnica}
+          getOpcionesHoraFinUnica={getOpcionesHoraFinUnica}
+          showForm={showForm}
+          setShowForm={setShowForm}
+          editando={editando}
+        />
       )}
 
 
 
       {/* Modal para crear clases fijas */}
       {showClasesFijas && (
-        <form
-          onSubmit={handleSubmitClasesFijas}
-          className="mb-6 bg-white p-4 rounded-xl shadow"
-        >
-          <h2 className="text-xl font-semibold mb-1">Crear Clases Fijas</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Nombre</label>
-              <input
-                type="text"
-                name="nombre"
-                value={formClasesFijas.nombre}
-                onChange={handleClasesFijasChange}
-                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Descripción</label>
-              <input
-                type="text"
-                name="descripcion"
-                value={formClasesFijas.descripcion}
-                onChange={handleClasesFijasChange}
-                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Profesor</label>
-              <select
-                name="profesor_id"
-                value={formClasesFijas.profesor_id}
-                onChange={handleClasesFijasChange}
-                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded"
-                required
-              >
-                <option value="">Seleccionar profesor</option>
-                {profesores.map((prof) => (
-                  <option key={prof.id} value={prof.id}>
-                    {prof.nombre} {prof.apellido}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Deporte
-              </label>
-              <select
-                name="deporte_id"
-                value={deporteIdFijas}
-                onChange={e => setDeporteIdFijas(e.target.value)}
-                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded"
-                required
-              >
-                <option value="">Seleccionar deporte</option>
-                {deportes.map(d => (
-                  <option key={d.id} value={d.id}>{d.nombre} {d.jugadores_por_equipo}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Cancha</label>
-              <select
-                name="cancha_id"
-                value={formClasesFijas.cancha_id}
-                onChange={handleClasesFijasChange}
-                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded"
-                required
-                disabled={!deporteIdFijas} // Deshabilitado si no hay deporte seleccionado
-              >
-                <option value="">Seleccionar cancha</option>
-                {canchasFiltradasFijas.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nro ? `Cancha ${c.nro}` : c.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Cupo máximo</label>
-              <input
-                type="number"
-                name="cupo_maximo"
-                value={formClasesFijas.cupo_maximo}
-                onChange={handleClasesFijasChange}
-                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Precio mensual</label>
-              <input
-                type="number"
-                name="precio_mensual"
-                value={formClasesFijas.precio_mensual}
-                onChange={handleClasesFijasChange}
-                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Fecha de inicio</label>
-              <input
-                type="date"
-                name="fecha_inicio"
-                value={formClasesFijas.fecha_inicio}
-                onChange={handleClasesFijasChange}
-                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Duración (meses)</label>
-              <input
-                type="number"
-                name="duracion_meses"
-                value={formClasesFijas.duracion_meses}
-                onChange={handleClasesFijasChange}
-                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded"
-                min={1}
-                required
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700">Días de la semana</label>
-              <div className="flex flex-wrap gap-2 mt-1">
-                {diasSemana.map((d) => (
-                  <label key={d.value} className="flex items-center gap-1">
-                    <input
-                      type="checkbox"
-                      name="dias_semana"
-                      value={d.value}
-                      checked={formClasesFijas.dias_semana.includes(d.value)}
-                      onChange={handleClasesFijasChange}
-                    />
-                    {d.label}
-                  </label>
-                ))}
-              </div>
-            </div>
-            {/* Horarios por día */}
-            {formClasesFijas.dias_semana.length > 0 && (
-              <div className="sm:col-span-2 space-y-4">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">
-                  Horarios por día 
-                  <span className="text-red-500 text-xs ml-1">
-                    (Selecciona horarios para todos los días)
-                  </span>
-                </h3>
-                {formClasesFijas.dias_semana.map((dia) => {
-                  const tieneHorarios = horariosSeleccionados[dia]?.hora_inicio && horariosSeleccionados[dia]?.hora_fin;
-                  const rangoValido = tieneHorarios ? validarRangoCompleto(
-                    dia, 
-                    horariosSeleccionados[dia].hora_inicio.slice(0,5), 
-                    horariosSeleccionados[dia].hora_fin.slice(0,5)
-                  ) : true;
-                  const horariosDisponibles = getHorariosDisponiblesPorDia(dia);
-                  return (
-                    <div key={dia} className={`border rounded-lg p-3 ${
-                      tieneHorarios 
-                        ? (rangoValido ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200')
-                        : 'bg-gray-50'
-                    }`}>
-                      <h4 className="text-sm font-medium text-gray-800 mb-2 capitalize flex items-center">
-                        {diasSemana.find(d => d.value === dia)?.label}
-                        {tieneHorarios && (
-                          rangoValido ? (
-                            <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
-                              ✓ Válido
-                            </span>
-                          ) : (
-                            <span className="ml-2 text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">
-                              ⚠ No disponible
-                            </span>
-                          )
-                        )}
-                      </h4>
-                      {horariosDisponibles && (
-                        <div className="mb-2 p-2 bg-blue-50 rounded text-xs">
-                          <span className="font-medium text-blue-700">Horarios disponibles:</span>
-                          <div className="text-blue-600 ml-1 mt-1">{horariosDisponibles}</div>
-                        </div>
-                      )}
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600">Hora Inicio</label>
-                          <select
-                            value={horariosSeleccionados[dia]?.hora_inicio || ''}
-                            onChange={(e) => handleHorarioChange(dia, 'hora_inicio', e.target.value)}
-                            className="mt-1 block w-full px-2 py-1 text-sm border border-gray-300 rounded"
-                            required
-                            disabled={!deporteIdFijas}
-                          >
-                            <option value="">Seleccionar</option>
-                            {getOpcionesHoraInicioPorDia(dia).map((hora) => (
-                              <option key={hora} value={hora}>
-                                {hora?.slice(0, 5)}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600">Hora Fin</label>
-                          <select
-                            value={horariosSeleccionados[dia]?.hora_fin || ''}
-                            onChange={(e) => handleHorarioChange(dia, 'hora_fin', e.target.value)}
-                            className="mt-1 block w-full px-2 py-1 text-sm border border-gray-300 rounded"
-                            required
-                            disabled={!horariosSeleccionados[dia]?.hora_inicio}
-                          >
-                            <option value="">Seleccionar</option>
-                            {getOpcionesHoraFinPorDia(dia).map((hora) => (
-                              <option key={hora} value={hora}>
-                                {hora?.slice(0, 5)}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                      {horariosSeleccionados[dia]?.hora_inicio && horariosSeleccionados[dia]?.hora_fin && (
-                        <div className="mt-2 space-y-1">
-                          <p className="text-xs text-gray-500">
-                            Duración: {((new Date(`1970-01-01T${horariosSeleccionados[dia].hora_fin}`) - 
-                                        new Date(`1970-01-01T${horariosSeleccionados[dia].hora_inicio}`)) / 
-                                       (1000 * 60 * 60))} hora(s)
-                          </p>
-                          {!rangoValido && (
-                            <p className="text-xs text-red-600 bg-red-100 p-1 rounded">
-                              ⚠ Este horario no está disponible para {dia}. 
-                              Selecciona un horario de los disponibles arriba.
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            <div className="flex items-center mt-2 sm:col-span-2">
-              <input
-                type="checkbox"
-                name="activa"
-                checked={formClasesFijas.activa}
-                onChange={handleClasesFijasChange}
-                className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-              />
-              <label className="ml-2 block text-sm font-medium text-gray-700">
-                Activa
-              </label>
-            </div>
-          </div>
-          <div className="mt-4 flex justify-end">
-            <button
-              type="button"
-              onClick={() => setShowClasesFijas(false)}
-              className="mr-4 inline-flex items-center px-3 py-2 border border-gray-300 rounded-[6px] shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-              disabled={isSaving}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="inline-flex items-center px-3 py-2 border border-transparent rounded-[6px] shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-              disabled={isSaving || 
-                !deporteIdFijas || 
-                !formClasesFijas.cancha_id ||
-                formClasesFijas.dias_semana.length === 0 ||
-                !formClasesFijas.dias_semana.every(dia => {
-                  const horarios = horariosSeleccionados[dia];
-                  return horarios?.hora_inicio && horarios?.hora_fin;
-                })
-              }
-            >
-              {isSaving ? "Creando..." : "Crear Clases Fijas"}
-            </button>
-          </div>
-        </form>
+          <FormClasesFijas
+            formClasesFijas={formClasesFijas}
+            setFormClasesFijas={setFormClasesFijas}
+            handleClasesFijasChange={handleClasesFijasChange}
+            handleSubmitClasesFijas={handleSubmitClasesFijas}
+            validationErrors={validationErrors}
+            isSaving={isSaving}
+            profesores={profesores}
+            canchasFiltradasFijas={canchasFiltradasFijas}
+            deporteIdFijas={deporteIdFijas}
+            deportes={deportes}
+            setDeporteIdFijas={setDeporteIdFijas}
+            horariosExtremosFijas={horariosExtremosFijas}
+            diasSemana={diasSemana}
+            horariosPorDia={horariosPorDia}
+            horariosSeleccionados={horariosSeleccionados}
+            handleHorarioChange={handleHorarioChange}
+            getOpcionesHoraInicioPorDia={getOpcionesHoraInicioPorDia}
+            getOpcionesHoraFinPorDia={getOpcionesHoraFinPorDia}
+            getHorariosDisponiblesPorDia={getHorariosDisponiblesPorDia}
+            showClasesFijas={showClasesFijas}
+            setShowClasesFijas={setShowClasesFijas}
+            validarRangoCompleto={validarRangoCompleto}
+          />
       )}
 
       {/* Checkbox para alternar vista */}
@@ -1336,300 +850,34 @@ const PestanaClases = () => {
               {/* Vista individual */}
               {mostrarIndividuales ? (
                 clases.map((clase) => (
-                  <li key={clase.id} className="bg-white rounded-xl shadow border border-gray-200 p-6 flex flex-col gap-2">
-                    <div className="w-full justify-between flex items-center">               
-                      <div className="flex items-center gap-3 mb-1">
-                        <div className="bg-blue-100 rounded-full p-3">
-                          <Users className="h-7 w-7 text-blue-600" />
-                        </div>
-                        <div className="flex flex-col">
-                          <div className="flex items-center">
-                            <span className="text-lg capitalize font-semibold text-gray-900">
-                              {clase.nombre}
-                            </span>
-                            {clase.activa && (
-                              <span className="ml-2 px-2 py-0.5 bg-gray-200 text-gray-700 text-xs rounded-full font-semibold">
-                                Activa
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-gray-600 text-sm mb-2">{clase.descripcion}</div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 items-center">
-                        <button
-                          onClick={() => handleEditClase(clase)}
-                          className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200"
-                          title="Editar"
-                        >
-                          <Edit2 className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClase(clase)}
-                          className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200"
-                          title="Eliminar"
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </button>
-                        <button
-                          className="p-2 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-                          title="Ver detalles"
-                        >
-                          <Eye className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 mt-4 md:grid-cols-4 gap-2 text-sm mb-6">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-gray-400" />
-                        <span className="flex-col flex">
-                          <span className=" text-gray-500">Fecha inicio:</span>{" "}
-                          <span className="font-medium capitalize">{clase.fecha_inicio && format(parseISO(clase.fecha_inicio), "EEEE, dd/MM/yyyy", { locale: es })}</span>
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-400" />
-                        <span className="flex-col flex">
-                          <span className=" text-gray-500">Horario:</span>{" "}
-                          <span className="font-medium">
-                            {clase.horarios && clase.horarios.length > 0
-                              ? `${clase.horarios[0].hora_inicio.slice(0,5)} - ${clase.horarios[clase.horarios.length-1].hora_fin.slice(0,5)}`
-                              : "-"}
-                          </span>
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-gray-400" />
-                        <span className="flex-col flex">
-                          <span className=" text-gray-500">Cancha:</span>{" "}
-                          <span className="font-medium">
-                            {clase.cancha?.nro ? `Cancha ${clase.cancha.nro}` : clase.cancha?.nombre}
-                          </span>
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-gray-400" />
-                        <span className="flex-col flex">
-                          <span className=" text-gray-500">Profesor:</span>{" "}
-                          <span className="font-medium">{clase.profesor?.nombre} {clase.profesor?.apellido}</span>
-                        </span>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-2 text-sm mb-2">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-gray-400" />
-                        <span className="flex-col flex">
-                          <span className=" text-gray-500">Cupo máximo:</span>{" "}
-                          <span className="font-medium">{clase.cupo_maximo}</span>
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-gray-400" />
-                        <span className="flex-col flex">
-                          <span className=" text-gray-500">Precio mensual:</span>{" "}
-                          <span className="font-medium">${clase.precio_mensual}</span>
-                        </span>
-                      </div>
-                    </div>
-                  </li>
+                  <TarjetaClase
+                    key={clase.id}
+                    clase={clase}
+                    handleEditClase={handleEditClase}
+                    handleDeleteClase={handleDeleteClase}
+                  />
                 ))
               ) : (
                 <>
                   {/* Clases únicas */}
                   {clases.filter(c => c.tipo !== 'fija').map((clase) => (
-                    <li key={clase.id} className="bg-white rounded-xl shadow border border-gray-200 p-6 flex flex-col gap-2">
-                      <div className="w-full justify-between flex items-center">               
-                        <div className="flex items-center gap-3 mb-1">
-                          <div className="bg-blue-100 rounded-full p-3">
-                            <Users className="h-7 w-7 text-blue-600" />
-                          </div>
-                          <div className="flex flex-col">
-                            <div className="flex items-center">
-                              <span className="text-lg capitalize font-semibold text-gray-900">
-                                {clase.nombre}
-                              </span>
-                              {clase.activa && (
-                                <span className="ml-2 px-2 py-0.5 bg-gray-200 text-gray-700 text-xs rounded-full font-semibold">
-                                  Activa
-                                </span>
-                              )}
-                            </div>
-                            
-                            <div className="text-gray-600 text-sm mb-2">{clase.descripcion}</div>
-                          </div>
-                        </div>
-                        <div className="flex gap-2 items-center">
-                          <button
-                            onClick={() => handleEditClase(clase)}
-                            className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200"
-                            title="Editar"
-                          >
-                            <Edit2 className="h-5 w-5" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteClase(clase)}
-                            className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200"
-                            title="Eliminar"
-                          >
-                            <Trash2 className="h-5 w-5" />
-                          </button>
-                          <button
-                            className="p-2 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-                            title="Ver detalles"
-                          >
-                            <Eye className="h-5 w-5" />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 mt-4 md:grid-cols-4 gap-2 text-sm mb-6">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-gray-400" />
-                          <span className="flex-col flex">
-                            <span className=" text-gray-500">Fecha inicio:</span>{" "}
-                            <span className="font-medium capitalize">{clase.fecha_inicio && format(parseISO(clase.fecha_inicio), "EEEE, dd/MM/yyyy", { locale: es })}</span>
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-gray-400" />
-                          <span className="flex-col flex">
-                            <span className=" text-gray-500">Horario:</span>{" "}
-                            <span className="font-medium">
-                              {clase.horarios && clase.horarios.length > 0
-                                ? `${clase.horarios[0].hora_inicio.slice(0,5)} - ${clase.horarios[clase.horarios.length-1].hora_fin.slice(0,5)}`
-                                : "-"}
-                            </span>
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-gray-400" />
-                          <span className="flex-col flex">
-                            <span className=" text-gray-500">Cancha:</span>{" "}
-                            <span className="font-medium">
-                              {clase.cancha?.nro ? `Cancha ${clase.cancha.nro}` : clase.cancha?.nombre}
-                            </span>
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4 text-gray-400" />
-                          <span className="flex-col flex">
-                            <span className=" text-gray-500">Profesor:</span>{" "}
-                            <span className="font-medium">{clase.profesor?.nombre} {clase.profesor?.apellido}</span>
-                          </span>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 text-sm mb-2">
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4 text-gray-400" />
-                          <span className="flex-col flex">
-                            <span className=" text-gray-500">Cupo máximo:</span>{" "}
-                            <span className="font-medium">{clase.cupo_maximo}</span>
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="h-4 w-4 text-gray-400" />
-                          <span className="flex-col flex">
-                            <span className=" text-gray-500">Precio mensual:</span>{" "}
-                            <span className="font-medium">${clase.precio_mensual}</span>
-                          </span>
-                        </div>
-                      </div>
-                    </li>
+                    <TarjetaClase
+                      key={clase.id}
+                      clase={clase}
+                      handleEditClase={handleEditClase}
+                      handleDeleteClase={handleDeleteClase}
+                    />
                   ))}
                   {/* Clases fijas agrupadas */}
                   {agruparClasesFijas(clases).map((grupo, idx) => {
                     const clase = grupo[0];
-                    // Agrupar por día de la semana y horario (solo mostrar una vez cada combinación)
-                    const diasHorariosUnicos = [];
-                    const diasSet = new Set();
-                    grupo.forEach(c => {
-                      if (c.horarios && c.horarios.length > 0) {
-                        // Ordenar horarios por hora_inicio
-                        const horariosOrdenados = [...c.horarios].sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio));
-                        const primerHorario = horariosOrdenados[0];
-                        const ultimoHorario = horariosOrdenados[horariosOrdenados.length - 1];
-                        const dia = format(parseISO(c.fecha_inicio), "EEEE", { locale: es });
-                        const key = `${dia}-${primerHorario.hora_inicio}-${ultimoHorario.hora_fin}`;
-                        if (!diasSet.has(key)) {
-                          diasSet.add(key);
-                          diasHorariosUnicos.push({
-                            dia,
-                            hora_inicio: primerHorario.hora_inicio.slice(0,5),
-                            hora_fin: ultimoHorario.hora_fin.slice(0,5)
-                          });
-                        }
-                      }
-                    });
-
                     return (
-                      <li key={idx} className="bg-white rounded-xl shadow border border-gray-200 p-6 flex flex-col gap-2">
-                        <div className="flex items-center gap-3 mb-1">
-                          <div className="bg-blue-100 rounded-full p-3">
-                            <Users className="h-7 w-7 text-blue-600" />
-                          </div>
-                          <div>
-                            <span className="text-lg capitalize font-semibold text-gray-900">{clase.nombre}</span>
-                            {clase.activa && (
-                              <span className="ml-2 px-2 py-0.5 bg-gray-200 text-gray-700 text-xs rounded-full font-semibold">
-                                Activa
-                              </span>
-                            )}
-                            <div className="text-gray-600 text-sm mb-2">{clase.descripcion}</div>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 mt-4 md:grid-cols-4 gap-2 text-sm mb-6">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-gray-400" />
-                            <span className="flex-col flex">
-                              <span className=" text-gray-500">Cancha:</span>{" "}
-                              <span className="font-medium">
-                                {clase.cancha?.nro ? `Cancha ${clase.cancha.nro}` : clase.cancha?.nombre}
-                              </span>
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-gray-400" />
-                            <span className="flex-col flex">
-                              <span className=" text-gray-500">Profesor:</span>{" "}
-                              <span className="font-medium">{clase.profesor?.nombre} {clase.profesor?.apellido}</span>
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Users className="h-4 w-4 text-gray-400" />
-                            <span className="flex-col flex">
-                              <span className=" text-gray-500">Cupo máximo:</span>{" "}
-                              <span className="font-medium">{clase.cupo_maximo}</span>
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <DollarSign className="h-4 w-4 text-gray-400" />
-                            <span className="flex-col flex">
-                              <span className=" text-gray-500">Precio mensual:</span>{" "}
-                              <span className="font-medium">${clase.precio_mensual}</span>
-                            </span>
-                          </div>
-                        </div>
-                        {/* Horarios por día, solo una vez por combinación */}
-                        <div className="mt-2">
-                          <span className="font-medium text-gray-700">Días y horarios:</span>
-                          <ul className="mt-1 space-y-1">
-                            {diasHorariosUnicos.map((dh, i) => (
-                              <li key={i} className="text-sm text-gray-700">
-                                <span className="font-semibold capitalize">{dh.dia}:</span>{" "}
-                                {`${dh.hora_inicio} - ${dh.hora_fin}`}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                        {/* Botón eliminar grupo */}
-                        <button
-                          onClick={() => handleDeleteGrupoClasesFijas(grupo)}
-                          className="ml-auto p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200"
-                          title="Eliminar grupo"
-                          disabled={isSaving}
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </button>
-                      </li>
+                      <TarjetaGrupoClasesFijas
+                        key={idx}
+                        grupo={grupo}
+                        handleDeleteGrupoClasesFijas={handleDeleteGrupoClasesFijas}
+                        isSaving={isSaving}
+                      />
                     );
                   })}
                 </>

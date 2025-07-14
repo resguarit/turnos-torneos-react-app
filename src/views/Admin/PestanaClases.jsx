@@ -674,6 +674,29 @@ const PestanaClases = () => {
   // Nueva funcionalidad: mostrar clases fijas individualmente
   const [mostrarIndividuales, setMostrarIndividuales] = useState(false);
 
+  // Eliminar agrupado de clases fijas
+ const handleDeleteGrupoClasesFijas = async (grupo) => {
+  // Solo considerar los IDs que siguen existiendo en el estado actual
+  const idsActuales = grupo
+    .map(c => c.id)
+    .filter(id => clases.some(clase => clase.id === id));
+  if (idsActuales.length === 0) {
+    toast.info("No hay clases fijas actuales para eliminar en este grupo.");
+    return;
+  }
+  console.log('IDs a eliminar:', idsActuales);
+  setIsSaving(true);
+  try {
+    await api.post('/clases/delete-many', { ids: idsActuales });
+    setClases(prev => prev.filter(c => !idsActuales.includes(c.id)));
+    toast.success("Clases fijas eliminadas correctamente");
+  } catch (error) {
+    toast.error("Error al eliminar el grupo de clases fijas");
+  } finally {
+    setIsSaving(false);
+  }
+};
+
   // Agrupa clases fijas por nombre, profesor, cancha, cupo, precio, etc.
   const agruparClasesFijas = (clases) => {
     const fijas = clases.filter(c => c.tipo === 'fija');
@@ -1603,6 +1626,15 @@ const PestanaClases = () => {
                             ))}
                           </ul>
                         </div>
+                        {/* Botón eliminar grupo */}
+                        <button
+                          onClick={() => handleDeleteGrupoClasesFijas(grupo)}
+                          className="ml-auto p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200"
+                          title="Eliminar grupo"
+                          disabled={isSaving}
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
                       </li>
                     );
                   })}

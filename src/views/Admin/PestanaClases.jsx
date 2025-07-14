@@ -11,6 +11,7 @@ import FormClaseUnica from "../../components/PanelAdmin/Clases/FormClaseUnica";
 import FormClasesFijas from "../../components/PanelAdmin/Clases/FormClasesFijas";
 import TarjetaClase from "../../components/PanelAdmin/Clases/TarjetaClase";
 import TarjetaGrupoClasesFijas from "../../components/PanelAdmin/Clases/TarjetaGrupoClasesFijas";
+import ConfirmDeleteModal from "./Modals/ConfirmDeleteModal";
 
 
 const PestanaClases = () => {
@@ -24,8 +25,10 @@ const PestanaClases = () => {
   const [editando, setEditando] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteModalInd, setShowDeleteModalInd] = useState(false);
+  const [showDeleteModalMany, setShowDeleteModalMany] = useState(false);
   const [claseToDelete, setClaseToDelete] = useState(null);
+  const [grupoToDelete, setGrupoToDelete] = useState(null);
   const [deporteId, setDeporteId] = useState('');
   const [horariosExtremos, setHorariosExtremos] = useState([]);
 
@@ -251,7 +254,12 @@ const PestanaClases = () => {
 
   const handleDeleteClase = (clase) => {
     setClaseToDelete(clase);
-    setShowDeleteModal(true);
+    setShowDeleteModalInd(true);
+  };
+
+  const openModalDeleteMany = (grupo) => {
+    setGrupoToDelete(grupo); // Guarda el grupo a eliminar
+    setShowDeleteModalMany(true);
   };
 
   const confirmDeleteClase = async () => {
@@ -264,7 +272,7 @@ const PestanaClases = () => {
       toast.error("Error al eliminar la clase");
     } finally {
       setIsSaving(false);
-      setShowDeleteModal(false);
+      setShowDeleteModalInd(false);
       setClaseToDelete(null);
     }
   };
@@ -663,27 +671,28 @@ const PestanaClases = () => {
   const [mostrarIndividuales, setMostrarIndividuales] = useState(false);
 
   // Eliminar agrupado de clases fijas
- const handleDeleteGrupoClasesFijas = async (grupo) => {
-  // Solo considerar los IDs que siguen existiendo en el estado actual
-  const idsActuales = grupo
-    .map(c => c.id)
-    .filter(id => clases.some(clase => clase.id === id));
-  if (idsActuales.length === 0) {
-    toast.info("No hay clases fijas actuales para eliminar en este grupo.");
-    return;
-  }
-  console.log('IDs a eliminar:', idsActuales);
-  setIsSaving(true);
-  try {
-    await api.post('/clases/delete-many', { ids: idsActuales });
-    setClases(prev => prev.filter(c => !idsActuales.includes(c.id)));
-    toast.success("Clases fijas eliminadas correctamente");
-  } catch (error) {
-    toast.error("Error al eliminar el grupo de clases fijas");
-  } finally {
-    setIsSaving(false);
-  }
-};
+  const handleDeleteGrupoClasesFijas = async (grupo) => {
+    if (!grupo) return;
+    const idsActuales = grupo
+      .map(c => c.id)
+      .filter(id => clases.some(clase => clase.id === id));
+    if (idsActuales.length === 0) {
+      toast.info("No hay clases fijas actuales para eliminar en este grupo.");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await api.post('/clases/delete-many', { ids: idsActuales });
+      setClases(prev => prev.filter(c => !idsActuales.includes(c.id)));
+      toast.success("Clases fijas eliminadas correctamente");
+    } catch (error) {
+      toast.error("Error al eliminar el grupo de clases fijas");
+    } finally {
+      setIsSaving(false);
+      setShowDeleteModalMany(false);
+      setGrupoToDelete(null);
+    }
+  };
 
   // Agrupa clases fijas por nombre, profesor, cancha, cupo, precio, etc.
   const agruparClasesFijas = (clases) => {
@@ -875,7 +884,7 @@ const PestanaClases = () => {
                       <TarjetaGrupoClasesFijas
                         key={idx}
                         grupo={grupo}
-                        handleDeleteGrupoClasesFijas={handleDeleteGrupoClasesFijas}
+                        handleDeleteGrupoClasesFijas={() => openModalDeleteMany(grupo)}
                         isSaving={isSaving}
                       />
                     );
@@ -888,40 +897,48 @@ const PestanaClases = () => {
       )}
 
       {/* Modal de confirmación de eliminación */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-[8px] shadow-lg w-[90%] max-w-md">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">
-              Confirmar Eliminación
-            </h2>
-            <p className="text-gray-600 mb-2">
-              ¿Estás seguro de que deseas eliminar la clase?
-            </p>
-            <div className="font-semibold mb-2 text-center text-gray-900 bg-gray-50 px-3 py-2 rounded-[8px] border">
-              "{claseToDelete?.nombre}"
-            </div>
-            <p className="text-red-600">Esta acción no se puede deshacer.</p>
-            <div className="flex mt-6 justify-end gap-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="px-3 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={confirmDeleteClase}
-                disabled={isSaving}
-                className={`px-3 py-2 capitalize text-white rounded ${
-                  isSaving
-                    ? "bg-red-400 cursor-not-allowed"
-                    : "bg-red-600 hover:bg-red-700"
-                }`}
-              >
-                {isSaving ? "Eliminando..." : "Eliminar"}
-              </button>
-            </div>
-          </div>
-        </div>
+      {showDeleteModalInd && (
+        <ConfirmDeleteModal
+        isOpen={showDeleteModalInd}
+        onClose={() => {
+          setShowDeleteModalInd(false);
+          setClaseToDelete(null);
+        }}
+        onConfirm={confirmDeleteClase}
+        loading={isSaving}
+        accionTitulo="Eliminación"
+        accion="eliminar"
+        pronombre="la"
+        entidad="clase"
+        accionando="Eliminando"
+        nombreElemento={
+          claseToDelete
+            ? `${claseToDelete.nombre} (${claseToDelete.fecha_incio})`
+            : ""
+        }
+        />
+      )}
+
+      {showDeleteModalMany && (
+        <ConfirmDeleteModal
+          isOpen={showDeleteModalMany}
+          onClose={() => {
+            setShowDeleteModalMany(false);
+            setGrupoToDelete(null);
+          }}
+          onConfirm={() => handleDeleteGrupoClasesFijas(grupoToDelete)}
+          loading={isSaving}
+          accionTitulo="Eliminación"
+          accion="eliminar"
+          pronombre="el grupo de"
+          entidad="clases fijas"
+          accionando="Eliminando"
+          nombreElemento={
+            grupoToDelete && grupoToDelete[0]
+              ? grupoToDelete[0].nombre
+              : ""
+          }
+        />
       )}
     </div>
   );

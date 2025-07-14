@@ -1521,6 +1521,28 @@ const PestanaClases = () => {
                   {/* Clases fijas agrupadas */}
                   {agruparClasesFijas(clases).map((grupo, idx) => {
                     const clase = grupo[0];
+                    // Agrupar por día de la semana y horario (solo mostrar una vez cada combinación)
+                    const diasHorariosUnicos = [];
+                    const diasSet = new Set();
+                    grupo.forEach(c => {
+                      if (c.horarios && c.horarios.length > 0) {
+                        // Ordenar horarios por hora_inicio
+                        const horariosOrdenados = [...c.horarios].sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio));
+                        const primerHorario = horariosOrdenados[0];
+                        const ultimoHorario = horariosOrdenados[horariosOrdenados.length - 1];
+                        const dia = format(parseISO(c.fecha_inicio), "EEEE", { locale: es });
+                        const key = `${dia}-${primerHorario.hora_inicio}-${ultimoHorario.hora_fin}`;
+                        if (!diasSet.has(key)) {
+                          diasSet.add(key);
+                          diasHorariosUnicos.push({
+                            dia,
+                            hora_inicio: primerHorario.hora_inicio.slice(0,5),
+                            hora_fin: ultimoHorario.hora_fin.slice(0,5)
+                          });
+                        }
+                      }
+                    });
+
                     return (
                       <li key={idx} className="bg-white rounded-xl shadow border border-gray-200 p-6 flex flex-col gap-2">
                         <div className="flex items-center gap-3 mb-1">
@@ -1569,16 +1591,14 @@ const PestanaClases = () => {
                             </span>
                           </div>
                         </div>
-                        {/* Horarios por día */}
+                        {/* Horarios por día, solo una vez por combinación */}
                         <div className="mt-2">
                           <span className="font-medium text-gray-700">Días y horarios:</span>
                           <ul className="mt-1 space-y-1">
-                            {grupo.map((c) => (
-                              <li key={c.id} className="text-sm text-gray-700">
-                                <span className="font-semibold capitalize">{format(parseISO(c.fecha_inicio), "EEEE", { locale: es })}:</span>{" "}
-                                {c.horarios && c.horarios.length > 0
-                                  ? `${c.horarios[0].hora_inicio.slice(0,5)} - ${c.horarios[c.horarios.length-1].hora_fin.slice(0,5)}`
-                                  : "-"}
+                            {diasHorariosUnicos.map((dh, i) => (
+                              <li key={i} className="text-sm text-gray-700">
+                                <span className="font-semibold capitalize">{dh.dia}:</span>{" "}
+                                {`${dh.hora_inicio} - ${dh.hora_fin}`}
                               </li>
                             ))}
                           </ul>

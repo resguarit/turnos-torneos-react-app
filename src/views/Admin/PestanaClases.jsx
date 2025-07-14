@@ -721,6 +721,16 @@ const PestanaClases = () => {
     return Object.values(grupos);
   };
 
+  // Filtrar canchas por deporte seleccionado
+  const canchasFiltradas = deporteId
+    ? canchas.filter(c => c.deporte_id === parseInt(deporteId))
+    : [];
+
+  // Filtrar canchas para clases fijas
+  const canchasFiltradasFijas = deporteIdFijas
+    ? canchas.filter(c => c.deporte_id === parseInt(deporteIdFijas))
+    : [];
+
   return (
     <div className="max-w-7xl mx-auto mt-4">
       <ToastContainer position="top-right" />
@@ -896,9 +906,10 @@ const PestanaClases = () => {
                   validationErrors.cancha_id ? "border-red-500 text-red-500" : ""
                 }`}
                 required
+                disabled={!deporteId} // Deshabilitado si no hay deporte seleccionado
               >
                 <option value="">Seleccionar cancha</option>
-                {canchas.map((c) => (
+                {canchasFiltradas.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.nro ? `Cancha ${c.nro}` : c.nombre}
                   </option>
@@ -1103,9 +1114,10 @@ const PestanaClases = () => {
                 onChange={handleClasesFijasChange}
                 className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded"
                 required
+                disabled={!deporteIdFijas} // Deshabilitado si no hay deporte seleccionado
               >
                 <option value="">Seleccionar cancha</option>
-                {canchas.map((c) => (
+                {canchasFiltradasFijas.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.nro ? `Cancha ${c.nro}` : c.nombre}
                   </option>

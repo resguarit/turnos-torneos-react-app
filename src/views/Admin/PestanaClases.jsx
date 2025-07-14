@@ -194,6 +194,12 @@ const PestanaClases = () => {
   };
 
   const handleAddClase = () => {
+    // Si el formulario ya está abierto, lo cierra
+    if (showForm) {
+      setShowForm(false);
+      setEditando(null);
+      return;
+    }
     setShowForm(true);
     setEditando(null);
     setFormClase({
@@ -211,6 +217,15 @@ const PestanaClases = () => {
     setDeporteId('');
     setHoraInicio('');
     setHoraFin('');
+  };
+
+  const handleToggleClasesFijas = () => {
+    // Si el formulario ya está abierto, lo cierra
+    if (showClasesFijas) {
+      setShowClasesFijas(false);
+      return;
+    }
+    setShowClasesFijas(true);
   };
 
   const handleEditClase = (clase) => {
@@ -263,30 +278,19 @@ const PestanaClases = () => {
     setIsSaving(true);
     setValidationErrors({});
     try {
-      // Obtener el día de la semana en minúsculas
       const dia = getDiaSemanaBackend(formClase.fecha);
-
-      // Buscar horarios activos en el rango seleccionado
       const diaBackend = dia.charAt(0).toUpperCase() + dia.slice(1);
       const horariosDelDia = horariosPorDia[diaBackend] || [];
-      const horaInicioStr = horaInicio.slice(0,5); // "18:00:00" -> "18:00"
+      const horaInicioStr = horaInicio.slice(0,5);
       const horaFinStr = horaFin.slice(0,5);
 
+      // Siempre enviar array de horarios_id
       const horariosEnRango = horariosDelDia.filter(h =>
         h.hora_inicio >= `${horaInicioStr}:00` && h.hora_fin <= `${horaFinStr}:00`
       );
+      const horarios_id = horariosEnRango.map(h => h.id); // SIEMPRE array
 
-      let horario_id = null;
-      let horario_ids = null;
-      let duracion = horariosEnRango.length;
-
-      if (duracion === 1) {
-        horario_id = horariosEnRango[0].id;
-        horario_ids = null;
-      } else if (duracion > 1) {
-        horario_id = null;
-        horario_ids = horariosEnRango.map(h => h.id);
-      }
+      const duracion = horarios_id.length;
 
       // Construir el objeto a enviar
       const dataToSend = {
@@ -305,8 +309,7 @@ const PestanaClases = () => {
         hora_inicio: horaInicioStr,
         hora_fin: horaFinStr,
         duracion,
-        horario_id,
-        horario_ids,
+        horarios_id, // <-- SIEMPRE array, aunque sea uno solo
       };
 
       if (editando) {
@@ -376,20 +379,41 @@ const PestanaClases = () => {
     setValidationErrors({});
     
     try {
-      // Función para formatear hora a H:i (ya está correcta)
       const formatearHora = (hora) => {
         if (!hora) return '';
-        return hora.slice(0, 5); // "14:30:00" -> "14:30"
+        return hora.slice(0, 5);
       };
 
-      // Convertir horariosSeleccionados al formato que espera el backend
-      const diasHorarios = formClasesFijas.dias_semana.map(dia => ({
-        dia: dia, // mantener en minúsculas como espera el backend
-        hora_inicio: formatearHora(horariosSeleccionados[dia]?.hora_inicio),
-        hora_fin: formatearHora(horariosSeleccionados[dia]?.hora_fin)
-      })).filter(item => item.hora_inicio && item.hora_fin);
+      // Para cada día, obtener los horarios_id en el rango seleccionado
+      const diasHorarios = formClasesFijas.dias_semana.map(dia => {
+        const diasMap = {
+          'lunes': 'Lunes',
+          'martes': 'Martes', 
+          'miércoles': 'Miércoles',
+          'jueves': 'Jueves',
+          'viernes': 'Viernes',
+          'sábado': 'Sábado',
+          'domingo': 'Domingo'
+        };
+        const diaBackend = diasMap[dia];
+        const horariosDelDia = horariosPorDia[diaBackend] || [];
+        const horaInicioStr = formatearHora(horariosSeleccionados[dia]?.hora_inicio);
+        const horaFinStr = formatearHora(horariosSeleccionados[dia]?.hora_fin);
 
-      // Preparar datos para enviar - formato correcto según tu backend
+        // Obtener todos los horarios_id en el rango
+        const horarios_id = horariosDelDia
+          .filter(h => h.hora_inicio >= `${horaInicioStr}:00` && h.hora_fin <= `${horaFinStr}:00`)
+          .map(h => h.id);
+
+        return {
+          dia,
+          hora_inicio: horaInicioStr,
+          hora_fin: horaFinStr,
+          horarios_id // <-- SIEMPRE array, aunque sea uno solo
+        };
+      }).filter(item => item.hora_inicio && item.hora_fin);
+
+      // Preparar datos para enviar
       const dataToSend = {
         nombre: formClasesFijas.nombre,
         descripcion: formClasesFijas.descripcion,
@@ -401,10 +425,8 @@ const PestanaClases = () => {
         fecha_inicio: formClasesFijas.fecha_inicio,
         duracion_meses: parseInt(formClasesFijas.duracion_meses),
         deporte_id: parseInt(deporteIdFijas),
-        dias_horarios: diasHorarios,
+        dias_horarios: diasHorarios, // cada item tiene horarios_id array
       };
-
-      console.log('Datos a enviar:', dataToSend);
 
       const res = await api.post("/clases/crear-fijas", dataToSend);
       toast.success("Clases fijas creadas correctamente");
@@ -432,7 +454,6 @@ const PestanaClases = () => {
         setValidationErrors(error.response.data.errors);
         toast.error("Error en la validación");
       } else if (error.response?.data?.errores) {
-        // Manejar errores específicos de horarios
         const erroresTexto = error.response.data.errores.join('\n');
         toast.error(`Errores en horarios:\n${erroresTexto}`);
       } else {
@@ -681,18 +702,18 @@ const PestanaClases = () => {
         <div className="flex gap-2">
         <button
           onClick={handleAddClase}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-[6px] shadow transition-colors duration-200"
+          className="inline-flex items-center px-4 py-2 bg-naranja hover:bg-blue-700 text-white rounded-[6px] shadow transition-colors duration-200"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Añadir Clase
+          Crear Clase Única
         </button>
               {/* Botón para crear clases fijas */}
       <button
-        onClick={() => setShowClasesFijas(true)}
-        className=" inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-[6px] shadow transition-colors duration-200"
+        onClick={handleToggleClasesFijas}
+        className="inline-flex items-center px-4 py-2 bg-naranja hover:bg-blue-700 text-white rounded-[6px] shadow transition-colors duration-200"
       >
         <Plus className="h-4 w-4 mr-2" />
-        Crear Clases Fijas
+        Crear Clase Fija
       </button>
       </div>
       </div>
@@ -703,7 +724,7 @@ const PestanaClases = () => {
           onSubmit={handleSubmit}
           className="mb-6 bg-white p-4 rounded-xl shadow"
         >
-          <h2 className="text-xl font-bold mb-1">
+          <h2 className="text-xl font-semibold mb-1">
             {editando ? "Editar Clase" : "Crear Nueva Clase"}
           </h2>
           <p className="text-sm text-gray-600 mb-4">
@@ -967,7 +988,7 @@ const PestanaClases = () => {
           onSubmit={handleSubmitClasesFijas}
           className="mb-6 bg-white p-4 rounded-xl shadow"
         >
-          <h2 className="text-xl font-bold mb-1">Crear Clases Fijas</h2>
+          <h2 className="text-xl font-semibold mb-1">Crear Clases Fijas</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-gray-700">Nombre</label>
@@ -1307,7 +1328,7 @@ const PestanaClases = () => {
                       <Calendar className="h-4 w-4 text-gray-400" />
                       <span className="flex-col flex">
                         <span className=" text-gray-500">Fecha inicio:</span>{" "}
-                        <span className="font-medium capitalize">{clase.fecha && format(parseISO(clase.fecha), "EEEE, dd/MM/yyyy", { locale: es })}</span>
+                        <span className="font-medium capitalize">{clase.fecha_inicio && format(parseISO(clase.fecha_inicio), "EEEE, dd/MM/yyyy", { locale: es })}</span>
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1332,7 +1353,7 @@ const PestanaClases = () => {
                       <User className="h-4 w-4 text-gray-400" />
                       <span className="flex-col flex">
                         <span className=" text-gray-500">Profesor:</span>{" "}
-                        <span className="font-medium">{clase.profesor?.nombre}</span>
+                        <span className="font-medium">{clase.profesor?.nombre} {clase.profesor?.apellido}</span>
                       </span>
                     </div>
                     </div>

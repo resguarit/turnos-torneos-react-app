@@ -254,6 +254,7 @@ const PestanaClases = () => {
 
   const handleDeleteClase = (clase) => {
     setClaseToDelete(clase);
+    console.log('Clase a eliminar:', clase);
     setShowDeleteModalInd(true);
   };
 
@@ -913,7 +914,9 @@ const PestanaClases = () => {
         accionando="Eliminando"
         nombreElemento={
           claseToDelete
-            ? `${claseToDelete.nombre} (${claseToDelete.fecha_incio})`
+            ? `${claseToDelete.nombre} - ${claseToDelete.fecha_inicio
+                ? format(parseISO(claseToDelete.fecha_inicio), "EEE, dd/MM/yyyy", { locale: es })
+                : ""}`
             : ""
         }
         />

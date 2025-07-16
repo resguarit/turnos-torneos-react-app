@@ -238,18 +238,25 @@ const PestanaClases = () => {
   const handleEditClase = (clase) => {
     setShowForm(true);
     setEditando(clase);
+
+    // Precarga los valores del formulario
     setFormClase({
       nombre: clase.nombre || "",
       descripcion: clase.descripcion || "",
-      fecha: clase.fecha || "",
-      profesor_id: clase.profesor_id || "",
-      cancha_id: clase.cancha_id || "",
-      horario_id: clase.horario_id || "",
+      fecha: clase.fecha_inicio ? clase.fecha_inicio.slice(0,10) : "", // formato yyyy-mm-dd
+      profesor_id: clase.profesor_id ? String(clase.profesor_id) : "",
+      cancha_id: clase.cancha_id ? String(clase.cancha_id) : "",
       cupo_maximo: clase.cupo_maximo || "",
       precio_mensual: clase.precio_mensual || "",
       activa: !!clase.activa,
     });
+
     setValidationErrors({});
+    setDeporteId(clase.deporte_id ? String(clase.deporte_id) : '');
+
+    // Precarga hora inicio y fin si existen
+    setHoraInicio(clase.hora_inicio ? clase.hora_inicio.slice(0,5) : '');
+    setHoraFin(clase.hora_fin ? clase.hora_fin.slice(0,5) : '');
   };
 
   const handleDeleteClase = (clase) => {
@@ -301,9 +308,9 @@ const PestanaClases = () => {
       const horariosEnRango = horariosDelDia.filter(h =>
         h.hora_inicio >= `${horaInicioStr}:00` && h.hora_fin <= `${horaFinStr}:00`
       );
-      const horarios_id = horariosEnRango.map(h => h.id); // SIEMPRE array
+      const horario_ids = horariosEnRango.map(h => h.id); // <-- CAMBIO DE NOMBRE
 
-      const duracion = horarios_id.length;
+      const duracion = horario_ids.length;
 
       // Construir el objeto a enviar
       const dataToSend = {
@@ -313,6 +320,7 @@ const PestanaClases = () => {
         fecha_fin: formClase.fecha,
         profesor_id: parseInt(formClase.profesor_id),
         cancha_id: parseInt(formClase.cancha_id),
+        horario_ids, // <-- CAMBIO DE NOMBRE
         cupo_maximo: parseInt(formClase.cupo_maximo),
         precio_mensual: parseFloat(formClase.precio_mensual),
         activa: formClase.activa,
@@ -322,7 +330,6 @@ const PestanaClases = () => {
         hora_inicio: horaInicioStr,
         hora_fin: horaFinStr,
         duracion,
-        horarios_id, // <-- SIEMPRE array, aunque sea uno solo
       };
 
       if (editando) {

@@ -12,6 +12,7 @@ import FormClasesFijas from "../../components/PanelAdmin/Clases/FormClasesFijas"
 import TarjetaClase from "../../components/PanelAdmin/Clases/TarjetaClase";
 import TarjetaGrupoClasesFijas from "../../components/PanelAdmin/Clases/TarjetaGrupoClasesFijas";
 import ConfirmDeleteModal from "./Modals/ConfirmDeleteModal";
+import CalendarioClases from "../../components/PanelAdmin/Clases/CalendarioClases";
 
 const PestanaClases = () => {
   const { deportes } = useDeportes();
@@ -935,9 +936,8 @@ const PestanaClases = () => {
         )
       ) : (
         // Tab de calendario (solo placeholder por ahora)
-        <div className="flex flex-col items-center justify-center py-16">
-          <span className="text-2xl font-semibold text-blue-600 mb-2">Calendario</span>
-          <span className="text-gray-500">Aquí irá el calendario de clases.</span>
+        <div className="flex flex-col w-full items-center justify-center">
+          <CalendarioClases clases={clases} />
         </div>
       )}
 

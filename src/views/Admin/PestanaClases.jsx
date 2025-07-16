@@ -750,19 +750,18 @@ const PestanaClases = () => {
             placeholder="Buscar por nombre"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full py-1 pl-8 text-sm border border-gray-300 rounded-[8px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full py-1 px-2 text-sm border border-gray-300 rounded-[6px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <Search className="absolute left-2 top-2 h-5 w-5 text-gray-400" />
           <button
             onClick={handleSearch}
-            className="flex items-center px-4 py-2 text-white bg-green-600 rounded-[6px] shadow hover:bg-green-700"
+            className="flex items-center text-sm px-3 py-2 text-white bg-green-600 rounded-[6px] shadow hover:bg-green-700"
           >
-            <Search className="w-5 h-5 mr-1" />
+            <Search className="w-4 h-4 mr-1" />
             Buscar
           </button>
           <button
             onClick={handleClearSearch}
-            className="flex items-center px-4 py-2 text-white bg-red-500 rounded-[6px] shadow hover:bg-red-600"
+            className="flex items-center text-sm px-3 py-2 text-white bg-red-500 rounded-[6px] shadow hover:bg-red-600"
           >
             Limpiar
           </button>
@@ -770,7 +769,7 @@ const PestanaClases = () => {
         <div className="flex gap-2">
         <button
           onClick={handleAddClase}
-          className="inline-flex items-center px-4 py-2 bg-naranja hover:bg-blue-700 text-white rounded-[6px] shadow transition-colors duration-200"
+          className="inline-flex items-center text-sm px-3 py-2 bg-naranja hover:bg-blue-700 text-white rounded-[6px] shadow transition-colors duration-200"
         >
           <Plus className="h-4 w-4 mr-2" />
           Crear Clase Única
@@ -778,7 +777,7 @@ const PestanaClases = () => {
               {/* Botón para crear clases fijas */}
       <button
         onClick={handleToggleClasesFijas}
-        className="inline-flex items-center px-4 py-2 bg-naranja hover:bg-blue-700 text-white rounded-[6px] shadow transition-colors duration-200"
+        className="inline-flex items-center px-3 text-sm py-2 bg-naranja hover:bg-blue-700 text-white rounded-[6px] shadow transition-colors duration-200"
       >
         <Plus className="h-4 w-4 mr-2" />
         Crear Clase Fija

@@ -13,7 +13,6 @@ import TarjetaClase from "../../components/PanelAdmin/Clases/TarjetaClase";
 import TarjetaGrupoClasesFijas from "../../components/PanelAdmin/Clases/TarjetaGrupoClasesFijas";
 import ConfirmDeleteModal from "./Modals/ConfirmDeleteModal";
 
-
 const PestanaClases = () => {
   const { deportes } = useDeportes();
   const [clases, setClases] = useState([]);
@@ -736,6 +735,9 @@ const PestanaClases = () => {
     ? canchas.filter(c => c.deporte_id === parseInt(deporteIdFijas))
     : [];
 
+  // Estado para el tab seleccionado
+  const [tab, setTab] = useState("listado");
+
   return (
     <div className="max-w-7xl mx-auto mt-4">
       <ToastContainer position="top-right" />
@@ -853,54 +855,89 @@ const PestanaClases = () => {
         </label>
       </div>
 
-      {/* Lista de Clases */}
-      {loading ? (
-        <div className="flex justify-center items-center h-[40vh]">
-          <BtnLoading />
+      {/* Tabs centrados */}
+      <div className="flex justify-center mb-6">
+        <div className="inline-flex  rounded-lg overflow-hidden ">
+          <button
+          className={`px-4 py-2 font-medium text-sm ${
+            tab === 'listado'
+              ? 'border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+            onClick={() => setTab("listado")}
+          >
+            Listado de Clases
+          </button>
+          <button
+          className={`px-4 py-2 font-medium text-sm ${
+            tab === 'calendario'
+              ? 'border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+            onClick={() => setTab("calendario")}
+          >
+            Calendario
+          </button>
         </div>
-      ) : (
-        <div>
-          {clases.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">No hay clases registradas.</div>
-          ) : (
-            <ul className="space-y-6">
-              {/* Vista individual */}
-              {mostrarIndividuales ? (
-                clases.map((clase) => (
-                  <TarjetaClase
-                    key={clase.id}
-                    clase={clase}
-                    handleEditClase={handleEditClase}
-                    handleDeleteClase={handleDeleteClase}
-                  />
-                ))
-              ) : (
-                <>
-                  {/* Clases únicas */}
-                  {clases.filter(c => c.tipo !== 'fija').map((clase) => (
+      </div>
+
+      {/* Contenido de los tabs */}
+      {tab === "listado" ? (
+        // ...todo el contenido actual de la lista de clases...
+        loading ? (
+          <div className="flex justify-center items-center h-[40vh]">
+            <BtnLoading />
+          </div>
+        ) : (
+          <div>
+            {clases.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">No hay clases registradas.</div>
+            ) : (
+              <ul className="space-y-6">
+                {/* Vista individual */}
+                {mostrarIndividuales ? (
+                  clases.map((clase) => (
                     <TarjetaClase
                       key={clase.id}
                       clase={clase}
                       handleEditClase={handleEditClase}
                       handleDeleteClase={handleDeleteClase}
                     />
-                  ))}
-                  {/* Clases fijas agrupadas */}
-                  {agruparClasesFijas(clases).map((grupo, idx) => {
-                    const clase = grupo[0];
-                    return (
-                      <TarjetaGrupoClasesFijas
-                        key={idx}
-                        grupo={grupo}
-                        handleDeleteGrupoClasesFijas={() => openModalDeleteMany(grupo)}
-                        isSaving={isSaving}
+                  ))
+                ) : (
+                  <>
+                    {/* Clases únicas */}
+                    {clases.filter(c => c.tipo !== 'fija').map((clase) => (
+                      <TarjetaClase
+                        key={clase.id}
+                        clase={clase}
+                        handleEditClase={handleEditClase}
+                        handleDeleteClase={handleDeleteClase}
                       />
-                    );
-                  })}
-                </>
-              )}
-            </ul>
-          )}
+                    ))}
+                    {/* Clases fijas agrupadas */}
+                    {agruparClasesFijas(clases).map((grupo, idx) => {
+                      const clase = grupo[0];
+                      return (
+                        <TarjetaGrupoClasesFijas
+                          key={idx}
+                          grupo={grupo}
+                          handleDeleteGrupoClasesFijas={() => openModalDeleteMany(grupo)}
+                          isSaving={isSaving}
+                        />
+                      );
+                    })}
+                  </>
+                )}
+              </ul>
+            )}
+          </div>
+        )
+      ) : (
+        // Tab de calendario (solo placeholder por ahora)
+        <div className="flex flex-col items-center justify-center py-16">
+          <span className="text-2xl font-semibold text-blue-600 mb-2">Calendario</span>
+          <span className="text-gray-500">Aquí irá el calendario de clases.</span>
         </div>
       )}
 

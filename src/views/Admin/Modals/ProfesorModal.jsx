@@ -8,7 +8,8 @@ const ProfesorModal = ({
   handleProfesorChange,
   handleCreateProfesor,
   validationErrorsProfesor,
-  isSavingProfesor
+  isSavingProfesor,
+  editando = null
 }) => {
   if (!isOpen) return null;
 
@@ -18,7 +19,7 @@ const ProfesorModal = ({
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <User className="h-5 w-5 text-green-600" />
-            Crear Nuevo Profesor
+            {editando ? 'Editar Profesor' : 'Crear Nuevo Profesor'}
           </h3>
           <button 
             onClick={onClose}
@@ -99,7 +100,7 @@ const ProfesorModal = ({
               name="email"
               value={formProfesor.email}
               onChange={handleProfesorChange}
-              className={` block w-full px-2 py-1 border rounded-[6px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+              className={`block w-full px-2 py-1 border rounded-[6px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
                 validationErrorsProfesor.email ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="ejemplo@email.com"
@@ -119,7 +120,7 @@ const ProfesorModal = ({
               name="telefono"
               value={formProfesor.telefono}
               onChange={handleProfesorChange}
-              className={` block w-full px-2 py-1 border rounded-[6px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+              className={`block w-full px-2 py-1 border rounded-[6px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
                 validationErrorsProfesor.telefono ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="+54 9 11 1234-5678"
@@ -153,7 +154,7 @@ const ProfesorModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm  text-gray-700 bg-gray-200 border border-gray-300 rounded-[6px] hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+              className="px-4 py-2 text-sm text-gray-700 bg-gray-200 border border-gray-300 rounded-[6px] hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
               disabled={isSavingProfesor}
             >
               Cancelar
@@ -163,7 +164,10 @@ const ProfesorModal = ({
               className="px-4 py-2 text-sm text-white bg-green-600 border border-transparent rounded-[6px] hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isSavingProfesor}
             >
-              {isSavingProfesor ? 'Creando...' : 'Crear Profesor'}
+              {isSavingProfesor ? 
+                (editando ? 'Actualizando...' : 'Creando...') : 
+                (editando ? 'Actualizar Profesor' : 'Crear Profesor')
+              }
             </button>
           </div>
         </form>

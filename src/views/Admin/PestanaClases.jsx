@@ -806,20 +806,6 @@ const PestanaClases = () => {
           />
       )}
 
-      {/* Checkbox para alternar vista */}
-      <div className="flex items-center mb-4">
-        <input
-          type="checkbox"
-          checked={mostrarIndividuales}
-          onChange={e => setMostrarIndividuales(e.target.checked)}
-          id="mostrarIndividuales"
-          className="mr-2"
-        />
-        <label htmlFor="mostrarIndividuales" className="text-sm font-medium text-gray-700">
-          Mostrar clases fijas individualmente
-        </label>
-      </div>
-
       {/* Tabs centrados */}
       <div className="flex justify-center mb-6">
         <div className="inline-flex  rounded-lg overflow-hidden ">
@@ -855,6 +841,19 @@ const PestanaClases = () => {
           </div>
         ) : (
           <div>
+                  {/* Checkbox para alternar vista */}
+      <div className="flex items-center mb-4">
+        <input
+          type="checkbox"
+          checked={mostrarIndividuales}
+          onChange={e => setMostrarIndividuales(e.target.checked)}
+          id="mostrarIndividuales"
+          className="mr-2"
+        />
+        <label htmlFor="mostrarIndividuales" className="text-sm font-medium text-gray-700">
+          Mostrar clases fijas individualmente
+        </label>
+      </div>
             {clases.length === 0 ? (
               <div className="text-center text-gray-500 py-8">No hay clases registradas.</div>
             ) : (

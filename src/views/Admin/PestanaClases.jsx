@@ -14,6 +14,7 @@ import TarjetaGrupoClasesFijas from "../../components/PanelAdmin/Clases/TarjetaG
 import ConfirmDeleteModal from "./Modals/ConfirmDeleteModal";
 import CalendarioClases from "../../components/PanelAdmin/Clases/CalendarioClases";
 import TabProfesores from "./TabProfesores"; // NUEVO IMPORT
+import FormEditClasesFijas from "../../components/PanelAdmin/Clases/FormEditClasesFijas";
 
 const PestanaClases = () => {
   // Estados principales
@@ -53,6 +54,26 @@ const PestanaClases = () => {
   // Nuevos estados para horarios por día
   const [horariosPorDia, setHorariosPorDia] = useState({});
   const [horariosSeleccionados, setHorariosSeleccionados] = useState({});
+
+  const [showEditClasesFijas, setShowEditClasesFijas] = useState(false);
+  const [grupoEditando, setGrupoEditando] = useState(null);
+  const [formEditClasesFijas, setFormEditClasesFijas] = useState({
+    nombre: "",
+    descripcion: "",
+    profesor_id: "",
+    cancha_ids: [],
+    cupo_maximo: "",
+    precio_mensual: "",
+    activa: true,
+    fecha_inicio: "",
+    duracion_meses: 1,
+    dias_semana: [],
+    deporte_id: "",
+  });
+  const [deporteIdEditFijas, setDeporteIdEditFijas] = useState('');
+  const [horariosPorDiaEdit, setHorariosPorDiaEdit] = useState({});
+  const [horariosSeleccionadosEdit, setHorariosSeleccionadosEdit] = useState({});
+
 
   // Formulario de clase
   const [formClase, setFormClase] = useState({
@@ -259,6 +280,300 @@ const PestanaClases = () => {
     // Precarga hora inicio y fin si existen
     setHoraInicio(clase.hora_inicio ? clase.hora_inicio.slice(0,5) : '');
     setHoraFin(clase.hora_fin ? clase.hora_fin.slice(0,5) : '');
+  };
+
+  const handleEditGrupoClasesFijas = (grupo) => {
+    if (!grupo || grupo.length === 0) return;
+    
+    const primeraClase = grupo[0];
+    setGrupoEditando(grupo);
+    
+    // Extract current schedule information from the group
+    const diasHorarios = extraerDiasHorariosDelGrupo(grupo);
+    const diasSemana = diasHorarios.map(dh => dh.dia);
+    
+    // Set form data
+    setFormEditClasesFijas({
+      nombre: primeraClase.nombre || "",
+      descripcion: primeraClase.descripcion || "",
+      profesor_id: primeraClase.profesor_id ? String(primeraClase.profesor_id) : "",
+      cancha_ids: primeraClase.cancha_ids || [],
+      cupo_maximo: primeraClase.cupo_maximo || "",
+      precio_mensual: primeraClase.precio_mensual || "",
+      activa: !!primeraClase.activa,
+      fecha_inicio: primeraClase.fecha_inicio ? primeraClase.fecha_inicio.slice(0,10) : "",
+      duracion_meses: 1,
+      dias_semana: diasSemana,
+      deporte_id: primeraClase.deporte_id ? String(primeraClase.deporte_id) : "",
+    });
+    
+    setDeporteIdEditFijas(primeraClase.deporte_id ? String(primeraClase.deporte_id) : "");
+    
+    // Set initial schedule selections
+    const horariosIniciales = {};
+    diasHorarios.forEach(dh => {
+      horariosIniciales[dh.dia] = {
+        hora_inicio: dh.hora_inicio + ":00",
+        hora_fin: dh.hora_fin + ":00"
+      };
+    });
+    setHorariosSeleccionadosEdit(horariosIniciales);
+    
+    setValidationErrors({});
+    setShowEditClasesFijas(true);
+  };
+
+  // NEW: Extract schedule information from a group
+  const extraerDiasHorariosDelGrupo = (grupo) => {
+    const diasHorarios = [];
+    const diasSet = new Set();
+    
+    grupo.forEach(clase => {
+      if (clase.horarios && clase.horarios.length > 0) {
+        const horariosOrdenados = [...clase.horarios].sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio));
+        const primerHorario = horariosOrdenados[0];
+        const ultimoHorario = horariosOrdenados[horariosOrdenados.length - 1];
+        
+        const dia = format(parseISO(clase.fecha_inicio), "EEEE", { locale: es }).toLowerCase();
+        const key = dia;
+        
+        if (!diasSet.has(key)) {
+          diasSet.add(key);
+          diasHorarios.push({
+            dia,
+            hora_inicio: primerHorario.hora_inicio.slice(0,5),
+            hora_fin: ultimoHorario.hora_fin.slice(0,5)
+          });
+        }
+      }
+    });
+    
+    return diasHorarios;
+  };
+
+  // NEW: Handler for edit form changes
+  const handleEditClasesFijasChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    
+    if (name === "dias_semana") {
+      const nuevosDias = checked
+        ? [...formEditClasesFijas.dias_semana, value]
+        : formEditClasesFijas.dias_semana.filter((d) => d !== value);
+      
+      setFormEditClasesFijas((prev) => ({
+        ...prev,
+        dias_semana: nuevosDias,
+      }));
+      
+      if (!checked) {
+        setHorariosSeleccionadosEdit(prev => {
+          const newHorarios = { ...prev };
+          delete newHorarios[value];
+          return newHorarios;
+        });
+      }
+    } else if (name === "cancha_ids") {
+      const canchaId = parseInt(value);
+      const currentIds = formEditClasesFijas.cancha_ids || [];
+      const newIds = checked 
+        ? [...currentIds, canchaId]
+        : currentIds.filter(id => id !== canchaId);
+      
+      setFormEditClasesFijas((prev) => ({
+        ...prev,
+        cancha_ids: newIds,
+      }));
+    } else if (type === "checkbox") {
+      setFormEditClasesFijas((prev) => ({
+        ...prev,
+        [name]: checked,
+      }));
+    } else {
+      setFormEditClasesFijas((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  // NEW: Submit edit form
+  const handleSubmitEditClasesFijas = async (e) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setValidationErrors({});
+    
+    try {
+      const formatearHora = (hora) => {
+        if (!hora) return '';
+        return hora.slice(0, 5);
+      };
+
+      const diasHorarios = formEditClasesFijas.dias_semana.map(dia => {
+        const horaInicioStr = formatearHora(horariosSeleccionadosEdit[dia]?.hora_inicio);
+        const horaFinStr = formatearHora(horariosSeleccionadosEdit[dia]?.hora_fin);
+
+        return {
+          dia,
+          hora_inicio: horaInicioStr,
+          hora_fin: horaFinStr
+        };
+      }).filter(item => item.hora_inicio && item.hora_fin);
+
+      const ids = grupoEditando.map(clase => clase.id);
+
+      const dataToSend = {
+        ids,
+        nombre: formEditClasesFijas.nombre,
+        descripcion: formEditClasesFijas.descripcion,
+        profesor_id: parseInt(formEditClasesFijas.profesor_id),
+        cancha_ids: formEditClasesFijas.cancha_ids?.filter(id => id != null) || [],
+        cupo_maximo: parseInt(formEditClasesFijas.cupo_maximo),
+        precio_mensual: parseFloat(formEditClasesFijas.precio_mensual),
+        activa: formEditClasesFijas.activa,
+        fecha_inicio: formEditClasesFijas.fecha_inicio,
+        duracion_meses: parseInt(formEditClasesFijas.duracion_meses),
+        deporte_id: parseInt(deporteIdEditFijas),
+        dias_horarios: diasHorarios,
+      };
+
+      const response = await api.put("/clases-fijas", dataToSend);
+      
+      if (response.status === 200) {
+        toast.success("Grupo de clases fijas actualizado correctamente");
+        setShowEditClasesFijas(false);
+        setGrupoEditando(null);
+        setDeporteIdEditFijas('');
+        setHorariosPorDiaEdit({});
+        setHorariosSeleccionadosEdit({});
+        setFormEditClasesFijas({
+          nombre: "",
+          descripcion: "",
+          profesor_id: "",
+          cancha_ids: [],
+          cupo_maximo: "",
+          precio_mensual: "",
+          activa: true,
+          fecha_inicio: "",
+          duracion_meses: 1,
+          dias_semana: [],
+          deporte_id: "",
+        });
+        
+        fetchClases();
+      }
+    } catch (error) {
+      console.error('Error al actualizar clases fijas:', error.response?.data);
+      if (error.response?.data?.errors) {
+        setValidationErrors(error.response.data.errors);
+        toast.error("Error en la validación");
+      } else if (error.response?.data?.errores) {
+        const erroresTexto = error.response.data.errores.join('\n');
+        toast.error(`Errores en horarios:\n${erroresTexto}`);
+      } else {
+        toast.error(error.response?.data?.message || "Error al actualizar clases fijas");
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // NEW: Schedule change handler for edit form
+  const handleHorarioChangeEdit = (dia, tipo, valor) => {
+    setHorariosSeleccionadosEdit(prev => ({
+      ...prev,
+      [dia]: {
+        ...prev[dia],
+        [tipo]: valor,
+        ...(tipo === 'hora_inicio' ? { hora_fin: '' } : {})
+      }
+    }));
+  };
+
+  // NEW: Get start time options for edit form
+  const getOpcionesHoraInicioPorDiaEdit = (dia) => {
+    const diasMap = {
+      'lunes': 'Lunes',
+      'martes': 'Martes', 
+      'miércoles': 'Miércoles',
+      'jueves': 'Jueves',
+      'viernes': 'Viernes',
+      'sábado': 'Sábado',
+      'domingo': 'Domingo'
+    };
+    
+    const diaBackend = diasMap[dia];
+    const horariosDelDia = horariosPorDiaEdit[diaBackend] || [];
+    
+    const horasInicio = horariosDelDia
+      .filter(h => h.hora_inicio)
+      .map(h => h.hora_inicio);
+    
+    return [...new Set(horasInicio)].sort();
+  };
+
+  // NEW: Get end time options for edit form
+  const getOpcionesHoraFinPorDiaEdit = (dia) => {
+    const horaInicioSeleccionada = horariosSeleccionadosEdit[dia]?.hora_inicio;
+    if (!horaInicioSeleccionada) return [];
+    
+    const diasMap = {
+      'lunes': 'Lunes',
+      'martes': 'Martes', 
+      'miércoles': 'Miércoles',
+      'jueves': 'Jueves',
+      'viernes': 'Viernes',
+      'sábado': 'Sábado',
+      'domingo': 'Domingo'
+    };
+    
+    const diaBackend = diasMap[dia];
+    const horariosDelDia = horariosPorDiaEdit[diaBackend] || [];
+    
+    const horasFin = horariosDelDia
+      .filter(h => h.hora_fin && h.hora_fin >= horaInicioSeleccionada)
+      .map(h => h.hora_fin);
+    
+    return [...new Set(horasFin)].sort();
+  };
+
+  // NEW: Validate schedule range for edit form
+  const validarRangoCompletoEdit = (dia, horaInicio, horaFin) => {
+    const diasMap = {
+      'lunes': 'Lunes',
+      'martes': 'Martes', 
+      'miércoles': 'Miércoles',
+      'jueves': 'Jueves',
+      'viernes': 'Viernes',
+      'sábado': 'Sábado',
+      'domingo': 'Domingo'
+    };
+    const diaBackend = diasMap[dia];
+    const horariosDelDia = horariosPorDiaEdit[diaBackend] || [];
+    
+    return horariosDelDia.some(h =>
+      h.hora_inicio >= `${horaInicio}:00` && h.hora_fin <= `${horaFin}:00`
+    );
+  };
+
+  // NEW: Get available schedules display for edit form
+  const getHorariosDisponiblesPorDiaEdit = (dia) => {
+    const diasMap = {
+      'lunes': 'Lunes',
+      'martes': 'Martes', 
+      'miércoles': 'Miércoles',
+      'jueves': 'Jueves',
+      'viernes': 'Viernes',
+      'sábado': 'Sábado',
+      'domingo': 'Domingo'
+    };
+    
+    const diaBackend = diasMap[dia];
+    const horariosDelDia = horariosPorDiaEdit[diaBackend] || [];
+    
+    return horariosDelDia
+      .sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio))
+      .map(h => `${h.hora_inicio.slice(0,5)} - ${h.hora_fin.slice(0,5)}`)
+      .join(', ');
   };
 
   const handleDeleteClase = (clase) => {
@@ -765,6 +1080,10 @@ const PestanaClases = () => {
     ? canchas.filter(c => c.deporte_id === parseInt(deporteIdFijas))
     : [];
 
+    const canchasFiltradasEditFijas = deporteIdEditFijas
+    ? canchas.filter(c => c.deporte_id === parseInt(deporteIdEditFijas))
+    : [];
+
   // Función para filtrar clases
   const filtrarClases = (clases, termino, filtro) => {
     if (!termino.trim()) return clases;
@@ -841,6 +1160,42 @@ const PestanaClases = () => {
     setSearchTerm('');
     setCurrentPage(1);
   };
+
+    // NEW: Load schedules for edit form
+  useEffect(() => {
+    const fetchHorariosPorDiasEdit = async () => {
+      if (deporteIdEditFijas && formEditClasesFijas.dias_semana.length > 0) {
+        try {
+          const diasBackend = formEditClasesFijas.dias_semana.map(dia => {
+            const diasMap = {
+              'lunes': 'Lunes',
+              'martes': 'Martes', 
+              'miércoles': 'Miércoles',
+              'jueves': 'Jueves',
+              'viernes': 'Viernes',
+              'sábado': 'Sábado',
+              'domingo': 'Domingo'
+            };
+            return diasMap[dia];
+          });
+
+          const response = await api.post('/horarios/activos-por-dias', {
+            deporte_id: deporteIdEditFijas,
+            dias: diasBackend
+          });
+
+          setHorariosPorDiaEdit(response.data.horarios_por_dia || {});
+        } catch (error) {
+          console.error('Error al cargar horarios para edición:', error);
+          setHorariosPorDiaEdit({});
+        }
+      } else {
+        setHorariosPorDiaEdit({});
+      }
+    };
+
+    fetchHorariosPorDiasEdit();
+  }, [deporteIdEditFijas, formEditClasesFijas.dias_semana]);
 
   return (
     <div className="max-w-7xl mx-auto mt-4">
@@ -956,6 +1311,31 @@ const PestanaClases = () => {
               showClasesFijas={showClasesFijas}
               setShowClasesFijas={setShowClasesFijas}
               validarRangoCompleto={validarRangoCompleto}
+            />
+          )}
+
+           {showEditClasesFijas && (
+            <FormEditClasesFijas
+              formEditClasesFijas={formEditClasesFijas}
+              setFormEditClasesFijas={setFormEditClasesFijas}
+              handleEditClasesFijasChange={handleEditClasesFijasChange}
+              handleSubmitEditClasesFijas={handleSubmitEditClasesFijas}
+              validationErrors={validationErrors}
+              isSaving={isSaving}
+              setShowEditClasesFijas={setShowEditClasesFijas}
+              deporteIdEditFijas={deporteIdEditFijas}
+              setDeporteIdEditFijas={setDeporteIdEditFijas}
+              profesores={profesores}
+              deportes={deportes}
+              canchasFiltradasEditFijas={canchasFiltradasEditFijas}
+              diasSemana={diasSemana}
+              horariosSeleccionadosEdit={horariosSeleccionadosEdit}
+              handleHorarioChangeEdit={handleHorarioChangeEdit}
+              getOpcionesHoraInicioPorDiaEdit={getOpcionesHoraInicioPorDiaEdit}
+              getOpcionesHoraFinPorDiaEdit={getOpcionesHoraFinPorDiaEdit}
+              validarRangoCompletoEdit={validarRangoCompletoEdit}
+              getHorariosDisponiblesPorDiaEdit={getHorariosDisponiblesPorDiaEdit}
+              grupoEditando={grupoEditando}
             />
           )}
         </>
@@ -1074,6 +1454,7 @@ const PestanaClases = () => {
                           <TarjetaGrupoClasesFijas
                             key={`grupo-${idx}`}
                             grupo={item}
+                            handleEditGrupoClasesFijas={handleEditGrupoClasesFijas}
                             handleDeleteGrupoClasesFijas={() => openModalDeleteMany(item)}
                             isSaving={isSaving}
                           />

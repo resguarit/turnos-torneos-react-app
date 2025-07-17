@@ -13,8 +13,10 @@ import TarjetaClase from "../../components/PanelAdmin/Clases/TarjetaClase";
 import TarjetaGrupoClasesFijas from "../../components/PanelAdmin/Clases/TarjetaGrupoClasesFijas";
 import ConfirmDeleteModal from "./Modals/ConfirmDeleteModal";
 import CalendarioClases from "../../components/PanelAdmin/Clases/CalendarioClases";
+import TabProfesores from "./TabProfesores"; // NUEVO IMPORT
 
 const PestanaClases = () => {
+  // Estados principales
   const { deportes } = useDeportes();
   const [clases, setClases] = useState([]);
   const [profesores, setProfesores] = useState([]);
@@ -24,6 +26,8 @@ const PestanaClases = () => {
   const [editando, setEditando] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+
+  // Estados para eliminación
   const [showDeleteModalInd, setShowDeleteModalInd] = useState(false);
   const [showDeleteModalMany, setShowDeleteModalMany] = useState(false);
   const [claseToDelete, setClaseToDelete] = useState(null);
@@ -71,7 +75,7 @@ const PestanaClases = () => {
     nombre: "",
     descripcion: "",
     profesor_id: "",
-    cancha_ids: [], // CAMBIO: usar cancha_ids como array
+    cancha_ids: [],
     cupo_maximo: "",
     precio_mensual: "",
     activa: true,
@@ -91,6 +95,9 @@ const PestanaClases = () => {
     { value: "sábado", label: "Sábado" },
     { value: "domingo", label: "Domingo" },
   ];
+
+  // NUEVO: Estado para el tab seleccionado
+  const [tab, setTab] = useState("listado");
 
   useEffect(() => {
     fetchClases();
@@ -649,7 +656,7 @@ const PestanaClases = () => {
       .join(', ');
   };
 
-  // Helper para obtener el día de la semana en formato backend
+  // Función para obtener el día de la semana en formato backend
   const getDiaSemanaBackend = (fecha) => {
     if (!fecha) return '';
     // Asegura formato yyyy-mm-dd
@@ -758,9 +765,6 @@ const PestanaClases = () => {
     ? canchas.filter(c => c.deporte_id === parseInt(deporteIdFijas))
     : [];
 
-  // Estado para el tab seleccionado
-  const [tab, setTab] = useState("listado");
-
   // Función para filtrar clases
   const filtrarClases = (clases, termino, filtro) => {
     if (!termino.trim()) return clases;
@@ -844,7 +848,7 @@ const PestanaClases = () => {
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4 justify-between items-center">
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={handleAddClase}
             className="inline-flex items-center text-sm px-3 py-2 bg-naranja hover:bg-blue-700 text-white rounded-[6px] shadow transition-colors duration-200"
@@ -861,119 +865,134 @@ const PestanaClases = () => {
           </button>
         </div>
 
-        {/* Buscador de clases */}
-        <div className="flex gap-2 items-center">
-          <div className="relative">
-            <select
-              value={searchFilter}
-              onChange={(e) => setSearchFilter(e.target.value)}
-              className="text-sm px-2 py-1 border text-gray-800 border-gray-300 rounded-[6px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="nombre">Nombre</option>
-              <option value="profesor">Profesor</option>
-              <option value="cancha">Cancha</option>
-            </select>
-          </div>
-          
-          <div className="relative">
-            <input
-              type="text"
-              placeholder={`Buscar por ${searchFilter}...`}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="text-sm pl-8 pr-8 py-1 border border-gray-300 rounded-[6px] focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
-            />
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            {searchTerm && (
-              <button
-                onClick={limpiarBusqueda}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        {/* Buscador de clases - Solo mostrar en pestaña de listado */}
+        {tab === "listado" && (
+          <div className="flex gap-2 items-center">
+            <div className="relative">
+              <select
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.target.value)}
+                className="text-sm px-2 py-1 border text-gray-800 border-gray-300 rounded-[6px] focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                ×
-              </button>
-            )}
+                <option value="nombre">Nombre</option>
+                <option value="profesor">Profesor</option>
+                <option value="cancha">Cancha</option>
+              </select>
+            </div>
+            
+            <div className="relative">
+              <input
+                type="text"
+                placeholder={`Buscar por ${searchFilter}...`}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="text-sm pl-8 pr-8 py-1 border border-gray-300 rounded-[6px] focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+              />
+              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              {searchTerm && (
+                <button
+                  onClick={limpiarBusqueda}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  ×
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Formulario */}
-      {showForm && (
-        <FormClaseUnica
-          formClase={formClase}
-          setFormClase={setFormClase}
-          handleFormChange={handleFormChange}
-          handleSubmit={handleSubmit}
-          validationErrors={validationErrors}
-          isSaving={isSaving}
-          profesores={profesores}
-          canchasFiltradas={canchasFiltradas}
-          deportes={deportes}
-          deporteId={deporteId}
-          setDeporteId={setDeporteId}
-          horaInicio={horaInicio}
-          setHoraInicio={setHoraInicio}
-          horaFin={horaFin}
-          setHoraFin={setHoraFin}
-          getOpcionesHoraInicioUnica={getOpcionesHoraInicioUnica}
-          getOpcionesHoraFinUnica={getOpcionesHoraFinUnica}
-          showForm={showForm}
-          setShowForm={setShowForm}
-          editando={editando}
-        />
-      )}
+      {/* Formularios - Solo mostrar en pestaña de listado */}
+      {tab === "listado" && (
+        <>
+          {/* Formulario */}
+          {showForm && (
+            <FormClaseUnica
+              formClase={formClase}
+              setFormClase={setFormClase}
+              handleFormChange={handleFormChange}
+              handleSubmit={handleSubmit}
+              validationErrors={validationErrors}
+              isSaving={isSaving}
+              profesores={profesores}
+              canchasFiltradas={canchasFiltradas}
+              deportes={deportes}
+              deporteId={deporteId}
+              setDeporteId={setDeporteId}
+              horaInicio={horaInicio}
+              setHoraInicio={setHoraInicio}
+              horaFin={horaFin}
+              setHoraFin={setHoraFin}
+              getOpcionesHoraInicioUnica={getOpcionesHoraInicioUnica}
+              getOpcionesHoraFinUnica={getOpcionesHoraFinUnica}
+              showForm={showForm}
+              setShowForm={setShowForm}
+              editando={editando}
+            />
+          )}
 
-
-
-      {/* Modal para crear clases fijas */}
-      {showClasesFijas && (
-          <FormClasesFijas
-            formClasesFijas={formClasesFijas}
-            setFormClasesFijas={setFormClasesFijas}
-            handleClasesFijasChange={handleClasesFijasChange}
-            handleSubmitClasesFijas={handleSubmitClasesFijas}
-            validationErrors={validationErrors}
-            isSaving={isSaving}
-            profesores={profesores}
-            canchasFiltradasFijas={canchasFiltradasFijas}
-            deporteIdFijas={deporteIdFijas}
-            deportes={deportes}
-            setDeporteIdFijas={setDeporteIdFijas}
-            horariosExtremosFijas={horariosExtremosFijas}
-            diasSemana={diasSemana}
-            horariosPorDia={horariosPorDia}
-            horariosSeleccionados={horariosSeleccionados}
-            handleHorarioChange={handleHorarioChange}
-            getOpcionesHoraInicioPorDia={getOpcionesHoraInicioPorDia}
-            getOpcionesHoraFinPorDia={getOpcionesHoraFinPorDia}
-            getHorariosDisponiblesPorDia={getHorariosDisponiblesPorDia}
-            showClasesFijas={showClasesFijas}
-            setShowClasesFijas={setShowClasesFijas}
-            validarRangoCompleto={validarRangoCompleto}
-          />
+          {/* Modal para crear clases fijas */}
+          {showClasesFijas && (
+            <FormClasesFijas
+              formClasesFijas={formClasesFijas}
+              setFormClasesFijas={setFormClasesFijas}
+              handleClasesFijasChange={handleClasesFijasChange}
+              handleSubmitClasesFijas={handleSubmitClasesFijas}
+              validationErrors={validationErrors}
+              isSaving={isSaving}
+              profesores={profesores}
+              canchasFiltradasFijas={canchasFiltradasFijas}
+              deporteIdFijas={deporteIdFijas}
+              deportes={deportes}
+              setDeporteIdFijas={setDeporteIdFijas}
+              horariosExtremosFijas={horariosExtremosFijas}
+              diasSemana={diasSemana}
+              horariosPorDia={horariosPorDia}
+              horariosSeleccionados={horariosSeleccionados}
+              handleHorarioChange={handleHorarioChange}
+              getOpcionesHoraInicioPorDia={getOpcionesHoraInicioPorDia}
+              getOpcionesHoraFinPorDia={getOpcionesHoraFinPorDia}
+              getHorariosDisponiblesPorDia={getHorariosDisponiblesPorDia}
+              showClasesFijas={showClasesFijas}
+              setShowClasesFijas={setShowClasesFijas}
+              validarRangoCompleto={validarRangoCompleto}
+            />
+          )}
+        </>
       )}
 
       {/* Tabs centrados */}
       <div className="flex justify-center mb-6">
-        <div className="inline-flex  rounded-lg overflow-hidden ">
+        <div className="inline-flex rounded-lg overflow-hidden border-b border-gray-200">
           <button
-          className={`px-4 py-2 font-medium text-sm ${
-            tab === 'listado'
-              ? 'border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+            className={`px-6 py-2 font-medium text-sm ${
+              tab === 'listado'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
             onClick={() => setTab("listado")}
           >
             Listado de Clases
           </button>
           <button
-          className={`px-4 py-2 font-medium text-sm ${
-            tab === 'calendario'
-              ? 'border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+            className={`px-6 py-2 font-medium text-sm ${
+              tab === 'calendario'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
             onClick={() => setTab("calendario")}
           >
             Calendario
+          </button>
+          <button
+            className={`px-6 py-2 font-medium text-sm ${
+              tab === 'profesores'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+            onClick={() => setTab("profesores")}
+          >
+            Profesores
           </button>
         </div>
       </div>
@@ -1121,58 +1140,66 @@ const PestanaClases = () => {
             )}
           </div>
         )
-      ) : (
+      ) : tab === "calendario" ? (
         // Tab de calendario
         <div className="flex flex-col w-full items-center justify-center">
           <CalendarioClases clases={clases} />
         </div>
+      ) : (
+        // NUEVO: Tab de profesores
+        <TabProfesores />
       )}
 
-      {/* Modal de confirmación de eliminación */}
-      {showDeleteModalInd && (
-        <ConfirmDeleteModal
-        isOpen={showDeleteModalInd}
-        onClose={() => {
-          setShowDeleteModalInd(false);
-          setClaseToDelete(null);
-        }}
-        onConfirm={confirmDeleteClase}
-        loading={isSaving}
-        accionTitulo="Eliminación"
-        accion="eliminar"
-        pronombre="la"
-        entidad="clase"
-        accionando="Eliminando"
-        nombreElemento={
-          claseToDelete
-            ? `${claseToDelete.nombre} - ${claseToDelete.fecha_inicio
-                ? format(parseISO(claseToDelete.fecha_inicio), "EEE, dd/MM/yyyy", { locale: es })
-                : ""}`
-            : ""
-        }
-        />
-      )}
+      {/* Modales de confirmación solo para listado */}
+      {tab === "listado" && (
+        <>
+          {/* Modal de confirmación de eliminación */}
+          {showDeleteModalInd && (
+            <ConfirmDeleteModal
+              isOpen={showDeleteModalInd}
+              onClose={() => {
+                setShowDeleteModalInd(false);
+                setClaseToDelete(null);
+              }}
+              onConfirm={confirmDeleteClase}
+              loading={isSaving}
+              accionTitulo="Eliminación"
+              accion="eliminar"
+              pronombre="la"
+              entidad="clase"
+              accionando="Eliminando"
+              nombreElemento={
+                claseToDelete
+                  ? `${claseToDelete.nombre} - ${claseToDelete.fecha_inicio
+                      ? format(parseISO(claseToDelete.fecha_inicio), "EEE, dd/MM/yyyy", { locale: es })
+                      : ""}`
+                  : ""
+              }
+            />
+          )}
 
-      {showDeleteModalMany && (
-        <ConfirmDeleteModal
-          isOpen={showDeleteModalMany}
-          onClose={() => {
-            setShowDeleteModalMany(false);
-            setGrupoToDelete(null);
-          }}
-          onConfirm={() => handleDeleteGrupoClasesFijas(grupoToDelete)}
-          loading={isSaving}
-          accionTitulo="Eliminación"
-          accion="eliminar"
-          pronombre="el grupo de"
-          entidad="clases fijas"
-          accionando="Eliminando"
-          nombreElemento={
-            grupoToDelete && grupoToDelete[0]
-              ? grupoToDelete[0].nombre
-              : ""
-          }
-        />
+          {showDeleteModalMany && (
+            <ConfirmDeleteModal
+              isOpen={showDeleteModalMany}
+              onClose={() => {
+                setShowDeleteModalMany(false);
+                setGrupoToDelete(null);
+              }}
+              onConfirm={() => handleDeleteGrupoClasesFijas(grupoToDelete)}
+              loading={isSaving}
+              accionTitulo="Eliminación"
+              accion="eliminar"
+              pronombre="el grupo de"
+              entidad="clases fijas"
+              accionando="Eliminando"
+              nombreElemento={
+                grupoToDelete && grupoToDelete[0]
+                  ? grupoToDelete[0].nombre
+                  : ""
+              }
+            />
+          )}
+        </>
       )}
     </div>
   );

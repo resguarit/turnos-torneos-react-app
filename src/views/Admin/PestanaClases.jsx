@@ -35,6 +35,10 @@ const PestanaClases = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchFilter, setSearchFilter] = useState('nombre');
 
+  // Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   // Estados para horarios extremos y selectores
   const [horaInicio, setHoraInicio] = useState('');
   const [horaFin, setHoraFin] = useState('');
@@ -761,14 +765,57 @@ const PestanaClases = () => {
   // Aplicar filtros a las clases
   const clasesFiltradas = filtrarClases(clases, searchTerm, searchFilter);
 
+  // Función para obtener las clases a mostrar según la vista
+  const getClasesParaMostrar = () => {
+    if (mostrarIndividuales) {
+      return clasesFiltradas;
+    } else {
+      // Combinar clases únicas y grupos de clases fijas
+      const clasesUnicas = clasesFiltradas.filter(c => c.tipo !== 'fija');
+      const gruposClasesFijas = agruparClasesFijas(clasesFiltradas);
+      return [...clasesUnicas, ...gruposClasesFijas];
+    }
+  };
+
+  // Lógica de paginación
+  const clasesParaMostrar = getClasesParaMostrar();
+  const totalPages = Math.ceil(clasesParaMostrar.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = clasesParaMostrar.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Funciones de paginación
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  // Reset de página cuando cambia la búsqueda
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, searchFilter, mostrarIndividuales]);
+
   // Limpiar búsqueda
   const limpiarBusqueda = () => {
     setSearchTerm('');
+    setCurrentPage(1);
   };
 
   return (
     <div className="max-w-7xl mx-auto mt-4">
       <ToastContainer position="top-right" />
+      
       {/* Header */}
       <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4 justify-between items-center">
         <div className="flex gap-2">
@@ -929,11 +976,19 @@ const PestanaClases = () => {
               </div>
               
               {/* Mostrar contador de resultados */}
-              {searchTerm && (
-                <div className="text-sm text-gray-600">
-                  {clasesFiltradas.length} resultado{clasesFiltradas.length !== 1 ? 's' : ''} encontrado{clasesFiltradas.length !== 1 ? 's' : ''}
-                </div>
-              )}
+              <div className="flex items-center gap-4">
+                {searchTerm && (
+                  <div className="text-sm text-gray-600">
+                    {clasesFiltradas.length} resultado{clasesFiltradas.length !== 1 ? 's' : ''} encontrado{clasesFiltradas.length !== 1 ? 's' : ''}
+                  </div>
+                )}
+                {/* Información de paginación */}
+                {clasesParaMostrar.length > 0 && (
+                  <div className="text-sm text-gray-600">
+                    Mostrando {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, clasesParaMostrar.length)} de {clasesParaMostrar.length} elementos
+                  </div>
+                )}
+              </div>
             </div>
 
             {clasesFiltradas.length === 0 ? (
@@ -944,43 +999,99 @@ const PestanaClases = () => {
                 }
               </div>
             ) : (
-              <ul className="space-y-6">
-                {/* Vista individual */}
-                {mostrarIndividuales ? (
-                  clasesFiltradas.map((clase) => (
-                    <TarjetaClase
-                      key={clase.id}
-                      clase={clase}
-                      handleEditClase={handleEditClase}
-                      handleDeleteClase={handleDeleteClase}
-                    />
-                  ))
-                ) : (
-                  <>
-                    {/* Clases únicas */}
-                    {clasesFiltradas.filter(c => c.tipo !== 'fija').map((clase) => (
+              <>
+                <ul className="space-y-6">
+                  {/* Vista individual */}
+                  {mostrarIndividuales ? (
+                    currentItems.map((clase) => (
                       <TarjetaClase
                         key={clase.id}
                         clase={clase}
                         handleEditClase={handleEditClase}
                         handleDeleteClase={handleDeleteClase}
                       />
-                    ))}
-                    {/* Clases fijas agrupadas */}
-                    {agruparClasesFijas(clasesFiltradas).map((grupo, idx) => {
-                      const clase = grupo[0];
-                      return (
-                        <TarjetaGrupoClasesFijas
-                          key={idx}
-                          grupo={grupo}
-                          handleDeleteGrupoClasesFijas={() => openModalDeleteMany(grupo)}
-                          isSaving={isSaving}
-                        />
-                      );
-                    })}
-                  </>
+                    ))
+                  ) : (
+                    currentItems.map((item, idx) => {
+                      // Si es una clase individual (no es array)
+                      if (!Array.isArray(item)) {
+                        return (
+                          <TarjetaClase
+                            key={item.id}
+                            clase={item}
+                            handleEditClase={handleEditClase}
+                            handleDeleteClase={handleDeleteClase}
+                          />
+                        );
+                      } else {
+                        // Si es un grupo de clases fijas (es array)
+                        return (
+                          <TarjetaGrupoClasesFijas
+                            key={`grupo-${idx}`}
+                            grupo={item}
+                            handleDeleteGrupoClasesFijas={() => openModalDeleteMany(item)}
+                            isSaving={isSaving}
+                          />
+                        );
+                      }
+                    })
+                  )}
+                </ul>
+
+                {/* Controles de paginación */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center mt-6 space-x-2">
+                    <button
+                      onClick={goToPreviousPage}
+                      disabled={currentPage === 1}
+                      className="px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Anterior
+                    </button>
+                    
+                    {/* Números de página */}
+                    <div className="flex space-x-1">
+                      {Array.from({ length: totalPages }, (_, index) => {
+                        const pageNumber = index + 1;
+                        // Mostrar solo algunas páginas para no sobrecargar la UI
+                        if (
+                          pageNumber === 1 ||
+                          pageNumber === totalPages ||
+                          (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                        ) {
+                          return (
+                            <button
+                              key={pageNumber}
+                              onClick={() => handlePageChange(pageNumber)}
+                              className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                                currentPage === pageNumber
+                                  ? 'bg-naranja text-white'
+                                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              }`}
+                            >
+                              {pageNumber}
+                            </button>
+                          );
+                        } else if (
+                          (pageNumber === currentPage - 2 && pageNumber > 1) ||
+                          (pageNumber === currentPage + 2 && pageNumber < totalPages)
+                        ) {
+                          return <span key={pageNumber} className="px-2 text-gray-500">...</span>;
+                        }
+                        return null;
+                      })}
+                    </div>
+
+                    <button
+                      onClick={goToNextPage}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
                 )}
-              </ul>
+              </>
             )}
           </div>
         )

@@ -49,9 +49,11 @@ const TarjetaGrupoClasesFijas = ({
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-gray-400" />
                             <span className="flex-col flex">
-                              <span className=" text-gray-500">Cancha:</span>{" "}
+                              <span className="text-gray-500">Cancha{clase.canchas?.length > 1 ? 's' : ''}:</span>
                               <span className="font-medium">
-                                {clase.cancha?.nro ? `Cancha ${clase.cancha.nro}` : clase.cancha?.nombre}
+                                {clase.canchas && clase.canchas.length > 0
+                                  ? clase.canchas.map(cancha => `Cancha ${cancha.nro}`).join(', ')
+                                  : "No asignada"}
                               </span>
                             </span>
                           </div>

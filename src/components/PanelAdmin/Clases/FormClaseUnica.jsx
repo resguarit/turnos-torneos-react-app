@@ -134,31 +134,36 @@ const FormClaseUnica = ({
                 ))}
               </select>
             </div>
+            {/* Campo de Canchas */}
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Cancha
+                Canchas <span className="text-red-500">*</span>
               </label>
-              <select
-                name="cancha_id"
-                value={formClase.cancha_id}
-                onChange={handleFormChange}
-                className={`mt-1 block w-full px-2 py-1 border border-gray-300 rounded-[6px] shadow-sm ${
-                  validationErrors.cancha_id ? "border-red-500 text-red-500" : ""
-                }`}
-                required
-                disabled={!deporteId} // Deshabilitado si no hay deporte seleccionado
-              >
-                <option value="">Seleccionar cancha</option>
-                {canchasFiltradas.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nro ? `Cancha ${c.nro}` : c.nombre}
-                  </option>
-                ))}
-              </select>
-              {validationErrors.cancha_id && (
-                <p className="text-red-500 text-sm mt-1">
-                  {validationErrors.cancha_id[0]}
-                </p>
+              <div className="mt-1 space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-[6px] p-2">
+                {canchasFiltradas.length === 0 ? (
+                  <p className="text-sm text-gray-500">
+                    {deporteId ? 'No hay canchas disponibles para este deporte' : 'Selecciona un deporte primero'}
+                  </p>
+                ) : (
+                  canchasFiltradas.map((cancha) => (
+                    <label key={cancha.id} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="cancha_ids"
+                        value={cancha.id}
+                        checked={formClase.cancha_ids?.includes(cancha.id) || false}
+                        onChange={handleFormChange}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">
+                        Cancha {cancha.nro} - {cancha.tipo_cancha}
+                      </span>
+                    </label>
+                  ))
+                )}
+              </div>
+              {validationErrors.cancha_ids && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.cancha_ids[0]}</p>
               )}
             </div>
             <div>

@@ -56,7 +56,7 @@ const PestanaClases = () => {
     descripcion: "",
     fecha: "",
     profesor_id: "",
-    cancha_id: "",
+    cancha_ids: [],
     horario_id: "",
     cupo_maximo: "",
     precio_mensual: "",
@@ -71,7 +71,7 @@ const PestanaClases = () => {
     nombre: "",
     descripcion: "",
     profesor_id: "",
-    cancha_id: "",
+    cancha_ids: [], // CAMBIO: usar cancha_ids como array
     cupo_maximo: "",
     precio_mensual: "",
     activa: true,
@@ -79,7 +79,6 @@ const PestanaClases = () => {
     duracion_meses: 1,
     dias_semana: [],
     deporte_id: "",
-    // Remover hora_inicio y hora_fin globales, ahora serán por día
   });
 
   // Días de la semana para el selector
@@ -210,7 +209,7 @@ const PestanaClases = () => {
       descripcion: "",
       fecha: "",
       profesor_id: "",
-      cancha_id: "",
+      cancha_ids: [], // CAMBIO: usar cancha_ids como array vacío
       horario_id: "",
       cupo_maximo: "",
       precio_mensual: "",
@@ -241,7 +240,7 @@ const PestanaClases = () => {
       descripcion: clase.descripcion || "",
       fecha: clase.fecha_inicio ? clase.fecha_inicio.slice(0,10) : "", // formato yyyy-mm-dd
       profesor_id: clase.profesor_id ? String(clase.profesor_id) : "",
-      cancha_id: clase.cancha_id ? String(clase.cancha_id) : "",
+      cancha_ids: clase.cancha_ids || [], // Cambio: usar cancha_ids como array
       cupo_maximo: clase.cupo_maximo || "",
       precio_mensual: clase.precio_mensual || "",
       activa: !!clase.activa,
@@ -283,10 +282,25 @@ const PestanaClases = () => {
 
   const handleFormChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormClase((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    
+    if (name === "cancha_ids") {
+      // Manejar selección múltiple de canchas
+      const canchaId = parseInt(value);
+      const currentIds = formClase.cancha_ids || [];
+      const newIds = checked 
+        ? [...currentIds, canchaId]
+        : currentIds.filter(id => id !== canchaId);
+      
+      setFormClase((prev) => ({
+        ...prev,
+        cancha_ids: newIds,
+      }));
+    } else {
+      setFormClase((prev) => ({
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -304,7 +318,7 @@ const PestanaClases = () => {
       const horariosEnRango = horariosDelDia.filter(h =>
         h.hora_inicio >= `${horaInicioStr}:00` && h.hora_fin <= `${horaFinStr}:00`
       );
-      const horario_ids = horariosEnRango.map(h => h.id); // <-- CAMBIO DE NOMBRE
+      const horario_ids = horariosEnRango.map(h => h.id);
 
       const duracion = horario_ids.length;
 
@@ -315,8 +329,8 @@ const PestanaClases = () => {
         fecha_inicio: formClase.fecha,
         fecha_fin: formClase.fecha,
         profesor_id: parseInt(formClase.profesor_id),
-        cancha_id: parseInt(formClase.cancha_id),
-        horario_ids, // <-- CAMBIO DE NOMBRE
+        cancha_ids: formClase.cancha_ids?.filter(id => id != null) || [], // CAMBIO: usar cancha_ids y filtrar nulls
+        horario_ids,
         cupo_maximo: parseInt(formClase.cupo_maximo),
         precio_mensual: parseFloat(formClase.precio_mensual),
         activa: formClase.activa,
@@ -375,6 +389,18 @@ const PestanaClases = () => {
           return newHorarios;
         });
       }
+    } else if (name === "cancha_ids") {
+      // AGREGAR: Manejar selección múltiple de canchas para clases fijas
+      const canchaId = parseInt(value);
+      const currentIds = formClasesFijas.cancha_ids || [];
+      const newIds = checked 
+        ? [...currentIds, canchaId]
+        : currentIds.filter(id => id !== canchaId);
+      
+      setFormClasesFijas((prev) => ({
+        ...prev,
+        cancha_ids: newIds,
+      }));
     } else if (type === "checkbox") {
       setFormClasesFijas((prev) => ({
         ...prev,
@@ -425,7 +451,7 @@ const PestanaClases = () => {
           dia,
           hora_inicio: horaInicioStr,
           hora_fin: horaFinStr,
-          horarios_id // <-- SIEMPRE array, aunque sea uno solo
+          horarios_id
         };
       }).filter(item => item.hora_inicio && item.hora_fin);
 
@@ -434,14 +460,14 @@ const PestanaClases = () => {
         nombre: formClasesFijas.nombre,
         descripcion: formClasesFijas.descripcion,
         profesor_id: parseInt(formClasesFijas.profesor_id),
-        cancha_id: parseInt(formClasesFijas.cancha_id),
+        cancha_ids: formClasesFijas.cancha_ids?.filter(id => id != null) || [], // CAMBIO: usar cancha_ids y filtrar nulls
         cupo_maximo: parseInt(formClasesFijas.cupo_maximo),
         precio_mensual: parseFloat(formClasesFijas.precio_mensual),
         activa: formClasesFijas.activa,
         fecha_inicio: formClasesFijas.fecha_inicio,
         duracion_meses: parseInt(formClasesFijas.duracion_meses),
         deporte_id: parseInt(deporteIdFijas),
-        dias_horarios: diasHorarios, // cada item tiene horarios_id array
+        dias_horarios: diasHorarios,
       };
 
       const res = await api.post("/clases/crear-fijas", dataToSend);
@@ -454,7 +480,7 @@ const PestanaClases = () => {
         nombre: "",
         descripcion: "",
         profesor_id: "",
-        cancha_id: "",
+        cancha_ids: [], // CAMBIO: resetear como array
         cupo_maximo: "",
         precio_mensual: "",
         activa: true,

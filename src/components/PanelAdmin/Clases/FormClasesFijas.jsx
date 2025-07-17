@@ -81,23 +81,37 @@ const FormClasesFijas = ({
                 ))}
               </select>
             </div>
+            {/* Campo de Canchas */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Cancha</label>
-              <select
-                name="cancha_id"
-                value={formClasesFijas.cancha_id}
-                onChange={handleClasesFijasChange}
-                className="mt-1 block w-full px-2 py-1 border border-gray-300 rounded"
-                required
-                disabled={!deporteIdFijas} // Deshabilitado si no hay deporte seleccionado
-              >
-                <option value="">Seleccionar cancha</option>
-                {canchasFiltradasFijas.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nro ? `Cancha ${c.nro}` : c.nombre}
-                  </option>
-                ))}
-              </select>
+              <label className="block text-sm font-medium text-gray-700">
+                Canchas <span className="text-red-500">*</span>
+              </label>
+              <div className="mt-1 space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-[6px] p-2">
+                {canchasFiltradasFijas.length === 0 ? (
+                  <p className="text-sm text-gray-500">
+                    {deporteIdFijas ? 'No hay canchas disponibles para este deporte' : 'Selecciona un deporte primero'}
+                  </p>
+                ) : (
+                  canchasFiltradasFijas.map((cancha) => (
+                    <label key={cancha.id} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="cancha_ids"
+                        value={cancha.id}
+                        checked={formClasesFijas.cancha_ids?.includes(cancha.id) || false}
+                        onChange={handleClasesFijasChange}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">
+                        Cancha {cancha.nro} - {cancha.tipo_cancha}
+                      </span>
+                    </label>
+                  ))
+                )}
+              </div>
+              {validationErrors.cancha_ids && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.cancha_ids[0]}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Cupo máximo</label>
@@ -282,12 +296,13 @@ const FormClasesFijas = ({
             >
               Cancelar
             </button>
+            {/* Botón de crear */}
             <button
               type="submit"
               className="inline-flex items-center px-3 py-2 border border-transparent rounded-[6px] shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
               disabled={isSaving || 
                 !deporteIdFijas || 
-                !formClasesFijas.cancha_id ||
+                !formClasesFijas.cancha_ids?.length || // Cambio: verificar que hay canchas seleccionadas
                 formClasesFijas.dias_semana.length === 0 ||
                 !formClasesFijas.dias_semana.every(dia => {
                   const horarios = horariosSeleccionados[dia];

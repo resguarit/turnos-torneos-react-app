@@ -20,7 +20,6 @@ const PestanaClases = () => {
   const [profesores, setProfesores] = useState([]);
   const [canchas, setCanchas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editando, setEditando] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -159,9 +158,7 @@ const PestanaClases = () => {
   const fetchClases = async () => {
     setLoading(true);
     try {
-      const response = await api.get("/clases", {
-        params: searchTerm ? { search: searchTerm } : {},
-      });
+      const response = await api.get("/clases");
       setClases(response.data.clases || response.data || []);
     } catch (error) {
       toast.error("Error al cargar las clases");
@@ -189,15 +186,6 @@ const PestanaClases = () => {
       const res = await api.get("/horarios");
       setHorarios(res.data.horarios || res.data || []);
     } catch {}
-  };
-
-  const handleSearch = () => {
-    fetchClases();
-  };
-
-  const handleClearSearch = () => {
-    setSearchTerm("");
-    fetchClases();
   };
 
   const handleAddClase = () => {
@@ -744,45 +732,22 @@ const PestanaClases = () => {
       <ToastContainer position="top-right" />
       {/* Header */}
       <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4 justify-between items-center">
-        <div className="flex gap-2 w-full sm:w-auto">
-          <input
-            type="text"
-            placeholder="Buscar por nombre"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full py-1 px-2 text-sm border border-gray-300 rounded-[6px] shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+        <div className="flex gap-2">
           <button
-            onClick={handleSearch}
-            className="flex items-center text-sm px-3 py-2 text-white bg-green-600 rounded-[6px] shadow hover:bg-green-700"
+            onClick={handleAddClase}
+            className="inline-flex items-center text-sm px-3 py-2 bg-naranja hover:bg-blue-700 text-white rounded-[6px] shadow transition-colors duration-200"
           >
-            <Search className="w-4 h-4 mr-1" />
-            Buscar
+            <Plus className="h-4 w-4 mr-2" />
+            Crear Clase Única
           </button>
           <button
-            onClick={handleClearSearch}
-            className="flex items-center text-sm px-3 py-2 text-white bg-red-500 rounded-[6px] shadow hover:bg-red-600"
+            onClick={handleToggleClasesFijas}
+            className="inline-flex items-center px-3 text-sm py-2 bg-naranja hover:bg-blue-700 text-white rounded-[6px] shadow transition-colors duration-200"
           >
-            Limpiar
+            <Plus className="h-4 w-4 mr-2" />
+            Crear Clase Fija
           </button>
         </div>
-        <div className="flex gap-2">
-        <button
-          onClick={handleAddClase}
-          className="inline-flex items-center text-sm px-3 py-2 bg-naranja hover:bg-blue-700 text-white rounded-[6px] shadow transition-colors duration-200"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Crear Clase Única
-        </button>
-              {/* Botón para crear clases fijas */}
-      <button
-        onClick={handleToggleClasesFijas}
-        className="inline-flex items-center px-3 text-sm py-2 bg-naranja hover:bg-blue-700 text-white rounded-[6px] shadow transition-colors duration-200"
-      >
-        <Plus className="h-4 w-4 mr-2" />
-        Crear Clase Fija
-      </button>
-      </div>
       </div>
 
       {/* Formulario */}

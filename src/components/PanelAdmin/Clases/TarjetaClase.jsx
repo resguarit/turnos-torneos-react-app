@@ -43,12 +43,6 @@ const TarjetaClase = ({
                         >
                           <Trash2 className="h-5 w-5" />
                         </button>
-                        <button
-                          className="p-2 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-                          title="Ver detalles"
-                        >
-                          <Eye className="h-5 w-5" />
-                        </button>
                       </div>
                     </div>
                     <div className="grid grid-cols-1 mt-4 md:grid-cols-4 gap-2 text-sm mb-6">

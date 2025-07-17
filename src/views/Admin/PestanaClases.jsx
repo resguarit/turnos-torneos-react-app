@@ -31,6 +31,10 @@ const PestanaClases = () => {
   const [deporteId, setDeporteId] = useState('');
   const [horariosExtremos, setHorariosExtremos] = useState([]);
 
+  // Estados para el buscador
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchFilter, setSearchFilter] = useState('nombre');
+
   // Estados para horarios extremos y selectores
   const [horaInicio, setHoraInicio] = useState('');
   const [horaFin, setHoraFin] = useState('');
@@ -727,6 +731,41 @@ const PestanaClases = () => {
   // Estado para el tab seleccionado
   const [tab, setTab] = useState("listado");
 
+  // Función para filtrar clases
+  const filtrarClases = (clases, termino, filtro) => {
+    if (!termino.trim()) return clases;
+
+    return clases.filter(clase => {
+      const term = termino.toLowerCase();
+      
+      switch (filtro) {
+        case 'nombre':
+          return clase.nombre?.toLowerCase().includes(term);
+        
+        case 'profesor':
+          const nombreProfesor = `${clase.profesor?.nombre || ''} ${clase.profesor?.apellido || ''}`.trim();
+          return nombreProfesor.toLowerCase().includes(term);
+        
+        case 'cancha':
+          const nombreCancha = clase.cancha?.nro 
+            ? `Cancha ${clase.cancha.nro}` 
+            : clase.cancha?.nombre || '';
+          return nombreCancha.toLowerCase().includes(term);
+        
+        default:
+          return true;
+      }
+    });
+  };
+
+  // Aplicar filtros a las clases
+  const clasesFiltradas = filtrarClases(clases, searchTerm, searchFilter);
+
+  // Limpiar búsqueda
+  const limpiarBusqueda = () => {
+    setSearchTerm('');
+  };
+
   return (
     <div className="max-w-7xl mx-auto mt-4">
       <ToastContainer position="top-right" />
@@ -747,6 +786,40 @@ const PestanaClases = () => {
             <Plus className="h-4 w-4 mr-2" />
             Crear Clase Fija
           </button>
+        </div>
+
+        {/* Buscador de clases */}
+        <div className="flex gap-2 items-center">
+          <div className="relative">
+            <select
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              className="text-sm px-2 py-1 border text-gray-800 border-gray-300 rounded-[6px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="nombre">Nombre</option>
+              <option value="profesor">Profesor</option>
+              <option value="cancha">Cancha</option>
+            </select>
+          </div>
+          
+          <div className="relative">
+            <input
+              type="text"
+              placeholder={`Buscar por ${searchFilter}...`}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="text-sm pl-8 pr-8 py-1 border border-gray-300 rounded-[6px] focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+            />
+            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            {searchTerm && (
+              <button
+                onClick={limpiarBusqueda}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                ×
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -834,33 +907,47 @@ const PestanaClases = () => {
 
       {/* Contenido de los tabs */}
       {tab === "listado" ? (
-        // ...todo el contenido actual de la lista de clases...
         loading ? (
           <div className="flex justify-center items-center h-[40vh]">
             <BtnLoading />
           </div>
         ) : (
           <div>
-                  {/* Checkbox para alternar vista */}
-      <div className="flex items-center mb-4">
-        <input
-          type="checkbox"
-          checked={mostrarIndividuales}
-          onChange={e => setMostrarIndividuales(e.target.checked)}
-          id="mostrarIndividuales"
-          className="mr-2"
-        />
-        <label htmlFor="mostrarIndividuales" className="text-sm font-medium text-gray-700">
-          Mostrar clases fijas individualmente
-        </label>
-      </div>
-            {clases.length === 0 ? (
-              <div className="text-center text-gray-500 py-8">No hay clases registradas.</div>
+            {/* Checkbox para alternar vista */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={mostrarIndividuales}
+                  onChange={e => setMostrarIndividuales(e.target.checked)}
+                  id="mostrarIndividuales"
+                  className="mr-2"
+                />
+                <label htmlFor="mostrarIndividuales" className="text-sm font-medium text-gray-700">
+                  Mostrar clases fijas individualmente
+                </label>
+              </div>
+              
+              {/* Mostrar contador de resultados */}
+              {searchTerm && (
+                <div className="text-sm text-gray-600">
+                  {clasesFiltradas.length} resultado{clasesFiltradas.length !== 1 ? 's' : ''} encontrado{clasesFiltradas.length !== 1 ? 's' : ''}
+                </div>
+              )}
+            </div>
+
+            {clasesFiltradas.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                {searchTerm 
+                  ? `No se encontraron clases que coincidan con "${searchTerm}"` 
+                  : "No hay clases registradas."
+                }
+              </div>
             ) : (
               <ul className="space-y-6">
                 {/* Vista individual */}
                 {mostrarIndividuales ? (
-                  clases.map((clase) => (
+                  clasesFiltradas.map((clase) => (
                     <TarjetaClase
                       key={clase.id}
                       clase={clase}
@@ -871,7 +958,7 @@ const PestanaClases = () => {
                 ) : (
                   <>
                     {/* Clases únicas */}
-                    {clases.filter(c => c.tipo !== 'fija').map((clase) => (
+                    {clasesFiltradas.filter(c => c.tipo !== 'fija').map((clase) => (
                       <TarjetaClase
                         key={clase.id}
                         clase={clase}
@@ -880,7 +967,7 @@ const PestanaClases = () => {
                       />
                     ))}
                     {/* Clases fijas agrupadas */}
-                    {agruparClasesFijas(clases).map((grupo, idx) => {
+                    {agruparClasesFijas(clasesFiltradas).map((grupo, idx) => {
                       const clase = grupo[0];
                       return (
                         <TarjetaGrupoClasesFijas
@@ -898,7 +985,7 @@ const PestanaClases = () => {
           </div>
         )
       ) : (
-        // Tab de calendario (solo placeholder por ahora)
+        // Tab de calendario
         <div className="flex flex-col w-full items-center justify-center">
           <CalendarioClases clases={clases} />
         </div>

@@ -1,8 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import Carrusel from "./Carrusel";
 import { useEffect, useState } from "react";
-import rngBlack from "../assets/rngBlack.mp4";
-import video from "../assets/rngBlack.mp4";
+import heroImage from "../assets/hero-foto.png"; // Cambiado a imagen estática
 import { ArrowLeftCircle } from "lucide-react";
 import { useConfiguration } from '@/context/ConfigurationContext';
 
@@ -10,6 +9,8 @@ function Hero() {
   const navigate = useNavigate();
   const [hasActiveReservation, setHasActiveReservation] = useState(false);
   const { config, loading: isLoadingConfig } = useConfiguration();
+  // Estado para controlar si estamos en mobile o no
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const checkActiveReservation = () => {
@@ -29,6 +30,23 @@ function Hero() {
     };
   }, []);
 
+  // Detectar si estamos en mobile para aplicar la animación
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768); // consideramos mobile si es menor a 768px
+    };
+    
+    // Verificar al inicio
+    checkIfMobile();
+    
+    // Y también cuando cambia el tamaño de la ventana
+    window.addEventListener('resize', checkIfMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkIfMobile);
+    };
+  }, []);
+
   const handleReturnToReservation = () => {
     const token = localStorage.getItem('token');
     const reservaTemp = JSON.parse(localStorage.getItem('reservaTemp'));
@@ -40,24 +58,6 @@ function Hero() {
     }
   };
 
-  useEffect(() => {
-    const videoElement = document.querySelector("video");
-
-    if (videoElement) {
-      videoElement.addEventListener("contextmenu", (e) => e.preventDefault());
-      videoElement.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      });
-
-      // Prevenir la interacción en iOS
-      videoElement.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      });
-    }
-  }, []);
-
   // Determinar el nombre del complejo a mostrar
   const getNombreComplejo = () => {
     if (isLoadingConfig) return '...';
@@ -68,23 +68,22 @@ function Hero() {
   return (
     <>
       <div className="relative h-screen w-full overflow-hidden">
-        {/* Contenedor del video con un div transparente encima para bloquear toques */}
+        {/* Contenedor de la imagen de fondo */}
         <div className="absolute inset-0">
-          <video
-            className="pointer-events-none select-none absolute inset-0 w-full h-full object-cover "
-            src={rngBlack}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-          ></video>
+          <img
+            className={`pointer-events-none select-none absolute inset-0 w-full h-full object-cover ${isMobile ? 'hero-pan-animation' : ''}`}
+            src={heroImage}
+            alt="RG Turnos Background"
+            style={{
+              objectPosition: isMobile ? 'center center' : 'center center'
+            }}
+          />
           {/* Div para bloquear interacción en iPhone */}
           <div className="absolute inset-0 bg-transparent pointer-events-auto"></div>
         </div>
 
         {/* Overlay para oscurecer el video si es necesario */}
-        <div className="absolute inset-0 bg-black opacity-50"></div>
+        <div className="absolute inset-0 bg-black opacity-30"></div>
 
         {/* Contenido principal */}
         <div className="relative z-30 flex flex-col justify-center items-center h-full space-y-8 lg:space-y-12 text-center px-4">
@@ -106,6 +105,33 @@ function Hero() {
           )}
         </div>
       </div>
+
+      {/* Estilos CSS para la animación del fondo en mobile */}
+      <style jsx>{`
+        @media (max-width: 767px) {
+          @keyframes panBackground {
+            0% {
+              object-position: left center;
+            }
+            25% {
+              object-position: center center;
+            }
+            50% {
+              object-position: right center;
+            }
+            75% {
+              object-position: center center;
+            }
+            100% {
+              object-position: left center;
+            }
+          }
+          
+          .hero-pan-animation {
+            animation: panBackground 25s ease-in-out infinite;
+          }
+        }
+      `}</style>
     </>
   );
 }

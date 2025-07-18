@@ -17,8 +17,8 @@ const CrearTurnoFijoModal = ({ isOpen, onClose, courts, onSuccess }) => {
     email: '',
     dni: '',
     telefono: '',
-    password: 'RockAndGol2024',
-    password_confirmation: 'RockAndGol2024',
+    password: 'password',
+    password_confirmation: 'password',
     rol: 'cliente' // Añadido el campo rol
   });
   
@@ -58,8 +58,8 @@ const CrearTurnoFijoModal = ({ isOpen, onClose, courts, onSuccess }) => {
       email: '',
       dni: '',
       telefono: '',
-      password: 'RockAndGol2024',
-      password_confirmation: 'RockAndGol2024',
+      password: 'password',
+      password_confirmation: 'password',
       rol: 'cliente' // Añadido el campo rol
     });
     setFormData({

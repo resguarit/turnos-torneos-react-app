@@ -1,4 +1,4 @@
-import video from '../../assets/rngBlack.mp4';
+import heroImage from '../../assets/hero-foto.png'; // Cambiado a imagen estática
 import React, { useState, useEffect } from 'react';
 import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from 'react-router-dom';
@@ -91,40 +91,21 @@ function SignUp() {
 
     const toggleShowConfirmPassword = () => {
         setShowConfirmPassword(!showConfirmPassword);
-    };
-
-    useEffect(() => {
-        const videoElement = document.querySelector("video");
-    
-        if (videoElement) {
-          videoElement.addEventListener("contextmenu", (e) => e.preventDefault());
-          videoElement.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          });
-    
-          // Prevenir la interacción en iOS
-          videoElement.addEventListener("touchstart", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          });
-        }
-      }, []);
+    };    useEffect(() => {
+        // Ya no necesitamos la lógica del video, pero mantenemos el useEffect
+        // por si necesitamos agregar alguna inicialización futura
+    }, []);
 
     return (
         <div className="min-h-screen w-full relative font-inter">
             <ToastContainer position="top-right" />
             
             <div className="absolute inset-0">
-                <video
-                    className="pointer-events-none select-none absolute inset-0 w-full h-full object-cover "
-                    src={video}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="auto"
-                ></video>
+                <img
+                    className="pointer-events-none select-none absolute inset-0 w-full h-full object-cover"
+                    src={heroImage}
+                    alt="RG Turnos Background"
+                />
                 {/* Div para bloquear interacción en iPhone */}
                 <div className="absolute inset-0 bg-transparent pointer-events-auto">
                 </div>

@@ -15,6 +15,7 @@ const PestanaConfiguracion = () => {
     habilitar_mercado_pago: false,
     mercado_pago_access_token: '',
     mercado_pago_webhook_secret: '',
+    mercado_pago_public_key: '',
     nombre_complejo: '',
     direccion_complejo: '',
     telefono_complejo: ''
@@ -35,10 +36,12 @@ const PestanaConfiguracion = () => {
   // Estados para controlar si las credenciales han sido modificadas
   const [accessTokenModified, setAccessTokenModified] = useState(false);
   const [webhookSecretModified, setWebhookSecretModified] = useState(false);
+  const [publicKeyModified, setPublicKeyModified] = useState(false);
   
   // Estados para controlar si el usuario está enfocado en los campos de credenciales
   const [accessTokenFocused, setAccessTokenFocused] = useState(false);
   const [webhookSecretFocused, setWebhookSecretFocused] = useState(false);
+  const [publicKeyFocused, setPublicKeyFocused] = useState(false);
 
   // Estilos para los campos de credenciales
   const credentialInputStyle = {
@@ -75,6 +78,7 @@ const PestanaConfiguracion = () => {
       // para cuando el usuario comience a escribir
       configData.mercado_pago_access_token = '';
       configData.mercado_pago_webhook_secret = '';
+      configData.mercado_pago_public_key = response.data.mercado_pago_public_key || '';
       
       setConfig(configData);
       setOriginalConfig(configData);
@@ -82,6 +86,7 @@ const PestanaConfiguracion = () => {
       // Resetear los estados de modificación después de cargar nuevos datos
       setAccessTokenModified(false);
       setWebhookSecretModified(false);
+      setPublicKeyModified(false);
     } catch (error) {
       console.error('Error al obtener la configuración:', error);
       setErrorMessage('Error al cargar la configuración. Intente nuevamente.');
@@ -97,6 +102,7 @@ const PestanaConfiguracion = () => {
       // Si desactiva Mercado Pago, no enviamos las credenciales aunque hayan sido modificadas
       setAccessTokenModified(false);
       setWebhookSecretModified(false);
+      setPublicKeyModified(false);
     }
     
     setConfig(prev => ({
@@ -108,11 +114,12 @@ const PestanaConfiguracion = () => {
   const handleCredentialChange = (e) => {
     const { name, value } = e.target;
     
-    // Marcar como modificado
     if (name === 'mercado_pago_access_token') {
       setAccessTokenModified(true);
     } else if (name === 'mercado_pago_webhook_secret') {
       setWebhookSecretModified(true);
+    } else if (name === 'mercado_pago_public_key') {
+      setPublicKeyModified(true);
     }
     
     setConfig(prev => ({
@@ -124,7 +131,6 @@ const PestanaConfiguracion = () => {
   const handleCredentialFocus = (field) => {
     if (field === 'access_token') {
       setAccessTokenFocused(true);
-      // Si no ha sido modificado, limpiamos el campo para que pueda escribir
       if (!accessTokenModified) {
         setConfig(prev => ({
           ...prev,
@@ -133,11 +139,18 @@ const PestanaConfiguracion = () => {
       }
     } else if (field === 'webhook_secret') {
       setWebhookSecretFocused(true);
-      // Si no ha sido modificado, limpiamos el campo para que pueda escribir
       if (!webhookSecretModified) {
         setConfig(prev => ({
           ...prev,
           mercado_pago_webhook_secret: ''
+        }));
+      }
+    } else if (field === 'public_key') {
+      setPublicKeyFocused(true);
+      if (!publicKeyModified) {
+        setConfig(prev => ({
+          ...prev,
+          mercado_pago_public_key: ''
         }));
       }
     }
@@ -148,6 +161,8 @@ const PestanaConfiguracion = () => {
       setAccessTokenFocused(false);
     } else if (field === 'webhook_secret') {
       setWebhookSecretFocused(false);
+    } else if (field === 'public_key') {
+      setPublicKeyFocused(false);
     }
   };
 
@@ -203,6 +218,9 @@ const PestanaConfiguracion = () => {
       }
 
       if (config.habilitar_mercado_pago) {
+        if (publicKeyModified) {
+          dataToSend.append('mercado_pago_public_key', config.mercado_pago_public_key);
+        }
         if (accessTokenModified) {
           dataToSend.append('mercado_pago_access_token', config.mercado_pago_access_token);
         }
@@ -247,6 +265,10 @@ const PestanaConfiguracion = () => {
   const displayWebhookSecret = webhookSecretFocused || webhookSecretModified 
     ? config.mercado_pago_webhook_secret 
     : maskedCredentials.webhook_secret;
+
+  const displayPublicKey = publicKeyFocused || publicKeyModified 
+    ? config.mercado_pago_public_key 
+    : config.mercado_pago_public_key;
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -460,6 +482,30 @@ const PestanaConfiguracion = () => {
               </div>
               <p className="text-sm text-gray-500">
                 Si esta opción está habilitada, los usuarios podrán pagar con Mercado Pago.
+              </p>
+            </div>
+            
+            <div className="mb-4">
+              <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+                <span>Public Key de Mercado Pago</span>
+                <Info className="w-4 h-4 ml-1 text-gray-400" title="Clave pública para inicializar el SDK de Mercado Pago" />
+              </label>
+              <input
+                type="text"
+                name="mercado_pago_public_key"
+                value={displayPublicKey}
+                onChange={handleCredentialChange}
+                onFocus={() => handleCredentialFocus('public_key')}
+                onBlur={() => handleCredentialBlur('public_key')}
+                placeholder="Ingrese su Public Key de Mercado Pago"
+                style={credentialInputStyle}
+                className={`mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 ${!config.habilitar_mercado_pago ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                disabled={!config.habilitar_mercado_pago}
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                {publicKeyModified 
+                  ? "Public Key modificada, se guardará al guardar la configuración" 
+                  : "Haga clic para editar. Esta clave es pública y se usa en el frontend."}
               </p>
             </div>
             

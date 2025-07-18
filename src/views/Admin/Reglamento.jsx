@@ -1,7 +1,7 @@
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { DownloadIcon } from 'lucide-react';
-import rngBlack from '@/assets/rngBlack.mp4';
+import heroImage from '@/assets/hero-foto.png'; // Cambiado a imagen estática
 import { useEffect } from "react";
 
 function Reglamento() {
@@ -25,21 +25,8 @@ function Reglamento() {
   ];
 
   useEffect(() => {
-    const videoElement = document.querySelector("video");
-
-    if (videoElement) {
-      videoElement.addEventListener("contextmenu", (e) => e.preventDefault());
-      videoElement.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      });
-
-      // Prevenir la interacción en iOS
-      videoElement.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      });
-    }
+    // Ya no necesitamos la lógica del video, pero mantenemos el useEffect 
+    // por si necesitamos agregar alguna inicialización futura
   }, []);
 
   return (
@@ -48,15 +35,11 @@ function Reglamento() {
       <main className="relative grow max-w-full lg:mx-0 p-6">
         
       <div className="absolute inset-0">
-                <video
-                    className="pointer-events-none select-none absolute inset-0 w-full h-full object-cover "
-                    src={rngBlack}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="auto"
-                ></video>
+                <img
+                    className="pointer-events-none select-none absolute inset-0 w-full h-full object-cover"
+                    src={heroImage}
+                    alt="RG Turnos Background"
+                />
             {/* Div para bloquear interacción en iPhone */}
                 <div className="absolute inset-0 bg-transparent pointer-events-auto">  
                 </div>

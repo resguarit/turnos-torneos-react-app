@@ -112,7 +112,7 @@ function Hero() {
             Sistema de Reservas y Torneos de {getNombreComplejo()}
           </h1>
           <h2 className="font-inter tracking-wide font-medium text-sm md:text-lg lg:text-xl text-white">
-            Descubrí las mejores canchas de fútbol y unite a la comunidad más grande de jugadores
+            Descubrí las mejores canchas y espacios deportivos. Reservá fácil, rápido y unite a la comunidad más grande de jugadores.
           </h2>
           {!hasActiveReservation && (
             <>

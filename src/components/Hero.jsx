@@ -12,6 +12,24 @@ function Hero() {
   // Estado para controlar si estamos en mobile o no
   const [isMobile, setIsMobile] = useState(false);
 
+  // Detectar si hay subdominio
+  const hasSubdomain = () => {
+    const hostname = window.location.hostname;
+    const parts = hostname.split('.');
+    
+    // Para localhost con subdominio: subdominio.localhost
+    if (hostname.includes('localhost')) {
+      return parts.length > 1 && parts[0] !== 'localhost';
+    }
+    
+    // Para dominio principal con subdominio: subdominio.rgturnos.com.ar
+    if (hostname.includes('rgturnos.com.ar')) {
+      return parts.length > 3; // subdominio.rgturnos.com.ar tiene 4 partes
+    }
+    
+    return false;
+  };
+
   useEffect(() => {
     const checkActiveReservation = () => {
       const reservaTemp = localStorage.getItem("reservaTemp");
@@ -97,11 +115,21 @@ function Hero() {
             Descubrí las mejores canchas de fútbol y unite a la comunidad más grande de jugadores
           </h2>
           {!hasActiveReservation && (
-            <Link to="/select-deporte">
-              <button className="bg-naranja rounded-xl text-white p-2 font-inter font-medium text-xs md:text-sm tracking-wide w-full">
-                QUIERO RESERVAR UN TURNO
-              </button>
-            </Link>
+            <>
+              {hasSubdomain() ? (
+                <Link to="/select-deporte">
+                  <button className="bg-naranja rounded-xl text-white p-2 font-inter font-medium text-xs md:text-sm tracking-wide w-full">
+                    QUIERO RESERVAR UN TURNO
+                  </button>
+                </Link>
+              ) : (
+                <a href="https://wa.me/5492216914649" target="_blank" rel="noopener noreferrer">
+                  <button className="bg-naranja rounded-xl text-white p-2 font-inter font-medium text-xs md:text-sm tracking-wide w-full">
+                    SOLICITAR DEMO
+                  </button>
+                </a>
+              )}
+            </>
           )}
         </div>
       </div>

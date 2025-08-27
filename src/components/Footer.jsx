@@ -20,7 +20,7 @@ const anio = new Date().getFullYear();
 
         {/* Social Media Icons - Center */}
         <div className="flex gap-6 justify-center">
-          <a href="https://www.instagram.com" target="_blank" aria-label="Instagram">
+          <a href="https://www.instagram.com/resguarit" target="_blank" aria-label="Instagram">
             <svg className="h-5 sm:h-6" version="1.0" xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 512.000000 512.000000"
               preserveAspectRatio="xMidYMid meet">
@@ -56,7 +56,7 @@ const anio = new Date().getFullYear();
             </svg>
           </a>
 
-          <a href="https://www.facebook.com" target="_blank" aria-label="Facebook">
+          <a href="https://www.facebook.com/resguarit" target="_blank" aria-label="Facebook">
             <svg className="h-5 sm:h-6 " version="1.0" xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 512.000000 512.000000"
               preserveAspectRatio="xMidYMid meet">
@@ -78,7 +78,7 @@ const anio = new Date().getFullYear();
               </g>
             </svg>
           </a>
-          <a href="https://www.whatsapp.com" target="_blank" aria-label="WhatsApp">
+          <a href="https://wa.me/5492216914649" target="_blank" aria-label="WhatsApp">
             <svg className="h-5 sm:h-6 " version="1.0" xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 512.000000 512.000000"
               preserveAspectRatio="xMidYMid meet">
@@ -106,6 +106,13 @@ const anio = new Date().getFullYear();
                 54 95 109 136 136 181 136 225 0 52 -195 526 -237 575 -28 33 -28 33 -133 37
                 -58 2 -117 0 -132 -5z"/>
               </g>
+            </svg>
+          </a>
+          
+          <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contacto@resguarit.com.ar" target="_blank" aria-label="Email">
+            <svg className="h-5 sm:h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/>
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
             </svg>
           </a>
         </div>
